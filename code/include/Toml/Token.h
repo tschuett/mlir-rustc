@@ -4,7 +4,16 @@
 
 namespace rust_compiler::toml {
 
-enum class TokenKind { Hash, SquareOpen, Identifier };
+enum class TokenKind {
+  Hash,
+  SquareOpen,
+  Identifier,
+  SquareClose,
+  Integer,
+  Equal,
+  String,
+  BraceOpen, Comma, BraceClose
+};
 
 class Token {
   TokenKind kind;

@@ -6,4 +6,4 @@ add_executable(rustc
 target_include_directories(rustc PRIVATE  ../../code/include)
 
 
-target_link_libraries(rustc lexer parser codegen)
+target_link_libraries(rustc lexer parser codegen MLIRAsmParser)
