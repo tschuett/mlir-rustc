@@ -3,7 +3,7 @@ add_executable(rustc
            )
 
 
-target_include_directories(rustc PRIVATE  ../../include)
+target_include_directories(rustc PRIVATE  ../../code/include)
 
 
-target_link_libraries(rustc lexer parser)
+target_link_libraries(rustc lexer parser codegen)
