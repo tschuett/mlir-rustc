@@ -49,9 +49,9 @@ tools/rustc/rustc
 tablegen_compile_commands.yml
 
 
-#code/include/Mir/MirOps.cpp.inc
-#code/include/Mir/MirOps.h.inc
-#code/include/Mir/MirOpsDialect.cpp.inc
-#code/include/Mir/MirOpsDialect.h.inc
-#code/include/Mir/MirOpsTypes.cpp.inc
-#code/include/Mir/MirOpsTypes.h.inc
+code/include/Mir/MirOps.cpp.inc
+code/include/Mir/MirOps.h.inc
+code/include/Mir/MirOpsDialect.cpp.inc
+code/include/Mir/MirOpsDialect.h.inc
+code/include/Mir/MirOpsTypes.cpp.inc
+code/include/Mir/MirOpsTypes.h.inc
