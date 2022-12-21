@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include <optional>
+
 namespace rust_compiler::toml {
 
 enum class TokenKind {
@@ -12,18 +14,21 @@ enum class TokenKind {
   Integer,
   Equal,
   String,
-  BraceOpen, Comma, BraceClose
+  BraceOpen,
+  Comma,
+  BraceClose
 };
 
 class Token {
   TokenKind kind;
-  std::string id;
+  std::optional<std::string> id;
 
 public:
   Token(TokenKind kind) : kind(kind) {}
   Token(TokenKind kind, std::string_view id) : kind(kind), id(id) {}
 
   TokenKind getKind() const { return kind; }
+  std::string getString() const { return *id; } // may crash
 };
 
 } // namespace rust_compiler::toml

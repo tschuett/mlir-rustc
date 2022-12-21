@@ -2,6 +2,8 @@ add_library(toml
            Toml.cpp
            TomlLexer.cpp
            TokenStream.cpp
+           Parser.cpp
+           Table.cpp
            )
 
 

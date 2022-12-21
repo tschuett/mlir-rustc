@@ -4,6 +4,8 @@
 
 #include <vector>
 
+#include <span>
+
 namespace rust_compiler::toml {
 
 class TokenStream {
@@ -11,6 +13,8 @@ class TokenStream {
 
 public:
   void append(Token tok);
+
+  std::span<Token> getViewAt(size_t offset);
 };
 
 } // namespace rust_compiler::toml

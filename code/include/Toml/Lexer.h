@@ -3,9 +3,10 @@
 #include "Toml/TokenStream.h"
 
 #include <string_view>
+#include <optional>
 
 namespace rust_compiler::toml {
 
-TokenStream lexToml(std::string_view toml);
+std::optional<TokenStream> tryLexToml(std::string_view toml);
 
 }

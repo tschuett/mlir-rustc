@@ -16,6 +16,10 @@ find_package(MLIR REQUIRED CONFIG)
 message(STATUS "Using MLIRConfig.cmake in: ${MLIR_DIR}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_TABLEGEN_EXE}")
+
+set(LLVM_TABLEGEN_EXE "${LLVM_DIR}/bin/llvm-tblgen")
+
 list(APPEND CMAKE_MODULE_PATH "${MLIR_CMAKE_DIR}")
 list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 

@@ -110,7 +110,7 @@ static std::string consumeRestOfLine(std::string_view line) {
   return rest;
 }
 
-TokenStream lexToml(std::string_view toml) {
+std::optional<TokenStream> tryLexToml(std::string_view toml) {
   TokenStream ts;
 
   while (toml.size() > 0) {

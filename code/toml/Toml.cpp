@@ -7,11 +7,22 @@
 
 namespace rust_compiler::toml {
 
+void Toml::addKeyValuePair(const std::pair<std::string, std::string> &kv) {
+  kvs.push_back(kv);
+}
+
+void Toml::addTable(Table& tab) { tables.push_back(tab); }
+
 std::optional<Toml> readToml(std::string_view file) {
 
-  TokenStream ts = lexToml(file);
+  std::optional<TokenStream> ts = tryLexToml(file);
+  if (!ts)
+    return std::nullopt;
 
-  std::optional<Toml> toml = tryParse(ts);
+  std::optional<Toml> toml = tryParse(*ts);
+
+  if (toml)
+    return *toml;
 
   return std::nullopt;
 }
