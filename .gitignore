@@ -55,3 +55,4 @@ code/include/Mir/MirOpsDialect.cpp.inc
 code/include/Mir/MirOpsDialect.h.inc
 code/include/Mir/MirOpsTypes.cpp.inc
 code/include/Mir/MirOpsTypes.h.inc
+tools/minicargo/Opts.inc

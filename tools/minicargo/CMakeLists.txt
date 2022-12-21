@@ -6,10 +6,14 @@ add_executable(minicargo
            MiniCargo.cpp
            )
 
-add_library(minicargolib)
-
 target_include_directories(minicargo PRIVATE  ../../code/include)
 
 set_property(TARGET minicargo PROPERTY ENABLE_EXPORTS 1)
 
-target_link_libraries(minicargo STATIC MiniCargoOptsTableGen toml)
+llvm_map_components_to_libnames(llvm_libs Option)
+
+# MiniCargoOptsTableGen
+
+add_dependencies(minicargo MiniCargoOptsTableGen)
+
+target_link_libraries(minicargo toml ${llvm_libs}  )

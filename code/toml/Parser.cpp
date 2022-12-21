@@ -48,7 +48,7 @@ tryParseTable(std::span<Token> view) {
       tab = tab.subspan(3); // 2* string + Equal Token
       tokens += 3;
     } else {
-      return std::make_pair<Table, size_t>(table, tokens);
+      return std::make_pair<Table, size_t>(std::move(table), std::move(tokens));
     }
   }
 
