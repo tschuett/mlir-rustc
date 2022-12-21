@@ -1,8 +1,8 @@
-# rust_compiler
+# mlir-rustc
 
 
 ```console
-> cmake -DLLVM_DIR=/Users/schuett/modules/clang/git/lib/cmake/llvm .
+> ./cmake.sh
 ```
 
 
@@ -11,5 +11,3 @@
 ```console
 >  brew install llvm
 ```
-
-/Users/schuett/modules/clang/git/lib/cmake/mlir/MLIRTargets.cmake

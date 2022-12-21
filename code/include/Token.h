@@ -4,7 +4,7 @@
 
 namespace rust_compiler {
 
-  enum class TokenKind { DoubleColon, Hash };
+enum class TokenKind { DoubleColon, Hash, Exclaim, SquareOpen, Comma };
 
 class Token {
   std::string s;
@@ -15,4 +15,5 @@ public:
 
   TokenKind getKind() const { return kind; }
 };
+
 } // namespace rust_compiler

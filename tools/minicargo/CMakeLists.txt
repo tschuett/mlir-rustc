@@ -3,7 +3,7 @@ add_executable(minicargo
            )
 
 
-target_include_directories(minicargo PRIVATE  ../../include)
+target_include_directories(minicargo PRIVATE  ../../code/include)
 
 
-target_link_libraries(minicargo )
+target_link_libraries(minicargo toml)
