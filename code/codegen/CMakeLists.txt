@@ -1,5 +1,8 @@
 add_library(codegen
-           CodeGen.cpp
+           CrateBuilder.cpp
+           ToLLVM.cpp
+           PassPipeline.cpp
+           DumpLLVMIR.cpp
            )
 
 
