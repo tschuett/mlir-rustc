@@ -1,5 +1,14 @@
 #include "DumpLLVMIR.h"
 
+#include "mlir/ExecutionEngine/ExecutionEngine.h"
+#include "mlir/ExecutionEngine/OptUtils.h"
+#include "mlir/Target/LLVMIR/Dialect/LLVMIR/LLVMToLLVMIRTranslation.h"
+#include "mlir/Target/LLVMIR/Export.h"
+
+#include "llvm/IR/Module.h"
+#include "llvm/Support/TargetSelect.h"
+#include "llvm/Support/raw_ostream.h"
+
 namespace rust_compiler {
 
 int dumpLLVMIR(mlir::ModuleOp module) {
@@ -21,7 +30,7 @@ int dumpLLVMIR(mlir::ModuleOp module) {
 
   /// Optionally run an optimization pipeline over the llvm module.
   auto optPipeline = mlir::makeOptimizingTransformer(
-      /*optLevel=*/enableOpt ? 3 : 0, /*sizeLevel=*/0,
+      /*optLevel=*/3, /*sizeLevel=*/0,
       /*targetMachine=*/nullptr);
   if (auto err = optPipeline(llvmModule.get())) {
     llvm::errs() << "Failed to optimize LLVM IR " << err << "\n";
@@ -31,4 +40,4 @@ int dumpLLVMIR(mlir::ModuleOp module) {
   return 0;
 }
 
-}
+} // namespace rust_compiler
