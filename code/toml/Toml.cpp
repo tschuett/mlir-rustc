@@ -1,5 +1,6 @@
 #include "Toml/Toml.h"
 
+#include "Toml/KeyValuePair.h"
 #include "Toml/Lexer.h"
 #include "Toml/Parser.h"
 
@@ -7,7 +8,7 @@
 
 namespace rust_compiler::toml {
 
-void Toml::addKeyValuePair(const std::pair<std::string, std::string> &kv) {
+void Toml::addKeyValuePair(const KeyValuePair &kv) {
   kvs.push_back(kv);
 }
 

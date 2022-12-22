@@ -4,6 +4,10 @@ add_library(toml
            TokenStream.cpp
            Parser.cpp
            Table.cpp
+           Token.cpp
+           InlineTable.cpp
+           Array.cpp
+           KeyValuePair.cpp
            )
 
 

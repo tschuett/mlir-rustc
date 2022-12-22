@@ -1,8 +1,7 @@
 #pragma once
 
-#include <string>
-
 #include <optional>
+#include <string>
 
 namespace rust_compiler::toml {
 
@@ -21,14 +20,16 @@ enum class TokenKind {
 
 class Token {
   TokenKind kind;
-  std::optional<std::string> id;
+  std::string id;
 
 public:
   Token(TokenKind kind) : kind(kind) {}
   Token(TokenKind kind, std::string_view id) : kind(kind), id(id) {}
 
   TokenKind getKind() const { return kind; }
-  std::string getString() const { return *id; } // may crash
+  std::string getString() const { return id; }
+
+  std::string toString();
 };
 
 } // namespace rust_compiler::toml

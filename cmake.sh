@@ -2,4 +2,4 @@
 
 rm CMakeCache.txt
 
-cmake -DLLVM_DIR=/usr/local/opt/llvm  .
+cmake -DCMAKE_BUILD_TYPE=Debug -DLLVM_DIR=/usr/local/opt/llvm  .
