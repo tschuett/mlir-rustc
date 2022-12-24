@@ -13,8 +13,11 @@ void InlineTable::addPair(std::shared_ptr<KeyValuePair> pair) {
 size_t InlineTable::getNrOfTokens() {
   size_t sum = 2; // {}
 
-  for (auto kv : kvs) {
-    sum += kv->getNrOfTokens() + 1; // comma
+  for (unsigned i = 0; i < kvs.size(); ++i) {
+    sum += kvs[i]->getNrOfTokens();
+    if (i + 1 < kvs.size()){
+      sum += 1; // comma
+    }
   }
 
   return sum;

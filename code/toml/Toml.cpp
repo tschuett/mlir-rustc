@@ -20,6 +20,8 @@ std::optional<Toml> readToml(std::string_view file) {
   if (!ts)
     return std::nullopt;
 
+  printf("lexed file\n");
+  
   std::optional<Toml> toml = tryParse(*ts);
 
   if (toml)

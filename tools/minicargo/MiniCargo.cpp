@@ -71,5 +71,7 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  printf("found toml\n");
+  
   return 0;
 }

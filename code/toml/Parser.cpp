@@ -187,6 +187,8 @@ std::optional<Toml> tryParse(TokenStream ts) {
   Toml toml;
   std::span<Token> view = ts.getViewAt(0);
 
+  printf("tryParse %lu\n", view.size());
+
   while (view.size() > 1) {
     printf("view: %lu\n", view.size());
     std::optional<std::string> header = tryParseHeader(view);
@@ -211,6 +213,8 @@ std::optional<Toml> tryParse(TokenStream ts) {
       }
     }
   }
+
+  printf("tryParse failed\n");
 
   return std::nullopt;
 }

@@ -5,7 +5,7 @@
 namespace rust_compiler::toml {
 
 void TokenStream::append(Token tok) {
-  //  tokens.push_back(tok);
+  tokens.push_back(tok);
 }
 
 std::span<Token> TokenStream::getViewAt(size_t offset) {

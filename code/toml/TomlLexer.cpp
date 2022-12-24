@@ -137,7 +137,7 @@ std::optional<TokenStream> tryLexToml(std::string_view toml) {
       toml.remove_prefix(1);
       std::string rest = consumeRestOfLine(toml);
       toml.remove_prefix(rest.length());
-      //ts.append(Token(TokenKind::Hash));
+      // ts.append(Token(TokenKind::Hash));
     } else if (toml.starts_with("[")) {
       toml.remove_prefix(1);
       ts.append(Token(TokenKind::SquareOpen));

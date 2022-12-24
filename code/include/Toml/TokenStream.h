@@ -2,9 +2,8 @@
 
 #include "Toml/Token.h"
 
-#include <vector>
-
 #include <span>
+#include <vector>
 
 namespace rust_compiler::toml {
 
@@ -15,6 +14,8 @@ public:
   void append(Token tok);
 
   std::span<Token> getViewAt(size_t offset);
+
+  size_t getSize() const { return tokens.size(); }
 };
 
 } // namespace rust_compiler::toml
