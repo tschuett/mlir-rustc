@@ -10,6 +10,8 @@ def Mir_AddiOp : Mir_Op<"Addi", []> {
 Each entry in `output` is the mean of the corresponding size `ksize`
 window in `value`. NoMemoryEffect
   }];
+
+  let builders = [];
 }
 
 def Mir_AddfOp : Mir_Op<"Addi", []> {
@@ -19,4 +21,6 @@ def Mir_AddfOp : Mir_Op<"Addi", []> {
 Each entry in `output` is the mean of the corresponding size `ksize`
 window in `value`. NoMemoryEffect
   }];
+
+  let builders = [];
 }

@@ -2,6 +2,9 @@
 
 #include "llvm/Support/TargetSelect.h"
 
+#include "Lexer.h"
+#include "Parser.h"
+
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -18,6 +21,8 @@ int main(int argc, char **argv) {
 
   std::string file = buffer.str();
 
+  TokenStream ts = lex(file);
+  parser(ts);
 
   // Initialize targets first, so that --version shows registered targets.
   llvm::InitializeAllTargets();

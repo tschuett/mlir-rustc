@@ -8,9 +8,7 @@ void Array::addElement(std::string_view element) {
   elements.push_back(std::string(element));
 }
 
-size_t Array::getNrOfTokens() {
-  return elements.size() + elements.size() - 1 + 2;
-}
+size_t Array::getNrOfTokens() { return 2 * elements.size() - 1 + 2; }
 
 std::string Array::toString() {
   std::stringstream s;

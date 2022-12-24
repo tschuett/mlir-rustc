@@ -5,3 +5,5 @@ add_subdirectory(mir)
 add_subdirectory(toml)
 
 add_subdirectory(include)
+
+add_subdirectory(ast)

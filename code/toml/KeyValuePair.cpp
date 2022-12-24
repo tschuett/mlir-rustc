@@ -7,6 +7,13 @@
 
 namespace rust_compiler::toml {
 
+std::optional<std::string> KeyValuePair::getStringVariant() {
+  if (std::holds_alternative<std::string>(value)) {
+    return std::get<std::string>(value);
+  }
+  return std::nullopt;
+}
+
 size_t KeyValuePair::getNrOfTokens() {
 
   if (std::holds_alternative<std::shared_ptr<Value>>(value)) {

@@ -1,21 +1,23 @@
+#include "Opts.inc"
 #include "Toml/Toml.h"
 
 #include "llvm/ADT/StringRef.h"
+#include "llvm/Option/ArgList.h"
 #include "llvm/Option/OptTable.h"
 #include "llvm/Option/Option.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Option/ArgList.h"
 
 #include <fstream>
 #include <sstream>
 #include <string>
 
-#include "Opts.inc"
+#include "Rustc.h"
 
 const std::string PATH = "/Users/schuett/Work/aws_ec2_analyzer/Cargo.toml";
 
 using namespace rust_compiler;
 using namespace rust_compiler::toml;
+using namespace rust_compiler::minicargo;
 
 namespace {
 using namespace llvm::opt;
@@ -55,7 +57,7 @@ int main(int argc, char **argv) {
   llvm::BumpPtrAllocator A;
   llvm::StringSaver Saver{A};
   llvm::opt::InputArgList Args =
-    Tbl.parseArgs(argc, argv, OPT_UNKNOWN, Saver, [&](llvm::StringRef Msg) {
+      Tbl.parseArgs(argc, argv, OPT_UNKNOWN, Saver, [&](llvm::StringRef Msg) {
         llvm::errs() << Msg << '\n';
         std::exit(1);
       });
@@ -72,6 +74,7 @@ int main(int argc, char **argv) {
   }
 
   printf("found toml\n");
-  
+
+  invokeRustC(*toml);
   return 0;
 }

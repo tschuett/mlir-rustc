@@ -3,6 +3,7 @@
 #include "Toml/Value.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <variant>
 
@@ -27,6 +28,9 @@ public:
     value = std::string(_value);
   }
 
+  std::optional<std::string> getStringVariant();
+
+  std::string getKey() const { return key; }
   size_t getNrOfTokens() override;
 
   std::string toString() override;

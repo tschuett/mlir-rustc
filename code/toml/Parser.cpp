@@ -104,16 +104,12 @@ static std::optional<InlineTable> tryParseInlineTable(std::span<Token> tab) {
     while (view.size() > 3) {
       std::optional<KeyValuePair> kv = tryParseKeyValuePair(view);
       if (kv) {
-        printf("found inline key pair: %s\n", kv->toString().c_str());
-        printf("found inline key pair: %lu\n", kv->getNrOfTokens());
         // tokens += kv->getNrOfTokens();
         view = view.subspan(kv->getNrOfTokens());
         table.addPair(std::make_shared<KeyValuePair>(*kv));
         if (view.front().getKind() == TokenKind::BraceClose) { // ?
-          printf("returned table\n");
           return table;
         } else if (view.front().getKind() == TokenKind::Comma) { // ?
-          printf("found comma\n");
           view = view.subspan(1); // Comma
           continue;
           // else if (view.front().getKind() != TokenKind::Comma) { // ?
@@ -156,29 +152,28 @@ static std::optional<std::string> tryParseHeader(std::span<Token> view) {
   return std::nullopt;
 }
 
-static std::optional<std::pair<Table, size_t>>
-tryParseTable(std::span<Token> view) {
+static std::optional<Table> tryParseTable(std::span<Token> view) {
   std::span<Token> tab = view;
   Table table;
-  size_t tokens = 0;
 
   std::optional<std::string> header = tryParseHeader(tab);
   if (not header)
     return std::nullopt;
   table.setHeader(*header);
   tab = tab.subspan(3); // [ string ]
-  tokens += 3;
 
   while (tab.size() > 0) {
     std::optional<KeyValuePair> kv = tryParseKeyValuePair(tab);
     if (kv) {
       tab = tab.subspan(kv->getNrOfTokens()); // 2* string + Equal Token
-      tokens += kv->getNrOfTokens();
       table.addPair(std::make_shared<KeyValuePair>(*kv));
     } else {
-      return std::make_pair<Table, size_t>(std::move(table), std::move(tokens));
+      return table;
     }
   }
+
+  if (tab.size() == 0)
+    return table;
 
   return std::nullopt;
 }
@@ -187,17 +182,13 @@ std::optional<Toml> tryParse(TokenStream ts) {
   Toml toml;
   std::span<Token> view = ts.getViewAt(0);
 
-  printf("tryParse %lu\n", view.size());
-
   while (view.size() > 1) {
-    printf("view: %lu\n", view.size());
     std::optional<std::string> header = tryParseHeader(view);
     if (header) {
-      std::optional<std::pair<Table, size_t>> table = tryParseTable(view);
+      std::optional<Table> table = tryParseTable(view);
       if (table) {
-        std::pair<Table, size_t> tab = *table;
-        toml.addTable(std::make_shared<Table>(std::get<0>(tab)));
-        view = view.subspan(std::get<1>(tab));
+        toml.addTable(std::make_shared<Table>(*table));
+        view = view.subspan(table->getNrOfTokens());
       } else {
         // consume
         printf("no table\n");
@@ -214,7 +205,10 @@ std::optional<Toml> tryParse(TokenStream ts) {
     }
   }
 
-  printf("tryParse failed\n");
+  if (view.size() == 0)
+    return toml;
+
+  printf("tryParse failed: %lu\n", view.size());
 
   return std::nullopt;
 }

@@ -3,6 +3,7 @@
 
 ```console
 > ./cmake.sh
+> make
 ```
 
 

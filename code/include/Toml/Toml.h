@@ -17,6 +17,8 @@ class Toml {
 public:
   void addTable(std::shared_ptr<Table> tab);
   void addKeyValuePair(std::shared_ptr<KeyValuePair> kv);
+
+  std::optional<std::string> getEdition();
 };
 
 extern std::optional<Toml> readToml(std::string_view file);

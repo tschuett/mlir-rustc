@@ -2,7 +2,9 @@
 
 #include "Token.h"
 
+#include <span>
 #include <vector>
+
 namespace rust_compiler {
 
 class TokenStream {
@@ -10,5 +12,7 @@ class TokenStream {
 
 public:
   void append(Token tk);
+  std::span<Token> getAsView() const;
 };
+
 } // namespace rust_compiler

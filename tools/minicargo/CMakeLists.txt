@@ -5,6 +5,7 @@ add_public_tablegen_target(MiniCargoOptsTableGen)
 add_executable(minicargo
            MiniCargo.cpp
            Process.cpp
+           Rustc.cpp
            )
 
 target_include_directories(minicargo PRIVATE  ../../code/include)

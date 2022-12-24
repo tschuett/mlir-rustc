@@ -15,10 +15,8 @@ size_t InlineTable::getNrOfTokens() {
 
   for (unsigned i = 0; i < kvs.size(); ++i) {
     sum += kvs[i]->getNrOfTokens();
-    if (i + 1 < kvs.size()){
-      sum += 1; // comma
-    }
   }
+  sum += kvs.size() - 1; // comma
 
   return sum;
 }
