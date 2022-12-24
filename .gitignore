@@ -57,3 +57,7 @@ code/include/Mir/MirOpsTypes.cpp.inc
 code/include/Mir/MirOpsTypes.h.inc
 tools/minicargo/Opts.inc
 tools/rustc/Opts.inc
+
+.ninja_deps
+.ninja_log
+build.ninja

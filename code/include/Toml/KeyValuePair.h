@@ -1,22 +1,35 @@
 #pragma once
 
-#include "Toml/Array.h"
+#include "Toml/Value.h"
 
+#include <memory>
 #include <string>
-#include <string_view>
 #include <variant>
+
+class Array;
 
 namespace rust_compiler::toml {
 
-class KeyValuePair {
+class KeyValuePair : public Value {
   std::string key;
-  std::variant<std::string, Array> value;
+  std::variant<std::shared_ptr<Value>, std::string> value;
 
 public:
-  KeyValuePair(std::string_view key, std::string_view value)
-    : key(key), value(std::string(value)) {}
+  virtual ~KeyValuePair() = default;
 
-  size_t getNrOfTokens();
+  KeyValuePair(std::string_view _key, std::shared_ptr<Value> _value) {
+    key = _key;
+    value = _value;
+  }
+
+  KeyValuePair(std::string_view _key, std::string_view _value) {
+    key = _key;
+    value = std::string(_value);
+  }
+
+  size_t getNrOfTokens() override;
+
+  std::string toString() override;
 };
 
 } // namespace rust_compiler::toml

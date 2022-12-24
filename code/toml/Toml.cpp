@@ -8,11 +8,11 @@
 
 namespace rust_compiler::toml {
 
-void Toml::addKeyValuePair(const KeyValuePair &kv) {
+void Toml::addTable(std::shared_ptr<Table> tab) { tables.push_back(tab); }
+
+void Toml::addKeyValuePair(std::shared_ptr<KeyValuePair> kv) {
   kvs.push_back(kv);
 }
-
-void Toml::addTable(Table& tab) { tables.push_back(tab); }
 
 std::optional<Toml> readToml(std::string_view file) {
 

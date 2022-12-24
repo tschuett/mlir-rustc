@@ -2,10 +2,37 @@
 
 #include "Toml/KeyValuePair.h"
 
+#include <sstream>
+
 namespace rust_compiler::toml {
 
-void InlineTable::addPair(KeyValuePair &pair) { kvs.push_back(pair); }
+void InlineTable::addPair(std::shared_ptr<KeyValuePair> pair) {
+  kvs.push_back(pair);
+}
 
-size_t InlineTable::getNrOfTokens() {}
+size_t InlineTable::getNrOfTokens() {
+  size_t sum = 2; // {}
+
+  for (auto kv : kvs) {
+    sum += kv->getNrOfTokens() + 1; // comma
+  }
+
+  return sum;
+}
+
+std::string InlineTable::toString() {
+
+  std::stringstream s;
+
+  s << std::string("{");
+
+  for (unsigned i = 0; i < kvs.size(); ++i) {
+    s << kvs[i]->toString();
+    if (i + 1 != kvs.size())
+      s << ", ";
+  }
+
+  return s.str();
+}
 
 } // namespace rust_compiler::toml

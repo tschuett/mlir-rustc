@@ -2,18 +2,20 @@
 
 #include "Toml/KeyValuePair.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace rust_compiler::toml {
 
-class InlineTable {
-  std::vector<KeyValuePair> kvs;
+class InlineTable : public Value {
+  std::vector<std::shared_ptr<KeyValuePair>> kvs;
 
 public:
-  void addPair(KeyValuePair &pair);
+  void addPair(std::shared_ptr<KeyValuePair> pair);
 
-  size_t getNrOfTokens();
+  size_t getNrOfTokens() override;
+  std::string toString() override;
 };
 
 } // namespace rust_compiler::toml

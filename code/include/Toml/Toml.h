@@ -11,11 +11,12 @@ namespace rust_compiler::toml {
 // https://toml.io/en/
 
 class Toml {
-  std::vector<KeyValuePair> kvs;
-  std::vector<Table> tables;
+  std::vector<std::shared_ptr<KeyValuePair>> kvs;
+  std::vector<std::shared_ptr<Table>> tables;
+
 public:
-  void addTable(Table &tab);
-  void addKeyValuePair(const KeyValuePair& kv);
+  void addTable(std::shared_ptr<Table> tab);
+  void addKeyValuePair(std::shared_ptr<KeyValuePair> kv);
 };
 
 extern std::optional<Toml> readToml(std::string_view file);

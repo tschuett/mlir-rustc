@@ -29,7 +29,6 @@ static std::optional<Array> tryParseArray(std::span<Token> tab) {
                  view[1].getKind() == TokenKind::SquareClose) {
         array.addElement(view.front().getString());
         view = view.subspan(2);
-
         return array;
       } else {
         return std::nullopt;
@@ -72,13 +71,20 @@ static std::optional<KeyValuePair> tryParseKeyValuePair(std::span<Token> view) {
         if (inlineTable) {
           pair = pair.subspan(inlineTable->getNrOfTokens());
           // FIXME
+          return KeyValuePair(left,
+                              static_pointer_cast<Value>(
+                                  std::make_shared<InlineTable>(*inlineTable)));
         } else {
+          // FIXME
+          return std::nullopt;
         }
       } else if (pair.front().getKind() == TokenKind::SquareOpen) {
         std::optional<Array> array = tryParseArray(pair);
         if (array) {
+          return KeyValuePair(left, static_pointer_cast<Value>(
+                                        std::make_shared<Array>(*array)));
         }
-        // FIXME
+        return std::nullopt;
       }
     }
   }
@@ -88,7 +94,7 @@ static std::optional<KeyValuePair> tryParseKeyValuePair(std::span<Token> view) {
 static std::optional<InlineTable> tryParseInlineTable(std::span<Token> tab) {
   std::span<Token> view = tab;
   InlineTable table;
-  //size_t tokens = 0;
+  // size_t tokens = 0;
 
   if (view.size() < 3)
     return std::nullopt;
@@ -98,26 +104,35 @@ static std::optional<InlineTable> tryParseInlineTable(std::span<Token> tab) {
     while (view.size() > 3) {
       std::optional<KeyValuePair> kv = tryParseKeyValuePair(view);
       if (kv) {
-        //tokens += kv->getNrOfTokens();
+        printf("found inline key pair: %s\n", kv->toString().c_str());
+        printf("found inline key pair: %lu\n", kv->getNrOfTokens());
+        // tokens += kv->getNrOfTokens();
         view = view.subspan(kv->getNrOfTokens());
-        table.addPair(*kv);
+        table.addPair(std::make_shared<KeyValuePair>(*kv));
         if (view.front().getKind() == TokenKind::BraceClose) { // ?
+          printf("returned table\n");
           return table;
         } else if (view.front().getKind() == TokenKind::Comma) { // ?
-          view = view.subspan(1);                                // Comma
-        } else if (view.front().getKind() != TokenKind::Comma) { // ?
-          return std::nullopt;
+          printf("found comma\n");
+          view = view.subspan(1); // Comma
+          continue;
+          // else if (view.front().getKind() != TokenKind::Comma) { // ?
+          // printf("found gave up: %s\n", view[0].toString().c_str());
+          // return std::nullopt;
         }
       } else if (view.front().getKind() == TokenKind::BraceClose) {
-        //tokens += 1; // Brace close
+        // tokens += 1; // Brace close
         return table;
       } else {
+        printf("inline failed because %s \n", view[0].toString().c_str());
         return std::nullopt;
       }
     }
 
+    printf("inline failed2 because %s \n", view[0].toString().c_str());
     return std::nullopt;
   } else {
+    printf("inline failed3 because %s \n", view[0].toString().c_str());
     return std::nullopt;
   }
 }
@@ -159,7 +174,7 @@ tryParseTable(std::span<Token> view) {
     if (kv) {
       tab = tab.subspan(kv->getNrOfTokens()); // 2* string + Equal Token
       tokens += kv->getNrOfTokens();
-      table.addPair(*kv);
+      table.addPair(std::make_shared<KeyValuePair>(*kv));
     } else {
       return std::make_pair<Table, size_t>(std::move(table), std::move(tokens));
     }
@@ -179,7 +194,7 @@ std::optional<Toml> tryParse(TokenStream ts) {
       std::optional<std::pair<Table, size_t>> table = tryParseTable(view);
       if (table) {
         std::pair<Table, size_t> tab = *table;
-        toml.addTable(std::get<0>(tab));
+        toml.addTable(std::make_shared<Table>(std::get<0>(tab)));
         view = view.subspan(std::get<1>(tab));
       } else {
         // consume
@@ -189,7 +204,7 @@ std::optional<Toml> tryParse(TokenStream ts) {
       std::optional<KeyValuePair> pair = tryParseKeyValuePair(view);
       if (pair) {
         view = view.subspan(pair->getNrOfTokens()); // 2*string + Equal Token
-        toml.addKeyValuePair(*pair);
+        toml.addKeyValuePair(std::make_shared<KeyValuePair>(*pair));
       } else {
         printf("no pair: %s\n", view[0].toString().c_str());
         printf("no pair: %s\n", view[1].toString().c_str());
