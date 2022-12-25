@@ -24,3 +24,23 @@ window in `value`. NoMemoryEffect
 
   let builders = [];
 }
+
+def FuncOp : Mir_Op<"func", [
+    DeclareOpInterfaceMethods<CallableOpInterface>, FunctionOpInterface,
+    IsolatedFromAbove, Symbol
+  ]> {
+   let summary = "user defined function operation";
+   let description = [{
+   }];
+   let extraClassDeclaration = [{
+    //===------------------------------------------------------------------===//
+    // FunctionOpInterface Methods
+    //===------------------------------------------------------------------===//
+
+    /// Returns the argument types of this function.
+    ArrayRef<Type> getArgumentTypes() { return getFunctionType().getInputs(); }
+
+    /// Returns the result types of this function.
+    ArrayRef<Type> getResultTypes() { return getFunctionType().getResults(); }
+  }];
+}

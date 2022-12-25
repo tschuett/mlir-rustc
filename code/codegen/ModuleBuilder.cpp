@@ -10,10 +10,11 @@
 namespace rust_compiler {
 
 void ModuleBuilder::build(std::shared_ptr<ast::Module> mod) {
-  mlir::MLIRContext context;
-  context.getOrLoadDialect<mlir::mir::Mir::MirDialect>();
-
-  mlir::OwningOpRef<mlir::ModuleOp> module;
+  for (auto f : mod->getFuncs()) {
+    buildFun(f);
+  }
 }
+
+void ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {}
 
 } // namespace rust_compiler
