@@ -39,6 +39,9 @@ public:
   Token(TokenKind tk, std::string_view id) : kind(tk), s(id){};
 
   TokenKind getKind() const { return kind; }
+
+  bool isUseToken() const;
+  bool isPubToken() const;
 };
 
 } // namespace rust_compiler

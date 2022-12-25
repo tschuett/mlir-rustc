@@ -1,9 +1,24 @@
 include "llvm/Option/OptParser.td"
 
 
-class F<string name, string help> : Flag<["-"], name>, HelpText<help>;
-class Arg<string name, string help> : Separate<["-"], name>, HelpText<help>;
+multiclass B<string name, string help1, string help2> {
+  def NAME: Flag<["--"], name>, HelpText<help1>;
+  def no_ # NAME: Flag<["--"], "no-" # name>, HelpText<help2>;
+}
+
+multiclass Eq<string name, string help> {
+  def NAME : Separate<["--"], name>;
+  def NAME #_eq : Joined<["--"], name #"=">,
+                  Alias<!cast<Separate>(NAME)>,
+                  HelpText<help>;
+}
 
 def help : Flag<["--"], "help">, HelpText<"Display this help">;
 def version : Flag<["--"], "version">, HelpText<"Display the version">;
 
+
+def edition_EQ : Joined<["--"], "edition=">,
+  HelpText<"Rust edition">;
+
+def path_EQ : Joined<["--"], "path=">,
+  HelpText<"Path to Cargo.toml directory">;

@@ -4,6 +4,7 @@ add_public_tablegen_target(RustCOptsTableGen)
 
 add_executable(rustc
            RustC.cpp
+           CrateBuilder.cpp
            )
 
 

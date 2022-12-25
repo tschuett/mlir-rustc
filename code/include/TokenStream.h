@@ -12,7 +12,7 @@ class TokenStream {
 
 public:
   void append(Token tk);
-  std::span<Token> getAsView() const;
+  std::span<Token> getAsView();
 };
 
 } // namespace rust_compiler
