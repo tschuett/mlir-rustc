@@ -1,5 +1,5 @@
 add_library(codegen
-           CrateBuilder.cpp
+           ModuleBuilder.cpp
            ToLLVM.cpp
            PassPipeline.cpp
            DumpLLVMIR.cpp
@@ -10,4 +10,5 @@ add_library(codegen
 target_include_directories(codegen PRIVATE  ../include)
 
 
-target_link_libraries(codegen Mir)
+add_dependencies(codegen MirOpsIncGen)
+target_link_libraries(codegen MirDialect )

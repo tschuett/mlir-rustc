@@ -6,10 +6,11 @@
 
 namespace rust_compiler {
 
+class ModuleBuilder {
+  std::string moduleName;
 
-class CrateBuilder {
 public:
-  CrateBuilder(std::string_view moduleName);
+ ModuleBuilder(std::string_view moduleName) : moduleName(moduleName) {};
 
   void build(std::shared_ptr<ast::Module> m);
 };

@@ -90,5 +90,5 @@ int main(int argc, char **argv) {
 
   llvm::outs() << "path :" << *path << '\n';
 
-  minicargo::buildCrate(*path, edition);
+  rust_compiler::rustc::buildCrate(*path, edition);
 }

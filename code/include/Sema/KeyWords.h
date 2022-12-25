@@ -60,8 +60,8 @@ enum class KeyWordKind {
   KW_TRY
 };
 
- extern std::optional<std::string> KeyWord2String(KeyWordKind);
+extern std::optional<std::string> KeyWord2String(KeyWordKind);
 
 extern std::optional<KeyWordKind> isKeyWord(std::string_view identifier);
- 
+
 } // namespace rust_compiler::sema

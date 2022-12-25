@@ -48,13 +48,17 @@ tools/minicargo/minicargo
 tools/rustc/rustc
 tablegen_compile_commands.yml
 
-
+code/include/Mir/MirDialect.cpp.inc
+code/include/Mir/MirDialect.h.inc
 code/include/Mir/MirOps.cpp.inc
 code/include/Mir/MirOps.h.inc
-code/include/Mir/MirOpsDialect.cpp.inc
-code/include/Mir/MirOpsDialect.h.inc
-code/include/Mir/MirOpsTypes.cpp.inc
-code/include/Mir/MirOpsTypes.h.inc
+
+#code/include/Mir/MirOps.cpp.inc
+#code/include/Mir/MirOps.h.inc
+#code/include/Mir/MirOpsDialect.cpp.inc
+#code/include/Mir/MirOpsDialect.h.inc
+#code/include/Mir/MirOpsTypes.cpp.inc
+#code/include/Mir/MirOpsTypes.h.inc
 tools/minicargo/Opts.inc
 tools/rustc/Opts.inc
 

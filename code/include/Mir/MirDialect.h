@@ -9,7 +9,7 @@
 #include "mlir/Interfaces/CastInterfaces.h"
 #include "mlir/Interfaces/SideEffectInterfaces.h"
 
-#include "MirOpsDialect.h.inc"
+#include "MirDialect.h.inc"
 
 #define GET_OP_CLASSES
 #include "MirOps.h.inc"

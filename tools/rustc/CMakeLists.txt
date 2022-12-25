@@ -15,4 +15,4 @@ add_dependencies(rustc RustCOptsTableGen)
 llvm_map_components_to_libnames(llvm_libs Option)
 
 
-target_link_libraries(rustc lexer parser codegen MLIRAsmParser ${llvm_libs})
+target_link_libraries(rustc lexer parser sema MirDialect codegen MLIRAsmParser ${llvm_libs})

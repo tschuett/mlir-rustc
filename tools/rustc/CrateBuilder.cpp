@@ -1,7 +1,9 @@
 #include "CrateBuilder.h"
 
 #include "Lexer.h"
+#include "ModuleBuilder.h"
 #include "Parser.h"
+#include "Sema/Sema.h"
 
 #include "llvm/Support/MemoryBuffer.h"
 
@@ -10,7 +12,7 @@
 #include <llvm/Support/Path.h>
 #include <sstream>
 
-namespace rust_compiler::minicargo {
+namespace rust_compiler::rustc {
 
 void buildCrate(std::string_view path, std::string_view edition) {
 
@@ -38,7 +40,13 @@ void buildCrate(std::string_view path, std::string_view edition) {
   //  std::string file = buffer.str();
 
   TokenStream ts = lex(str);
-  parser(ts, "");
+  std::shared_ptr<ast::Module> module = parser(ts, "");
+
+  sema::analyzeSemantics(module);
+
+  rust_compiler::ModuleBuilder mb = {"lib"};
+
+  mb.build(module);
 }
 
-} // namespace rust_compiler::minicargo
+} // namespace rust_compiler::rustc

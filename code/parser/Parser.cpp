@@ -10,8 +10,7 @@ namespace rust_compiler {
 
 using namespace rust_compiler::ast;
 
-void parser(TokenStream &ts, std::string_view path) {
-
+std::shared_ptr<ast::Module> parser(TokenStream &ts, std::string_view path) {
   Module module = {path};
 
   std::span<Token> tokens = ts.getAsView();
@@ -25,6 +24,8 @@ void parser(TokenStream &ts, std::string_view path) {
       }
     }
   }
+
+  return std::make_shared<ast::Module>(module);
 }
 
 } // namespace rust_compiler
