@@ -3,6 +3,9 @@
 #include "AST/AST.h"
 #include "AST/Item.h"
 
+#include <string>
+#include <string_view>
+
 namespace rust_compiler::ast {
 
 class Module : public Node {
@@ -12,7 +15,9 @@ class Module : public Node {
 public:
   Module(std::string_view path) : path(path){};
 
-  void addItem(std::shared_ptr<Item>& item);
+  void addItem(std::shared_ptr<Item> &item);
+
+  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

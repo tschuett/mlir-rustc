@@ -7,3 +7,4 @@ add_subdirectory(toml)
 add_subdirectory(include)
 
 add_subdirectory(ast)
+add_subdirectory(sema)

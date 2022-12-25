@@ -42,6 +42,10 @@ public:
 
   bool isUseToken() const;
   bool isPubToken() const;
+  bool isCrateToken() const;
+  bool isSelfToken() const;
+  bool isSuperToken() const;
+  bool isInToken() const;
 };
 
 } // namespace rust_compiler

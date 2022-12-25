@@ -1,5 +1,8 @@
 add_library(ast
            OuterAttribute.cpp
+           Module.cpp
+           InnerAttribute.cpp
+           UseDeclaration.cpp
            )
 
 

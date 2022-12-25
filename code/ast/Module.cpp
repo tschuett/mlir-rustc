@@ -1,8 +1,8 @@
-#include "AST/OuterAttribute.h"
+#include "AST/Module.h"
 
 namespace rust_compiler::ast {
 
-size_t OuterAttribute::getTokens() {
+size_t Module::getTokens() {
   return 3; //  +  FIXME
 }
 

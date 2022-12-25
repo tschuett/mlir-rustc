@@ -2,9 +2,11 @@
 
 #include "AST/AST.h"
 
+#include <cstddef>
+
 namespace rust_compiler::ast {
 
-class InnerAttribute : public Node {
+class SimplePath : public Node {
 public:
   size_t getTokens() override;
 };

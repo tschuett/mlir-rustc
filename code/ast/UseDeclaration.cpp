@@ -1,8 +1,8 @@
-#include "AST/OuterAttribute.h"
+#include "AST/UseDeclaration.h"
 
 namespace rust_compiler::ast {
 
-size_t OuterAttribute::getTokens() {
+size_t UseDeclaration::getTokens() {
   return 3; //  +  FIXME
 }
 
