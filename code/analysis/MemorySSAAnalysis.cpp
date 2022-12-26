@@ -12,6 +12,25 @@ struct Meminfo {
 };
 } // namespace
 
+auto hasMemEffect(mlir::Operation &op) {
+  struct Result {
+    bool read = false;
+    bool write = false;
+  };
+
+  Result ret;
+  if (auto effects = mlir::dyn_cast<mlir::MemoryEffectOpInterface>(op)) {
+    if (effects.hasEffect<mlir::MemoryEffects::Write>())
+      ret.write = true;
+
+    if (effects.hasEffect<mlir::MemoryEffects::Read>())
+      ret.read = true;
+  } else if (op.hasTrait<mlir::OpTrait::HasRecursiveSideEffects>()) {
+    ret.write = true;
+  }
+  return ret;
+}
+
 static std::optional<Meminfo> getMeminfo(mlir::Operation *op) {
   assert(nullptr != op);
   if (auto load = mlir::dyn_cast<mlir::memref::LoadOp>(op))

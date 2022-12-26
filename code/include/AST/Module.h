@@ -1,19 +1,19 @@
 #pragma once
 
 #include "AST/AST.h"
-#include "AST/Item.h"
 #include "AST/Function.h"
+#include "AST/Item.h"
 
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <span>
 
 namespace rust_compiler::ast {
 
 class Module : public Node {
   std::string path;
-  // std::vector<Item> items;
+  std::vector<std::shared_ptr<Item>> items;
   std::vector<std::shared_ptr<Function>> funs;
 
 public:
@@ -26,7 +26,6 @@ public:
   size_t getTokens() override;
 
   std::span<std::shared_ptr<Function>> getFuncs();
-
 };
 
 } // namespace rust_compiler::ast

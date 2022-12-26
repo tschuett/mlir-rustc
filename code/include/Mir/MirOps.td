@@ -12,6 +12,8 @@ window in `value`. NoMemoryEffect
   }];
 
   let builders = [];
+
+  let hasVerifier = 1;
 }
 
 def Mir_AddfOp : Mir_Op<"Addi", []> {
@@ -22,7 +24,10 @@ Each entry in `output` is the mean of the corresponding size `ksize`
 window in `value`. NoMemoryEffect
   }];
 
+
   let builders = [];
+
+  let hasVerifier = 1;
 }
 
 def FuncOp : Mir_Op<"func", [

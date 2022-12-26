@@ -4,7 +4,7 @@
 
 namespace rust_compiler::ast {
 
-class InnerAttribute : public Item {
+class ClippyAttribute : public Item {
 public:
   size_t getTokens() override;
 };
