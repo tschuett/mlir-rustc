@@ -19,9 +19,9 @@ class Module : public Node {
 public:
   Module(std::string_view path) : path(path){};
 
-  void addItem(std::shared_ptr<Item> &item);
+  void addItem(std::shared_ptr<Item> item);
 
-  void addFunction(std::shared_ptr<Function> &func);
+  void addFunction(std::shared_ptr<Function> func);
 
   size_t getTokens() override;
 

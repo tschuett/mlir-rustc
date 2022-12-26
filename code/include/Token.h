@@ -27,7 +27,12 @@ enum class TokenKind {
   BraceClose,
   Amp,
   DoubleAmp,
-  String, Pipe, Star, Dash, Char, Plus
+  String,
+  Pipe,
+  Star,
+  Dash,
+  Char,
+  Plus
 };
 
 class Token {
@@ -46,6 +51,8 @@ public:
   bool isSelfToken() const;
   bool isSuperToken() const;
   bool isInToken() const;
+
+  std::string getIdentifier() const { return s; }
 };
 
 } // namespace rust_compiler
