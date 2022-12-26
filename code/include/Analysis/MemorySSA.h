@@ -12,12 +12,12 @@ class Region;
 
 namespace rust_compiler::analysis {
 
+class Node;
+
+enum class NodeType { Root, Def, Use, Phi, Term };
+
 class MemorySSA {
 public:
-  struct Node;
-
-  enum class NodeType { Root, Def, Use, Phi, Term };
-
   MemorySSA() = default;
   MemorySSA(const MemorySSA &) = delete;
   MemorySSA(MemorySSA &&) = default;
