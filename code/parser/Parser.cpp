@@ -59,14 +59,16 @@ std::shared_ptr<ast::Module> parser(TokenStream &ts, std::string_view path) {
             if (tokens[3].getIdentifier() == "warn" or
                 tokens[3].getIdentifier() == "allow" or
                 tokens[3].getIdentifier() == "deny") {
-              std::optional<ClippyAttribute> attribute =
-                  tryParseClippyAttribute(tokens);
-              if (attribute) {
-                ClippyAttribute attr = *attribute;
-                tokens = tokens.subspan(attr.getTokens());
-                std::shared_ptr<Item> item = std::static_pointer_cast<Item>(
-                    std::make_shared<ClippyAttribute>(attr));
-                module.addItem(item);
+              if (tokens[4].getKind() == TokenKind::ParenOpen) {
+                std::optional<ClippyAttribute> attribute =
+                    tryParseClippyAttribute(tokens);
+                if (attribute) {
+                  ClippyAttribute attr = *attribute;
+                  tokens = tokens.subspan(attr.getTokens());
+                  std::shared_ptr<Item> item = std::static_pointer_cast<Item>(
+                      std::make_shared<ClippyAttribute>(attr));
+                  module.addItem(item);
+                }
               }
             }
           }

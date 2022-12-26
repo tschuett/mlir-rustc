@@ -1,5 +1,6 @@
 #include "Attributes.h"
 
+#include "AST/ClippyAttribute.h"
 #include "AST/InnerAttribute.h"
 #include "Token.h"
 
@@ -97,21 +98,27 @@ std::optional<ClippyAttribute>
 tryParseClippyAttribute(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
-  if (tokens.front().getKind() == TokenKind::Hash) {
-    if (tokens[1].getKind() == TokenKind::Exclaim) {
-      if (tokens[2].getKind() == TokenKind::SquareOpen) {
-        if (tokens[3].getKind() == TokenKind::Identifier) {
-          if (tokens[3].getIdentifier() == "warn" or
-              tokens[3].getIdentifier() == "allow" or
-              tokens[3].getIdentifier() == "deny") {
-            view = view.subspan(4);
-            std::vector<std::string> lints;
-            do {
-              std::optional<std::string> lint = tryParseLint(view);
-              if (lint) {
-                lints.push_back(*lint);
+  if (view.front().getKind() == TokenKind::Hash) {
+    if (view[1].getKind() == TokenKind::Exclaim) {
+      if (view[2].getKind() == TokenKind::SquareOpen) {
+        if (view[3].getKind() == TokenKind::Identifier) {
+          if (view[3].getIdentifier() == "warn" or
+              view[3].getIdentifier() == "allow" or
+              view[3].getIdentifier() == "deny") {
+            if (view[4].getKind() == TokenKind::ParenOpen) {
+              view = view.subspan(5);
+              std::vector<std::string> lints;
+              while (view.size() > 1) {
+                std::optional<std::string> lint = tryParseLint(view);
+                if (lint) {
+                  lints.push_back(*lint);
+                  view = view.subspan(1);
+                } else if (view.front().getKind() == TokenKind::Comma) {
+                  printf("found clippy\n");
+                  return ClippyAttribute(lints);
+                }
               }
-            } while (view.front().getKind() != TokenKind::Comma);
+            }
           }
         }
       }
