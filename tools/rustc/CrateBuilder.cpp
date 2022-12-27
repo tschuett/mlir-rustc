@@ -4,12 +4,12 @@
 #include "ModuleBuilder.h"
 #include "Parser.h"
 #include "Sema/Sema.h"
-
 #include "llvm/Support/MemoryBuffer.h"
 
 #include <fstream>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Path.h>
+#include <llvm/Support/raw_ostream.h>
 #include <sstream>
 
 namespace rust_compiler::rustc {
@@ -44,7 +44,12 @@ void buildCrate(std::string_view path, std::string_view edition) {
 
   sema::analyzeSemantics(module);
 
-  rust_compiler::ModuleBuilder mb = {"lib"};
+  std::string fn = "lib.yaml";
+
+  std::error_code EC;
+  llvm::raw_fd_stream stream = {fn, EC};
+
+  rust_compiler::ModuleBuilder mb = {"lib", stream};
 
   mb.build(module);
 }

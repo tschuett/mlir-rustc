@@ -3,13 +3,14 @@
 #include "AST/Module.h"
 #include "Mir/MirDialect.h"
 
-#include "mlir/IR/Attributes.h"
-#include "mlir/IR/Builders.h"
-#include "mlir/IR/BuiltinOps.h"
-#include "mlir/IR/BuiltinTypes.h"
-#include "mlir/IR/MLIRContext.h"
-#include "mlir/IR/Verifier.h"
-
+#include <llvm/Remarks/YAMLRemarkSerializer.h>
+#include <llvm/Support/raw_ostream.h>
+#include <mlir/IR/Attributes.h>
+#include <mlir/IR/Builders.h>
+#include <mlir/IR/BuiltinOps.h>
+#include <mlir/IR/BuiltinTypes.h>
+#include <mlir/IR/MLIRContext.h>
+#include <mlir/IR/Verifier.h>
 #include <string_view>
 
 namespace rust_compiler {
@@ -20,10 +21,12 @@ class ModuleBuilder {
   mlir::OwningOpRef<mlir::ModuleOp> module;
   mlir::OpBuilder builder;
   mlir::ModuleOp theModule;
+  llvm::remarks::YAMLRemarkSerializer serializer;
 
 public:
-  ModuleBuilder(std::string_view moduleName)
-      : moduleName(moduleName), context(), builder(&context) {
+  ModuleBuilder(std::string_view moduleName, llvm::raw_ostream &OS)
+      : moduleName(moduleName), context(), builder(&context),
+        serializer(OS, llvm::remarks::SerializerMode::Separate) {
     context.getOrLoadDialect<mlir::mir::Mir::MirDialect>();
     theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
   };
