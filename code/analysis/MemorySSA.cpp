@@ -11,6 +11,7 @@
 
 namespace rust_compiler::analysis {
 
+
 /// a and b must be memrefs
 std::optional<mlir::AliasResult> MemorySSA::mayAlias(mlir::Operation *a,
                                                      mlir::Operation *b) {
@@ -66,8 +67,7 @@ void MemorySSA::analyzeFunction(mlir::Operation *funcOp) {
   if (auto fun = mlir::dyn_cast<mlir::FunctionOpInterface>(funcOp)) {
     for (auto &bblock : fun.getBlocks()) {
       for (auto &op : bblock.getOperations()) {
-        /*auto mem =*/ hasMemEffect(op);
-
+        /*auto mem =*/hasMemEffect(op);
       }
     }
   }
@@ -79,7 +79,7 @@ void MemorySSA::findFunctionOps() {
   for (auto &bblock : body.getBlocks()) {
     for (auto &op : bblock.getOperations()) {
       if (isFunction(op)) {
-        //functionOps.push_back(op);
+        // functionOps.push_back(op);
       }
     }
   }
