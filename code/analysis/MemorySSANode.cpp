@@ -1,4 +1,4 @@
-#include "MemorySSANode.h"
+#include "Analysis/MemorySSA/Node.h"
 
 namespace rust_compiler::analysis {
 

@@ -1,7 +1,14 @@
 #pragma once
 
+#include "Analysis/MemorySSA/NodeType.h"
+#include "Analysis/MemorySSA/Node.h"
+#include "Analysis/MemorySSA/NodesIterator.h"
+
 #include <iterator>
 #include <llvm/ADT/ArrayRef.h>
+#include <llvm/ADT/DenseMap.h>
+#include <llvm/ADT/simple_ilist.h>
+#include <llvm/Support/Allocator.h>
 #include <optional>
 
 namespace mlir {
@@ -11,10 +18,6 @@ class Region;
 } // namespace mlir
 
 namespace rust_compiler::analysis {
-
-class Node;
-
-enum class NodeType { Root, Def, Use, Phi, Term };
 
 class MemorySSA {
 public:
@@ -45,6 +48,12 @@ public:
 private:
   Node *root = nullptr;
   Node *term = nullptr;
+  llvm::DenseMap<mlir::Operation *, Node *> nodesMap;
+  llvm::BumpPtrAllocator allocator;
+  llvm::simple_ilist<Node> nodes;
+
+  Node *createNode(mlir::Operation *op, NodeType type,
+                   llvm::ArrayRef<Node *> args);
 };
 
 std::optional<MemorySSA> buildMemorySSA(::mlir::Region &region);

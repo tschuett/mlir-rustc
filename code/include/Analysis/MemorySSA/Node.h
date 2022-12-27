@@ -1,11 +1,13 @@
 #pragma once
 
-#include "Analysis/MemorySSA.h"
+#include "Analysis/MemorySSA/NodeType.h"
 
 #include <llvm/ADT/simple_ilist.h>
 #include <mlir/Interfaces/ControlFlowInterfaces.h>
 #include <mlir/Interfaces/LoopLikeInterface.h>
 #include <mlir/Interfaces/SideEffectInterfaces.h>
+
+#include <cassert>
 
 namespace rust_compiler::analysis {
 

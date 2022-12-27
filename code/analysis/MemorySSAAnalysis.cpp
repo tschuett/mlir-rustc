@@ -1,9 +1,8 @@
-#include "Analysis/MemorySSAAnalysis.h"
-
-#include "mlir/IR/Operation.h"
+#include "Analysis/MemorySSA/MemorySSAAnalysis.h"
 
 #include <mlir/Analysis/AliasAnalysis.h>
 #include <mlir/Dialect/MemRef/IR/MemRef.h>
+#include <mlir/IR/Operation.h>
 
 namespace {
 struct Meminfo {

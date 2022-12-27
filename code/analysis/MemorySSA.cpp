@@ -1,6 +1,6 @@
-#include "Analysis/MemorySSA.h"
+#include "Analysis/MemorySSA/MemorySSA.h"
 
-#include "MemorySSANode.h"
+#include "Analysis/MemorySSA/Node.h"
 
 #include "llvm/ADT/STLExtras.h"
 
