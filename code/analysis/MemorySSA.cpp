@@ -1,14 +1,46 @@
 #include "Analysis/MemorySSA/MemorySSA.h"
 
-#include "Analysis/MemorySSA/Node.h"
+#include "Analysis/MemorySSA/MemorySSAWalker.h"
 
-#include "llvm/ADT/STLExtras.h"
-
+#include <mlir/Dialect/MemRef/IR/MemRef.h>
+#include <mlir/IR/FunctionInterfaces.h>
 #include <mlir/Interfaces/ControlFlowInterfaces.h>
 #include <mlir/Interfaces/LoopLikeInterface.h>
 #include <mlir/Interfaces/SideEffectInterfaces.h>
+#include <optional>
 
 namespace rust_compiler::analysis {
+
+/// a and b must be memrefs
+std::optional<mlir::AliasResult> MemorySSA::mayAlias(mlir::Operation *a,
+                                                     mlir::Operation *b) {
+  mlir::Value valueA;
+  mlir::Value valueB;
+  if (auto load = mlir::dyn_cast<mlir::memref::LoadOp>(a))
+    valueA = load.memref();
+  else if (auto store = mlir::dyn_cast<mlir::memref::StoreOp>(a))
+    valueA = store.memref();
+  else
+    return std::nullopt;
+
+  if (auto load = mlir::dyn_cast<mlir::memref::LoadOp>(b))
+    valueB = load.memref();
+  else if (auto store = mlir::dyn_cast<mlir::memref::StoreOp>(b))
+    valueB = store.memref();
+  else
+    return std::nullopt;
+
+  mlir::AliasResult res = aliasAnalysis->alias(valueA, valueB);
+
+  return res;
+}
+
+bool MemorySSA::isFunction(mlir::Operation &op) {
+  if (auto effects = mlir::dyn_cast<mlir::FunctionOpInterface>(op)) {
+    return true;
+  }
+  return false;
+}
 
 static auto hasMemEffect(mlir::Operation &op) {
   struct Result {
@@ -26,50 +58,46 @@ static auto hasMemEffect(mlir::Operation &op) {
   } else if (op.hasTrait<mlir::OpTrait::HasRecursiveSideEffects>()) {
     ret.write = true;
   }
+
   return ret;
 }
 
-Node *memSSAProcessRegion(mlir::Region &region, Node *entryNode,
-                          MemorySSA &memSSA) {
-  assert(nullptr != entryNode);
-  // Only structured control flow is supported for now
-  if (!llvm::hasSingleElement(region))
-    return nullptr;
+void MemorySSA::analyzeFunction(mlir::Operation *funcOp) {
+  if (auto fun = mlir::dyn_cast<mlir::FunctionOpInterface>(funcOp)) {
+    for (auto &bblock : fun.getBlocks()) {
+      for (auto &op : bblock.getOperations()) {
+        /*auto mem =*/ hasMemEffect(op);
 
-  auto &block = region.front();
-  Node *currentNode = entryNode;
-  for (auto &op : block) {
-    if (!op.getRegions().empty()) {
-      if (auto loop = mlir::dyn_cast<mlir::LoopLikeOpInterface>(op)) {
-      } else if (auto branchReg =
-                     mlir::dyn_cast<mlir::RegionBranchOpInterface>(op)) {
       }
-    } else {
-      auto res = hasMemEffect(op);
-      if (res.write) {
-        auto newNode = memSSA.createDef(&op, currentNode);
-        newNode->setDominator(currentNode);
-        currentNode->setPostDominator(newNode);
-        currentNode = newNode;
-      }
-      if (res.read)
-        memSSA.createUse(&op, currentNode);
     }
   }
-
-  return nullptr;
 }
 
-std::optional<MemorySSA> buildMemorySSA(::mlir::Region &region) {
-  MemorySSA ret;
-  if (auto last = memSSAProcessRegion(region, ret.getRoot(), ret)) {
-    ret.getTerm()->setArgument(0, last);
-  } else {
-    return std::nullopt;
+void MemorySSA::findFunctionOps() {
+  mlir::Region &body = module.getBodyRegion();
+
+  for (auto &bblock : body.getBlocks()) {
+    for (auto &op : bblock.getOperations()) {
+      if (isFunction(op)) {
+        //functionOps.push_back(op);
+      }
+    }
   }
-  return std::move(ret);
+}
+
+MemorySSAWalker *MemorySSA::buildMemorySSA() {
+  if (Walker)
+    return Walker;
+
+  findFunctionOps();
+
+  for (mlir::Operation *funcOp : functionOps) {
+    analyzeFunction(funcOp);
+  }
+
+  Walker = new MemorySSAWalker(this);
+
+  return Walker;
 }
 
 } // namespace rust_compiler::analysis
-
-// https://discourse.llvm.org/t/upstreaming-from-our-mlir-python-compiler-project/64931/4

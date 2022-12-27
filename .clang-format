@@ -3,11 +3,11 @@ IncludeBlocks: Regroup
 IncludeCategories:
   - Regex:           '^<'
     Priority:        6
-  - Regex:           '^"(llvm|llvm-c)/'
+  - Regex:           '^<(llvm|llvm-c)/'
     Priority:        5
-  - Regex:           '^"(clang|clang-c)/'
+  - Regex:           '^<(clang|clang-c)/'
     Priority:        4
-  - Regex:           '^"(mlir|mlir-c)/'
+  - Regex:           '^<(mlir|mlir-c)/'
     Priority:        3
   - Regex:           '^"\.\./'
     Priority:        2
