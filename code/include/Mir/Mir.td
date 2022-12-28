@@ -4,8 +4,6 @@ include "mlir/Interfaces/CallInterfaces.td"
 include "mlir/Interfaces/CastInterfaces.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 include "mlir/IR/OpBase.td"
-include "mlir/IR/AttrTypeBase.td"
-include "mlir/IR/DialectBase.td"
 
 def Mir_Dialect : Dialect {
   let name = "mir";
@@ -13,7 +11,7 @@ def Mir_Dialect : Dialect {
   let description = [{
     Top-level dialect for Mir.
 
-    This dialect tries to reprent the MIR dialect of rustc.
+    This dialect tries to reprsent the MIR dialect of rustc.
 
   }];
 
@@ -101,3 +99,31 @@ def FuncOp : Mir_Op<"func", [
 }
 
 
+// CallOp
+
+def GenericCallOp : Mir_Op<"generic_call",
+    [DeclareOpInterfaceMethods<CallOpInterface>]> {
+  let summary = "generic call operation";
+  let description = [{
+    Generic calls represent calls to a user defined function that needs to
+    be specialized for the shape of its arguments. The callee name is attached
+    as a symbol reference via an attribute. The arguments list must match the
+    arguments expected by the callee.
+  }];
+
+  // The generic call operation takes a symbol reference attribute as the
+  // callee, and inputs for the call.
+  let arguments = (ins FlatSymbolRefAttr:$callee, Variadic<Mir_Type>:$inputs);
+
+  let results = (outs Mir_Type);
+
+  // Specialize assembly printing and parsing using a declarative format.
+  let assemblyFormat = [{
+    $callee `(` $inputs `)` attr-dict `:` functional-type($inputs, results)
+  }];
+
+  // Add custom build methods for the generic call operation.
+  let builders = [
+    OpBuilder<(ins "StringRef":$callee, "ArrayRef<Value>":$arguments)>
+  ];
+}
