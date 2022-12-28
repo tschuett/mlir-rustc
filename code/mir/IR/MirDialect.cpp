@@ -5,11 +5,12 @@
 #include "mlir/IR/OpImplementation.h"
 #include "mlir/Transforms/InliningUtils.h"
 
+#include <mlir/IR/Types.h>
+
 using namespace mlir;
 using namespace mlir::mir;
 
 #include "Mir/MirDialect.cpp.inc"
-
 
 void Mir::MirDialect::initialize() {
   addOperations<

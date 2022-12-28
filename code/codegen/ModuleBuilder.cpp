@@ -11,8 +11,10 @@
 
 namespace rust_compiler {
 
-llvm::remarks::Remark createRemark(llvm::StringRef pass,
-                                   llvm::StringRef FunctionName) {
+using namespace llvm;
+
+remarks::Remark createRemark(llvm::StringRef pass,
+                             llvm::StringRef FunctionName) {
   llvm::remarks::Remark r;
   r.PassName = pass;
   r.FunctionName = FunctionName;
@@ -25,11 +27,19 @@ void ModuleBuilder::build(std::shared_ptr<ast::Module> mod) {
   }
 }
 
-void ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
-  // serializer.emit();
+ mlir::mir::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
+  ScopedHashTableScope<llvm::StringRef, mlir::Value> varScope(symbolTable);
 
-  //serializer.emit(createRemark("codegen", f->getName()));
+  // serializer.emit(createRemark("codegen", f->getName()));
   serializer.emit(createRemark("codegen", "fun"));
+
+  builder.setInsertionPointToEnd(theModule.getBody());
+  mlir::mir::FuncOp function = emitPrototype(f->getSignature());
+  if (!function)
+    return nullptr;
 }
+
+mlir::mir::FuncOp
+ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig) {}
 
 } // namespace rust_compiler

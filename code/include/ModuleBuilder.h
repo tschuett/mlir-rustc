@@ -3,6 +3,7 @@
 #include "AST/Module.h"
 #include "Mir/MirDialect.h"
 
+#include <llvm/ADT/ScopedHashTable.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
 #include <llvm/Support/raw_ostream.h>
 #include <mlir/IR/Attributes.h>
@@ -23,6 +24,8 @@ class ModuleBuilder {
   mlir::ModuleOp theModule;
   llvm::remarks::YAMLRemarkSerializer serializer;
 
+  llvm::ScopedHashTable<llvm::StringRef, mlir::Value> symbolTable;
+
 public:
   ModuleBuilder(std::string_view moduleName, llvm::raw_ostream &OS)
       : moduleName(moduleName), context(), builder(&context),
@@ -34,7 +37,8 @@ public:
   void build(std::shared_ptr<ast::Module> m);
 
 private:
-  void buildFun(std::shared_ptr<ast::Function> f);
+  mlir::mir::FuncOp buildFun(std::shared_ptr<ast::Function> f);
+  mlir::mir::FuncOp buildFunctionSignature(ast::FunctionSignature sig);
 };
 
 } // namespace rust_compiler
