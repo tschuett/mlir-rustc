@@ -8,13 +8,19 @@
 #include <mlir/IR/Types.h>
 
 using namespace mlir;
-using namespace mlir::mir;
+using namespace rust_compiler::Mir;
 
-#include "Mir/MirDialect.cpp.inc"
 
-void Mir::MirDialect::initialize() {
+void MirDialect::initialize() {
   addOperations<
 #define GET_OP_LIST
 #include "Mir/MirOps.cpp.inc"
       >();
 }
+
+using namespace mlir;
+
+#include "Mir/MirDialect.cpp.inc"
+
+#define GET_OP_LIST
+#include "Mir/MirOps.cpp.inc"

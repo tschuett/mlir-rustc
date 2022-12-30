@@ -8,6 +8,21 @@
 #include <mlir/Interfaces/CastInterfaces.h>
 #include <mlir/Interfaces/SideEffectInterfaces.h>
 
+namespace rust_compiler::Mir {
+class MethodRegistry {
+public:
+  bool registerMethod(mlir::TypeID typeID, llvm::StringRef methodName,
+                      llvm::StringRef opName);
+
+  llvm::Optional<llvm::StringRef> lookupMethod(::mlir::TypeID Type,
+                                               llvm::StringRef Name) const;
+
+private:
+  llvm::DenseMap<std::pair<mlir::TypeID, llvm::StringRef>, llvm::StringRef>
+      methods;
+};
+} // namespace rust_compiler::Mir
+
 #include "MirDialect.h.inc"
 
 #define GET_OP_CLASSES

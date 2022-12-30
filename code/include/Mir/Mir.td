@@ -5,16 +5,59 @@ include "mlir/Interfaces/CastInterfaces.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 include "mlir/IR/OpBase.td"
 
+
 def Mir_Dialect : Dialect {
   let name = "mir";
-  let cppNamespace = "::mlir::mir::Mir";
+  let cppNamespace = "::rust_compiler::Mir";
   let description = [{
     Top-level dialect for Mir.
 
-    This dialect tries to reprsent the MIR dialect of rustc.
+    This dialect tries to represent the MIR dialect of rustc.
 
   }];
 
+  let extraClassDeclaration = [{
+    MethodRegistry methods;
+
+    static constexpr llvm::StringRef getBaseTypeAttrName() { return "BaseType"; }
+    static constexpr llvm::StringRef getFunctionNameAttrName() { return "FunctionName"; }
+    static constexpr llvm::StringRef getMangledFunctionNameAttrName() { return "MangledFunctionName"; }
+    static constexpr llvm::StringRef getTypeNameAttrName() { return "TypeName"; }
+
+    /// Each operation will be registered as usual in an MLIR dialect
+    /// and also will be registered as a SYCL method if it implements one.
+    template <typename... Args> void addOperations();
+
+    /// Returns the name of the operation implementing the queried
+    /// method, if present.
+    ///
+    /// For a method to be queried, it must have been registered
+    /// first.
+    llvm::Optional<llvm::StringRef> findMethod(::mlir::TypeID Type,
+                                               llvm::StringRef Name) const;
+
+    /// Returns the name of the operation implementing the queried
+    /// method, if present.
+    ///
+    /// For a method to be queried, it must have been registered
+    /// first.
+    ///
+    /// This function is similar to findMethod(), but also works for
+    /// methods registered as members of classes derived from \p BaseType.
+    llvm::Optional<llvm::StringRef>
+    findMethodFromBaseClass(::mlir::TypeID BaseType,
+                            llvm::StringRef Name) const;
+
+    /// Add a definition for the given method to be used when lowering
+    /// SYCLMethodOpInterface instances.
+    void registerMethodDefinition(llvm::StringRef Name, rust_compiler::Mir::FuncOp Func);
+
+    /// Retrieve a function definition previously registered with
+    /// registerMethodDefinition().
+    llvm::Optional<rust_compiler::Mir::FuncOp>
+    lookupMethodDefinition(llvm::StringRef Name,
+                           mlir::FunctionType Type) const;
+  }];
 }
 
 // Types
@@ -69,17 +112,17 @@ def FuncOp : Mir_Op<"func", [
 
    let arguments = (ins
     SymbolNameAttr:$sym_name,
-    TypeAttrOf<FunctionType>:$function_type,
-    OptionalAttr<DictArrayAttr>:$arg_attrs,
-    OptionalAttr<DictArrayAttr>:$res_attrs
+    TypeAttrOf<FunctionType>:$function_type
+//    OptionalAttr<DictArrayAttr>:$arg_attrs,
+//    OptionalAttr<DictArrayAttr>:$res_attrs
    );
 
    let regions = (region AnyRegion:$body);
 
-   let builders = [OpBuilder<(ins
-     "StringRef":$name, "FunctionType":$type,
-     CArg<"ArrayRef<NamedAttribute>", "{}">:$attrs)
-    >];
+//   let builders = [OpBuilder<(ins
+//     "StringRef":$name, "FunctionType":$type,
+//     CArg<"ArrayRef<NamedAttribute>", "{}">:$attrs)
+//    >];
 
 
    let extraClassDeclaration = [{
@@ -87,43 +130,74 @@ def FuncOp : Mir_Op<"func", [
     // FunctionOpInterface Methods
     //===------------------------------------------------------------------===//
 
-    /// Returns the argument types of this function.
-    ArrayRef<Type> getArgumentTypes() { return getFunctionType().getInputs(); }
-
-    /// Returns the result types of this function.
-    ArrayRef<Type> getResultTypes() { return getFunctionType().getResults(); }
+//    /// Returns the argument types of this function.
+//    ArrayRef<Type> getArgumentTypes() { return getFunctionType().getInputs(); }
+//
+//    /// Returns the result types of this function.
+//    ArrayRef<Type> getResultTypes() { return getFunctionType().getResults(); }
   }];
 
   let hasCustomAssemblyFormat = 1;
-  let skipDefaultBuilders = 1;
+//  let skipDefaultBuilders = 1;
 }
 
 
 // CallOp
 
-def GenericCallOp : Mir_Op<"generic_call",
-    [DeclareOpInterfaceMethods<CallOpInterface>]> {
-  let summary = "generic call operation";
+def MirCallOp : Mir_Op<"call", [CallOpInterface]> {
+  let summary = "Generic call operation";
   let description = [{
-    Generic calls represent calls to a user defined function that needs to
-    be specialized for the shape of its arguments. The callee name is attached
-    as a symbol reference via an attribute. The arguments list must match the
-    arguments expected by the callee.
+    This operation represent a call to any function part of the sycl's namespace.
   }];
 
-  // The generic call operation takes a symbol reference attribute as the
-  // callee, and inputs for the call.
-  let arguments = (ins FlatSymbolRefAttr:$callee, Variadic<Mir_Type>:$inputs);
+  let arguments = (ins
+    OptionalAttr<FlatSymbolRefAttr>:$TypeName,
+    FlatSymbolRefAttr:$FunctionName,
+    FlatSymbolRefAttr:$MangledFunctionName,
+    Variadic<AnyType>:$Args
+  );
 
-  let results = (outs Mir_Type);
+  let results = (outs Optional<AnyType>:$result);
 
-  // Specialize assembly printing and parsing using a declarative format.
-  let assemblyFormat = [{
-    $callee `(` $inputs `)` attr-dict `:` functional-type($inputs, results)
-  }];
-
-  // Add custom build methods for the generic call operation.
+  let skipDefaultBuilders = 1;
   let builders = [
-    OpBuilder<(ins "StringRef":$callee, "ArrayRef<Value>":$arguments)>
+    OpBuilder<(ins
+    "::llvm::Optional<::mlir::Type>":$result,
+    "::llvm::Optional<::llvm::StringRef>":$TypeName,
+    "::llvm::StringRef":$FunctionName,
+    "::llvm::StringRef":$MangledFunctionName,
+    "::mlir::ValueRange":$Args), [{
+      odsState.addOperands(Args);
+      if (TypeName.has_value()) {
+        odsState.addAttribute(getTypeNameAttrName(odsState.name), ::mlir::SymbolRefAttr::get(odsBuilder.getContext(), TypeName.value()));
+      }
+      odsState.addAttribute(getFunctionNameAttrName(odsState.name), ::mlir::SymbolRefAttr::get(odsBuilder.getContext(), FunctionName));
+      odsState.addAttribute(MirDialect::getMangledFunctionNameAttrName(odsState.name), ::mlir::SymbolRefAttr::get(odsBuilder.getContext(), MirDialect::MangledFunctionName));
+      if (result.has_value()) {
+        odsState.addTypes(result.value());
+      }
+    }]>
   ];
+ let extraClassDeclaration = [{
+    operand_iterator arg_operand_begin() { return operand_begin(); }
+    operand_iterator arg_operand_end() { return operand_end(); }
+
+    /// Return the callee of the generic Mir call operation, this is required by
+    /// the call interface.
+    mlir::CallInterfaceCallable getCallableForCallee() {
+      return (*this)->getAttrOfType<mlir::FlatSymbolRefAttr>(MirDialect::getMangledFunctionNameAttrName());
+    }
+
+    /// Get the argument operands to the called function, this is required by the
+    /// call interface.
+    operand_range getArgOperands() {
+      return {arg_operand_begin(), arg_operand_end()};
+    }
+  }];
+
+  let assemblyFormat = [{
+    `(` $Args `)` attr-dict `:` functional-type($Args, results)
+  }];
 }
+
+

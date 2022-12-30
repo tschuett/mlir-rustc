@@ -12,6 +12,7 @@
 namespace rust_compiler {
 
 using namespace llvm;
+using namespace mlir;
 
 remarks::Remark createRemark(llvm::StringRef pass,
                              llvm::StringRef FunctionName) {
@@ -27,19 +28,32 @@ void ModuleBuilder::build(std::shared_ptr<ast::Module> mod) {
   }
 }
 
- mlir::mir::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
+mir::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   ScopedHashTableScope<llvm::StringRef, mlir::Value> varScope(symbolTable);
 
   // serializer.emit(createRemark("codegen", f->getName()));
   serializer.emit(createRemark("codegen", "fun"));
 
   builder.setInsertionPointToEnd(theModule.getBody());
-  mlir::mir::FuncOp function = emitPrototype(f->getSignature());
+  mir::FuncOp function = emitPrototype(f->getSignature());
   if (!function)
     return nullptr;
 }
 
 mlir::mir::FuncOp
-ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig) {}
+ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig) {
+  SmallVector<mlir::Type, 10> argType;
+
+  for (auto &arg : sig.getArgs()) {
+    mlir::Type type = getType(arg->getType);
+    if (!type)
+      return nullptr;
+
+    argType.push_back(type);
+  }
+
+  auto funcType = builder.getFunctionType(argTypes, std::nullopt);
+  return builder.create<mlir::mir::FuncOp>(location, proto.getName(), funcType);
+}
 
 } // namespace rust_compiler

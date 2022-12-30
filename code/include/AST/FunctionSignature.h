@@ -4,6 +4,8 @@
 
 namespace rust_compiler::ast {
 
-class FunctionSignature : public Node {};
+class FunctionSignature : public Node {
+  
+};
 
 } // namespace rust_compiler::ast
