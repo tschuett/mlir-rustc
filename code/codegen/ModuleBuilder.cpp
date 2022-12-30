@@ -28,19 +28,19 @@ void ModuleBuilder::build(std::shared_ptr<ast::Module> mod) {
   }
 }
 
-mir::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
+Mir::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   ScopedHashTableScope<llvm::StringRef, mlir::Value> varScope(symbolTable);
 
   // serializer.emit(createRemark("codegen", f->getName()));
   serializer.emit(createRemark("codegen", "fun"));
 
   builder.setInsertionPointToEnd(theModule.getBody());
-  mir::FuncOp function = emitPrototype(f->getSignature());
+  Mir::FuncOp function = buildFunctionSignature(f->getSignature());
   if (!function)
     return nullptr;
 }
 
-mlir::mir::FuncOp
+Mir::FuncOp
 ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig) {
   SmallVector<mlir::Type, 10> argType;
 
@@ -53,7 +53,7 @@ ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig) {
   }
 
   auto funcType = builder.getFunctionType(argTypes, std::nullopt);
-  return builder.create<mlir::mir::FuncOp>(location, proto.getName(), funcType);
+  return builder.create<Mir::FuncOp>(location, sig.getName(), funcType);
 }
 
 } // namespace rust_compiler

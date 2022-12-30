@@ -30,15 +30,15 @@ public:
   ModuleBuilder(std::string_view moduleName, llvm::raw_ostream &OS)
       : moduleName(moduleName), context(), builder(&context),
         serializer(OS, llvm::remarks::SerializerMode::Separate) {
-    context.getOrLoadDialect<mlir::mir::Mir::MirDialect>();
+    context.getOrLoadDialect<Mir::MirDialect>();
     theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
   };
 
   void build(std::shared_ptr<ast::Module> m);
 
 private:
-  mlir::mir::FuncOp buildFun(std::shared_ptr<ast::Function> f);
-  mlir::mir::FuncOp buildFunctionSignature(ast::FunctionSignature sig);
+  Mir::FuncOp buildFun(std::shared_ptr<ast::Function> f);
+  Mir::FuncOp buildFunctionSignature(ast::FunctionSignature sig);
 };
 
 } // namespace rust_compiler

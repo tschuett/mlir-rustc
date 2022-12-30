@@ -22,5 +22,3 @@ using namespace mlir;
 
 #include "Mir/MirDialect.cpp.inc"
 
-#define GET_OP_LIST
-#include "Mir/MirOps.cpp.inc"
