@@ -8,6 +8,7 @@
 #include "mlir/IR/Verifier.h"
 
 #include <llvm/Remarks/Remark.h>
+#include <mlir/IR/Location.h>
 
 namespace rust_compiler {
 
@@ -35,25 +36,29 @@ Mir::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   serializer.emit(createRemark("codegen", "fun"));
 
   builder.setInsertionPointToEnd(theModule.getBody());
-  Mir::FuncOp function = buildFunctionSignature(f->getSignature());
+  Mir::FuncOp function =
+      buildFunctionSignature(f->getSignature(), f->getLocation());
   if (!function)
     return nullptr;
 }
 
-Mir::FuncOp
-ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig) {
-  SmallVector<mlir::Type, 10> argType;
+Mir::FuncOp ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
+                                                  mlir::Location location) {
+  SmallVector<mlir::Type, 10> argTypes;
 
   for (auto &arg : sig.getArgs()) {
-    mlir::Type type = getType(arg->getType);
+    mlir::Type type = getType(arg.getType());
     if (!type)
       return nullptr;
 
-    argType.push_back(type);
+    argTypes.push_back(type);
   }
 
-  auto funcType = builder.getFunctionType(argTypes, std::nullopt);
+  auto funcType = builder.getFunctionType(
+      argTypes, sig.getResult() /*std::nullopt results*/);
   return builder.create<Mir::FuncOp>(location, sig.getName(), funcType);
 }
+
+mlir::Type ModuleBuilder::getType(std::shared_ptr<ast::Type>) {}
 
 } // namespace rust_compiler
