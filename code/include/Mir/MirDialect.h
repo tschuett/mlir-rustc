@@ -7,6 +7,7 @@
 #include <mlir/Interfaces/CallInterfaces.h>
 #include <mlir/Interfaces/CastInterfaces.h>
 #include <mlir/Interfaces/SideEffectInterfaces.h>
+#include <mlir/Dialect/Func/IR/FuncOps.h>
 
 namespace rust_compiler::Mir {
 class MethodRegistry {

@@ -1,10 +1,11 @@
+include "mlir/IR/OpBase.td"
+include "mlir/IR/AttrTypeBase.td"
+
 include "mlir/IR/FunctionInterfaces.td"
 include "mlir/IR/SymbolInterfaces.td"
 include "mlir/Interfaces/CallInterfaces.td"
 include "mlir/Interfaces/CastInterfaces.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
-include "mlir/IR/OpBase.td"
-
 
 def Mir_Dialect : Dialect {
   let name = "mir";
@@ -50,11 +51,11 @@ def Mir_Dialect : Dialect {
 
     /// Add a definition for the given method to be used when lowering
     /// SYCLMethodOpInterface instances.
-    void registerMethodDefinition(llvm::StringRef Name, rust_compiler::Mir::FuncOp Func);
+    void registerMethodDefinition(llvm::StringRef Name, mlir::func::FuncOp Func);
 
     /// Retrieve a function definition previously registered with
     /// registerMethodDefinition().
-    llvm::Optional<rust_compiler::Mir::FuncOp>
+    llvm::Optional<mlir::func::FuncOp>
     lookupMethodDefinition(llvm::StringRef Name,
                            mlir::FunctionType Type) const;
   }];
@@ -87,7 +88,7 @@ window in `value`. NoMemoryEffect
   let hasVerifier = 1;
 }
 
-def Mir_AddfOp : Mir_Op<"Addi", []> {
+def AddfOp : Mir_Op<"Addi", []> {
   let summary = "Performs addition on the float input.";
 
   let description = [{
@@ -144,7 +145,7 @@ def FuncOp : Mir_Op<"func", [
 
 // CallOp
 
-def MirCallOp : Mir_Op<"call", [CallOpInterface]> {
+def CallOp : Mir_Op<"call", [CallOpInterface]> {
   let summary = "Generic call operation";
   let description = [{
     This operation represent a call to any function part of the sycl's namespace.
