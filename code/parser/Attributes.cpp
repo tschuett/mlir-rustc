@@ -2,13 +2,15 @@
 
 #include "AST/ClippyAttribute.h"
 #include "AST/InnerAttribute.h"
-#include "Token.h"
+#include "Lexer/Token.h"
 
 #include <optional>
 #include <sstream>
 #include <vector>
 
 namespace rust_compiler {
+
+using namespace rust_compiler::lexer;
 
 std::optional<std::string> tryParseLint(std::span<Token> tokens) {
   std::span<Token> view = tokens;

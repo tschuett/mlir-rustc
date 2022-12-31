@@ -2,10 +2,12 @@
 
 #include "AST/Module.h"
 #include "Mir/MirDialect.h"
+#include "Target.h"
 
 #include <llvm/ADT/ScopedHashTable.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Target/TargetMachine.h>
 #include <mlir/IR/Attributes.h>
 #include <mlir/IR/Builders.h>
 #include <mlir/IR/BuiltinOps.h>
@@ -34,13 +36,18 @@ public:
     theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
   };
 
-  void build(std::shared_ptr<ast::Module> m);
+  void build(std::shared_ptr<ast::Module> m, Target &target);
 
 private:
   Mir::FuncOp buildFun(std::shared_ptr<ast::Function> f);
   Mir::FuncOp buildFunctionSignature(ast::FunctionSignature sig,
                                      mlir::Location locaction);
-  mlir::LogicalResult buildBlockExpression(ast::BlockExpression blk);
+  mlir::LogicalResult
+  buildBlockExpression(std::shared_ptr<ast::BlockExpression> blk);
+
+  /// Declare a variable in the current scope, return success if the variable
+  /// wasn't declared yet.
+  mlir::LogicalResult declare(VarDeclExprAST &var, mlir::Value value);
 };
 
 } // namespace rust_compiler

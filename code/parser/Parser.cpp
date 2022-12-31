@@ -1,4 +1,4 @@
-#include "Parser.h"
+#include "Parser/Parser.h"
 
 #include "AST/ClippyAttribute.h"
 #include "AST/Module.h"
@@ -13,6 +13,7 @@
 namespace rust_compiler {
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::lexer;
 
 std::shared_ptr<ast::Module> parser(TokenStream &ts, std::string_view path) {
   Module module = {path};

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Token.h"
+#include "Lexer/Token.h"
 
 #include <span>
 #include <vector>
 
-namespace rust_compiler {
+namespace rust_compiler::lexer {
 
 class TokenStream {
   std::vector<Token> tokens;
@@ -15,4 +15,4 @@ public:
   std::span<Token> getAsView();
 };
 
-} // namespace rust_compiler
+} // namespace rust_compiler::lexer

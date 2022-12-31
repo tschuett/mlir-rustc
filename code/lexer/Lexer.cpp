@@ -1,10 +1,10 @@
-#include "Lexer.h"
+#include "Lexer/Lexer.h"
 
-#include "TokenStream.h"
+#include "Lexer/TokenStream.h"
 
 #include <optional>
 
-namespace rust_compiler {
+namespace rust_compiler::lexer {
 
 std::string tryLexComment(std::string_view code) {
   std::string_view view = code;
@@ -266,8 +266,7 @@ std::optional<std::string> tryLexChar(std::string_view code) {
   return std::nullopt;
 }
 
-
-TokenStream lex(std::string_view _code) {
+TokenStream lex(std::string_view _code, std::string_view fileName) {
   TokenStream ts;
   std::string_view code = _code;
 
@@ -395,6 +394,6 @@ TokenStream lex(std::string_view _code) {
   return ts;
 }
 
-} // namespace rust_compiler
+} // namespace rust_compiler::lexer
 
 // https://github.com/thepowersgang/mrustc/blob/master/src/parse/lex.cpp

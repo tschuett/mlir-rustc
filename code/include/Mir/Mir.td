@@ -114,17 +114,18 @@ def FuncOp : Mir_Op<"func", [
 
    let arguments = (ins
     SymbolNameAttr:$sym_name,
-    TypeAttrOf<FunctionType>:$function_type
-//    OptionalAttr<DictArrayAttr>:$arg_attrs,
-//    OptionalAttr<DictArrayAttr>:$res_attrs
+    TypeAttrOf<FunctionType>:$function_type,
+    OptionalAttr<DictArrayAttr>:$arg_attrs,
+    OptionalAttr<DictArrayAttr>:$res_attrs
    );
 
    let regions = (region AnyRegion:$body);
 
-//   let builders = [OpBuilder<(ins
-//     "StringRef":$name, "FunctionType":$type,
-//     CArg<"ArrayRef<NamedAttribute>", "{}">:$attrs)
-//    >];
+   let builders = [OpBuilder<(ins
+      "StringRef":$name, "FunctionType":$type,
+      CArg<"llvm::ArrayRef<mlir::NamedAttribute>", "{}">:$attrs,
+      CArg<"llvm::ArrayRef<mlir::DictionaryAttr>", "{}">:$argAttrs)
+    >];
 
 
    let extraClassDeclaration = [{
@@ -132,11 +133,15 @@ def FuncOp : Mir_Op<"func", [
     // FunctionOpInterface Methods
     //===------------------------------------------------------------------===//
 
-//    /// Returns the argument types of this function.
-//    ArrayRef<Type> getArgumentTypes() { return getFunctionType().getInputs(); }
-//
-//    /// Returns the result types of this function.
-//    ArrayRef<Type> getResultTypes() { return getFunctionType().getResults(); }
+     /// Returns the argument types of this function.
+     llvm::ArrayRef<mlir::Type> getArgumentTypes() { return getFunctionType().getInputs(); }
+
+     /// Returns the result types of this function.
+     llvm::ArrayRef<mlir::Type> getResultTypes() { return getFunctionType().getResults(); }
+
+     /// Returns the results types that the callable region produces when
+     /// executed.
+     llvm::ArrayRef<mlir::Type> getCallableResults() { return getFunctionType().getResults(); }
   }];
 
   let hasCustomAssemblyFormat = 1;
@@ -202,7 +207,7 @@ def CallOp : Mir_Op<"call", [CallOpInterface]> {
   }];
 }
 
-def ReturnOp : Mir_Op<"return", [NoSideEffect, HasParent<"FuncOp">,
+def ReturnOp : Mir_Op<"return", [Pure, HasParent<"FuncOp">,
                                 MemRefsNormalizable, ReturnLike, Terminator]> {
   let summary = "Function return operation";
   let description = [{

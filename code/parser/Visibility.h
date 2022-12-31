@@ -4,10 +4,10 @@
 
 #include <optional>
 #include <span>
-#include "Token.h"
+#include "Lexer/Token.h"
 
 namespace rust_compiler::ast {
 
-extern std::optional<Visibility> tryParseVisibility(std::span<Token> tokens);
+  extern std::optional<Visibility> tryParseVisibility(std::span<lexer::Token> tokens);
 
 }

@@ -5,6 +5,7 @@
 #include "TypeBuilder.h"
 
 #include <llvm/Remarks/Remark.h>
+#include <llvm/Target/TargetMachine.h>
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/IR/Location.h>
 #include <mlir/IR/MLIRContext.h>
@@ -24,7 +25,7 @@ remarks::Remark createRemark(llvm::StringRef pass,
   return r;
 }
 
-void ModuleBuilder::build(std::shared_ptr<ast::Module> mod) {
+void ModuleBuilder::build(std::shared_ptr<ast::Module> mod, Target &target) {
   for (auto f : mod->getFuncs()) {
     buildFun(f);
   }
@@ -44,7 +45,7 @@ Mir::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
 
   // Let's start the body of the function now!
   mlir::Block &entryBlock = function.front();
-  auto protoArgs = funcAST.getProto()->getArgs();
+  auto protoArgs = f->getSignature().getArgs();
 
   // Declare all the function arguments in the symbol table.
   for (const auto nameValue : llvm::zip(protoArgs, entryBlock.getArguments())) {
@@ -70,18 +71,18 @@ Mir::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   if (!entryBlock.empty())
     returnOp = dyn_cast<Mir::ReturnOp>(entryBlock.back());
   if (!returnOp) {
-    builder.create<Mir::ReturnOp>(loc(funcAST.getProto()->loc()));
-  } else if (returnOp.hasOperand()) {
+    builder.create<Mir::ReturnOp>(f->getSignature().getLocation());
+  } else if (returnOp.operands().getType().size() == 0) { // FIXME: odd
     // Otherwise, if this return operation has an operand then add a result to
     // the function.
     function.setType(
-        builder.getFunctionType(function.getFunctionType().getInputs(),
+                     builder.getFunctionType(function.operands(),
                                 *returnOp.operand_type_begin()));
   }
 
-//  // If this function isn't main, then set the visibility to private.
-//  if (funcAST.getProto()->getName() != "main")
-//    function.setPrivate();
+  //  // If this function isn't main, then set the visibility to private.
+  //  if (funcAST.getProto()->getName() != "main")
+  //    function.setPrivate();
 
   return function;
 }
@@ -106,4 +107,21 @@ Mir::FuncOp ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
   return builder.create<Mir::FuncOp>(location, sig.getName(), funcType);
 }
 
+mlir::LogicalResult
+ModuleBuilder::buildBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
+  return LogicalResult::success();
+}
+
+/// Declare a variable in the current scope, return success if the variable
+/// wasn't declared yet.
+mlir::LogicalResult ModuleBuilder::declare(VarDeclExprAST &var,
+                                           mlir::Value value) {
+  if (symbolTable.count(var.getName()))
+    return mlir::failure();
+  symbolTable.insert(var.getName(), {value, &var});
+  return mlir::success();
+}
+
 } // namespace rust_compiler
+
+// FIXME: rename loc and declare

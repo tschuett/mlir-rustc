@@ -15,7 +15,7 @@ public:
   FunctionSignature getSignature();
   mlir::Location getLocation();
 
-  BlockExpression getBody();
+  std::shared_ptr<BlockExpression> getBody();
 };
 
 } // namespace rust_compiler::ast

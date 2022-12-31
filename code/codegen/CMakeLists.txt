@@ -5,6 +5,7 @@ add_library(codegen
            DumpLLVMIR.cpp
            LowerToLLVM.cpp
            TypeBuilder.cpp
+           Target.cpp
            )
 
 

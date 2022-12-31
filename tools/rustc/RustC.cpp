@@ -6,6 +6,7 @@
 #include "llvm/Option/Option.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/InitLLVM.h"
 
 #include <fstream>
 #include <sstream>
@@ -48,6 +49,7 @@ public:
 } // namespace
 
 int main(int argc, char **argv) {
+  llvm::InitLLVM x(argc, argv);
   MiniCargoOptTable tbl;
   llvm::StringRef ToolName = argv[0];
   llvm::BumpPtrAllocator A;

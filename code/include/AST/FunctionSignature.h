@@ -3,6 +3,7 @@
 #include "AST/AST.h"
 #include "AST/Type.h"
 
+#include <mlir/IR/Location.h>
 #include <span>
 #include <vector>
 
@@ -17,6 +18,7 @@ public:
 
 class FunctionSignature : public Node {
   std::vector<Argument> args;
+  mlir::Location location;
 
 public:
   std::string getName();
@@ -24,6 +26,8 @@ public:
   std::span<Argument> getArgs() { return args; }
 
   std::shared_ptr<Type> getResult();
+
+  mlir::Location getLocation();
 };
 
 } // namespace rust_compiler::ast

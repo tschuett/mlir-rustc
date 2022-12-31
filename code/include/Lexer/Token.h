@@ -1,8 +1,10 @@
 #pragma once
 
+#include "Lexer/Location.h"
+
 #include <string>
 
-namespace rust_compiler {
+namespace rust_compiler::lexer {
 
 enum class TokenKind {
   DoubleColon,
@@ -37,11 +39,12 @@ enum class TokenKind {
 
 class Token {
   TokenKind kind;
-  std::string s;
+  std::string id;
+  Location loc;
 
 public:
   Token(TokenKind tk) : kind(tk){};
-  Token(TokenKind tk, std::string_view id) : kind(tk), s(id){};
+  Token(TokenKind tk, std::string_view id) : kind(tk), id(id){};
 
   TokenKind getKind() const { return kind; }
 
@@ -52,7 +55,7 @@ public:
   bool isSuperToken() const;
   bool isInToken() const;
 
-  std::string getIdentifier() const { return s; }
+  std::string getIdentifier() const { return id; }
 };
 
-} // namespace rust_compiler
+} // namespace rust_compiler::lexer
