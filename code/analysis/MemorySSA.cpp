@@ -17,17 +17,18 @@ std::optional<mlir::AliasResult> MemorySSA::mayAlias(mlir::Operation *a,
                                                      mlir::Operation *b) {
   mlir::Value valueA;
   mlir::Value valueB;
-  if (auto load = mlir::dyn_cast<mlir::memref::LoadOp>(a))
-    valueA = load.memref();
+  if (auto load = mlir::dyn_cast<mlir::memref::LoadOp>(a)) {
+    valueA = load.getMemRef();
+  }
   else if (auto store = mlir::dyn_cast<mlir::memref::StoreOp>(a))
-    valueA = store.memref();
+    valueA = store.getMemRef();
   else
     return std::nullopt;
 
   if (auto load = mlir::dyn_cast<mlir::memref::LoadOp>(b))
-    valueB = load.memref();
+    valueB = load.getMemRef();
   else if (auto store = mlir::dyn_cast<mlir::memref::StoreOp>(b))
-    valueB = store.memref();
+    valueB = store.getMemRef();
   else
     return std::nullopt;
 
@@ -56,7 +57,7 @@ static auto hasMemEffect(mlir::Operation &op) {
 
     if (effects.hasEffect<mlir::MemoryEffects::Read>())
       ret.read = true;
-  } else if (op.hasTrait<mlir::OpTrait::HasRecursiveSideEffects>()) {
+  } else if (op.hasTrait<mlir::OpTrait::HasRecursiveMemoryEffects>()) {
     ret.write = true;
   }
 

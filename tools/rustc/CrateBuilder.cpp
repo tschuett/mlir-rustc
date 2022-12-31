@@ -1,15 +1,17 @@
 #include "CrateBuilder.h"
 
-#include "Lexer.h"
+#include "Lexer/Lexer.h"
 #include "ModuleBuilder.h"
-#include "Parser.h"
+#include "Parser/Parser.h"
 #include "Sema/Sema.h"
 #include "Target.h"
 
 #include <fstream>
+#include <llvm/MC/TargetRegistry.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/Path.h>
+#include <llvm/Support/Host.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
 #include <sstream>
@@ -18,7 +20,7 @@ namespace rust_compiler::rustc {
 
 void buildCrate(std::string_view path, std::string_view edition) {
   // Create `Target`
-  llvm::Triple theTriple =
+  std::string theTriple =
       llvm::Triple::normalize(llvm::sys::getDefaultTargetTriple());
 
   std::string error;
@@ -58,8 +60,8 @@ void buildCrate(std::string_view path, std::string_view edition) {
   //
   //  std::string file = buffer.str();
 
-  TokenStream ts = lex(str);
-  std::shared_ptr<ast::Module> module = parser(ts, "");
+  lexer::TokenStream ts = lexer::lex(str, "lib.rs");
+  std::shared_ptr<ast::Module> module = parser::parser(ts, "");
 
   sema::analyzeSemantics(module);
 
@@ -71,7 +73,7 @@ void buildCrate(std::string_view path, std::string_view edition) {
   rust_compiler::ModuleBuilder mb = {"lib", stream};
 
   Target target = {tm.get()};
-  mb.build(module, &target;
+  mb.build(module, target);
 }
 
 } // namespace rust_compiler::rustc

@@ -47,7 +47,7 @@ private:
 
   /// Declare a variable in the current scope, return success if the variable
   /// wasn't declared yet.
-  mlir::LogicalResult declare(VarDeclExprAST &var, mlir::Value value);
+  //  mlir::LogicalResult declare(VarDeclExprAST &var, mlir::Value value);
 };
 
 } // namespace rust_compiler

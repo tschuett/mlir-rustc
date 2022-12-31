@@ -232,6 +232,10 @@ def ReturnOp : Mir_Op<"return", [Pure, HasParent<"mlir::func::FuncOp">,
     build($_builder, $_state, std::nullopt);
   }]>];
 
+  let extraClassDeclaration = [{
+    bool hasOperand() { return getNumOperands() != 0; }
+  }];
+
   let assemblyFormat = "attr-dict ($operands^ `:` type($operands))?";
   let hasVerifier = 1;
 }

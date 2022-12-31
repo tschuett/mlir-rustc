@@ -10,13 +10,13 @@
 #include <memory>
 #include <optional>
 
-namespace rust_compiler {
+namespace rust_compiler::parser {
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::lexer;
 
-std::shared_ptr<ast::Module> parser(TokenStream &ts, std::string_view path) {
-  Module module = {path};
+std::shared_ptr<ast::Module> parser(TokenStream &ts, std::string_view modulePath) {
+  Module module = {modulePath};
 
   std::span<Token> tokens = ts.getAsView();
 
