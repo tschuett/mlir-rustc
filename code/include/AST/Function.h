@@ -2,6 +2,7 @@
 
 #include "AST/AST.h"
 #include "AST/FunctionSignature.h"
+#include "AST/BlockExpression.h"
 
 #include <mlir/IR/Location.h>
 
@@ -13,6 +14,8 @@ class Function : public Node {
 public:
   FunctionSignature getSignature();
   mlir::Location getLocation();
+
+  BlockExpression getBody();
 };
 
 } // namespace rust_compiler::ast

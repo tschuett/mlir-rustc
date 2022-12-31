@@ -40,7 +40,7 @@ private:
   Mir::FuncOp buildFun(std::shared_ptr<ast::Function> f);
   Mir::FuncOp buildFunctionSignature(ast::FunctionSignature sig,
                                      mlir::Location locaction);
-
+  mlir::LogicalResult buildBlockExpression(ast::BlockExpression blk);
 };
 
 } // namespace rust_compiler

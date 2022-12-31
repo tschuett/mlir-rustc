@@ -6,6 +6,7 @@ include "mlir/IR/SymbolInterfaces.td"
 include "mlir/Interfaces/CallInterfaces.td"
 include "mlir/Interfaces/CastInterfaces.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
+include "mlir/Interfaces/ControlFlowInterfaces.td"
 
 def Mir_Dialect : Dialect {
   let name = "mir";
@@ -199,6 +200,35 @@ def CallOp : Mir_Op<"call", [CallOpInterface]> {
   let assemblyFormat = [{
     `(` $Args `)` attr-dict `:` functional-type($Args, results)
   }];
+}
+
+def ReturnOp : Mir_Op<"return", [NoSideEffect, HasParent<"FuncOp">,
+                                MemRefsNormalizable, ReturnLike, Terminator]> {
+  let summary = "Function return operation";
+  let description = [{
+    The `Mir.return` operation represents a return operation within a function.
+    The operation takes variable number of operands and produces no results.
+    The operand number and types must match the signature of the function
+    that contains the operation.
+
+    Example:
+
+    ```mlir
+    Mir.func @foo() : (i32, f8) {
+      ...
+      return %0, %1 : i32, f8
+    }
+    ```
+  }];
+
+  let arguments = (ins Variadic<AnyType>:$operands);
+
+  let builders = [OpBuilder<(ins), [{
+    build($_builder, $_state, std::nullopt);
+  }]>];
+
+  let assemblyFormat = "attr-dict ($operands^ `:` type($operands))?";
+  let hasVerifier = 1;
 }
 
 
