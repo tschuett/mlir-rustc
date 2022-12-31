@@ -5,10 +5,10 @@
 namespace rust_compiler {
 
 class Target {
-  llvm::TargetMachine  *tm;
+  llvm::TargetMachine *tm;
 
 public:
-  Target(llvm::TargetMachine  *tm);
+  Target(llvm::TargetMachine *tm) : tm(tm){};
 
   unsigned getVectorWidth();
   unsigned getPointerSizeInBits();

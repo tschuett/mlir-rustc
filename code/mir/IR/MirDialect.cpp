@@ -24,3 +24,4 @@ void MirDialect::initialize() {
 
 
 
+#include "Mir/MirOps.cpp.inc"

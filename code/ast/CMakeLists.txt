@@ -4,6 +4,8 @@ add_library(ast
            InnerAttribute.cpp
            UseDeclaration.cpp
            ClippyAttribute.cpp
+           FunctionSignature.cpp
+           Function.cpp
            )
 
 

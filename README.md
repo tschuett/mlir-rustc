@@ -20,6 +20,7 @@
 * https://mlir.llvm.org/docs/Tutorials/Toy/Ch-6/
 * https://github.com/zero9178/Pylir
 * https://github.com/intel/llvm/tree/sycl-mlir/mlir-sycl
+* https://github.com/LightningCreations/lccc
 
 - [ ] UTF-8
 - [ ] Remarks

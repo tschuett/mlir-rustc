@@ -16,9 +16,11 @@ public:
   std::shared_ptr<Type> getType();
 };
 
-class FunctionSignature : public Node {
+class FunctionSignature {
   std::vector<Argument> args;
   mlir::Location location;
+  std::string name;
+  std::shared_ptr<Type> resultType;
 
 public:
   std::string getName();
