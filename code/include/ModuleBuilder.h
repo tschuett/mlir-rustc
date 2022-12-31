@@ -39,9 +39,9 @@ public:
   void build(std::shared_ptr<ast::Module> m, Target &target);
 
 private:
-  Mir::FuncOp buildFun(std::shared_ptr<ast::Function> f);
-  Mir::FuncOp buildFunctionSignature(ast::FunctionSignature sig,
-                                     mlir::Location locaction);
+  mlir::func::FuncOp buildFun(std::shared_ptr<ast::Function> f);
+  mlir::func::FuncOp buildFunctionSignature(ast::FunctionSignature sig,
+                                            mlir::Location locaction);
   mlir::LogicalResult
   buildBlockExpression(std::shared_ptr<ast::BlockExpression> blk);
 

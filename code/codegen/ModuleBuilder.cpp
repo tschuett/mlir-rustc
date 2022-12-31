@@ -31,14 +31,14 @@ void ModuleBuilder::build(std::shared_ptr<ast::Module> mod, Target &target) {
   }
 }
 
-Mir::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
+mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   ScopedHashTableScope<llvm::StringRef, mlir::Value> varScope(symbolTable);
 
   // serializer.emit(createRemark("codegen", f->getName()));
   serializer.emit(createRemark("codegen", "fun"));
 
   builder.setInsertionPointToEnd(theModule.getBody());
-  Mir::FuncOp function =
+  mlir::func::FuncOp function =
       buildFunctionSignature(f->getSignature(), f->getLocation());
   if (!function)
     return nullptr;
@@ -75,9 +75,8 @@ Mir::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   } else if (returnOp.operands().getType().size() == 0) { // FIXME: odd
     // Otherwise, if this return operation has an operand then add a result to
     // the function.
-    function.setType(
-                     builder.getFunctionType(function.operands(),
-                                *returnOp.operand_type_begin()));
+    function.setType(builder.getFunctionType(function.operands(),
+                                             *returnOp.operand_type_begin()));
   }
 
   //  // If this function isn't main, then set the visibility to private.
@@ -87,7 +86,7 @@ Mir::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   return function;
 }
 
-Mir::FuncOp ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
+mlir::func::FuncOp ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
                                                   mlir::Location location) {
   SmallVector<mlir::Type, 10> argTypes;
   TypeBuilder typeBuilder;
@@ -104,7 +103,7 @@ Mir::FuncOp ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
 
   auto funcType =
       builder.getFunctionType(argTypes, resultType /*std::nullopt results*/);
-  return builder.create<Mir::FuncOp>(location, sig.getName(), funcType);
+  return builder.create<mlir::func::FuncOp>(location, sig.getName(), funcType);
 }
 
 mlir::LogicalResult

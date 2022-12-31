@@ -103,50 +103,50 @@ window in `value`. NoMemoryEffect
   let hasVerifier = 1;
 }
 
-def FuncOp : Mir_Op<"func", [
-    DeclareOpInterfaceMethods<CallableOpInterface>, FunctionOpInterface,
-    IsolatedFromAbove, Symbol
-  ]> {
-   let summary = "user defined function operation";
-   let description = [{
-   }];
-
-
-   let arguments = (ins
-    SymbolNameAttr:$sym_name,
-    TypeAttrOf<FunctionType>:$function_type,
-    OptionalAttr<DictArrayAttr>:$arg_attrs,
-    OptionalAttr<DictArrayAttr>:$res_attrs
-   );
-
-   let regions = (region AnyRegion:$body);
-
-   let builders = [OpBuilder<(ins
-      "StringRef":$name, "FunctionType":$type,
-      CArg<"llvm::ArrayRef<mlir::NamedAttribute>", "{}">:$attrs,
-      CArg<"llvm::ArrayRef<mlir::DictionaryAttr>", "{}">:$argAttrs)
-    >];
-
-
-   let extraClassDeclaration = [{
-    //===------------------------------------------------------------------===//
-    // FunctionOpInterface Methods
-    //===------------------------------------------------------------------===//
-
-     /// Returns the argument types of this function.
-     llvm::ArrayRef<mlir::Type> getArgumentTypes() { return getFunctionType().getInputs(); }
-
-     /// Returns the result types of this function.
-     llvm::ArrayRef<mlir::Type> getResultTypes() { return getFunctionType().getResults(); }
-
-     /// Returns the results types that the callable region produces when
-     /// executed.
-     llvm::ArrayRef<mlir::Type> getCallableResults() { return getFunctionType().getResults(); }
-  }];
-
-  let hasCustomAssemblyFormat = 1;
+//def FuncOp : Mir_Op<"func", [
+//    DeclareOpInterfaceMethods<CallableOpInterface>, FunctionOpInterface,
+//    IsolatedFromAbove, Symbol
+//  ]> {
+//   let summary = "user defined function operation";
+//   let description = [{
+//   }];
+//
+//
+//   let arguments = (ins
+//    SymbolNameAttr:$sym_name,
+//    TypeAttrOf<FunctionType>:$function_type,
+//    OptionalAttr<DictArrayAttr>:$arg_attrs,
+//    OptionalAttr<DictArrayAttr>:$res_attrs
+//   );
+//
+//   let regions = (region AnyRegion:$body);
+//
+//   let builders = [OpBuilder<(ins
+//      "llvm::StringRef":$name, "mlir::FunctionType":$type,
+//      CArg<"llvm::ArrayRef<mlir::NamedAttribute>", "{}">:$attrs,
+//      CArg<"llvm::ArrayRef<mlir::DictionaryAttr>", "{}">:$argAttrs)
+//    >];
+//
+//
+//   let extraClassDeclaration = [{
+//    //===------------------------------------------------------------------===//
+//    // FunctionOpInterface Methods
+//    //===------------------------------------------------------------------===//
+//
+//     /// Returns the argument types of this function.
+//     llvm::ArrayRef<mlir::Type> getArgumentTypes() { return getFunctionType().getInputs(); }
+//
+//     /// Returns the result types of this function.
+//     llvm::ArrayRef<mlir::Type> getResultTypes() { return getFunctionType().getResults(); }
+//
+//     /// Returns the results types that the callable region produces when
+//     /// executed.
+//     llvm::ArrayRef<mlir::Type> getCallableResults() { return getFunctionType().getResults(); }
+//  }];
+//
+//  let hasCustomAssemblyFormat = 1;
 //  let skipDefaultBuilders = 1;
-}
+//}
 
 
 // CallOp
@@ -179,7 +179,7 @@ def CallOp : Mir_Op<"call", [CallOpInterface]> {
         odsState.addAttribute(getTypeNameAttrName(odsState.name), ::mlir::SymbolRefAttr::get(odsBuilder.getContext(), TypeName.value()));
       }
       odsState.addAttribute(getFunctionNameAttrName(odsState.name), ::mlir::SymbolRefAttr::get(odsBuilder.getContext(), FunctionName));
-      odsState.addAttribute(MirDialect::getMangledFunctionNameAttrName(odsState.name), ::mlir::SymbolRefAttr::get(odsBuilder.getContext(), MirDialect::MangledFunctionName));
+      odsState.addAttribute(getMangledFunctionNameAttrName(odsState.name), ::mlir::SymbolRefAttr::get(odsBuilder.getContext(), MangledFunctionName));
       if (result.has_value()) {
         odsState.addTypes(result.value());
       }
@@ -207,7 +207,7 @@ def CallOp : Mir_Op<"call", [CallOpInterface]> {
   }];
 }
 
-def ReturnOp : Mir_Op<"return", [Pure, HasParent<"FuncOp">,
+def ReturnOp : Mir_Op<"return", [Pure, HasParent<"mlir::func::FuncOp">,
                                 MemRefsNormalizable, ReturnLike, Terminator]> {
   let summary = "Function return operation";
   let description = [{

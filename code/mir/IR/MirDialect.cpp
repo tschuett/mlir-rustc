@@ -10,6 +10,10 @@
 using namespace mlir;
 using namespace rust_compiler::Mir;
 
+#include "Mir/MirDialect.cpp.inc"
+
+#define GET_OP_CLASSES
+#include "Mir/MirOps.cpp.inc"
 
 void MirDialect::initialize() {
   addOperations<
@@ -18,7 +22,5 @@ void MirDialect::initialize() {
       >();
 }
 
-using namespace mlir;
 
-#include "Mir/MirDialect.cpp.inc"
 
