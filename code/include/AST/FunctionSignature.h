@@ -12,7 +12,7 @@ class Argument {
   std::shared_ptr<Type> type;
 
 public:
-  Type getType();
+  std::shared_ptr<Type> getType();
 };
 
 class FunctionSignature : public Node {

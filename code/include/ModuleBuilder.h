@@ -41,7 +41,6 @@ private:
   Mir::FuncOp buildFunctionSignature(ast::FunctionSignature sig,
                                      mlir::Location locaction);
 
-  mlir::Type getType(std::shared_ptr<ast::Type>);
 };
 
 } // namespace rust_compiler

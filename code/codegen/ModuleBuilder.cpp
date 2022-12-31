@@ -2,13 +2,14 @@
 
 #include "Mir/MirDialect.h"
 // #include "mlir/IR/AsmState.h"
-#include "mlir/IR/BuiltinOps.h"
-#include "mlir/IR/MLIRContext.h"
-#include "mlir/IR/OwningOpRef.h"
-#include "mlir/IR/Verifier.h"
+#include "TypeBuilder.h"
 
 #include <llvm/Remarks/Remark.h>
+#include <mlir/IR/BuiltinOps.h>
 #include <mlir/IR/Location.h>
+#include <mlir/IR/MLIRContext.h>
+#include <mlir/IR/OwningOpRef.h>
+#include <mlir/IR/Verifier.h>
 
 namespace rust_compiler {
 
@@ -45,20 +46,21 @@ Mir::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
 Mir::FuncOp ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
                                                   mlir::Location location) {
   SmallVector<mlir::Type, 10> argTypes;
+  TypeBuilder typeBuilder;
 
   for (auto &arg : sig.getArgs()) {
-    mlir::Type type = getType(arg.getType());
+    mlir::Type type = typeBuilder.getType(arg.getType());
     if (!type)
       return nullptr;
 
     argTypes.push_back(type);
   }
 
-  auto funcType = builder.getFunctionType(
-      argTypes, sig.getResult() /*std::nullopt results*/);
+  mlir::Type resultType = typeBuilder.getType(sig.getResult());
+
+  auto funcType =
+      builder.getFunctionType(argTypes, resultType /*std::nullopt results*/);
   return builder.create<Mir::FuncOp>(location, sig.getName(), funcType);
 }
-
-mlir::Type ModuleBuilder::getType(std::shared_ptr<ast::Type>) {}
 
 } // namespace rust_compiler
