@@ -8,6 +8,8 @@ include "mlir/Interfaces/CastInterfaces.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 include "mlir/Interfaces/ControlFlowInterfaces.td"
 
+include "MirOpsInterfaces.td"
+
 def Mir_Dialect : Dialect {
   let name = "mir";
   let cppNamespace = "::rust_compiler::Mir";
@@ -35,7 +37,7 @@ def Mir_Dialect : Dialect {
     ///
     /// For a method to be queried, it must have been registered
     /// first.
-    llvm::Optional<llvm::StringRef> findMethod(::mlir::TypeID Type,
+    std::optional<llvm::StringRef> findMethod(::mlir::TypeID Type,
                                                llvm::StringRef Name) const;
 
     /// Returns the name of the operation implementing the queried
@@ -46,7 +48,7 @@ def Mir_Dialect : Dialect {
     ///
     /// This function is similar to findMethod(), but also works for
     /// methods registered as members of classes derived from \p BaseType.
-    llvm::Optional<llvm::StringRef>
+    std::optional<llvm::StringRef>
     findMethodFromBaseClass(::mlir::TypeID BaseType,
                             llvm::StringRef Name) const;
 
@@ -56,7 +58,7 @@ def Mir_Dialect : Dialect {
 
     /// Retrieve a function definition previously registered with
     /// registerMethodDefinition().
-    llvm::Optional<mlir::func::FuncOp>
+    std::optional<mlir::func::FuncOp>
     lookupMethodDefinition(llvm::StringRef Name,
                            mlir::FunctionType Type) const;
   }];
@@ -71,10 +73,45 @@ def Mir_StructType :
 
 
 // Ops
-
-
 class Mir_Op<string mnemonic, list<Trait> traits = []> :
     Op<Mir_Dialect, mnemonic, traits>;
+
+
+class MirMethodOpInterfaceImpl<
+    string mnemonic, string type, list<string> methodNames, list<Trait> traits = []>
+        : Mir_Op<mnemonic, !listconcat(traits, [MirMethodOpInterface, CallOpInterface])> {
+  string baseType = type;
+  list<string> memberFunctionNames = methodNames;
+  int arrSize = !size(memberFunctionNames);
+
+  let extraClassDeclaration = [{
+    static constexpr std::array<llvm::StringLiteral, }] # arrSize # [{> methods{{ }] #
+      !interleave(!foreach(name, memberFunctionNames, "\"" # name # "\""), ", ") # [{
+     }};
+    static ::mlir::TypeID getTypeID() { return ::mlir::sycl::}] # type # [{::getTypeID(); }
+    static constexpr llvm::ArrayRef<llvm::StringLiteral> getMethodNames() { return methods; }
+
+    Operation::operand_iterator arg_operand_begin() { return (*this)->operand_begin(); }
+    Operation::operand_iterator arg_operand_end() { return (*this)->operand_end(); }
+
+    /// Return the callee of the generic Mir call operation, this is required by
+    /// the call interface.
+    CallInterfaceCallable getCallableForCallee() {
+      return (*this)->getAttrOfType<FlatSymbolRefAttr>(getMangledFunctionNameAttrName());
+    }
+
+    /// Get the argument operands to the called function, this is required by the
+    /// call interface.
+    Operation::operand_range getArgOperands() {
+      return {arg_operand_begin(), arg_operand_end()};
+    }
+  }];
+
+  let extraClassDefinition = [{
+    constexpr std::array<llvm::StringLiteral, }] # arrSize # [{> $cppClass::methods;
+  }];
+}
+
 
 def Mir_AddiOp : Mir_Op<"Addi", []> {
   let summary = "Performs addition on the integer input.";
@@ -82,6 +119,12 @@ def Mir_AddiOp : Mir_Op<"Addi", []> {
   let description = [{
 Each entry in `output` is the mean of the corresponding size `ksize`
 window in `value`. NoMemoryEffect
+  }];
+
+  let extraClassDeclaration = [{
+   static ::mlir::TypeID getTypeID() { return ::Mir::}] # type # [{::getTypeID(); }
+
+   static constexpr llvm::ArrayRef<llvm::StringLiteral> getMethodNames() { return methods; }
   }];
 
   let builders = [];
@@ -102,51 +145,6 @@ window in `value`. NoMemoryEffect
 
   let hasVerifier = 1;
 }
-
-//def FuncOp : Mir_Op<"func", [
-//    DeclareOpInterfaceMethods<CallableOpInterface>, FunctionOpInterface,
-//    IsolatedFromAbove, Symbol
-//  ]> {
-//   let summary = "user defined function operation";
-//   let description = [{
-//   }];
-//
-//
-//   let arguments = (ins
-//    SymbolNameAttr:$sym_name,
-//    TypeAttrOf<FunctionType>:$function_type,
-//    OptionalAttr<DictArrayAttr>:$arg_attrs,
-//    OptionalAttr<DictArrayAttr>:$res_attrs
-//   );
-//
-//   let regions = (region AnyRegion:$body);
-//
-//   let builders = [OpBuilder<(ins
-//      "llvm::StringRef":$name, "mlir::FunctionType":$type,
-//      CArg<"llvm::ArrayRef<mlir::NamedAttribute>", "{}">:$attrs,
-//      CArg<"llvm::ArrayRef<mlir::DictionaryAttr>", "{}">:$argAttrs)
-//    >];
-//
-//
-//   let extraClassDeclaration = [{
-//    //===------------------------------------------------------------------===//
-//    // FunctionOpInterface Methods
-//    //===------------------------------------------------------------------===//
-//
-//     /// Returns the argument types of this function.
-//     llvm::ArrayRef<mlir::Type> getArgumentTypes() { return getFunctionType().getInputs(); }
-//
-//     /// Returns the result types of this function.
-//     llvm::ArrayRef<mlir::Type> getResultTypes() { return getFunctionType().getResults(); }
-//
-//     /// Returns the results types that the callable region produces when
-//     /// executed.
-//     llvm::ArrayRef<mlir::Type> getCallableResults() { return getFunctionType().getResults(); }
-//  }];
-//
-//  let hasCustomAssemblyFormat = 1;
-//  let skipDefaultBuilders = 1;
-//}
 
 
 // CallOp
@@ -185,22 +183,6 @@ def CallOp : Mir_Op<"call", [CallOpInterface]> {
       }
     }]>
   ];
- let extraClassDeclaration = [{
-    operand_iterator arg_operand_begin() { return operand_begin(); }
-    operand_iterator arg_operand_end() { return operand_end(); }
-
-    /// Return the callee of the generic Mir call operation, this is required by
-    /// the call interface.
-    mlir::CallInterfaceCallable getCallableForCallee() {
-      return (*this)->getAttrOfType<mlir::FlatSymbolRefAttr>(MirDialect::getMangledFunctionNameAttrName());
-    }
-
-    /// Get the argument operands to the called function, this is required by the
-    /// call interface.
-    operand_range getArgOperands() {
-      return {arg_operand_begin(), arg_operand_end()};
-    }
-  }];
 
   let assemblyFormat = [{
     `(` $Args `)` attr-dict `:` functional-type($Args, results)

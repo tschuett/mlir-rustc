@@ -14,7 +14,4 @@ target_include_directories(codegen PRIVATE  ../include)
 
 llvm_map_components_to_libnames(llvm_libs)
 
-
-add_dependencies(codegen MirOpsIncGen)
-
 target_link_libraries(codegen MirDialect ast ${llvm_libs} MLIRFuncDialect)

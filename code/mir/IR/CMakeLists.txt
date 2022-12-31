@@ -15,6 +15,11 @@
 
 add_library(MirDialect
   MirDialect.cpp
+  MirOps.cpp
   )
 
 target_include_directories(MirDialect PRIVATE ../../include)
+
+add_dependencies(MirDialect MirOpsIncGen MirOpInterfacesIncGen)
+
+target_link_libraries(MirDialect MLIRLLVMDialect)

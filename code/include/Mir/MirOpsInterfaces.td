@@ -1,0 +1,61 @@
+include "mlir/IR/OpBase.td"
+
+class Mir_OpInterface<string name> : OpInterface<name> {
+  let cppNamespace = "::Mir";
+}
+
+def MirMethodOpInterface : Mir_OpInterface<"MirMethodOpInterface"> {
+  let description =[{
+    This interface describes an operation that calls a member function of a Mir
+    type.
+
+    Operations implementing this interface should inherit
+    `MirMethodOpInterfaceImpl` and also implement the `BaseType` method,
+    returning the Mir type representing the class this method is a member of;
+    the `MangledFunctionName` method, returning the mangled name of the function
+    implementing this operation; the `FunctionName` method, returning the
+    unmangled name of the function implementing this operation; and the
+    `TypeName` method, returning the original name of the type this operation is
+    a member of.
+
+    Operations implementing this interface are registered as methods in the
+    `MirDialect`. See the `MirDialect` documentation.
+  }];
+
+  let methods = [
+    StaticInterfaceMethod<[{
+      Return the ID of the type this method is a member of.
+    }], "::mlir::TypeID", "getTypeID">,
+    StaticInterfaceMethod<[{
+      Return the list of the method names to be replaced by this
+      operation.
+    }], "llvm::ArrayRef<llvm::StringLiteral>", "getMethodNames">,
+    InterfaceMethod<[{
+      Return the Mir type this method is a member of.
+    }], "::mlir::Type", "getBaseType">,
+    InterfaceMethod<[{
+      Return the mangled name of the function implementing this operation.
+    }], "llvm::Optional<llvm::StringRef>", "getMangledFunctionName">,
+    InterfaceMethod<[{
+      Return the name of the function implementing this operation.
+    }], "llvm::StringRef", "getFunctionName">,
+    InterfaceMethod<[{
+      Return the original name of the type this method is implemented in.
+    }], "llvm::StringRef", "getTypeName">
+  ];
+  // We cannot easily verify other attributes.
+  let verify = [{
+    auto interface = cast<Mir::MirMethodOpInterface>(op);
+    const llvm::ArrayRef<llvm::StringLiteral> methods = interface.getMethodNames();
+    const StringRef functionName = interface.getFunctionName();
+    const auto iter = std::find(methods.begin(), methods.end(), functionName);
+    if (iter == methods.end()) {
+      return $_op->emitOpError("invalid function name for this operation: ") << functionName;
+    }
+    return mlir::success();
+  }];
+}
+
+class MirOpTrait<string name> : NativeOpTrait<name> {
+  let cppNamespace = "::Mir";
+}
