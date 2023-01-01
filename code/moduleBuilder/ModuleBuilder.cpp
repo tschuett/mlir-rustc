@@ -1,9 +1,11 @@
 #include "ModuleBuilder.h"
 
+#include "AST/Statement.h"
 #include "Mir/MirDialect.h"
 // #include "mlir/IR/AsmState.h"
-#include "TypeBuilder.h"
 #include "Mir/MirOps.h"
+#include "TypeBuilder.h"
+#include "mlir/IR/SymbolTable.h"
 
 #include <llvm/Remarks/Remark.h>
 #include <llvm/Target/TargetMachine.h>
@@ -46,7 +48,7 @@ mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
 
   // Let's start the body of the function now!
   mlir::Block &entryBlock = function.front();
-  //auto protoArgs = f->getSignature().getArgs();
+  // auto protoArgs = f->getSignature().getArgs();
 
   // FIXME
   // Declare all the function arguments in the symbol table.
@@ -86,6 +88,7 @@ mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   //  // If this function isn't main, then set the visibility to private.
   //  if (funcAST.getProto()->getName() != "main")
   //    function.setPrivate();
+  function.setSymVisibility(mlir::SymbolTable::Visibility::Public);
 
   return function;
 }
@@ -113,8 +116,14 @@ ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
 
 mlir::LogicalResult
 ModuleBuilder::buildBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
+  // new variable scope?
+  for (auto stmnt : blk->getExpressions()) {
+    buildStatement(stmnt);
+  }
+
   return LogicalResult::success();
 }
+
 
 /// Declare a variable in the current scope, return success if the variable
 /// wasn't declared yet.

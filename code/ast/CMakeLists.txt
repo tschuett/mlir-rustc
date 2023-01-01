@@ -6,6 +6,7 @@ add_library(ast
            ClippyAttribute.cpp
            FunctionSignature.cpp
            Function.cpp
+           BlockExpression.cpp
            )
 
 

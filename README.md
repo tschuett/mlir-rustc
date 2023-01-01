@@ -22,13 +22,13 @@
 
 # TODO
 
-* Remarks
-
 - [ ] UTF-8
 - [ ] Remarks
 - [ ] Mir to LLVM
 - [ ] async and await
 - [ ] Closures (nested regions)
+- [ ] visibility
+- [ ] visibility checks in inliner
 
 # References
 

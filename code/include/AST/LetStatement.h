@@ -6,10 +6,9 @@
 
 namespace rust_compiler::ast {
 
-class Item : public Statement {
+class LetStatement : public Statement {
 
 public:
-  explicit Item(mlir::Location location) : location(location) {}
 };
 
 } // namespace rust_compiler::ast

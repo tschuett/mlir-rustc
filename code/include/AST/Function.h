@@ -2,6 +2,7 @@
 
 #include "AST/AST.h"
 #include "AST/BlockExpression.h"
+#include "AST/FunctionQualifiers.h"
 #include "AST/FunctionSignature.h"
 
 #include <mlir/IR/Location.h>
@@ -12,6 +13,7 @@ class Function : public Node {
   mlir::Location location;
   std::shared_ptr<BlockExpression> body;
   FunctionSignature signature;
+  FunctionQualifiers qualifiers;
 
 public:
   FunctionSignature getSignature();

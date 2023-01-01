@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/Module.h"
+#include "AST/Statement.h"
 #include "Mir/MirDialect.h"
 #include "Target.h"
 
@@ -44,6 +45,9 @@ private:
                                             mlir::Location locaction);
   mlir::LogicalResult
   buildBlockExpression(std::shared_ptr<ast::BlockExpression> blk);
+
+  void buildStatement(std::shared_ptr<ast::Statement> stmt);
+  void buildLetStatement(std::shared_ptr<ast::LetStatement> letStmt);
 
   /// Declare a variable in the current scope, return success if the variable
   /// wasn't declared yet.

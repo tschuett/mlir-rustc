@@ -6,10 +6,10 @@
 
 namespace rust_compiler::ast {
 
-class Item : public Statement {
+class ExpressionStatement : public Statement {
+  mlir::Location location;
 
 public:
-  explicit Item(mlir::Location location) : location(location) {}
 };
 
 } // namespace rust_compiler::ast

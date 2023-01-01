@@ -1,11 +1,9 @@
 add_library(codegen
-           ModuleBuilder.cpp
            ToLLVM.cpp
            PassPipeline.cpp
            DumpLLVMIR.cpp
            LowerToLLVM.cpp
            TypeBuilder.cpp
-           Target.cpp
            )
 
 

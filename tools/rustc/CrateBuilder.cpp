@@ -56,12 +56,6 @@ void buildCrate(std::string_view path, std::string_view edition) {
   std::string str((*outputBuffer)->getBufferStart(),
                   (*outputBuffer)->getBufferEnd());
 
-  //  std::ifstream t(cargoTomlDir);
-  //  std::stringstream buffer;
-  //  buffer << t.rdbuf();
-  //
-  //  std::string file = buffer.str();
-
   lexer::TokenStream ts = lexer::lex(str, "lib.rs");
   std::shared_ptr<ast::Module> module = parser::parser(ts, "");
 
