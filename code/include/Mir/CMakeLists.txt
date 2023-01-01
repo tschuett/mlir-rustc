@@ -13,9 +13,3 @@ add_public_tablegen_target(MirOpsIncGen)
 
 #mlir_tablegen(MirOps.h.inc -gen-op-decls)
 #mlir_tablegen(MirOps.cpp.inc -gen-op-defs)
-
-
-set(LLVM_TARGET_DEFINITIONS MirOpsInterfaces.td)
-mlir_tablegen(MirOpsInterfaces.h.inc -gen-op-interface-decls)
-mlir_tablegen(MirOpsInterfaces.cpp.inc -gen-op-interface-defs)
-add_public_tablegen_target(MirOpInterfacesIncGen)

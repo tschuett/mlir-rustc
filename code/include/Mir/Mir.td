@@ -7,8 +7,8 @@ include "mlir/Interfaces/CallInterfaces.td"
 include "mlir/Interfaces/CastInterfaces.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 include "mlir/Interfaces/ControlFlowInterfaces.td"
-
-include "MirOpsInterfaces.td"
+include "mlir/IR/BuiltinTypeInterfaces.td"
+include "mlir/Dialect/LLVMIR/LLVMOpsInterfaces.td"
 
 def Mir_Dialect : Dialect {
   let name = "mir";
@@ -21,129 +21,49 @@ def Mir_Dialect : Dialect {
   }];
 
   let extraClassDeclaration = [{
-    MethodRegistry methods;
 
     static constexpr llvm::StringRef getBaseTypeAttrName() { return "BaseType"; }
     static constexpr llvm::StringRef getFunctionNameAttrName() { return "FunctionName"; }
     static constexpr llvm::StringRef getMangledFunctionNameAttrName() { return "MangledFunctionName"; }
     static constexpr llvm::StringRef getTypeNameAttrName() { return "TypeName"; }
-
-    /// Each operation will be registered as usual in an MLIR dialect
-    /// and also will be registered as a SYCL method if it implements one.
-    template <typename... Args> void addOperations();
-
-    /// Returns the name of the operation implementing the queried
-    /// method, if present.
-    ///
-    /// For a method to be queried, it must have been registered
-    /// first.
-    std::optional<llvm::StringRef> findMethod(::mlir::TypeID Type,
-                                               llvm::StringRef Name) const;
-
-    /// Returns the name of the operation implementing the queried
-    /// method, if present.
-    ///
-    /// For a method to be queried, it must have been registered
-    /// first.
-    ///
-    /// This function is similar to findMethod(), but also works for
-    /// methods registered as members of classes derived from \p BaseType.
-    std::optional<llvm::StringRef>
-    findMethodFromBaseClass(::mlir::TypeID BaseType,
-                            llvm::StringRef Name) const;
-
-    /// Add a definition for the given method to be used when lowering
-    /// SYCLMethodOpInterface instances.
-    void registerMethodDefinition(llvm::StringRef Name, mlir::func::FuncOp Func);
-
-    /// Retrieve a function definition previously registered with
-    /// registerMethodDefinition().
-    std::optional<mlir::func::FuncOp>
-    lookupMethodDefinition(llvm::StringRef Name,
-                           mlir::FunctionType Type) const;
   }];
 }
 
 // Types
 
-def Mir_StructType :
-    DialectType<Mir_Dialect, CPred<"$_self.isa<StructType>()">,
-                "Mir struct type">;
+////////////////////////////////////////////////////////////////////////////////
+// TYPES DECLARATIONS
+////////////////////////////////////////////////////////////////////////////////
 
+class Mir_Type<string name, string typeMnemonic, list<Trait> traits = []>
+    : TypeDef<Mir_Dialect, name,
+              !listconcat([MemRefElementTypeInterface,
+                           LLVM_PointerElementTypeInterface],
+                               traits)> {
+  let mnemonic = typeMnemonic;
+}
 
 
 // Ops
 class Mir_Op<string mnemonic, list<Trait> traits = []> :
     Op<Mir_Dialect, mnemonic, traits>;
 
-
-class MirMethodOpInterfaceImpl<
-    string mnemonic, string type, list<string> methodNames, list<Trait> traits = []>
-        : Mir_Op<mnemonic, !listconcat(traits, [MirMethodOpInterface, CallOpInterface])> {
-  string baseType = type;
-  list<string> memberFunctionNames = methodNames;
-  int arrSize = !size(memberFunctionNames);
-
-  let extraClassDeclaration = [{
-    static constexpr std::array<llvm::StringLiteral, }] # arrSize # [{> methods{{ }] #
-      !interleave(!foreach(name, memberFunctionNames, "\"" # name # "\""), ", ") # [{
-     }};
-    static ::mlir::TypeID getTypeID() { return ::mlir::sycl::}] # type # [{::getTypeID(); }
-    static constexpr llvm::ArrayRef<llvm::StringLiteral> getMethodNames() { return methods; }
-
-    Operation::operand_iterator arg_operand_begin() { return (*this)->operand_begin(); }
-    Operation::operand_iterator arg_operand_end() { return (*this)->operand_end(); }
-
-    /// Return the callee of the generic Mir call operation, this is required by
-    /// the call interface.
-    CallInterfaceCallable getCallableForCallee() {
-      return (*this)->getAttrOfType<FlatSymbolRefAttr>(getMangledFunctionNameAttrName());
-    }
-
-    /// Get the argument operands to the called function, this is required by the
-    /// call interface.
-    Operation::operand_range getArgOperands() {
-      return {arg_operand_begin(), arg_operand_end()};
-    }
-  }];
-
-  let extraClassDefinition = [{
-    constexpr std::array<llvm::StringLiteral, }] # arrSize # [{> $cppClass::methods;
-  }];
-}
-
-
-def Mir_AddiOp : Mir_Op<"Addi", []> {
+def Mir_AddiOp : Mir_Op<"addi", [Pure]> {
   let summary = "Performs addition on the integer input.";
 
   let description = [{
 Each entry in `output` is the mean of the corresponding size `ksize`
 window in `value`. NoMemoryEffect
   }];
-
-  let extraClassDeclaration = [{
-   static ::mlir::TypeID getTypeID() { return ::Mir::}] # type # [{::getTypeID(); }
-
-   static constexpr llvm::ArrayRef<llvm::StringLiteral> getMethodNames() { return methods; }
-  }];
-
-  let builders = [];
-
-  let hasVerifier = 1;
 }
 
-def AddfOp : Mir_Op<"Addi", []> {
+def AddfOp : Mir_Op<"addf", [Pure]> {
   let summary = "Performs addition on the float input.";
 
   let description = [{
 Each entry in `output` is the mean of the corresponding size `ksize`
 window in `value`. NoMemoryEffect
   }];
-
-
-  let builders = [];
-
-  let hasVerifier = 1;
 }
 
 
@@ -184,12 +104,30 @@ def CallOp : Mir_Op<"call", [CallOpInterface]> {
     }]>
   ];
 
+  let extraClassDeclaration = [{
+    operand_iterator arg_operand_begin() { return operand_begin(); }
+    operand_iterator arg_operand_end() { return operand_end(); }
+
+    /// Return the callee of the generic SYCL call operation, this is required by
+    /// the call interface.
+    mlir::CallInterfaceCallable getCallableForCallee() {
+      return (*this)->getAttrOfType<mlir::FlatSymbolRefAttr>(getMangledFunctionNameAttrName());
+    }
+
+    /// Get the argument operands to the called function, this is required by the
+    /// call interface.
+    operand_range getArgOperands() {
+      return {arg_operand_begin(), arg_operand_end()};
+    }
+  }];
+
   let assemblyFormat = [{
     `(` $Args `)` attr-dict `:` functional-type($Args, results)
   }];
 }
 
-def ReturnOp : Mir_Op<"return", [Pure, HasParent<"mlir::func::FuncOp">,
+// HasParent<"mlir::func::FuncOp">
+def ReturnOp : Mir_Op<"return", [Pure,
                                 MemRefsNormalizable, ReturnLike, Terminator]> {
   let summary = "Function return operation";
   let description = [{
@@ -219,7 +157,26 @@ def ReturnOp : Mir_Op<"return", [Pure, HasParent<"mlir::func::FuncOp">,
   }];
 
   let assemblyFormat = "attr-dict ($operands^ `:` type($operands))?";
-  let hasVerifier = 1;
 }
+
+def BorrowOp : Mir_Op<"borrow", [Pure]> {
+  let summary = "Performs a borrow on the  input.";
+
+  let description = [{
+Each entry in `output` is the mean of the corresponding size `ksize`
+window in `value`. NoMemoryEffect
+  }];
+
+}
+
+def MutBorrowOp : Mir_Op<"mutborrow", [Pure]> {
+  let summary = "Performs a mutable borrow on the  input.";
+
+  let description = [{
+Each entry in `output` is the mean of the corresponding size `ksize`
+window in `value`. NoMemoryEffect
+  }];
+}
+
 
 

@@ -6,9 +6,12 @@ namespace rust_compiler {
 
 class Target {
   llvm::TargetMachine *tm;
+  unsigned vectorWidth = 0;
+  bool sve = false;
+  llvm::StringMap<bool> features;
 
 public:
-  Target(llvm::TargetMachine *tm) : tm(tm){};
+  Target(llvm::TargetMachine *_tm);
 
   unsigned getVectorWidth();
   unsigned getPointerSizeInBits();

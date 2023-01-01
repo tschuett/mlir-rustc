@@ -20,6 +20,6 @@ add_library(MirDialect
 
 target_include_directories(MirDialect PRIVATE ../../include)
 
-add_dependencies(MirDialect MirOpsIncGen MirOpInterfacesIncGen)
+add_dependencies(MirDialect MirOpsIncGen ) #MirOpInterfacesIncGen
 
 target_link_libraries(MirDialect MLIRLLVMDialect)

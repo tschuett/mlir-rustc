@@ -9,11 +9,12 @@
 #include <fstream>
 #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Support/FileSystem.h>
+#include <llvm/Support/Host.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/Path.h>
-#include <llvm/Support/Host.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
+#include <llvm/TargetParser/Host.h>
 #include <sstream>
 
 namespace rust_compiler::rustc {
@@ -29,6 +30,7 @@ void buildCrate(std::string_view path, std::string_view edition) {
 
   std::string featuresStr;
   std::string cpu = "sapphirerapids";
+  cpu = llvm::sys::getHostCPUName();
   std::unique_ptr<llvm::TargetMachine> tm;
   tm.reset(theTarget->createTargetMachine(
       theTriple, /*CPU=*/cpu,

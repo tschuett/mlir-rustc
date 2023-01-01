@@ -9,6 +9,9 @@
 
 # Requirements
 
+* trunk LLVM/MLIR
+* cmake
+
 ```console
 >  brew install llvm
 ```
@@ -17,14 +20,35 @@
 # TODO
 
 * Remarks
-* https://mlir.llvm.org/docs/Tutorials/Toy/Ch-6/
-* https://github.com/zero9178/Pylir
-* https://github.com/intel/llvm/tree/sycl-mlir/mlir-sycl
-* https://github.com/LightningCreations/lccc
 
 - [ ] UTF-8
 - [ ] Remarks
 - [ ] Mir to LLVM
+- [ ] async and await
+- [ ] Closures (nested regions)
+
+# References
+
+* https://mlir.llvm.org/docs/Tutorials/Toy/Ch-6/
+* https://github.com/zero9178/Pylir
+* https://github.com/intel/llvm/tree/sycl-mlir/mlir-sycl
+* https://mlir.llvm.org/docs/Dialects/ArithOps/
+
+## Async
+
+* https://mlir.llvm.org/docs/Dialects/AsyncDialect/
+* https://discourse.llvm.org/t/rfc-new-dialect-for-modelling-asynchronous-execution-at-a-higher-level/1345/11
+
+## Rust
+
+* https://doc.rust-lang.org/reference/expressions/await-expr.html
+* https://doc.rust-lang.org/reference/expressions/operator-expr.html#borrow-operators
+* https://github.com/LightningCreations/lccc
+
+## MIR
+
+* https://blog.rust-lang.org/2016/04/19/MIR.html
+* https://rustc-dev-guide.rust-lang.org/mir/index.html
 
 
 ```bibtex
@@ -37,3 +61,5 @@
   organization={IEEE}
 }
 ````
+
+
