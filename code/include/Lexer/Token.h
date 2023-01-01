@@ -57,6 +57,8 @@ public:
   bool isInToken() const;
 
   std::string getIdentifier() const { return id; }
+
+  LocationAttr getLocation() const { return loc; }
 };
 
 } // namespace rust_compiler::lexer

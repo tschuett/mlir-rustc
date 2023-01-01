@@ -98,7 +98,7 @@ std::optional<InnerAttribute> tryParseInnerAttribute(std::span<Token> tokens) {
 }
 
 std::optional<ClippyAttribute>
-tryParseClippyAttribute(mlir::Location location, std::span<Token> tokens) {
+tryParseClippyAttribute(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   if (view.front().getKind() == TokenKind::Hash) {
@@ -118,7 +118,7 @@ tryParseClippyAttribute(mlir::Location location, std::span<Token> tokens) {
                   view = view.subspan(1);
                 } else if (view.front().getKind() == TokenKind::Comma) {
                   printf("found clippy\n");
-                  return ClippyAttribute(location, lints);
+                  return ClippyAttribute(tokens[0].getLocation(), lints);
                 }
               }
             }

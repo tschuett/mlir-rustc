@@ -20,7 +20,6 @@ extern std::optional<InnerAttribute>
 tryParseInnerAttribute(std::span<lexer::Token> tokens);
 
 extern std::optional<ClippyAttribute>
-tryParseClippyAttribute(mlir::Location location,
-                        std::span<lexer::Token> tokens);
+tryParseClippyAttribute(std::span<lexer::Token> tokens);
 
 } // namespace rust_compiler

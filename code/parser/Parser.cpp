@@ -1,10 +1,10 @@
 #include "Parser/Parser.h"
 
 #include "AST/ClippyAttribute.h"
-#include "AST/LocationAttr.h"
 #include "AST/Module.h"
 #include "AST/OuterAttribute.h"
 #include "Attributes.h"
+#include "Location.h"
 #include "Visibility.h"
 
 #include <cstdlib>
@@ -64,7 +64,7 @@ std::shared_ptr<ast::Module> parser(TokenStream &ts,
                 tokens[3].getIdentifier() == "deny") {
               if (tokens[4].getKind() == TokenKind::ParenOpen) {
                 std::optional<ClippyAttribute> attribute =
-                    tryParseClippyAttribute(location, tokens);
+                    tryParseClippyAttribute(tokens);
                 if (attribute) {
                   ClippyAttribute attr = *attribute;
                   tokens = tokens.subspan(attr.getTokens());
