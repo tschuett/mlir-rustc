@@ -70,3 +70,5 @@
 # Ideas
 
 * https://icl.utk.edu/papi/
+
+* PGO: where to optimize

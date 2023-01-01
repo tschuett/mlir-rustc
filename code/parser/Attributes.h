@@ -5,6 +5,7 @@
 #include "AST/OuterAttribute.h"
 #include "Lexer/Token.h"
 
+#include <mlir/IR/Location.h>
 #include <optional>
 #include <span>
 
@@ -19,6 +20,7 @@ extern std::optional<InnerAttribute>
 tryParseInnerAttribute(std::span<lexer::Token> tokens);
 
 extern std::optional<ClippyAttribute>
-tryParseClippyAttribute(std::span<lexer::Token> tokens);
+tryParseClippyAttribute(mlir::Location location,
+                        std::span<lexer::Token> tokens);
 
 } // namespace rust_compiler

@@ -1,10 +1,10 @@
 #include "CrateBuilder.h"
 
 #include "Lexer/Lexer.h"
-#include "ModuleBuilder.h"
+#include "ModuleBuilder/ModuleBuilder.h"
 #include "Parser/Parser.h"
 #include "Sema/Sema.h"
-#include "Target.h"
+#include "ModuleBuilder/Target.h"
 
 #include <fstream>
 #include <llvm/MC/TargetRegistry.h>
@@ -31,7 +31,7 @@ void buildCrate(std::string_view path, std::string_view edition) {
   std::string featuresStr;
   std::string cpu = "sapphirerapids";
   cpu = llvm::sys::getHostCPUName();
-  std::unique_ptr<llvm::TargetMachine> tm;
+  std::unique_ptr<::llvm::TargetMachine> tm;
   tm.reset(theTarget->createTargetMachine(
       theTriple, /*CPU=*/cpu,
       /*Features=*/featuresStr, llvm::TargetOptions(),

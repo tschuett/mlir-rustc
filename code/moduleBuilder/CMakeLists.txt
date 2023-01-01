@@ -12,8 +12,8 @@ target_include_directories(modulebuilder PRIVATE  ../include)
 
 llvm_map_components_to_libnames(llvm_libs TargetParser)
 
-target_link_libraries(modulebuilder MirDialect ast ${llvm_libs} MLIRFuncDialect MLIRAsyncDialect)
+target_link_libraries(modulebuilder remarks MirDialect ast ${llvm_libs} MLIRFuncDialect MLIRAsyncDialect)
 
 
-target_precompile_headers(modulebuilder PRIVATE llvm/Target/TargetMachine.h mlir/IR/MLIRContext.h)
+target_precompile_headers(modulebuilder PRIVATE )
 

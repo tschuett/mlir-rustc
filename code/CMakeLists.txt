@@ -11,3 +11,4 @@ add_subdirectory(sema)
 add_subdirectory(analysis)
 
 add_subdirectory(moduleBuilder)
+add_subdirectory(remarks)

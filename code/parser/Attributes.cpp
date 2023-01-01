@@ -3,6 +3,7 @@
 #include "AST/ClippyAttribute.h"
 #include "AST/InnerAttribute.h"
 #include "Lexer/Token.h"
+#include "mlir/IR/Location.h"
 
 #include <optional>
 #include <sstream>
@@ -70,7 +71,7 @@ tryParseDenyAttribute(std::span<Token> tokens) {
       view[3].getIdentifier() == "deny" and
       view[4].getKind() == TokenKind::ParenOpen) {
     view = view.subspan(5);
-    //InnerAttribute attr;
+    // InnerAttribute attr;
     std::optional<std::string> lint = tryParseLint(view);
     if (lint) {
     }
@@ -97,7 +98,7 @@ std::optional<InnerAttribute> tryParseInnerAttribute(std::span<Token> tokens) {
 }
 
 std::optional<ClippyAttribute>
-tryParseClippyAttribute(std::span<Token> tokens) {
+tryParseClippyAttribute(mlir::Location location, std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   if (view.front().getKind() == TokenKind::Hash) {
@@ -117,7 +118,7 @@ tryParseClippyAttribute(std::span<Token> tokens) {
                   view = view.subspan(1);
                 } else if (view.front().getKind() == TokenKind::Comma) {
                   printf("found clippy\n");
-                  return ClippyAttribute(lints);
+                  return ClippyAttribute(location, lints);
                 }
               }
             }

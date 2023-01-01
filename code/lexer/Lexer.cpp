@@ -269,6 +269,7 @@ std::optional<std::string> tryLexChar(std::string_view code) {
 TokenStream lex(std::string_view _code, std::string_view fileName) {
   TokenStream ts;
   std::string_view code = _code;
+  unsigned lineNumber = 0;
 
   while (code.size() > 0) {
 
@@ -286,105 +287,121 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
 
     std::optional<std::string> str = tryLexString(code);
     if (str) {
-      ts.append(Token(TokenKind::String, *str));
+      ts.append(
+          Token(LocationAttr(fileName, lineNumber), TokenKind::String, *str));
       code.remove_prefix(str->size());
       continue;
     }
 
     std::optional<std::string> ch = tryLexChar(code);
     if (ch) {
-      ts.append(Token(TokenKind::Char, *ch));
+      ts.append(
+          Token(LocationAttr(fileName, lineNumber), TokenKind::Char, *ch));
       code.remove_prefix(ch->size());
       continue;
     }
 
     std::optional<std::string> id = tryLexIdentifier(code);
     if (id) {
-      ts.append(Token(TokenKind::Identifier, *id));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Identifier,
+                      *id));
       code.remove_prefix(id->size());
       continue;
     }
 
     if (code.starts_with("!")) {
-      ts.append(Token(TokenKind::Exclaim));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Exclaim));
       code.remove_prefix(1);
     } else if (code.starts_with("->")) {
-      ts.append(Token(TokenKind::ThinArrow));
+      ts.append(
+          Token(LocationAttr(fileName, lineNumber), TokenKind::ThinArrow));
       code.remove_prefix(2);
     } else if (code.starts_with("+")) {
-      ts.append(Token(TokenKind::Plus));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Plus));
       code.remove_prefix(1);
     } else if (code.starts_with(".")) {
-      ts.append(Token(TokenKind::Dot));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Dot));
       code.remove_prefix(1);
     } else if (code.starts_with("?")) {
-      ts.append(Token(TokenKind::QMark));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::QMark));
       code.remove_prefix(1);
     } else if (code.starts_with("*")) {
-      ts.append(Token(TokenKind::Star));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Star));
       code.remove_prefix(1);
     } else if (code.starts_with("=")) {
-      ts.append(Token(TokenKind::Equals));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Equals));
       code.remove_prefix(1);
     } else if (code.starts_with(":")) {
-      ts.append(Token(TokenKind::Colon));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Colon));
       code.remove_prefix(1);
     } else if (code.starts_with("-")) {
-      ts.append(Token(TokenKind::Dash));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Dash));
       code.remove_prefix(1);
     } else if (code.starts_with(">>")) {
-      ts.append(Token(TokenKind::DoubleGreaterThan));
+      ts.append(Token(LocationAttr(fileName, lineNumber),
+                      TokenKind::DoubleGreaterThan));
       code.remove_prefix(2);
     } else if (code.starts_with(">")) {
-      ts.append(Token(TokenKind::GreaterThan));
+      ts.append(
+          Token(LocationAttr(fileName, lineNumber), TokenKind::GreaterThan));
       code.remove_prefix(1);
     } else if (code.starts_with("<")) {
-      ts.append(Token(TokenKind::LessThan));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::LessThan));
       code.remove_prefix(1);
     } else if (code.starts_with("::")) {
-      ts.append(Token(TokenKind::DoubleColon));
+      ts.append(
+          Token(LocationAttr(fileName, lineNumber), TokenKind::DoubleColon));
       code.remove_prefix(2);
     } else if (code.starts_with("&")) {
-      ts.append(Token(TokenKind::Amp));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Amp));
       code.remove_prefix(1);
     } else if (code.starts_with("&&")) {
-      ts.append(Token(TokenKind::DoubleAmp));
+      ts.append(
+          Token(LocationAttr(fileName, lineNumber), TokenKind::DoubleAmp));
       code.remove_prefix(2);
     } else if (code.starts_with("#")) {
-      ts.append(Token(TokenKind::Hash));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Hash));
       code.remove_prefix(1);
     } else if (code.starts_with("{")) {
-      ts.append(Token(TokenKind::BraceOpen));
+      ts.append(
+          Token(LocationAttr(fileName, lineNumber), TokenKind::BraceOpen));
       code.remove_prefix(1);
     } else if (code.starts_with("}")) {
-      ts.append(Token(TokenKind::BraceClose));
+      ts.append(
+          Token(LocationAttr(fileName, lineNumber), TokenKind::BraceClose));
       code.remove_prefix(1);
     } else if (code.starts_with("[")) {
-      ts.append(Token(TokenKind::SquareOpen));
+      ts.append(
+          Token(LocationAttr(fileName, lineNumber), TokenKind::SquareOpen));
       code.remove_prefix(1);
     } else if (code.starts_with("]")) {
-      ts.append(Token(TokenKind::SquareClose));
+      ts.append(
+          Token(LocationAttr(fileName, lineNumber), TokenKind::SquareClose));
       code.remove_prefix(1);
     } else if (code.starts_with(",")) {
-      ts.append(Token(TokenKind::Comma));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Comma));
       code.remove_prefix(1);
     } else if (code.starts_with("(")) {
-      ts.append(Token(TokenKind::ParenOpen));
+      ts.append(
+          Token(LocationAttr(fileName, lineNumber), TokenKind::ParenOpen));
       code.remove_prefix(1);
     } else if (code.starts_with(")")) {
-      ts.append(Token(TokenKind::ParenClose));
+      ts.append(
+          Token(LocationAttr(fileName, lineNumber), TokenKind::ParenClose));
       code.remove_prefix(1);
     } else if (code.starts_with("!")) {
-      ts.append(Token(TokenKind::Exclaim));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Exclaim));
       code.remove_prefix(1);
     } else if (code.starts_with(";")) {
-      ts.append(Token(TokenKind::SemiColon));
+      ts.append(
+          Token(LocationAttr(fileName, lineNumber), TokenKind::SemiColon));
       code.remove_prefix(1);
     } else if (code.starts_with("|")) {
-      ts.append(Token(TokenKind::Pipe));
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Pipe));
       code.remove_prefix(1);
     } else if (code.starts_with("\n")) {
       code.remove_prefix(1);
+      ++lineNumber;
     } else {
       printf("unknown token: x%s\n", code.data());
       exit(EXIT_FAILURE);

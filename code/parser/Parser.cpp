@@ -1,6 +1,7 @@
 #include "Parser/Parser.h"
 
 #include "AST/ClippyAttribute.h"
+#include "AST/LocationAttr.h"
 #include "AST/Module.h"
 #include "AST/OuterAttribute.h"
 #include "Attributes.h"
@@ -15,7 +16,8 @@ namespace rust_compiler::parser {
 using namespace rust_compiler::ast;
 using namespace rust_compiler::lexer;
 
-std::shared_ptr<ast::Module> parser(TokenStream &ts, std::string_view modulePath) {
+std::shared_ptr<ast::Module> parser(TokenStream &ts,
+                                    std::string_view modulePath) {
   Module module = {modulePath};
 
   std::span<Token> tokens = ts.getAsView();
@@ -62,7 +64,7 @@ std::shared_ptr<ast::Module> parser(TokenStream &ts, std::string_view modulePath
                 tokens[3].getIdentifier() == "deny") {
               if (tokens[4].getKind() == TokenKind::ParenOpen) {
                 std::optional<ClippyAttribute> attribute =
-                    tryParseClippyAttribute(tokens);
+                    tryParseClippyAttribute(location, tokens);
                 if (attribute) {
                   ClippyAttribute attr = *attribute;
                   tokens = tokens.subspan(attr.getTokens());
@@ -86,4 +88,4 @@ std::shared_ptr<ast::Module> parser(TokenStream &ts, std::string_view modulePath
   return std::make_shared<ast::Module>(module);
 }
 
-} // namespace rust_compiler
+} // namespace rust_compiler::parser

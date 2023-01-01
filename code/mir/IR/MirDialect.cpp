@@ -34,6 +34,16 @@ struct MirInlinerInterface : public DialectInlinerInterface {
   /// created).
   bool isLegalToInline(Operation *call, Operation *callable,
                        bool wouldBeCloned) const override {
+    CallableOpInterface callableI =
+        dyn_cast<mlir::CallableOpInterface>(callable);
+    if (!callableI)
+      return false;
+
+    CallOpInterface callI =
+        dyn_cast<mlir::CallOpInterface>(call);
+    if (!callI)
+      return false;
+
     return false;
   }
 
@@ -61,11 +71,11 @@ struct MirInlinerInterface : public DialectInlinerInterface {
       valuesToReplace[it.index()].replaceAllUsesWith(it.value());
   }
 
-  Operation *materializeCallConversion(OpBuilder &builder, Value input,
-                                       Type resultType,
-                                       Location conversionLoc) const override {
-    return builder.create<CastOp>(conversionLoc, resultType, input);
-  }
+//  Operation *materializeCallConversion(OpBuilder &builder, Value input,
+//                                       Type resultType,
+//                                       Location conversionLoc) const override {
+//    return builder.create<CastOp>(conversionLoc, resultType, input);
+//  }
 };
 
 void MirDialect::initialize() {

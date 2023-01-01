@@ -2,6 +2,7 @@
 
 #include "AST/Module.h"
 #include "AST/Statement.h"
+#include "AST/LetStatement.h"
 #include "Mir/MirDialect.h"
 #include "Target.h"
 

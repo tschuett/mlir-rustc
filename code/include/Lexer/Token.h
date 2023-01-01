@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Lexer/Location.h"
+#include "Location.h"
 
 #include <string>
 
@@ -38,13 +38,14 @@ enum class TokenKind {
 };
 
 class Token {
+  LocationAttr loc;
   TokenKind kind;
   std::string id;
-  Location loc;
 
 public:
-  Token(TokenKind tk) : kind(tk){};
-  Token(TokenKind tk, std::string_view id) : kind(tk), id(id){};
+  Token(LocationAttr loc, TokenKind tk) : loc(loc), kind(tk){};
+  Token(LocationAttr loc, TokenKind tk, std::string_view id)
+      : loc(loc), kind(tk), id(id){};
 
   TokenKind getKind() const { return kind; }
 

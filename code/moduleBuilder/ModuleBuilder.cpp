@@ -1,4 +1,4 @@
-#include "ModuleBuilder.h"
+#include "ModuleBuilder/ModuleBuilder.h"
 
 #include "AST/Statement.h"
 #include "Mir/MirDialect.h"
@@ -20,20 +20,11 @@ namespace rust_compiler {
 using namespace llvm;
 using namespace mlir;
 
-remarks::Remark createRemark(llvm::StringRef pass,
-                             llvm::StringRef FunctionName) {
-  llvm::remarks::Remark r;
-  r.PassName = pass;
-  r.FunctionName = FunctionName;
-  return r;
-}
-
 void ModuleBuilder::build(std::shared_ptr<ast::Module> mod, Target &target) {
   for (auto f : mod->getFuncs()) {
     buildFun(f);
   }
 }
-
 
 mlir::LogicalResult
 ModuleBuilder::buildBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
@@ -44,7 +35,6 @@ ModuleBuilder::buildBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
 
   return LogicalResult::success();
 }
-
 
 /// Declare a variable in the current scope, return success if the variable
 /// wasn't declared yet.

@@ -1,6 +1,22 @@
+#include "Mir/MirOps.h"
 #include "ModuleBuilder/ModuleBuilder.h"
+#include "TypeBuilder.h"
+
+#include <llvm/Remarks/Remark.h>
+#include <mlir/IR/BuiltinOps.h>
+
+using namespace llvm;
+using namespace mlir;
 
 namespace rust_compiler {
+
+static remarks::Remark createRemark(llvm::StringRef pass,
+                                    llvm::StringRef FunctionName) {
+  llvm::remarks::Remark r;
+  r.PassName = pass;
+  r.FunctionName = FunctionName;
+  return r;
+}
 
 mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   ScopedHashTableScope<llvm::StringRef, mlir::Value> varScope(symbolTable);
@@ -56,7 +72,6 @@ mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   //  // If this function isn't main, then set the visibility to private.
   //  if (funcAST.getProto()->getName() != "main")
   //    function.setPrivate();
-  function.setSymVisibility(mlir::SymbolTable::Visibility::Public);
 
   return function;
 }

@@ -2,7 +2,7 @@
 
 #include "AST/Item.h"
 #include "AST/Statement.h"
-#include "mlir/IR/Location.h"
+#include <mlir/IR/Location.h>
 
 #include <span>
 #include <string>
@@ -19,7 +19,6 @@ public:
     lints = {_lints.begin(), _lints.end()};
   }
 
-  ClippyAttribute(std::span<std::string> lints);
   size_t getTokens() override;
 };
 
