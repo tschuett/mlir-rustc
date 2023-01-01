@@ -1,5 +1,6 @@
 #include "Mir/MirOps.h"
 #include "ModuleBuilder/ModuleBuilder.h"
+#include "Remarks/OptimizationRemarkEmitter.h"
 #include "TypeBuilder.h"
 
 #include <llvm/Remarks/Remark.h>
@@ -8,25 +9,27 @@
 using namespace llvm;
 using namespace mlir;
 
+using namespace rust_compiler::remarks;
+
 namespace rust_compiler {
 
-static remarks::Remark createRemark(llvm::StringRef pass,
-                                    llvm::StringRef FunctionName) {
-  llvm::remarks::Remark r;
-  r.PassName = pass;
-  r.FunctionName = FunctionName;
-  return r;
-}
+// static remarks::Remark createRemark(llvm::StringRef pass,
+//                                     llvm::StringRef FunctionName) {
+//   llvm::remarks::Remark r;
+//   r.PassName = pass;
+//   r.FunctionName = FunctionName;
+//   return r;
+// }
 
 mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   ScopedHashTableScope<llvm::StringRef, mlir::Value> varScope(symbolTable);
 
-  // serializer.emit(createRemark("codegen", f->getName()));
-  serializer.emit(createRemark("codegen", "fun"));
+  OptimizationRemarkEmitter ORE = {f, &serializer};
+
 
   builder.setInsertionPointToEnd(theModule.getBody());
   mlir::func::FuncOp function =
-      buildFunctionSignature(f->getSignature(), f->getLocation());
+    buildFunctionSignature(f->getSignature(), f->getLocation());
   if (!function)
     return nullptr;
 

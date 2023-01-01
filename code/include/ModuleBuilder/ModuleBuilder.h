@@ -1,8 +1,10 @@
 #pragma once
 
+#include "AST/Expression.h"
+#include "AST/ExpressionStatement.h"
+#include "AST/LetStatement.h"
 #include "AST/Module.h"
 #include "AST/Statement.h"
-#include "AST/LetStatement.h"
 #include "Mir/MirDialect.h"
 #include "Target.h"
 
@@ -49,6 +51,16 @@ private:
 
   void buildStatement(std::shared_ptr<ast::Statement> stmt);
   void buildLetStatement(std::shared_ptr<ast::LetStatement> letStmt);
+
+  void buildExpression(std::shared_ptr<ast::Expression> expr);
+
+  void buildExpressionWithBlock(std::shared_ptr<ast::ExpressionWithBlock> expr);
+  void
+  buildExpressionWithoutBlock(std::shared_ptr<ast::ExpressionWithoutBlock> expr);
+
+  void buildExpressionStatement(std::shared_ptr<ast::ExpressionStatement> expr);
+
+  void buildItem(std::shared_ptr<ast::Item> item);
 
   /// Declare a variable in the current scope, return success if the variable
   /// wasn't declared yet.
