@@ -2,10 +2,6 @@ cmake_minimum_required(VERSION 3.25.0)
 
 project(rust_compiler)
 
-set (LLVM_BASE_DIR "${LLVM_DIR}")
-
-list(APPEND CMAKE_PREFIX_PATH "${LLVM_DIR}/lib/cmake/llvm" "${LLVM_DIR}/lib/cmake/mlir")
-
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
@@ -19,7 +15,7 @@ message(STATUS "Using Cmake LLVM in: ${LLVM_CMAKE_DIR}")
 list(APPEND CMAKE_MODULE_PATH "${MLIR_CMAKE_DIR}")
 list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 
-set(LLVM_TABLEGEN_EXE "${LLVM_BASE_DIR}/bin/llvm-tblgen")
+set(LLVM_TABLEGEN_EXE "${LLVM_DIR}/../../../bin/llvm-tblgen")
 
 message(STATUS "Using tablegen in: ${LLVM_TABLEGEN_EXE}")
 

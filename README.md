@@ -2,10 +2,13 @@
 
 
 ```console
-> ./cmake.sh
+> export LLVM_BUILD_DIR=
+
+> export LLVM=$LLVM_BUILD_DIR/lib/cmake/llvm
+> export MLIR=$LLVM_BUILD_DIR/lib/cmake/mlir
+> cmake -DCMAKE_BUILD_TYPE=Debug -DLLVM_DIR=$LLVM -DMLIR_DIR=$MLIR .
 > make
 ```
-
 
 # Requirements
 
