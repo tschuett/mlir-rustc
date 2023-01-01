@@ -9,7 +9,7 @@ namespace rust_compiler::ast {
 class Item : public Statement {
 
 public:
-  explicit Item(mlir::Location location) : location(location) {}
+  explicit Item(mlir::Location location) : Statement{location} {}
 };
 
 } // namespace rust_compiler::ast

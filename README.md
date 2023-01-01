@@ -66,3 +66,7 @@
 ````
 
 
+
+# Ideas
+
+* https://icl.utk.edu/papi/

@@ -70,7 +70,7 @@ tryParseDenyAttribute(std::span<Token> tokens) {
       view[3].getIdentifier() == "deny" and
       view[4].getKind() == TokenKind::ParenOpen) {
     view = view.subspan(5);
-    InnerAttribute attr;
+    //InnerAttribute attr;
     std::optional<std::string> lint = tryParseLint(view);
     if (lint) {
     }

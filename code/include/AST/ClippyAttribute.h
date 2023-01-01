@@ -14,7 +14,10 @@ class ClippyAttribute : public Item {
   std::vector<std::string> lints;
 
 public:
-  ClippyAttribute(mlir::Location location) { Statement(location); }
+  ClippyAttribute(mlir::Location location, std::span<std::string> _lints)
+      : Item{location} {
+    lints = {_lints.begin(), _lints.end()};
+  }
 
   ClippyAttribute(std::span<std::string> lints);
   size_t getTokens() override;

@@ -16,8 +16,9 @@ class Function : public Node {
   FunctionQualifiers qualifiers;
 
 public:
-  FunctionSignature getSignature();
-  mlir::Location getLocation();
+  FunctionSignature getSignature() const;
+  mlir::Location getLocation() const;
+  FunctionQualifiers getFunctionQualifiers() const;
 
   std::shared_ptr<BlockExpression> getBody();
 };
