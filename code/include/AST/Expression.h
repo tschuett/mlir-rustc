@@ -16,6 +16,8 @@ public:
 
   ExpressionKind getExpressionKind() const { return expressionKind; }
 
+  LocationAttr getLocation() const { return loc; }
+
 protected:
   LocationAttr loc;
   ExpressionKind expressionKind;

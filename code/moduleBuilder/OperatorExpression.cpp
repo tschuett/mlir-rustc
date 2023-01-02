@@ -1,8 +1,8 @@
 #include "AST/ArithmeticOrLogicalExpression.h"
-#include "ModuleBuilder/ModuleBuilder.h"
-
 #include "Mir/MirDialect.h"
 #include "Mir/MirOps.h"
+#include "ModuleBuilder/ModuleBuilder.h"
+#include "mlir/IR/Location.h"
 
 namespace rust_compiler {
 
@@ -17,6 +17,10 @@ mlir::Value ModuleBuilder::emitArithmeticOrLogicalExpression(
 
   if (!rhs)
     return nullptr;
+
+  LocationAttr loc = expr->getLHS()->getLocation();
+
+  mlir::Location location = {loc};
 
   switch (expr->getKind()) {
   case ast::ArithmeticOrLogicalExpressionKind::Addition: {
