@@ -4,6 +4,8 @@
 
 #include <string>
 
+// https://doc.rust-lang.org/reference/tokens.html
+
 namespace rust_compiler::lexer {
 
 enum class TokenKind {
@@ -60,5 +62,7 @@ public:
 
   LocationAttr getLocation() const { return loc; }
 };
+
+std::string Token2String(TokenKind kind);
 
 } // namespace rust_compiler::lexer

@@ -13,7 +13,8 @@ namespace rust_compiler {
 
 using namespace rust_compiler::lexer;
 
-std::optional<std::string> tryParseLint(std::span<Token> tokens) {
+std::optional<std::pair<std::string, unsigned>>
+tryParseLint(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   if (view[0].getKind() == TokenKind::Identifier) {
@@ -21,14 +22,14 @@ std::optional<std::string> tryParseLint(std::span<Token> tokens) {
       if (view[2].getKind() == TokenKind::Identifier) {
         std::stringstream s;
         s << view[0].getIdentifier() << "::" << view[2].getIdentifier();
-        return s.str();
+        return std::make_pair<std::string, unsigned>(s.str(), 3);
       }
     }
   }
 
   if (view[0].getKind() == TokenKind::Identifier) {
     if (view[1].getKind() != TokenKind::DoubleColon) {
-      return view[0].getIdentifier();
+      return std::make_pair<std::string, unsigned>(view[0].getIdentifier(), 1);
     }
   }
 
@@ -72,8 +73,9 @@ tryParseDenyAttribute(std::span<Token> tokens) {
       view[4].getKind() == TokenKind::ParenOpen) {
     view = view.subspan(5);
     // InnerAttribute attr;
-    std::optional<std::string> lint = tryParseLint(view);
+    std::optional<std::pair<std::string, unsigned>> lint = tryParseLint(view);
     if (lint) {
+      // FIXME
     }
   }
   return std::nullopt;
@@ -111,14 +113,20 @@ tryParseClippyAttribute(std::span<Token> tokens) {
             if (view[4].getKind() == TokenKind::ParenOpen) {
               view = view.subspan(5);
               std::vector<std::string> lints;
+              unsigned lintTokens = 0;
               while (view.size() > 1) {
-                std::optional<std::string> lint = tryParseLint(view);
+                std::optional<std::pair<std::string, unsigned>> lint =
+                    tryParseLint(view);
                 if (lint) {
-                  lints.push_back(*lint);
-                  view = view.subspan(1);
-                } else if (view.front().getKind() == TokenKind::Comma) {
+                  lints.push_back(std::get<0>(*lint));
+                  view = view.subspan(std::get<1>(*lint));
+                  lintTokens += std::get<1>(*lint);
+                  if (view.front().getKind() == TokenKind::Comma) {
+                    view = view.subspan(1);
+                  }
+                } else {
                   printf("found clippy\n");
-                  return ClippyAttribute(tokens[0].getLocation(), lints);
+                  return ClippyAttribute(view[0].getLocation(), lints, lintTokens);
                 }
               }
             }

@@ -1,6 +1,7 @@
 add_library(lexer
            Lexer.cpp
            TokenStream.cpp
+           Token.cpp
            )
 
 

@@ -48,6 +48,7 @@
 * https://doc.rust-lang.org/reference/expressions/await-expr.html
 * https://doc.rust-lang.org/reference/expressions/operator-expr.html#borrow-operators
 * https://github.com/LightningCreations/lccc
+* https://github.com/thepowersgang/mrustc
 
 ## MIR
 

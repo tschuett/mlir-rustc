@@ -331,9 +331,6 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
     } else if (code.starts_with("=")) {
       ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Equals));
       code.remove_prefix(1);
-    } else if (code.starts_with(":")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Colon));
-      code.remove_prefix(1);
     } else if (code.starts_with("-")) {
       ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Dash));
       code.remove_prefix(1);
@@ -352,6 +349,9 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       ts.append(
           Token(LocationAttr(fileName, lineNumber), TokenKind::DoubleColon));
       code.remove_prefix(2);
+    } else if (code.starts_with(":")) {
+      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Colon));
+      code.remove_prefix(1);
     } else if (code.starts_with("&")) {
       ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Amp));
       code.remove_prefix(1);
