@@ -12,7 +12,7 @@ target_include_directories(minicargo PRIVATE  ../../code/include)
 
 set_property(TARGET minicargo PROPERTY ENABLE_EXPORTS 1)
 
-llvm_map_components_to_libnames(llvm_libs Option)
+llvm_map_components_to_libnames(llvm_libs Option Support)
 
 # MiniCargoOptsTableGen
 
