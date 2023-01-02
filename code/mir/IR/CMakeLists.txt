@@ -18,8 +18,15 @@ add_library(MirDialect
   MirOps.cpp
   )
 
+set_target_properties(MirDialect PROPERTIES
+        CXX_EXCEPTIONS OFF
+        CXX_RTTI OFF
+    )
+
 target_include_directories(MirDialect PRIVATE ../../include)
 
 add_dependencies(MirDialect MirOpsIncGen ) #MirOpInterfacesIncGen
 
 target_link_libraries(MirDialect MLIRLLVMDialect)
+
+

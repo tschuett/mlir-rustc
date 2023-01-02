@@ -15,6 +15,7 @@
 #define DEBUG_TYPE "MirDialect"
 
 using namespace mlir;
+using namespace llvm;
 using namespace rust_compiler::Mir;
 
 #include "Mir/MirDialect.cpp.inc"
@@ -35,12 +36,12 @@ struct MirInlinerInterface : public DialectInlinerInterface {
   bool isLegalToInline(Operation *call, Operation *callable,
                        bool wouldBeCloned) const override {
     CallableOpInterface callableI =
-        dyn_cast<mlir::CallableOpInterface>(callable);
+      llvm::dyn_cast<mlir::CallableOpInterface>(callable);
     if (!callableI)
       return false;
 
     CallOpInterface callI =
-        dyn_cast<mlir::CallOpInterface>(call);
+        llvm::dyn_cast<mlir::CallOpInterface>(call);
     if (!callI)
       return false;
 
@@ -63,10 +64,10 @@ struct MirInlinerInterface : public DialectInlinerInterface {
   void handleTerminator(Operation *op,
                         ArrayRef<Value> valuesToReplace) const override {
     // Only "Mir.return" needs to be handled here.
-    auto returnOp = cast<ReturnOp>(op);
+    auto returnOp = llvm::cast<ReturnOp>(op);
 
     // Replace the values directly with the return operands.
-    assert(returnOp.getNumOperands() == valuesToRepl.size());
+    assert(returnOp.getNumOperands() == valuesToReplace.size());
     for (const auto &it : llvm::enumerate(returnOp.getOperands()))
       valuesToReplace[it.index()].replaceAllUsesWith(it.value());
   }

@@ -19,3 +19,9 @@ target_link_libraries(rustc lexer parser sema modulebuilder MirDialect codegen M
 #target_link_libraries(rustc lexer parser  ${llvm_libs})
 
 #target_precompile_headers(rustc PRIVATE ToLLVM.h PassPipeline.h DumpLLVMIR.h)
+
+
+set_target_properties(rustc PROPERTIES
+        CXX_EXCEPTIONS OFF
+        CXX_RTTI OFF
+    )
