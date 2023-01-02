@@ -26,6 +26,11 @@ enum class PrimitiveTypeKind {
   Isize
 };
 
-class PrimitiveType : public Type {};
+class PrimitiveType : public Type {
+  PrimitiveTypeKind kind;
+
+public:
+  PrimitiveTypeKind getKind() const { return kind; }
+};
 
 } // namespace rust_compiler::ast::types
