@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/LetStatement.h"
@@ -46,21 +47,25 @@ private:
   mlir::func::FuncOp buildFun(std::shared_ptr<ast::Function> f);
   mlir::func::FuncOp buildFunctionSignature(ast::FunctionSignature sig,
                                             mlir::Location locaction);
-  mlir::LogicalResult
-  buildBlockExpression(std::shared_ptr<ast::BlockExpression> blk);
+  std::optional<mlir::Value>
+  emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk);
 
-  void buildStatement(std::shared_ptr<ast::Statement> stmt);
+  std::optional<mlir::Value> emitStatement(std::shared_ptr<ast::Statement> stmt);
   void buildLetStatement(std::shared_ptr<ast::LetStatement> letStmt);
 
-  void buildExpression(std::shared_ptr<ast::Expression> expr);
+  mlir::Value emitExpression(std::shared_ptr<ast::Expression> expr);
 
-  void buildExpressionWithBlock(std::shared_ptr<ast::ExpressionWithBlock> expr);
-  void
-  buildExpressionWithoutBlock(std::shared_ptr<ast::ExpressionWithoutBlock> expr);
+  mlir::Value
+  emitExpressionWithBlock(std::shared_ptr<ast::ExpressionWithBlock> expr);
+  mlir::Value buildExpressionWithoutBlock(
+      std::shared_ptr<ast::ExpressionWithoutBlock> expr);
 
   void buildExpressionStatement(std::shared_ptr<ast::ExpressionStatement> expr);
 
   void buildItem(std::shared_ptr<ast::Item> item);
+
+  mlir::Value emitArithmeticOrLogicalExpression(
+      std::shared_ptr<ast::ArithmeticOrLogicalExpression> expr);
 
   /// Declare a variable in the current scope, return success if the variable
   /// wasn't declared yet.

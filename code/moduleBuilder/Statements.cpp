@@ -2,27 +2,31 @@
 #include "AST/Statement.h"
 #include "ModuleBuilder/ModuleBuilder.h"
 
+#include <optional>
+
 namespace rust_compiler {
 
-void ModuleBuilder::buildStatement(
+std::optional<mlir::Value> ModuleBuilder::emitStatement(
     std::shared_ptr<rust_compiler::ast::Statement> stmt) {
   switch (stmt->getKind()) {
   case ast::StatementKind::Item: {
     buildItem(static_pointer_cast<rust_compiler::ast::Item>(stmt));
-    break;
+    return std::nullopt;
   }
   case ast::StatementKind::LetStatement: {
     buildLetStatement(
         static_pointer_cast<rust_compiler::ast::LetStatement>(stmt));
-    break;
+    return std::nullopt;
   }
   case ast::StatementKind::MacroInvocationSemi: {
+    // FIXME
+    return std::nullopt;
     break;
   }
   case ast::StatementKind::ExpressionStatement: {
     buildExpressionStatement(
         static_pointer_cast<rust_compiler::ast::ExpressionStatement>(stmt));
-    break;
+    return std::nullopt;
   }
   }
 }

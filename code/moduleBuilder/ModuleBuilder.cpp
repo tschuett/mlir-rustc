@@ -14,6 +14,7 @@
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/IR/OwningOpRef.h>
 #include <mlir/IR/Verifier.h>
+#include <optional>
 
 namespace rust_compiler {
 
@@ -26,14 +27,18 @@ void ModuleBuilder::build(std::shared_ptr<ast::Module> mod, Target &target) {
   }
 }
 
-mlir::LogicalResult
-ModuleBuilder::buildBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
+std::optional<mlir::Value>
+ModuleBuilder::emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
+  ScopedHashTableScope<llvm::StringRef, mlir::Value> varScope(symbolTable);
+
+  std::optional<mlir::Value> result = std::nullopt;
+
   // new variable scope?
   for (auto stmnt : blk->getExpressions()) {
-    buildStatement(stmnt);
+    result = emitStatement(stmnt);
   }
 
-  return LogicalResult::success();
+  return result;
 }
 
 /// Declare a variable in the current scope, return success if the variable

@@ -2,7 +2,7 @@
 
 namespace rust_compiler {
 
-void ModuleBuilder::buildExpressionWithoutBlock(
+mlir::Value ModuleBuilder::buildExpressionWithoutBlock(
     std::shared_ptr<ast::ExpressionWithoutBlock> expr) {
   // FIXME
 }

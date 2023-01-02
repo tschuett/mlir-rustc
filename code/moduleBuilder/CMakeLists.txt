@@ -7,6 +7,7 @@ add_library(modulebuilder
            Target.cpp
            Function.cpp
            Item.cpp
+           OperatorExpression.cpp
            )
 
 
