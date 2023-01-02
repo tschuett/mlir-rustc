@@ -6,6 +6,7 @@
 #include <llvm/Support/WithColor.h>
 #include <mlir/IR/Builders.h>
 #include <mlir/IR/BuiltinTypes.h>
+#include <mlir/IR/Dialect.h>
 #include <mlir/IR/DialectImplementation.h>
 #include <mlir/IR/OpImplementation.h>
 #include <mlir/IR/Types.h>
@@ -36,12 +37,11 @@ struct MirInlinerInterface : public DialectInlinerInterface {
   bool isLegalToInline(Operation *call, Operation *callable,
                        bool wouldBeCloned) const override {
     CallableOpInterface callableI =
-      llvm::dyn_cast<mlir::CallableOpInterface>(callable);
+        llvm::dyn_cast<mlir::CallableOpInterface>(callable);
     if (!callableI)
       return false;
 
-    CallOpInterface callI =
-        llvm::dyn_cast<mlir::CallOpInterface>(call);
+    CallOpInterface callI = llvm::dyn_cast<mlir::CallOpInterface>(call);
     if (!callI)
       return false;
 
@@ -72,11 +72,12 @@ struct MirInlinerInterface : public DialectInlinerInterface {
       valuesToReplace[it.index()].replaceAllUsesWith(it.value());
   }
 
-//  Operation *materializeCallConversion(OpBuilder &builder, Value input,
-//                                       Type resultType,
-//                                       Location conversionLoc) const override {
-//    return builder.create<CastOp>(conversionLoc, resultType, input);
-//  }
+  //  Operation *materializeCallConversion(OpBuilder &builder, Value input,
+  //                                       Type resultType,
+  //                                       Location conversionLoc) const
+  //                                       override {
+  //    return builder.create<CastOp>(conversionLoc, resultType, input);
+  //  }
 };
 
 void MirDialect::initialize() {
@@ -84,9 +85,7 @@ void MirDialect::initialize() {
 #define GET_OP_LIST
 #include "Mir/MirOps.cpp.inc"
       >();
-  //addInterfaces<MirInlinerInterface>(); // FIXME typeinfo error
+  addInterfaces<MirInlinerInterface>();
 }
-
-// #include "Mir/MirOps.cpp.inc"
 
 namespace rust_compiler::Mir {} // namespace rust_compiler::Mir

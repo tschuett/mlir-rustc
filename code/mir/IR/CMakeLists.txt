@@ -27,6 +27,6 @@ target_include_directories(MirDialect PRIVATE ../../include)
 
 add_dependencies(MirDialect MirOpsIncGen ) #MirOpInterfacesIncGen
 
-target_link_libraries(MirDialect MLIRLLVMDialect)
+target_link_libraries(MirDialect MLIRLLVMDialect MLIRIR)
 
 

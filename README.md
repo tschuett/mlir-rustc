@@ -29,6 +29,7 @@
 - [ ] Closures (nested regions)
 - [ ] visibility
 - [ ] visibility checks in inliner
+- [ ] desugaring?!?
 
 # References
 
