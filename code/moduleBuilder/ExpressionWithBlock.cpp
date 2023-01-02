@@ -12,8 +12,11 @@ mlir::Value ModuleBuilder::emitExpressionWithBlock(
     std::shared_ptr<ExpressionWithBlock> expr) {
   switch (expr->getKind()) {
   case ExpressionWithBlockKind::BlockExpression: {
-    return emitBlockExpression(static_pointer_cast<BlockExpression>(expr));
-    break;
+    std::optional<mlir::Value> result =
+        emitBlockExpression(static_pointer_cast<BlockExpression>(expr));
+    if (result)
+      return *result;
+    return nullptr;
   }
   case ExpressionWithBlockKind::UnsafeBlockExpression: {
     break;
@@ -32,6 +35,7 @@ mlir::Value ModuleBuilder::emitExpressionWithBlock(
   }
   }
   // FIXME
+  return nullptr;
 }
 
 } // namespace rust_compiler

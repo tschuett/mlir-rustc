@@ -179,4 +179,59 @@ window in `value`. NoMemoryEffect
 }
 
 
+def AddOp : Mir_Op<"add",
+    [Pure]> {
+  let summary = "addition operation";
+  let description = [{
+    The shapes of the  operands are expected to match.
+  }];
 
+//  let arguments = (ins F64Tensor:$lhs, F64Tensor:$rhs);
+//  let results = (outs F64Tensor);
+//
+//  // Indicate that the operation has a custom parser and printer method.
+//  let hasCustomAssemblyFormat = 1;
+
+  // Allow building an AddOp with from the two input operands.
+  let builders = [
+    OpBuilder<(ins "mlir::Value":$lhs, "mlir::Value":$rhs)>
+  ];
+}
+
+def SubOp : Mir_Op<"sub",
+    [Pure]> {
+  let summary = "subtraction operation";
+  let description = [{
+    The shapes of the  operands are expected to match.
+  }];
+
+//  let arguments = (ins F64Tensor:$lhs, F64Tensor:$rhs);
+//  let results = (outs F64Tensor);
+//
+//  // Indicate that the operation has a custom parser and printer method.
+//  let hasCustomAssemblyFormat = 1;
+
+  // Allow building an SubOp with from the two input operands.
+  let builders = [
+    OpBuilder<(ins "mlir::Value":$lhs, "mlir::Value":$rhs)>
+  ];
+}
+
+def MulOp : Mir_Op<"mul",
+    [Pure]> {
+  let summary = "multiplication operation";
+  let description = [{
+      The shapes of the operands are expected to match.
+  }];
+
+//  let arguments = (ins F64Tensor:$lhs, F64Tensor:$rhs);
+//  let results = (outs F64Tensor);
+//
+//  // Indicate that the operation has a custom parser and printer method.
+//  let hasCustomAssemblyFormat = 1;
+
+  // Allow building a MulOp with from the two input operands.
+  let builders = [
+    OpBuilder<(ins "mlir::Value":$lhs, "mlir::Value":$rhs)>
+  ];
+}

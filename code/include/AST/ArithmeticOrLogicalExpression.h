@@ -35,6 +35,7 @@ public:
   ArithmeticOrLogicalExpressionKind getKind() const { return kind; }
 
   std::shared_ptr<Expression> getRHS() const { return right; };
+  std::shared_ptr<Expression> getLHS() const { return left; };
 };
 
 } // namespace rust_compiler::ast

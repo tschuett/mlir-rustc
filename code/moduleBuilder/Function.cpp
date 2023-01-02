@@ -26,10 +26,9 @@ mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
 
   OptimizationRemarkEmitter ORE = {f, &serializer};
 
-
   builder.setInsertionPointToEnd(theModule.getBody());
   mlir::func::FuncOp function =
-    buildFunctionSignature(f->getSignature(), f->getLocation());
+      buildFunctionSignature(f->getSignature(), f->getLocation());
   if (!function)
     return nullptr;
 
@@ -51,10 +50,8 @@ mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   builder.setInsertionPointToStart(&entryBlock);
 
   // Emit the body of the function.
-  if (mlir::failed(buildBlockExpression(f->getBody()))) {
-    function.erase();
-    return nullptr;
-  }
+  emitBlockExpression(f->getBody());
+  // FIXME returns optional
 
   // Implicitly return void if no return statement was emitted.
   // FIXME: we may fix the parser instead to always return the last expression
