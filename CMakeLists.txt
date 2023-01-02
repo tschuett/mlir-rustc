@@ -14,7 +14,6 @@ list(APPEND CMAKE_MODULE_PATH "${MLIR_DIR}")
 find_package(LLVM REQUIRED CONFIG)
 find_package(MLIR REQUIRED CONFIG)
 
-message(STATUS "Using LLVM 2 in: ${LLVM_BASE_DIR}")
 message(STATUS "Using Cmake MLIR in: ${MLIR_CMAKE_DIR}")
 message(STATUS "Using Cmake LLVM in: ${LLVM_CMAKE_DIR}")
 

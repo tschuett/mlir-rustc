@@ -84,7 +84,7 @@ void MirDialect::initialize() {
 #define GET_OP_LIST
 #include "Mir/MirOps.cpp.inc"
       >();
-  addInterfaces<MirInlinerInterface>();
+  //addInterfaces<MirInlinerInterface>(); // FIXME typeinfo error
 }
 
 // #include "Mir/MirOps.cpp.inc"
