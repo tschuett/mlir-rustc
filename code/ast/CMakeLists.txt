@@ -7,6 +7,7 @@ add_library(ast
            FunctionSignature.cpp
            Function.cpp
            BlockExpression.cpp
+           PrimitiveTypes.cpp
            )
 
 
