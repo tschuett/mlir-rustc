@@ -25,17 +25,15 @@ mlir::Value ModuleBuilder::emitArithmeticOrLogicalExpression(
   switch (expr->getKind()) {
   case ast::ArithmeticOrLogicalExpressionKind::Addition: {
     return builder.create<Mir::AddOp>(location, lhs, rhs);
-    break;
   }
   case ast::ArithmeticOrLogicalExpressionKind::Subtraction: {
     return builder.create<Mir::SubOp>(location, lhs, rhs);
-    break;
   }
   case ast::ArithmeticOrLogicalExpressionKind::Multiplication: {
     return builder.create<Mir::MulOp>(location, lhs, rhs);
-    break;
   }
   case ast::ArithmeticOrLogicalExpressionKind::Division: {
+    return builder.create<Mir::DivOp>(location, lhs, rhs);
     break;
   }
   case ast::ArithmeticOrLogicalExpressionKind::Remainder: {

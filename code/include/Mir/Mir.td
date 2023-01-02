@@ -186,11 +186,9 @@ def AddOp : Mir_Op<"add",
     The shapes of the  operands are expected to match.
   }];
 
-//  let arguments = (ins F64Tensor:$lhs, F64Tensor:$rhs);
-//  let results = (outs F64Tensor);
-//
-//  // Indicate that the operation has a custom parser and printer method.
-//  let hasCustomAssemblyFormat = 1;
+  let results = (outs AnyType:$result);
+
+  let arguments = (ins AnyType:$lhs, AnyType:$rhs);
 
   // Allow building an AddOp with from the two input operands.
   let builders = [
@@ -205,11 +203,9 @@ def SubOp : Mir_Op<"sub",
     The shapes of the  operands are expected to match.
   }];
 
-//  let arguments = (ins F64Tensor:$lhs, F64Tensor:$rhs);
-//  let results = (outs F64Tensor);
-//
-//  // Indicate that the operation has a custom parser and printer method.
-//  let hasCustomAssemblyFormat = 1;
+  let results = (outs AnyType:$result);
+
+  let arguments = (ins AnyType:$lhs, AnyType:$rhs);
 
   // Allow building an SubOp with from the two input operands.
   let builders = [
@@ -224,14 +220,42 @@ def MulOp : Mir_Op<"mul",
       The shapes of the operands are expected to match.
   }];
 
-//  let arguments = (ins F64Tensor:$lhs, F64Tensor:$rhs);
-//  let results = (outs F64Tensor);
-//
-//  // Indicate that the operation has a custom parser and printer method.
-//  let hasCustomAssemblyFormat = 1;
+  let results = (outs AnyType:$result);
+
+  let arguments = (ins AnyType:$lhs, AnyType:$rhs);
 
   // Allow building a MulOp with from the two input operands.
   let builders = [
     OpBuilder<(ins "mlir::Value":$lhs, "mlir::Value":$rhs)>
   ];
+}
+
+def DivOp : Mir_Op<"div",
+    [Pure]> {
+  let summary = "division operation";
+  let description = [{
+      The shapes of the operands are expected to match.
+  }];
+
+  let results = (outs AnyType:$result);
+
+  let arguments = (ins AnyType:$lhs, AnyType:$rhs);
+
+  // Allow building a DivOp with from the two input operands.
+  let builders = [
+    OpBuilder<(ins "mlir::Value":$lhs, "mlir::Value":$rhs)>
+  ];
+}
+
+def ConstantOp : Mir_Op<"constant",
+    [ConstantLike, Pure]> {
+    let summary = "constant";
+
+  let results = (outs AnyType:$result);
+
+  // Allow building a ConstantOp with from the one input operands.
+  let builders = [
+    OpBuilder<(ins "mlir::Value":$const)>
+  ];
+
 }
