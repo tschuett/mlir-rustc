@@ -1,8 +1,7 @@
 #pragma once
 
 #include "AST/AST.h"
-
-#include <mlir/IR/Location.h>
+#include "Location.h"
 
 namespace rust_compiler::ast {
 
@@ -17,12 +16,12 @@ class Statement : public Node {
   StatementKind kind;
 
 public:
-  explicit Statement(mlir::Location location) : location(location) {}
+  explicit Statement(rust_compiler::Location location) : location(location) {}
 
   StatementKind getKind() const { return kind; }
 
 protected:
-  mlir::Location location;
+  rust_compiler::Location location;
 };
 
 } // namespace rust_compiler::ast

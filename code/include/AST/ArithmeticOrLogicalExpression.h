@@ -25,7 +25,7 @@ class ArithmeticOrLogicalExpression : public Expression {
   std::shared_ptr<Expression> right;
 
 public:
-  ArithmeticOrLogicalExpression(LocationAttr loc,
+ ArithmeticOrLogicalExpression(rust_compiler::Location loc,
                                 ArithmeticOrLogicalExpressionKind kind,
                                 std::shared_ptr<Expression> left,
                                 std::shared_ptr<Expression> right)

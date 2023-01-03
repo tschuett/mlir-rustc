@@ -50,7 +50,8 @@ private:
   std::optional<mlir::Value>
   emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk);
 
-  std::optional<mlir::Value> emitStatement(std::shared_ptr<ast::Statement> stmt);
+  std::optional<mlir::Value>
+  emitStatement(std::shared_ptr<ast::Statement> stmt);
   void buildLetStatement(std::shared_ptr<ast::LetStatement> letStmt);
 
   mlir::Value emitExpression(std::shared_ptr<ast::Expression> expr);
@@ -70,6 +71,13 @@ private:
   /// Declare a variable in the current scope, return success if the variable
   /// wasn't declared yet.
   //  mlir::LogicalResult declare(VarDeclExprAST &var, mlir::Value value);
+
+  /// Helper conversion for a Toy AST location to an MLIR location.
+  mlir::Location getLocation(const Location &loc) {
+    return mlir::FileLineColLoc::get(builder.getStringAttr(loc.getFileName()),
+                                     loc.getLineNumber(),
+                                     loc.getColumnNumber());
+  }
 };
 
 } // namespace rust_compiler

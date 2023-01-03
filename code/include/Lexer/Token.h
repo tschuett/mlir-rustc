@@ -40,13 +40,13 @@ enum class TokenKind {
 };
 
 class Token {
-  LocationAttr loc;
+  rust_compiler::Location loc;
   TokenKind kind;
   std::string id;
 
 public:
-  Token(LocationAttr loc, TokenKind tk) : loc(loc), kind(tk){};
-  Token(LocationAttr loc, TokenKind tk, std::string_view id)
+  Token(rust_compiler::Location loc, TokenKind tk) : loc(loc), kind(tk){};
+  Token(rust_compiler::Location loc, TokenKind tk, std::string_view id)
       : loc(loc), kind(tk), id(id){};
 
   TokenKind getKind() const { return kind; }
@@ -60,7 +60,7 @@ public:
 
   std::string getIdentifier() const { return id; }
 
-  LocationAttr getLocation() const { return loc; }
+  rust_compiler::Location getLocation() const { return loc; }
 };
 
 std::string Token2String(TokenKind kind);

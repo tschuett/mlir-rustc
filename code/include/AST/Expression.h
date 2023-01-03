@@ -3,7 +3,7 @@
 #include "AST/AST.h"
 #include "Location.h"
 
-#include <mlir/IR/Location.h>
+// #include <mlir/IR/Location.h>
 
 namespace rust_compiler::ast {
 
@@ -11,15 +11,15 @@ enum class ExpressionKind { ExpressionWithBlock, ExpressionWithoutBlock };
 
 class Expression : public Node {
 public:
-  Expression(LocationAttr loc, ExpressionKind expressionKind)
+  Expression(rust_compiler::Location loc, ExpressionKind expressionKind)
       : loc(loc), expressionKind(expressionKind) {}
 
   ExpressionKind getExpressionKind() const { return expressionKind; }
 
-  LocationAttr getLocation() const { return loc; }
+  rust_compiler::Location getLocation() const { return loc; }
 
 protected:
-  LocationAttr loc;
+  rust_compiler::Location loc;
   ExpressionKind expressionKind;
 };
 

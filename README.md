@@ -30,7 +30,7 @@
 - [ ] visibility
 - [ ] visibility checks in inliner
 - [ ] desugaring?!?
-- [ ] location in Lexer
+- [+] location in Lexer
 
 # References
 
@@ -74,4 +74,4 @@
 
 * https://icl.utk.edu/papi/
 
-* PGO: where to optimize
+* PGO + Instruction counters: where to optimize and not how to optimize

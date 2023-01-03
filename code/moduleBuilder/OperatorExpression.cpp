@@ -18,9 +18,9 @@ mlir::Value ModuleBuilder::emitArithmeticOrLogicalExpression(
   if (!rhs)
     return nullptr;
 
-  LocationAttr loc = expr->getLHS()->getLocation();
+  Location loc = expr->getLHS()->getLocation();
 
-  mlir::Location location = {loc};
+  mlir::Location location = getLocation(loc);
 
   switch (expr->getKind()) {
   case ast::ArithmeticOrLogicalExpressionKind::Addition: {

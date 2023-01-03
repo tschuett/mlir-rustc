@@ -24,6 +24,7 @@ std::shared_ptr<ast::Module> parser(TokenStream &ts,
 
   size_t last = tokens.size();
   while (tokens.size() > 0) {
+    printf("next token: %s\n", Token2String(tokens[0].getKind()).c_str());
     if (tokens.front().getKind() == TokenKind::Hash) {
       if (tokens[1].getKind() == TokenKind::Exclaim) {
         if (tokens[2].getKind() == TokenKind::SquareOpen) {

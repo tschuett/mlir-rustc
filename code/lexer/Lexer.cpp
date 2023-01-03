@@ -6,6 +6,8 @@
 
 namespace rust_compiler::lexer {
 
+using rust_compiler::Location;
+
 std::string tryLexComment(std::string_view code) {
   std::string_view view = code;
   std::string ws;
@@ -270,6 +272,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
   TokenStream ts;
   std::string_view code = _code;
   unsigned lineNumber = 0;
+  unsigned columnNumber = 0;
 
   while (code.size() > 0) {
 
@@ -282,126 +285,171 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
     if (code.starts_with("//")) {
       std::string comment = tryLexComment(code);
       code.remove_prefix(comment.size());
+      columnNumber += comment.size();
       continue;
     }
 
     std::optional<std::string> str = tryLexString(code);
     if (str) {
-      ts.append(
-          Token(LocationAttr(fileName, lineNumber), TokenKind::String, *str));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::String, *str));
       code.remove_prefix(str->size());
+      columnNumber += str->size();
       continue;
     }
 
     std::optional<std::string> ch = tryLexChar(code);
     if (ch) {
-      ts.append(
-          Token(LocationAttr(fileName, lineNumber), TokenKind::Char, *ch));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::Char, *ch));
       code.remove_prefix(ch->size());
+      columnNumber += ch->size();
       continue;
     }
 
     std::optional<std::string> id = tryLexIdentifier(code);
     if (id) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Identifier,
-                      *id));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::Identifier, *id));
       code.remove_prefix(id->size());
+      columnNumber += id->size();
       continue;
     }
 
     if (code.starts_with("!")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Exclaim));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::Exclaim));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("->")) {
-      ts.append(
-          Token(LocationAttr(fileName, lineNumber), TokenKind::ThinArrow));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::ThinArrow));
       code.remove_prefix(2);
+      columnNumber += 2;
     } else if (code.starts_with("+")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Plus));
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Plus));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with(".")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Dot));
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Dot));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("?")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::QMark));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::QMark));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("*")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Star));
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Star));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("=")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Equals));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::Equals));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("-")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Dash));
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Dash));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with(">>")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber),
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
                       TokenKind::DoubleGreaterThan));
       code.remove_prefix(2);
+      columnNumber += 2;
     } else if (code.starts_with(">")) {
-      ts.append(
-          Token(LocationAttr(fileName, lineNumber), TokenKind::GreaterThan));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::GreaterThan));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("<")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::LessThan));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::LessThan));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("::")) {
-      ts.append(
-          Token(LocationAttr(fileName, lineNumber), TokenKind::DoubleColon));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::DoubleColon));
       code.remove_prefix(2);
+      columnNumber += 2;
     } else if (code.starts_with(":")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Colon));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::Colon));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("&")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Amp));
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Amp));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("&&")) {
-      ts.append(
-          Token(LocationAttr(fileName, lineNumber), TokenKind::DoubleAmp));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::DoubleAmp));
       code.remove_prefix(2);
+      columnNumber += 2;
     } else if (code.starts_with("#")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Hash));
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Hash));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("{")) {
-      ts.append(
-          Token(LocationAttr(fileName, lineNumber), TokenKind::BraceOpen));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::BraceOpen));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("}")) {
-      ts.append(
-          Token(LocationAttr(fileName, lineNumber), TokenKind::BraceClose));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::BraceClose));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("[")) {
-      ts.append(
-          Token(LocationAttr(fileName, lineNumber), TokenKind::SquareOpen));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::SquareOpen));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("]")) {
-      ts.append(
-          Token(LocationAttr(fileName, lineNumber), TokenKind::SquareClose));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::SquareClose));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with(",")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Comma));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::Comma));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("(")) {
-      ts.append(
-          Token(LocationAttr(fileName, lineNumber), TokenKind::ParenOpen));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::ParenOpen));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with(")")) {
-      ts.append(
-          Token(LocationAttr(fileName, lineNumber), TokenKind::ParenClose));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::ParenClose));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("!")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Exclaim));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::Exclaim));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with(";")) {
-      ts.append(
-          Token(LocationAttr(fileName, lineNumber), TokenKind::SemiColon));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::SemiColon));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("|")) {
-      ts.append(Token(LocationAttr(fileName, lineNumber), TokenKind::Pipe));
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Pipe));
       code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("\n")) {
       code.remove_prefix(1);
       ++lineNumber;
+      columnNumber = 0;
     } else {
       printf("unknown token: x%s\n", code.data());
       exit(EXIT_FAILURE);
