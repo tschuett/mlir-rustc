@@ -8,6 +8,7 @@ add_library(ast
            Function.cpp
            BlockExpression.cpp
            PrimitiveTypes.cpp
+           Visibility.cpp
            )
 
 

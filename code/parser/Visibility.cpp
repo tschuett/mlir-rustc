@@ -1,9 +1,9 @@
 #include "Visibility.h"
+
 #include "AST/Visiblity.h"
+#include "SimplePath.h"
 
-namespace rust_compiler::ast {
-
-using namespace rust_compiler::lexer;
+namespace rust_compiler::lexer {
 
 std::optional<Visibility> tryParseVisibility(std::span<Token> tokens) {
   if (tokens.front().isPubToken()) {
@@ -15,4 +15,4 @@ std::optional<Visibility> tryParseVisibility(std::span<Token> tokens) {
   return std::nullopt; // FIXME
 }
 
-} // namespace rust_compiler::ast
+} // namespace rust_compiler::lexer

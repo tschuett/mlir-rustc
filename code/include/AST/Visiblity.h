@@ -6,7 +6,7 @@ namespace rust_compiler::ast {
 
 class Visibility : public Node {
 public:
-  Visibility();
+  Visibility() {} // FIXME
 
   size_t getTokens() override;
 };

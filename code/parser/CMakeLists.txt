@@ -6,6 +6,7 @@ add_library(parser
            Modules.cpp
            Item.cpp
            Function.cpp
+           SimplePath.cpp
            )
 
 
@@ -14,4 +15,4 @@ target_include_directories(parser PRIVATE  ../include)
 
 target_link_libraries(parser ast)
 
-target_precompile_headers(parser PRIVATE Modules.h Visibility.h Attributes.h Item.h Function.h UseDeclaration.h)
+target_precompile_headers(parser PRIVATE Modules.h Visibility.h Attributes.h Item.h Function.h UseDeclaration.h SimplePath.h)

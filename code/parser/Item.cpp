@@ -74,6 +74,8 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
       tryParseFunction(tokens, modulePath);
     }
   }
+
+  return std::nullopt;
 }
 
 } // namespace rust_compiler::parser

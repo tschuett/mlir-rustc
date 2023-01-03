@@ -6,8 +6,8 @@
 #include <optional>
 #include <span>
 
-namespace rust_compiler::ast {
+namespace rust_compiler::lexer {
 
-std::optional<Visibility> tryParseVisibility(std::span<lexer::Token> tokens);
+  std::optional<ast::Visibility> tryParseVisibility(std::span<lexer::Token> tokens);
 
 }

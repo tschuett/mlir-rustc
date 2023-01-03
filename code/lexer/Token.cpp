@@ -2,6 +2,14 @@
 
 namespace rust_compiler::lexer {
 
+bool Token::isUseToken() const {
+  return kind == TokenKind::Identifier && id == "use";
+}
+
+  bool Token::isPubToken() const {
+  return kind == TokenKind::Identifier && id == "pub";
+}
+
 std::string Token2String(TokenKind kind) {
 
   switch (kind) {
