@@ -10,6 +10,7 @@ namespace rust_compiler::ast {
 
 class SimplePath : public Node {
   std::vector<SimplePathSegment> segments;
+  bool withDoubleColon = false;
 
 public:
   void setWithDoubleColon();

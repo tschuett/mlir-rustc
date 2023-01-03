@@ -6,9 +6,13 @@ bool Token::isUseToken() const {
   return kind == TokenKind::Identifier && id == "use";
 }
 
-  bool Token::isPubToken() const {
+bool Token::isPubToken() const {
   return kind == TokenKind::Identifier && id == "pub";
 }
+
+bool Token::isIdentifier() const { return kind == TokenKind::Identifier; }
+
+bool Token::isDoubleColon() const { return kind == TokenKind::DoubleColon; }
 
 std::string Token2String(TokenKind kind) {
 

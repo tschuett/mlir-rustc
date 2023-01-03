@@ -17,7 +17,7 @@ tryParseSimplePathSegment(std::span<Token> tokens) {
   if (view.front().isIdentifier()) {
     return ast::SimplePathSegment(view.front().getIdentifier());
   }
-  
+
   return std::nullopt;
 }
 

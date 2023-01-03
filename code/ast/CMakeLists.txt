@@ -9,6 +9,8 @@ add_library(ast
            BlockExpression.cpp
            PrimitiveTypes.cpp
            Visibility.cpp
+           SimplePath.cpp
+           SimplePathSegment.cpp
            )
 
 
