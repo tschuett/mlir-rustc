@@ -15,9 +15,12 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
 
   std::span<Token> view = tokens;
 
+  printf("tryParseItem\n");
+
   std::optional<ast::Visibility> visibility = tryParseVisibility(tokens);
 
   if (visibility) {
+    printf("found visibility: %zu\n", (*visibility).getTokens());
     view = view.subspan((*visibility).getTokens());
   }
 
@@ -25,18 +28,30 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
       view.front().getIdentifier() == "mod") {
     if (view[1].getKind() == TokenKind::Identifier) {
       if (view[2].getKind() == TokenKind::SemiColon) {
-        std::optional<Module> module = tryParseModule(tokens, modulePath);
+        std::optional<Module> module = tryParseModule(view, modulePath);
         if (module) {
           Module mod = *module;
+          if (visibility) {
+            mod.setVisibility(*visibility);
+          }
+
           tokens = tokens.subspan(mod.getTokens());
-          std::shared_ptr<Item> item = std::static_pointer_cast<Item>(
-              std::make_shared<Module>(mod));
+          std::shared_ptr<Item> item =
+              std::static_pointer_cast<Item>(std::make_shared<Module>(mod));
           return item;
         }
       } else if (view[2].getKind() == TokenKind::BraceOpen) {
-        std::optional<Module> module = tryParseModuleTree(tokens, modulePath);
+        std::optional<Module> module = tryParseModuleTree(view, modulePath);
         if (module) {
-          // FIXME
+          Module mod = *module;
+          if (visibility) {
+            mod.setVisibility(*visibility);
+          }
+
+          tokens = tokens.subspan(mod.getTokens());
+          std::shared_ptr<Item> item =
+              std::static_pointer_cast<Item>(std::make_shared<Module>(mod));
+          return item;
         }
       }
     }
@@ -72,6 +87,9 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
   if (view.front().getKind() == TokenKind::Identifier &&
       view.front().getIdentifier() == "use") {
     std::optional<UseDeclaration> useDeclaration = tryParseUseDeclaration(view);
+    if (useDeclaration) {
+      // FIXME
+    }
   }
 
   if (view.front().getKind() == TokenKind::Identifier &&

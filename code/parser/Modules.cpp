@@ -1,7 +1,9 @@
 #include "Modules.h"
 
+#include "AST/Module.h"
 #include "Item.h"
 #include "Lexer/Token.h"
+#include "Util.h"
 
 #include <optional>
 #include <sstream>
@@ -13,6 +15,9 @@ namespace rust_compiler::parser {
 
 std::optional<ast::Module> tryParseModuleTree(std::span<Token> tokens,
                                               std::string_view modulePath) {
+
+  Module module = {tokens.front().getLocation(), ModuleKind::ModuleTree,
+                   modulePath};
 
   std::span<Token> view = tokens;
 
@@ -38,13 +43,20 @@ std::optional<ast::Module> tryParseModuleTree(std::span<Token> tokens,
   while (view.size() > 0) {
     last = view.size();
 
-    printf("next token: %zu %s %s %s\n", view.size(),
-           Token2String(view[0].getKind()).c_str(),
-           Token2String(view[1].getKind()).c_str(),
-           Token2String(view[2].getKind()).c_str());
+    //printTokenState(view);
+
+    if (view.front().getKind() == TokenKind::BraceClose) {
+      printf("found end of module tree\n");
+      return module;
+    }
 
     std::optional<std::shared_ptr<ast::Item>> item =
         tryParseItem(view, modulePath);
+
+    if (item) {
+      view = view.subspan((*item)->getTokens());
+      module.addItem(*item);
+    }
 
     if (view.size() == last) {
       printf("module tree: no progress\n");
@@ -60,13 +72,13 @@ std::optional<ast::Module> tryParseModule(std::span<Token> tokens,
 
   std::span<Token> view = tokens;
 
-  if (view.front().getKind() == TokenKind::Identifier &&
-      view.front().getIdentifier() == "mod") {
+  if (view.front().isIdentifier() && view.front().getIdentifier() == "mod") {
     if (view[1].getKind() == TokenKind::Identifier) {
-      if (view[2].getKind() == TokenKind::Colon) {
+      if (view[2].getKind() == TokenKind::SemiColon) {
         std::stringstream s;
         s << modulePath << std::string("::") << view[1].getIdentifier();
-        return Module(view.front().getLocation(), s.str());
+        //printf("found module: %s\n", s.str().c_str());
+        return Module(view.front().getLocation(), ModuleKind::Module, s.str());
       }
     }
   }

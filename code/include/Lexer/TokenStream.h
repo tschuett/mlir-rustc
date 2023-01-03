@@ -13,6 +13,8 @@ class TokenStream {
 public:
   void append(Token tk);
   std::span<Token> getAsView();
+
+  void print(unsigned limit);
 };
 
 } // namespace rust_compiler::lexer

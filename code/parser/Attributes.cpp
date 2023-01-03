@@ -3,13 +3,14 @@
 #include "AST/ClippyAttribute.h"
 #include "AST/InnerAttribute.h"
 #include "Lexer/Token.h"
+#include "Util.h"
 #include "mlir/IR/Location.h"
 
 #include <optional>
 #include <sstream>
 #include <vector>
 
-namespace rust_compiler {
+namespace rust_compiler::parser {
 
 using namespace rust_compiler::lexer;
 
@@ -126,7 +127,9 @@ tryParseClippyAttribute(std::span<Token> tokens) {
                   }
                 } else {
                   printf("found clippy\n");
-                  return ClippyAttribute(view[0].getLocation(), lints, lintTokens);
+                  //printStringSpan(lints);
+                  return ClippyAttribute(view[0].getLocation(), lints,
+                                         lintTokens);
                 }
               }
             }

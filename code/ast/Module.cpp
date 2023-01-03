@@ -3,7 +3,19 @@
 namespace rust_compiler::ast {
 
 size_t Module::getTokens() {
-  return 3; //  +  FIXME
+  switch (kind) {
+  case ModuleKind::Module: {
+    return 3 + vis.getTokens(); // mod <name> ;
+  }
+  case ModuleKind::ModuleTree: {
+    size_t size = 0;
+    for (auto&i: items) {
+      size += i->getTokens();
+    }
+    // FIXME
+    return size + 5 + vis.getTokens();
+  }
+  }
 }
 
 std::span<std::shared_ptr<Function>> Module::getFuncs() {
@@ -12,6 +24,6 @@ std::span<std::shared_ptr<Function>> Module::getFuncs() {
 
 void Module::addItem(std::shared_ptr<Item> item) { items.push_back(item); }
 
-void Module::setVisibility(Visibility vis) { assert(false); }
+  void Module::setVisibility(Visibility _vis) { vis = _vis; }
 
 } // namespace rust_compiler::ast

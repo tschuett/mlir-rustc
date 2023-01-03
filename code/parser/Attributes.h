@@ -9,7 +9,7 @@
 #include <optional>
 #include <span>
 
-namespace rust_compiler {
+namespace rust_compiler::parser {
 
 using namespace rust_compiler::ast;
 
@@ -22,4 +22,4 @@ tryParseInnerAttribute(std::span<lexer::Token> tokens);
 extern std::optional<ClippyAttribute>
 tryParseClippyAttribute(std::span<lexer::Token> tokens);
 
-} // namespace rust_compiler
+} // namespace rust_compiler::parser
