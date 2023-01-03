@@ -30,6 +30,7 @@
 - [ ] visibility
 - [ ] visibility checks in inliner
 - [ ] desugaring?!?
+- [ ] location in Lexer
 
 # References
 
