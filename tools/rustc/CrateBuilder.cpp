@@ -57,7 +57,7 @@ void buildCrate(std::string_view path, std::string_view edition) {
                   (*outputBuffer)->getBufferEnd());
 
   lexer::TokenStream ts = lexer::lex(str, "lib.rs");
-  std::shared_ptr<ast::Module> module = parser::parser(ts, "");
+  std::shared_ptr<ast::Module> module = parser::parser(ts, "crate");
 
   sema::analyzeSemantics(module);
 

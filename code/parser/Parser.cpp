@@ -4,7 +4,9 @@
 #include "AST/Module.h"
 #include "AST/OuterAttribute.h"
 #include "Attributes.h"
+#include "Lexer/Token.h"
 #include "Location.h"
+#include "Modules.h"
 #include "Visibility.h"
 
 #include <cstdlib>
@@ -24,7 +26,13 @@ std::shared_ptr<ast::Module> parser(TokenStream &ts,
 
   size_t last = tokens.size();
   while (tokens.size() > 0) {
-    printf("next token: %s\n", Token2String(tokens[0].getKind()).c_str());
+    last = tokens.size();
+
+    printf("next token: %zu %s %s %s\n", tokens.size(),
+           Token2String(tokens[0].getKind()).c_str(),
+           Token2String(tokens[1].getKind()).c_str(),
+           Token2String(tokens[2].getKind()).c_str());
+
     if (tokens.front().getKind() == TokenKind::Hash) {
       if (tokens[1].getKind() == TokenKind::Exclaim) {
         if (tokens[2].getKind() == TokenKind::SquareOpen) {
@@ -76,6 +84,29 @@ std::shared_ptr<ast::Module> parser(TokenStream &ts,
               }
             }
           }
+        }
+      }
+    }
+
+    if (tokens.front().getKind() == TokenKind::Identifier) {
+      if (tokens[1].getIdentifier() == "mod") {
+        std::optional<Module> module = tryParseModule(tokens, modulePath);
+        if (module) {
+          // FIXME
+        }
+      }
+    }
+
+    if (tokens.front().getKind() == TokenKind::Identifier) {
+      if (tokens[1].getIdentifier() == "pub") {
+        std::optional<Visibility> visibility = tryParseVisibility(tokens);
+        if (visibility) {
+          tokens = tokens.subspan((*visibility).getTokens());
+          std::optional<Module> module = tryParseModule(tokens, modulePath);
+          if (module) {
+            // FIXME
+          }
+          // FIXME
         }
       }
     }
