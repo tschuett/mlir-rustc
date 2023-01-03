@@ -12,7 +12,7 @@ std::optional<Visibility> tryParseVisibility(std::span<Token> tokens) {
 
   if (view.front().isPubToken()) {
     if (view[1].getKind() != TokenKind::ParenOpen) {
-      return Visibility(); // FIXME public
+      return Visibility(VisibilityKind::Public); // FIXME public
     }
   }
 
@@ -21,12 +21,19 @@ std::optional<Visibility> tryParseVisibility(std::span<Token> tokens) {
       if (view[2].isIdentifier()) {
         std::string id = tokens[2].getIdentifier();
         if (id == "crate" or id == "self" or id == "super") {
-          return Visibility();
-        }
-
-        if (id == "in") {
+          if (id == "crate")
+            return Visibility(VisibilityKind::PublicCrate);
+          if (id == "self")
+            return Visibility(VisibilityKind::PublicSelf);
+          if (id == "super")
+            return Visibility(VisibilityKind::PublicSuper);
+        } else if (id == "in") {
           view = view.subspan(3); // pub ( in
           std::optional<ast::SimplePath> simplePath = tryParseSimplePath(view);
+          if (simplePath) {
+            return Visibility(*simplePath);
+            // FIXME mssing ) !!!
+          }
         }
         // return Visibility();
       }

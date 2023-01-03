@@ -12,4 +12,6 @@ std::span<std::shared_ptr<Function>> Module::getFuncs() {
 
 void Module::addItem(std::shared_ptr<Item> item) { items.push_back(item); }
 
+void Module::setVisibility(Visibility vis) { assert(false); }
+
 } // namespace rust_compiler::ast

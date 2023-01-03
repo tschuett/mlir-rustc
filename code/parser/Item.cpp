@@ -1,5 +1,6 @@
 #include "Item.h"
 
+#include "AST/ClippyAttribute.h"
 #include "AST/UseDeclaration.h"
 #include "AST/Visiblity.h"
 #include "Attributes.h"
@@ -23,10 +24,14 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
   if (view.front().getKind() == TokenKind::Identifier &&
       view.front().getIdentifier() == "mod") {
     if (view[1].getKind() == TokenKind::Identifier) {
-      if (view[2].getKind() == TokenKind::Colon) {
+      if (view[2].getKind() == TokenKind::SemiColon) {
         std::optional<Module> module = tryParseModule(tokens, modulePath);
         if (module) {
-          // FIXME
+          Module mod = *module;
+          tokens = tokens.subspan(mod.getTokens());
+          std::shared_ptr<Item> item = std::static_pointer_cast<Item>(
+              std::make_shared<Module>(mod));
+          return item;
         }
       } else if (view[2].getKind() == TokenKind::BraceOpen) {
         std::optional<Module> module = tryParseModuleTree(tokens, modulePath);
@@ -45,14 +50,22 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
               view[3].getIdentifier() == "allow" or
               view[3].getIdentifier() == "deny") {
             if (view[4].getKind() == TokenKind::ParenOpen) {
-              tryParseClippyAttribute(view);
+              std::optional<ClippyAttribute> clippy =
+                  tryParseClippyAttribute(view);
+              if (clippy) {
+                ClippyAttribute attr = *clippy;
+                tokens = tokens.subspan(attr.getTokens());
+                std::shared_ptr<Item> item = std::static_pointer_cast<Item>(
+                    std::make_shared<ClippyAttribute>(attr));
+                return item;
+              }
             }
           }
         }
       }
-      tryParseInnerAttribute(view);
+      tryParseInnerAttribute(view); // FIXME
     } else {
-      tryParseOuterAttribute(view);
+      tryParseOuterAttribute(view); // FIXME
     }
   }
 

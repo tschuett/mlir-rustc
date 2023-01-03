@@ -1,12 +1,11 @@
 #include "Modules.h"
 
+#include "Item.h"
 #include "Lexer/Token.h"
 
 #include <optional>
 #include <sstream>
 #include <string>
-
-#include "Item.h"
 
 using namespace rust_compiler::lexer;
 
@@ -44,7 +43,8 @@ std::optional<ast::Module> tryParseModuleTree(std::span<Token> tokens,
            Token2String(view[1].getKind()).c_str(),
            Token2String(view[2].getKind()).c_str());
 
-    std::optional<std::shared_ptr<ast::Item>> item = tryParseItem(view, modulePath);
+    std::optional<std::shared_ptr<ast::Item>> item =
+        tryParseItem(view, modulePath);
 
     if (view.size() == last) {
       printf("module tree: no progress\n");
@@ -66,7 +66,7 @@ std::optional<ast::Module> tryParseModule(std::span<Token> tokens,
       if (view[2].getKind() == TokenKind::Colon) {
         std::stringstream s;
         s << modulePath << std::string("::") << view[1].getIdentifier();
-        return Module(s.str());
+        return Module(view.front().getLocation(), s.str());
       }
     }
   }
