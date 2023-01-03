@@ -8,6 +8,13 @@ mlir::Location Function::getLocation() const { return location; }
 
 FunctionSignature Function::getSignature() const { return signature; }
 
-FunctionQualifiers Function::getFunctionQualifiers() const { return qualifiers; };
+FunctionQualifiers Function::getFunctionQualifiers() const {
+  return qualifiers;
+};
+
+size_t Function::getTokens() {
+  assert(false);
+  return 0;
+};
 
 } // namespace rust_compiler::ast

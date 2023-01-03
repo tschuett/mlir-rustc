@@ -5,7 +5,6 @@
 // #include "mlir/IR/AsmState.h"
 #include "Mir/MirOps.h"
 #include "TypeBuilder.h"
-#include "mlir/IR/SymbolTable.h"
 
 #include <llvm/Remarks/Remark.h>
 #include <llvm/Target/TargetMachine.h>
@@ -13,6 +12,7 @@
 #include <mlir/IR/Location.h>
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/IR/OwningOpRef.h>
+#include <mlir/IR/SymbolTable.h>
 #include <mlir/IR/Verifier.h>
 #include <optional>
 
@@ -54,4 +54,3 @@ ModuleBuilder::emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
 } // namespace rust_compiler
 
 // FIXME: rename loc and declare
-

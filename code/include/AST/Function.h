@@ -21,6 +21,8 @@ public:
   FunctionQualifiers getFunctionQualifiers() const;
 
   std::shared_ptr<BlockExpression> getBody();
+
+  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

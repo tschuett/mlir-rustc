@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AST/Module.h"
+#include "AST/Function.h"
 #include "Lexer/Token.h"
 
 #include <optional>
@@ -9,10 +9,7 @@
 
 namespace rust_compiler::parser {
 
-std::optional<ast::Module> tryParseModuleTree(std::span<lexer::Token> tokens,
+std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
                                               std::string_view modulePath);
-
-std::optional<ast::Module> tryParseModule(std::span<lexer::Token> tokens,
-                                          std::string_view modulePath);
 
 } // namespace rust_compiler::parser

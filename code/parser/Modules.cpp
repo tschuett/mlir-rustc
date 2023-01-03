@@ -2,8 +2,11 @@
 
 #include "Lexer/Token.h"
 
+#include <optional>
 #include <sstream>
 #include <string>
+
+#include "Item.h"
 
 using namespace rust_compiler::lexer;
 
@@ -28,6 +31,28 @@ std::optional<ast::Module> tryParseModuleTree(std::span<Token> tokens,
     return std::nullopt;
 
   // everything is fine
+
+  view = view.subspan(3);
+
+  size_t last = view.size();
+
+  while (view.size() > 0) {
+    last = view.size();
+
+    printf("next token: %zu %s %s %s\n", view.size(),
+           Token2String(view[0].getKind()).c_str(),
+           Token2String(view[1].getKind()).c_str(),
+           Token2String(view[2].getKind()).c_str());
+
+    std::optional<std::shared_ptr<ast::Item>> item = tryParseItem(view, modulePath);
+
+    if (view.size() == last) {
+      printf("module tree: no progress\n");
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  return std::nullopt;
 }
 
 std::optional<ast::Module> tryParseModule(std::span<Token> tokens,

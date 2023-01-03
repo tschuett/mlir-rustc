@@ -5,6 +5,7 @@ add_library(parser
            Visibility.cpp
            Modules.cpp
            Item.cpp
+           Function.cpp
            )
 
 
@@ -13,4 +14,4 @@ target_include_directories(parser PRIVATE  ../include)
 
 target_link_libraries(parser ast)
 
-target_precompile_headers(parser PRIVATE Modules.h Visibility.h Attributes.h Item.h UseDeclaration.h)
+target_precompile_headers(parser PRIVATE Modules.h Visibility.h Attributes.h Item.h Function.h UseDeclaration.h)

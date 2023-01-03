@@ -6,9 +6,9 @@
 #include <optional>
 #include <span>
 
-namespace rust_compiler::ast {
+namespace rust_compiler::parser {
 
-extern std::optional<UseDeclaration>
+std::optional<UseDeclaration>
 tryParseUseDeclaration(std::span<lexer::Token> tokens);
 
 }
