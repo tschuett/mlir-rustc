@@ -22,6 +22,7 @@
 
 # TODO
 
+- [ ] keywords
 - [ ] UTF-8
 - [ ] Remarks
 - [ ] Mir to LLVM

@@ -57,6 +57,8 @@ public:
   bool isSelfToken() const;
   bool isSuperToken() const;
   bool isInToken() const;
+  bool isDoubleColon() const;
+  bool isIdentifier() const;
 
   std::string getIdentifier() const { return id; }
 
