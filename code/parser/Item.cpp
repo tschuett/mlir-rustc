@@ -24,7 +24,7 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
     view = view.subspan((*visibility).getTokens());
   }
 
-  if (view.front().getKind() == TokenKind::Identifier &&
+  if (view.front().getKind() == TokenKind::Keyword &&
       view.front().getIdentifier() == "mod") {
     if (view[1].getKind() == TokenKind::Identifier) {
       if (view[2].getKind() == TokenKind::SemiColon) {
@@ -84,7 +84,7 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
     }
   }
 
-  if (view.front().getKind() == TokenKind::Identifier &&
+  if (view.front().getKind() == TokenKind::Keyword &&
       view.front().getIdentifier() == "use") {
     std::optional<UseDeclaration> useDeclaration = tryParseUseDeclaration(view);
     if (useDeclaration) {
@@ -95,15 +95,15 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
     }
   }
 
-  if (view.front().getKind() == TokenKind::Identifier &&
+  if (view.front().getKind() == TokenKind::Keyword &&
       view.front().getIdentifier() == "fn") {
     tryParseFunction(tokens, modulePath);
   }
 
-  if (view.front().getKind() == TokenKind::Identifier &&
+  if (view.front().getKind() == TokenKind::Keyword &&
       (view.front().getIdentifier() == "async" or
        view.front().getIdentifier() == "const")) {
-    if (view[1].getKind() == TokenKind::Identifier &&
+    if (view[1].getKind() == TokenKind::Keyword &&
         view[1].getIdentifier() == "fn") {
       tryParseFunction(tokens, modulePath);
     }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Lexer/KeyWords.h"
 #include "Location.h"
 
 #include <string>
@@ -44,13 +45,19 @@ class Token {
   rust_compiler::Location loc;
   TokenKind kind;
   std::string id;
+  KeyWordKind kw;
 
 public:
   Token(rust_compiler::Location loc, TokenKind tk) : loc(loc), kind(tk){};
   Token(rust_compiler::Location loc, TokenKind tk, std::string_view id)
       : loc(loc), kind(tk), id(id){};
 
+  Token(rust_compiler::Location loc, KeyWordKind kw, std::string_view id)
+      : loc(loc), kind(TokenKind::Keyword), id(id), kw(kw){};
+
   TokenKind getKind() const { return kind; }
+
+  bool isKeyWord() const;
 
   bool isUseToken() const;
   bool isPubToken() const;

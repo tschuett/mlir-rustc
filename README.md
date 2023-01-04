@@ -22,7 +22,7 @@
 
 # TODO
 
-- [ ] keywords
+- [x] keywords
 - [ ] UTF-8
 - [ ] Remarks
 - [ ] Mir to LLVM
@@ -33,6 +33,10 @@
 - [ ] desugaring: AST -> HIR -> MIR
 - [x] location in Lexer
 - [ ] convert ModuleBuilder to CrateBuilder for code generation
+- [ ] unsafe checker
+- [ ] cover all tokens
+- [ ] types
+- [ ] patterns
 
 # References
 

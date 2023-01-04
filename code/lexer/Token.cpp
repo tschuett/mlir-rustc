@@ -3,21 +3,20 @@
 namespace rust_compiler::lexer {
 
 bool Token::isUseToken() const {
-  return kind == TokenKind::Identifier && id == "use";
+  return kind == TokenKind::Keyword && id == "use";
 }
 
 bool Token::isPubToken() const {
-  return kind == TokenKind::Identifier && id == "pub";
+  return kind == TokenKind::Keyword && id == "pub";
 }
 
 bool Token::isIdentifier() const { return kind == TokenKind::Identifier; }
 
 bool Token::isDoubleColon() const { return kind == TokenKind::DoubleColon; }
 
-bool Token::isAs() const { return kind == TokenKind::Identifier && id == "as"; }
+bool Token::isAs() const { return kind == TokenKind::Keyword && id == "as"; }
 
 std::string Token2String(TokenKind kind) {
-
   switch (kind) {
   case TokenKind::DoubleColon: {
     return std::string("::");
@@ -86,7 +85,7 @@ std::string Token2String(TokenKind kind) {
     return std::string("&");
   }
   case TokenKind::DoubleAmp: {
-    return std::string("string");
+    return std::string("&&");
   }
   case TokenKind::String: {
     return std::string("string");

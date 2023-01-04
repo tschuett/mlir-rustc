@@ -3,7 +3,8 @@
 #include "AST/AST.h"
 #include "AST/Type.h"
 
-#include <mlir/IR/Location.h>
+#include "Location.h"
+
 #include <span>
 #include <vector>
 
@@ -18,18 +19,27 @@ public:
 
 class FunctionSignature {
   std::vector<Argument> args;
-  mlir::Location location;
+  Location location;
   std::string name;
   std::shared_ptr<Type> resultType;
 
 public:
+  FunctionSignature(Location loc);
   std::string getName();
 
   std::span<Argument> getArgs() { return args; }
 
   std::shared_ptr<Type> getResult();
 
-  mlir::Location getLocation();
+  Location getLocation();
+
+  void setAsync();
+  void setConst();
+  void setUnsafe();
+  void setName(std::string_view name);
 };
 
 } // namespace rust_compiler::ast
+
+
+// TODO extern Abi

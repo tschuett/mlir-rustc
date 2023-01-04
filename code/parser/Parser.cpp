@@ -135,6 +135,7 @@ std::shared_ptr<ast::Module> parser(TokenStream &ts,
 
     if (tokens.size() == last) {
       printf("parser: no progress\n");
+      printTokenState(tokens);
       exit(EXIT_FAILURE);
     }
   }

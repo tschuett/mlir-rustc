@@ -32,6 +32,7 @@ std::optional<PathList> tryParsePathList(std::span<Token> tokens) {
   while (view.size() > 4) {
     std::optional<std::shared_ptr<UseTree>> useTree = tryParseUseTree(view);
     if (useTree) {
+      printf("tryParseUseTree success\n");
       list.addTree(*useTree);
       view = view.subspan((*useTree)->getTokens());
     }
@@ -49,6 +50,7 @@ std::optional<PathList> tryParsePathList(std::span<Token> tokens) {
 
     if (view.front().getKind() == TokenKind::Comma) {
       view = view.subspan(1);
+      continue;
     }
 
     // failed
@@ -140,6 +142,14 @@ tryParseUseTree(std::span<Token> tokens) {
 
     if (view.front().getKind() == TokenKind::Comma &&
         view[1].getKind() == TokenKind::BraceClose) {
+      SimplePathNode node;
+      node.setSimplePath(*simplePath);
+      return std::static_pointer_cast<UseTree>(
+          std::make_shared<SimplePathNode>(node));
+      // UseTree done
+    }
+
+    if (view.front().getKind() == TokenKind::BraceClose) {
       SimplePathNode node;
       node.setSimplePath(*simplePath);
       return std::static_pointer_cast<UseTree>(

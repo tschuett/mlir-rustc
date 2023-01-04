@@ -69,6 +69,11 @@ std::optional<std::string> KeyWord2String(KeyWordKind kind) {
 }
 
 std::optional<KeyWordKind> isKeyWord(std::string_view identifier) {
+  for (auto &p : KW) {
+    if (std::get<1>(p) == identifier) {
+      return std::get<0>(p);
+    }
+  }
   return std::nullopt;
 }
 

@@ -49,6 +49,10 @@ std::optional<ast::SimplePath> tryParseSimplePath(std::span<Token> tokens) {
            (*simplePathSegment).getSegment().c_str());
 
     simplePath.addPathSegment(*simplePathSegment);
+
+    if (not view.front().isDoubleColon())
+      return simplePath;
+
     while (view.front().isDoubleColon() && view.size() > 1) {
       view = view.subspan(1); // ::
       std::optional<ast::SimplePathSegment> simplePathSegment =

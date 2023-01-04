@@ -21,10 +21,10 @@ std::optional<ast::Module> tryParseModuleTree(std::span<Token> tokens,
 
   std::span<Token> view = tokens;
 
-  if (view.front().getKind() != TokenKind::Identifier)
+  if (view.front().getKind() != TokenKind::Keyword)
     return std::nullopt;
 
-  if (view.front().getKind() == TokenKind::Identifier &&
+  if (view.front().getKind() == TokenKind::Keyword &&
       view.front().getIdentifier() != "mod")
     return std::nullopt;
 
@@ -72,7 +72,7 @@ std::optional<ast::Module> tryParseModule(std::span<Token> tokens,
 
   std::span<Token> view = tokens;
 
-  if (view.front().isIdentifier() && view.front().getIdentifier() == "mod") {
+  if (view.front().getKind() == TokenKind::Keyword && view.front().getIdentifier() == "mod") {
     if (view[1].getKind() == TokenKind::Identifier) {
       if (view[2].getKind() == TokenKind::SemiColon) {
         std::stringstream s;
@@ -83,7 +83,7 @@ std::optional<ast::Module> tryParseModule(std::span<Token> tokens,
     }
   }
 
-  if (view.front().getKind() == TokenKind::Identifier &&
+  if (view.front().getKind() == TokenKind::Keyword &&
       view.front().getIdentifier() == "mod") {
     if (view[1].getKind() == TokenKind::Identifier) {
       if (view[2].getKind() == TokenKind::BraceOpen) {

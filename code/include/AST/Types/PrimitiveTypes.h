@@ -4,6 +4,9 @@
 
 #include "AST/Types/Types.h"
 
+#include <optional>
+#include <string>
+
 namespace rust_compiler::ast::types {
 
 enum class PrimitiveTypeKind {
@@ -23,7 +26,8 @@ enum class PrimitiveTypeKind {
   Binary32,
   Binary64,
   Usize,
-  Isize
+  Isize,
+  Never
 };
 
 class PrimitiveType : public Type {
@@ -32,5 +36,9 @@ class PrimitiveType : public Type {
 public:
   PrimitiveTypeKind getKind() const { return kind; }
 };
+
+std::optional<std::string> PrimitiveType2String(PrimitiveTypeKind);
+
+std::optional<PrimitiveTypeKind> isPrimitiveType(std::string_view identifier);
 
 } // namespace rust_compiler::ast::types
