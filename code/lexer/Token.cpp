@@ -14,6 +14,8 @@ bool Token::isIdentifier() const { return kind == TokenKind::Identifier; }
 
 bool Token::isDoubleColon() const { return kind == TokenKind::DoubleColon; }
 
+bool Token::isAs() const { return kind == TokenKind::Identifier && id == "as"; }
+
 std::string Token2String(TokenKind kind) {
 
   switch (kind) {

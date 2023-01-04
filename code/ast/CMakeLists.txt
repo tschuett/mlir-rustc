@@ -11,6 +11,7 @@ add_library(ast
            Visibility.cpp
            SimplePath.cpp
            SimplePathSegment.cpp
+           UseTree.cpp
            )
 
 

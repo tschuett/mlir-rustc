@@ -59,6 +59,7 @@ public:
   bool isInToken() const;
   bool isDoubleColon() const;
   bool isIdentifier() const;
+  bool isAs() const;
 
   std::string getIdentifier() const { return id; }
 
