@@ -10,6 +10,7 @@ add_library(parser
            Util.cpp
            Type.cpp
            Patterns.cpp
+           Generics.cpp
            )
 
 

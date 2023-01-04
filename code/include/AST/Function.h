@@ -9,6 +9,10 @@
 
 namespace rust_compiler::ast {
 
+class FunctionParameters {};
+
+class FunctionReturnType {};
+
 class Function : public Node {
   mlir::Location location;
   std::shared_ptr<BlockExpression> body;

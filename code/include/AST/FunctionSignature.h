@@ -33,9 +33,6 @@ public:
 
   Location getLocation();
 
-  void setAsync();
-  void setConst();
-  void setUnsafe();
   void setName(std::string_view name);
 };
 
