@@ -11,6 +11,7 @@ add_library(parser
            Type.cpp
            Patterns.cpp
            Generics.cpp
+           WhereClause.cpp
            )
 
 

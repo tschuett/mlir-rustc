@@ -1,7 +1,9 @@
 #include "Function.h"
 
+#include "AST/Function.h"
 #include "AST/FunctionQualifiers.h"
 #include "Generics.h"
+#include "WhereClause.h"
 
 using namespace rust_compiler::lexer;
 
@@ -33,6 +35,12 @@ tryParseFunctionQualifiers(std::span<lexer::Token> tokens) {
   return qual;
   // FIXME
 }
+
+std::optional<ast::FunctionParameters>
+tryParseFunctionParameters(std::span<lexer::Token> tokens) {}
+
+  std::optional<ast::Type>
+tryParseFunctionReturnType(std::span<lexer::Token> tokens) {}
 
 std::optional<ast::FunctionSignature>
 tryParseFunctionSignature(std::span<lexer::Token> tokens) {
