@@ -34,4 +34,8 @@ size_t SimplePathDoubleColonWithPathList::getTokens() {
   return 2 + list.getTokens() + 1;
 }
 
+void SimplePathNode::setSimplePath(SimplePath _path) { path = _path; }
+
+size_t SimplePathNode::getTokens() { return path.getTokens(); }
+
 } // namespace rust_compiler::ast::use_tree

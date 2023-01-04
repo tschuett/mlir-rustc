@@ -19,14 +19,13 @@ std::optional<PathList> tryParsePathList(std::span<Token> tokens) {
   std::span<Token> view = tokens;
   PathList list;
 
-  if (view.front().getKind() != TokenKind::BraceOpen) {
-    return std::nullopt; // failed
-  }
-  view = view.subspan(1);
-
   printf("tryParsePathList\n");
 
   printTokenState(view);
+
+  if (view.front().getKind() != TokenKind::BraceOpen) {
+    return std::nullopt; // failed
+  }
 
   view = view.subspan(1);
 
@@ -46,6 +45,10 @@ std::optional<PathList> tryParsePathList(std::span<Token> tokens) {
     // }
     if (view.front().getKind() == TokenKind::BraceClose) {
       return list;
+    }
+
+    if (view.front().getKind() == TokenKind::Comma) {
+      view = view.subspan(1);
     }
 
     // failed
@@ -100,6 +103,8 @@ tryParseUseTree(std::span<Token> tokens) {
 
   std::optional<SimplePath> simplePath = tryParseSimplePath(view);
   if (simplePath) {
+    printf("tryParseUseTree: found simple path\n");
+
     view = view.subspan((*simplePath).getTokens());
 
     if (view[0].getKind() == TokenKind::DoubleColon &&
@@ -111,7 +116,8 @@ tryParseUseTree(std::span<Token> tokens) {
     if (view[0].getKind() == TokenKind::DoubleColon &&
         view[1].getKind() == TokenKind::BraceOpen) {
       // SimplePath :: {;
-      view = view.subspan(2);
+      printf("tryParseUseTree: SimplePath :: {\n");
+      view = view.subspan(1);
       std::optional<PathList> pathList = tryParsePathList(view);
       if (pathList) {
         SimplePathDoubleColonWithPathList simple;
@@ -130,6 +136,22 @@ tryParseUseTree(std::span<Token> tokens) {
     if (view.front().isIdentifier() && view[1].isAs() &&
         view[2].isIdentifier() && view[3].getKind() == TokenKind::SemiColon) {
       // SimplePath as Id or _ ;
+    }
+
+    if (view.front().getKind() == TokenKind::Comma &&
+        view[1].getKind() == TokenKind::BraceClose) {
+      SimplePathNode node;
+      node.setSimplePath(*simplePath);
+      return std::static_pointer_cast<UseTree>(
+          std::make_shared<SimplePathNode>(node));
+      // UseTree done
+    }
+
+    if (view.front().getKind() == TokenKind::Comma) {
+      SimplePathNode node;
+      node.setSimplePath(*simplePath);
+      return std::static_pointer_cast<UseTree>(
+          std::make_shared<SimplePathNode>(node));
     }
 
     return std::nullopt;

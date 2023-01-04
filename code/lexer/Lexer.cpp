@@ -1,6 +1,7 @@
 #include "Lexer/Lexer.h"
 
 #include "Lexer/TokenStream.h"
+#include "Lexer/KeyWords.h"
 
 #include <optional>
 
@@ -309,11 +310,19 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
 
     std::optional<std::string> id = tryLexIdentifier(code);
     if (id) {
-      ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::Identifier, *id));
-      code.remove_prefix(id->size());
-      columnNumber += id->size();
-      continue;
+      if (isKeyWord(*id)) {
+        ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                        TokenKind::Keyword, *id));
+        code.remove_prefix(id->size());
+        columnNumber += id->size();
+        continue;
+      } else {
+        ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                        TokenKind::Identifier, *id));
+        code.remove_prefix(id->size());
+        columnNumber += id->size();
+        continue;
+      }
     }
 
     if (code.starts_with("!")) {

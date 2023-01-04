@@ -64,6 +64,9 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::Identifier: {
     return std::string("identifier");
   }
+  case TokenKind::Keyword: {
+    return std::string("keyword");
+  }
   case TokenKind::ParenOpen: {
     return std::string("(");
   }

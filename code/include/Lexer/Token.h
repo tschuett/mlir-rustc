@@ -36,7 +36,8 @@ enum class TokenKind {
   Star,
   Dash,
   Char,
-  Plus
+  Plus,
+  Keyword
 };
 
 class Token {

@@ -15,6 +15,8 @@ public:
   SimplePathSegment(std::string_view segment) : segment(segment){};
 
   size_t getTokens() override;
+
+  std::string getSegment() const { return segment; }
 };
 
 } // namespace rust_compiler::ast

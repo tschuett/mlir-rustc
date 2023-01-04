@@ -11,7 +11,12 @@ public:
 
 /// SimplePath
 class SimplePathNode : public UseTree {
+  SimplePath path;
+
 public:
+  SimplePathNode() = default;
+  void setSimplePath(SimplePath path);
+
   size_t getTokens() override;
 };
 

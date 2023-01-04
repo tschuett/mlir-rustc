@@ -3,7 +3,7 @@
 #include <optional>
 #include <string>
 
-namespace rust_compiler::sema {
+namespace rust_compiler::lexer {
 
 /// https://doc.rust-lang.org/reference/keywords.html
 enum class KeyWordKind {
@@ -53,15 +53,17 @@ enum class KeyWordKind {
   KW_MACRO,
   KW_OVERRIDE,
   KW_PRIV,
+  KW_STATICLIFETIME,
   KW_TYPEOF,
+  KW_UNION,
   KW_UNSIZED,
   KW_VIRTUAL,
   KW_YIELD,
   KW_TRY
 };
 
-extern std::optional<std::string> KeyWord2String(KeyWordKind);
+std::optional<std::string> KeyWord2String(KeyWordKind);
 
-extern std::optional<KeyWordKind> isKeyWord(std::string_view identifier);
+std::optional<KeyWordKind> isKeyWord(std::string_view identifier);
 
-} // namespace rust_compiler::sema
+} // namespace rust_compiler::lexer
