@@ -69,7 +69,7 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
                   tryParseClippyAttribute(view);
               if (clippy) {
                 ClippyAttribute attr = *clippy;
-                tokens = tokens.subspan(attr.getTokens());
+                tokens = tokens.subspan(attr.getTokens()); // why?
                 std::shared_ptr<Item> item = std::static_pointer_cast<Item>(
                     std::make_shared<ClippyAttribute>(attr));
                 return item;
@@ -89,6 +89,9 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
     std::optional<UseDeclaration> useDeclaration = tryParseUseDeclaration(view);
     if (useDeclaration) {
       // FIXME
+      UseDeclaration use = *useDeclaration;
+      return std::static_pointer_cast<Item>(
+          std::make_shared<UseDeclaration>(use));
     }
   }
 

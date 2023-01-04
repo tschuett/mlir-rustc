@@ -44,7 +44,7 @@ public:
   void setPath(SimplePath path);
 };
 
-/// SimplePath :: { ... }
+/// SimplePath :: { ... };
 class SimplePathDoubleColonWithPathList : public UseTree {
   PathList list;
 

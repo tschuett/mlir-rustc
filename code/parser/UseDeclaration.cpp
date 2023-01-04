@@ -22,8 +22,11 @@ std::optional<PathList> tryParsePathList(std::span<Token> tokens) {
   if (view.front().getKind() != TokenKind::BraceOpen) {
     return std::nullopt; // failed
   }
+  view = view.subspan(1);
 
   printf("tryParsePathList\n");
+
+  printTokenState(view);
 
   view = view.subspan(1);
 
@@ -59,6 +62,7 @@ tryParseUseTree(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   printf("tryParseUseTree\n");
+  printTokenState(view);
 
   // First line
   if (view.front().getKind() == TokenKind::Star &&
@@ -78,33 +82,6 @@ tryParseUseTree(std::span<Token> tokens) {
     return star;
   }
 
-  if (view.front().isIdentifier() &&
-      view[1].getKind() == TokenKind::DoubleColon &&
-      view[2].getKind() == TokenKind::Star &&
-      view[3].getKind() == TokenKind::SemiColon) {
-    // SimplePath :: * ;
-  }
-
-  // Second line
-  if (view.front().isIdentifier() &&
-      view[1].getKind() == TokenKind::DoubleColon &&
-      view[2].getKind() == TokenKind::BraceOpen) {
-    // SimplePath :: {;
-    view = view.subspan(2);
-    std::optional<PathList> pathList = tryParsePathList(view);
-    if (pathList) {
-      SimplePathDoubleColonWithPathList simple;
-      simple.setPathList(*pathList);
-      return std::static_pointer_cast<UseTree>(
-          std::make_shared<SimplePathDoubleColonWithPathList>(simple));
-    }
-  }
-
-  if (view.front().getKind() == TokenKind::DoubleColon &&
-      view[1].getKind() == TokenKind::BraceOpen) {
-    // :: {;
-  }
-
   if (view.front().getKind() == TokenKind::BraceOpen) {
     // {
     std::optional<PathList> list = tryParsePathList(view);
@@ -116,18 +93,47 @@ tryParseUseTree(std::span<Token> tokens) {
     // FIXME
   }
 
-  // Third line
-  if (view.front().isIdentifier() &&
-      view[1].getKind() == TokenKind::SemiColon) {
-    // SimplePath ;
+  if (view.front().getKind() == TokenKind::DoubleColon &&
+      view[1].getKind() == TokenKind::BraceOpen) {
+    // :: {;
   }
 
-  // Rebinding
-  if (view.front().isIdentifier() && view[1].isAs() && view[2].isIdentifier() &&
-      view[3].getKind() == TokenKind::SemiColon) {
-    // SimplePath as Id or _ ;
-  }
+  std::optional<SimplePath> simplePath = tryParseSimplePath(view);
+  if (simplePath) {
+    view = view.subspan((*simplePath).getTokens());
 
+    if (view[0].getKind() == TokenKind::DoubleColon &&
+        view[1].getKind() == TokenKind::Star &&
+        view[2].getKind() == TokenKind::SemiColon) {
+      // SimplePath :: * ;
+    }
+
+    if (view[0].getKind() == TokenKind::DoubleColon &&
+        view[1].getKind() == TokenKind::BraceOpen) {
+      // SimplePath :: {;
+      view = view.subspan(2);
+      std::optional<PathList> pathList = tryParsePathList(view);
+      if (pathList) {
+        SimplePathDoubleColonWithPathList simple;
+        simple.setPathList(*pathList);
+        return std::static_pointer_cast<UseTree>(
+            std::make_shared<SimplePathDoubleColonWithPathList>(simple));
+      }
+    }
+
+    // Third line
+    if (view[0].getKind() == TokenKind::SemiColon) {
+      // SimplePath ;
+    }
+
+    // Rebinding
+    if (view.front().isIdentifier() && view[1].isAs() &&
+        view[2].isIdentifier() && view[3].getKind() == TokenKind::SemiColon) {
+      // SimplePath as Id or _ ;
+    }
+
+    return std::nullopt;
+  }
   return std::nullopt;
 }
 
@@ -149,3 +155,5 @@ std::optional<UseDeclaration> tryParseUseDeclaration(std::span<Token> tokens) {
 }
 
 } // namespace rust_compiler::parser
+
+// FIXME Identifier vs. SimplePath !!!!

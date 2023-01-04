@@ -13,7 +13,6 @@ size_t Star::getTokens() {
 }
 
 size_t PathList::getTokens() {
-
   size_t size = 0;
   for (auto &el : elements) {
     size += el->getTokens();
@@ -30,8 +29,9 @@ void SimplePathDoubleColonWithPathList::setPathList(PathList _path) {
   list = _path;
 }
 
+/// SimplePath :: { ... };
 size_t SimplePathDoubleColonWithPathList::getTokens() {
-  return 3 + list.getTokens() + 1;
+  return 2 + list.getTokens() + 1;
 }
 
 } // namespace rust_compiler::ast::use_tree

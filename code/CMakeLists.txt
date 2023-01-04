@@ -12,3 +12,4 @@ add_subdirectory(analysis)
 
 add_subdirectory(moduleBuilder)
 add_subdirectory(remarks)
+add_subdirectory(crate_builder)

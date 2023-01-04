@@ -30,8 +30,9 @@
 - [ ] Closures (nested regions)
 - [ ] visibility
 - [ ] visibility checks in inliner
-- [ ] desugaring?!?
+- [ ] desugaring: AST -> AST? AST -> HL MIR?
 - [x] location in Lexer
+- [ ] convert ModuleBuilder to CrateBuilder for code generation
 
 # References
 
@@ -51,6 +52,7 @@
 * https://doc.rust-lang.org/reference/expressions/operator-expr.html#borrow-operators
 * https://github.com/LightningCreations/lccc
 * https://github.com/thepowersgang/mrustc
+* https://rustc-dev-guide.rust-lang.org/about-this-guide.html
 
 ## MIR
 
@@ -76,3 +78,7 @@
 * https://icl.utk.edu/papi/
 
 * PGO + Instruction counters: where to optimize and not how to optimize
+
+
+
+* https://reviews.llvm.org/D137956

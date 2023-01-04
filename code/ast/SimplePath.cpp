@@ -9,8 +9,6 @@ void SimplePath::addPathSegment(SimplePathSegment &seg) {
 }
 
 size_t SimplePath::getTokens() {
-  assert(false);
-
   size_t tokens = 0;
   if (withDoubleColon)
     tokens += 1;
