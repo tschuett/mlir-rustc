@@ -28,8 +28,6 @@ public:
 class Star : public UseTree {
 public:
   size_t getTokens() override;
-
-  void append(SimplePath path);
 };
 
 /// :: *
@@ -51,7 +49,10 @@ class SimplePathDoubleColonWithPathList : public UseTree {
   PathList list;
 
 public:
+  SimplePathDoubleColonWithPathList() = default;
   size_t getTokens() override;
+
+  void setPathList(PathList list);
 };
 
 /// :: { ... }

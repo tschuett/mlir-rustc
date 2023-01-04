@@ -2,8 +2,6 @@
 
 namespace rust_compiler::ast::use_tree {
 
-void Star::append(SimplePath path) {}
-
 void SimplePathDoubleColonStar::setPath(SimplePath path) {}
 
 size_t DoubleColonStar::getTokens() {
@@ -26,6 +24,14 @@ size_t PathList::getTokens() {
 
 void PathList::addTree(std::shared_ptr<UseTree> tree) {
   elements.push_back(tree);
+}
+
+void SimplePathDoubleColonWithPathList::setPathList(PathList _path) {
+  list = _path;
+}
+
+size_t SimplePathDoubleColonWithPathList::getTokens() {
+  return 3 + list.getTokens() + 1;
 }
 
 } // namespace rust_compiler::ast::use_tree

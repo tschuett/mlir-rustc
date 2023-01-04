@@ -23,6 +23,8 @@ std::optional<PathList> tryParsePathList(std::span<Token> tokens) {
     return std::nullopt; // failed
   }
 
+  printf("tryParsePathList\n");
+
   view = view.subspan(1);
 
   while (view.size() > 4) {
@@ -56,6 +58,8 @@ static std::optional<std::shared_ptr<UseTree>>
 tryParseUseTree(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
+  printf("tryParseUseTree\n");
+
   // First line
   if (view.front().getKind() == TokenKind::Star &&
       view[1].getKind() == TokenKind::SemiColon) {
@@ -64,6 +68,7 @@ tryParseUseTree(std::span<Token> tokens) {
         std::static_pointer_cast<UseTree>(std::make_shared<Star>(Star()));
     return star;
   }
+
   if (view.front().getKind() == TokenKind::DoubleColon &&
       view[1].getKind() == TokenKind::Star &&
       view[2].getKind() == TokenKind::SemiColon) {
@@ -85,6 +90,14 @@ tryParseUseTree(std::span<Token> tokens) {
       view[1].getKind() == TokenKind::DoubleColon &&
       view[2].getKind() == TokenKind::BraceOpen) {
     // SimplePath :: {;
+    view = view.subspan(2);
+    std::optional<PathList> pathList = tryParsePathList(view);
+    if (pathList) {
+      SimplePathDoubleColonWithPathList simple;
+      simple.setPathList(*pathList);
+      return std::static_pointer_cast<UseTree>(
+          std::make_shared<SimplePathDoubleColonWithPathList>(simple));
+    }
   }
 
   if (view.front().getKind() == TokenKind::DoubleColon &&
