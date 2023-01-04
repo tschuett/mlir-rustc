@@ -24,4 +24,8 @@ size_t PathList::getTokens() {
   return 2 + 2 * size - 1; // { ... }
 }
 
+void PathList::addTree(std::shared_ptr<UseTree> tree) {
+  elements.push_back(tree);
+}
+
 } // namespace rust_compiler::ast::use_tree

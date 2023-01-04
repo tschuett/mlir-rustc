@@ -21,6 +21,8 @@ class PathList : public UseTree {
 
 public:
   size_t getTokens() override;
+
+  void addTree(std::shared_ptr<UseTree> tree);
 };
 
 class Star : public UseTree {
@@ -68,4 +70,4 @@ public:
   size_t getTokens() override;
 };
 
-} // namespace rust_compiler::ast::usetree
+} // namespace rust_compiler::ast::use_tree

@@ -17,72 +17,40 @@ tryParseUseTree(std::span<Token> tokens);
 
 std::optional<PathList> tryParsePathList(std::span<Token> tokens) {
   std::span<Token> view = tokens;
+  PathList list;
 
   if (view.front().getKind() != TokenKind::BraceOpen) {
-    return std::nullopt;
+    return std::nullopt; // failed
   }
 
   view = view.subspan(1);
 
-  while (view.front().getKind() != TokenKind::BraceClose && view.size() > 4) {
+  while (view.size() > 4) {
     std::optional<std::shared_ptr<UseTree>> useTree = tryParseUseTree(view);
     if (useTree) {
+      list.addTree(*useTree);
+      view = view.subspan((*useTree)->getTokens());
     }
 
-    // Comma or }
+    // Comma }
+    if (view.front().getKind() == TokenKind::Comma &&
+        view[1].getKind() == TokenKind::BraceClose) {
+      return list;
+    }
+
+    // }
+    if (view.front().getKind() == TokenKind::BraceClose) {
+      return list;
+    }
+
+    // failed
     if (view.front().getKind() != TokenKind::Comma) {
-      return std::nullopt; // FIXME
+      return std::nullopt; // failed!
     }
-
   }
 
-  // FIXME
   return std::nullopt;
 }
-
-// static std::optional<std::shared_ptr<UseTree>>
-// tryParseRebinding(std::span<Token> tokens) {
-//   std::span<Token> view = tokens;
-//   Rebinding binding;
-//   if (tokens.front().getKind() == TokenKind::BraceOpen) {
-//   }
-//
-//   return std::nullopt; // FIXME
-// }
-//
-// static std::optional<std::shared_ptr<UseTree>>
-// tryParseUsePathList(std::span<Token> tokens) {
-//   if (tokens.front().getKind() == TokenKind::BraceOpen) {
-//   }
-//
-//   return std::nullopt; // FIXME
-// }
-//
-// static std::optional<std::shared_ptr<UseTree>>
-// tryParseStarList(std::span<Token> tokens) {
-//   std::span<Token> view = tokens;
-//   StarList list;
-//
-//   std::optional<ast::SimplePath> simplePath = tryParseSimplePath(view);
-//   if (simplePath) {
-//     view = view.subspan((*simplePath).getTokens());
-//     list.append(*simplePath);
-//   }
-//
-//   while (view.size() > 1) {
-//     if (tokens.front().getKind() == TokenKind::Star) {
-//       return list;
-//     } else if (tokens.front().getKind() == TokenKind::DoubleColon) {
-//       std::optional<ast::SimplePath> simplePath = tryParseSimplePath(view);
-//       if (simplePath) {
-//         view = view.subspan((*simplePath).getTokens());
-//         list.append(*simplePath);
-//       }
-//     }
-//   }
-//
-//   return std::nullopt; // FIXME
-// }
 
 static std::optional<std::shared_ptr<UseTree>>
 tryParseUseTree(std::span<Token> tokens) {
@@ -127,6 +95,11 @@ tryParseUseTree(std::span<Token> tokens) {
   if (view.front().getKind() == TokenKind::BraceOpen) {
     // {
     std::optional<PathList> list = tryParsePathList(view);
+    if (list) {
+      std::shared_ptr<UseTree> star =
+          std::static_pointer_cast<UseTree>(std::make_shared<PathList>(*list));
+      return star;
+    }
     // FIXME
   }
 
