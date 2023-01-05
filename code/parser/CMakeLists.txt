@@ -12,6 +12,8 @@ add_library(parser
            Patterns.cpp
            Generics.cpp
            WhereClause.cpp
+           FunctionParameters.cpp
+           BlockExpression.cpp
            )
 
 
@@ -20,4 +22,4 @@ target_include_directories(parser PRIVATE  ../include)
 
 target_link_libraries(parser ast)
 
-target_precompile_headers(parser PRIVATE Modules.h Visibility.h Attributes.h Item.h Function.h UseDeclaration.h SimplePath.h Util.h Type.h)
+target_precompile_headers(parser PRIVATE Modules.h Visibility.h Attributes.h Item.h Function.h UseDeclaration.h SimplePath.h Util.h Type.h FunctionParameters.h WhereClause.h Generics.h Patterns.h BlockExpression.h)

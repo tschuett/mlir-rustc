@@ -60,7 +60,7 @@ mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   if (!entryBlock.empty())
     returnOp = dyn_cast<Mir::ReturnOp>(entryBlock.back());
   if (!returnOp) {
-    builder.create<Mir::ReturnOp>(f->getSignature().getLocation());
+    builder.create<Mir::ReturnOp>(getLocation(f->getSignature().getLocation()));
   } else if (returnOp.hasOperand()) {
     // Otherwise, if this return operation has an operand then add a result to
     // the function.

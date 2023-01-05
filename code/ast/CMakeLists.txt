@@ -12,6 +12,8 @@ add_library(ast
            SimplePath.cpp
            SimplePathSegment.cpp
            UseTree.cpp
+           WhereClause.cpp
+           FunctionQualifiers.cpp
            )
 
 

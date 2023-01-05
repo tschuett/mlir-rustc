@@ -16,6 +16,8 @@ class BlockExpression : public ExpressionWithBlock {
 
 public:
   std::span<std::shared_ptr<Statement>> getExpressions();
+
+  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

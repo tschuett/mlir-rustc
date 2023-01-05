@@ -13,7 +13,14 @@ class FunctionQualifiers : public Node {
   FunctionQualifierKind kind;
   std::string abi;
 
+  bool isAsync = false;
+  bool isConst = false;
+  bool isUnsafe = false;
+  bool isExtern = false;
+
 public:
+  FunctionQualifiers() = default;
+
   FunctionQualifierKind getKind() const { return kind; }
 
   size_t getTokens() override;
@@ -22,7 +29,6 @@ public:
   void setConst();
   void setUnsafe();
   void setExtern(std::string_view abi);
-
 };
 
 } // namespace rust_compiler::ast

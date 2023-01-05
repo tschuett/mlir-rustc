@@ -4,6 +4,9 @@
 
 namespace rust_compiler::ast {
 
-class WhereClause : public Node {};
+class WhereClause : public Node {
+public:
+  size_t getTokens() override;
+};
 
 } // namespace rust_compiler::ast

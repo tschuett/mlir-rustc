@@ -3,7 +3,10 @@
 #include <AST/Types/Types.h>
 #include <Lexer/Token.h>
 
-namespace rust_compiler::lexer {
+#include <span>
+#include <optional>
+
+namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::Type>>
 tryParseType(std::span<lexer::Token> tokens);

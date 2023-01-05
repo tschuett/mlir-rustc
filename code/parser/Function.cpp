@@ -3,7 +3,10 @@
 #include "AST/Function.h"
 #include "AST/FunctionQualifiers.h"
 #include "Generics.h"
+#include "Lexer/Token.h"
 #include "WhereClause.h"
+
+#include <optional>
 
 using namespace rust_compiler::lexer;
 
@@ -15,32 +18,40 @@ tryParseFunctionQualifiers(std::span<lexer::Token> tokens) {
   FunctionQualifiers qual;
 
   if (view.front().getKind() == TokenKind::Keyword) {
+    if (view.front().getIdentifier() == "const") {
+      qual.setConst();
+      view = view.subspan(1);
+    }
     if (view.front().getIdentifier() == "async") {
       qual.setAsync();
       view = view.subspan(1);
-    } else if (view.front().getIdentifier() == "const") {
-      qual.setConst();
-      view = view.subspan(1);
-    } else if (view.front().getIdentifier() == "unsafe") {
+    }
+    if (view.front().getIdentifier() == "unsafe") {
       qual.setUnsafe();
       view = view.subspan(1);
-    } else if (view.front().getIdentifier() == "extern") {
-      qual.setExtern();
-      view = view.subspan(1);
+    }
+    if (view.front().getIdentifier() == "extern") {
+      // qual.setExtern();
+      // view = view.subspan(1);
       // FIXME Abi
-    } else {
-      return std::nullopt;
     }
   }
   return qual;
-  // FIXME
 }
 
-std::optional<ast::FunctionParameters>
-tryParseFunctionParameters(std::span<lexer::Token> tokens) {}
+std::optional<std::shared_ptr<ast::Type>>
+tryParseFunctionReturnType(std::span<lexer::Token> tokens) {
+  std::span<Token> view = tokens;
 
-  std::optional<ast::Type>
-tryParseFunctionReturnType(std::span<lexer::Token> tokens) {}
+  if (view.front().getKind() != TokenKind::ThinArrow)
+    return std::nullopt;
+
+  view = view.subspan(1);
+
+  std::optional<std::shared_ptr<ast::Type>> type = tryParseType(view);
+
+  return type;
+}
 
 std::optional<ast::FunctionSignature>
 tryParseFunctionSignature(std::span<lexer::Token> tokens) {
@@ -86,10 +97,10 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
 
   tryParseWhereClause(view);
 
-  // BlockExpress or ;
-
   // todo parse generic params
   // parse parameter
+
+  return std::nullopt; // FIXME
 }
 
 std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
@@ -97,6 +108,12 @@ std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
   std::span<Token> view = tokens;
 
   std::optional<FunctionSignature> sig = tryParseFunctionSignature(view);
+
+  if (view.front().getKind() == TokenKind::SemiColon) {
+    // return fun
+  }
+
+  tryParseBlockExpression(view);
 
   // FIXME
   return std::nullopt;

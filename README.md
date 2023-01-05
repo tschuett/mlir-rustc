@@ -44,6 +44,11 @@
 * https://github.com/zero9178/Pylir
 * https://github.com/intel/llvm/tree/sycl-mlir/mlir-sycl
 * https://mlir.llvm.org/docs/Dialects/ArithOps/
+* https://discourse.llvm.org/t/rfc-a-dataflow-analysis-framework/63340
+* https://llvm.org/devmtg/2019-10/slides/Doerfert-Attributor.pdf
+* https://github.com/iree-org/iree/blob/main/compiler/src/iree/compiler/Dialect/Util/Analysis/DFX/Solver.h
+* https://llvm.org/devmtg/2020-09/slides/The_Present_and_Future_of_Interprocedural_Optimization_in_LLVM.pdf
+* https://llvm.org/devmtg/2020-09/slides/A_Deep_Dive_into_Interprocedural_Optimization.pdf
 
 ## Async
 

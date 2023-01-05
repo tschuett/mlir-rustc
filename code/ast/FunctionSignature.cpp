@@ -10,4 +10,6 @@ std::shared_ptr<Type> FunctionSignature::getResult() { return resultType; }
 
 Location FunctionSignature::getLocation() { return location; }
 
+void FunctionSignature::setName(std::string_view _name) { name = _name; }
+
 } // namespace rust_compiler::ast

@@ -24,7 +24,8 @@ class FunctionSignature {
   std::shared_ptr<Type> resultType;
 
 public:
-  FunctionSignature(Location loc);
+  FunctionSignature(Location loc) : location(loc) {}
+
   std::string getName();
 
   std::span<Argument> getArgs() { return args; }
