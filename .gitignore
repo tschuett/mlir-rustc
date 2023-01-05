@@ -58,6 +58,8 @@ code/include/Mir/MirOps.h.inc
 #code/include/Mir/MirOpsInterfaces.cpp.inc
 #code/include/Mir/MirOpsInterfaces.h.inc
 
+code/include/Optimizer/Passes.h.inc
+
 #code/include/Mir/MirOps.cpp.inc
 #code/include/Mir/MirOps.h.inc
 #code/include/Mir/MirOpsDialect.cpp.inc
