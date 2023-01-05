@@ -72,7 +72,7 @@ window in `value`. NoMemoryEffect
 def CallOp : Mir_Op<"call", [CallOpInterface]> {
   let summary = "Generic call operation";
   let description = [{
-    This operation represent a call to any function part of the sycl's namespace.
+    This operation represent a call to any function.
   }];
 
   let arguments = (ins

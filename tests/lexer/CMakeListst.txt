@@ -1,0 +1,8 @@
+add_executable(LexerTests
+        LexerTests.cpp
+)
+
+target_link_libraries(LexerTests lexer ${GTest_LDFLAGS})
+target_include_directories(LexerTests PRIVATE ../../code/include ${GTest_CFLAGS})
+
+gtest_discover_tests(LexerTests)

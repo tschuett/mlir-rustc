@@ -15,6 +15,8 @@ public:
   std::span<Token> getAsView();
 
   void print(unsigned limit);
+
+  size_t getLength() const { return tokens.size(); }
 };
 
 } // namespace rust_compiler::lexer

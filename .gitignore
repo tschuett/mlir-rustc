@@ -47,6 +47,8 @@ compile_commands.json
 tools/minicargo/minicargo
 tools/rustc/rustc
 tablegen_compile_commands.yml
+tests/lexer/LexerTests
+Testing/
 
 code/include/Mir/MirDialect.cpp.inc
 code/include/Mir/MirDialect.h.inc

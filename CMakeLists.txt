@@ -7,6 +7,9 @@ message(STATUS "Using LLVM 1 in: ${LLVM_DIR}")
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
+enable_testing()
+include(CTest)
+
 list(APPEND CMAKE_MODULE_PATH "${LLVM_DIR}")
 list(APPEND CMAKE_MODULE_PATH "${MLIR_DIR}")
 
@@ -62,9 +65,14 @@ if (CMAKE_BUILD_TYPE STREQUAL "Release")
     endif ()
 endif ()
 
+#find_package(GTest REQUIRED)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTest REQUIRED gtest)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_subdirectory(code)
 add_subdirectory(tools)
+add_subdirectory(tests)
 
