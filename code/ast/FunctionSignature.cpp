@@ -12,4 +12,8 @@ Location FunctionSignature::getLocation() { return location; }
 
 void FunctionSignature::setName(std::string_view _name) { name = _name; }
 
+void FunctionSignature::setQualifiers(FunctionQualifiers _qual) {
+  qual = _qual;
+}
+
 } // namespace rust_compiler::ast

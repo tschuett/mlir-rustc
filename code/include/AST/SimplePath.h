@@ -17,6 +17,8 @@ public:
   void addPathSegment(SimplePathSegment &seg);
 
   size_t getTokens() override;
+
+  std::string toString();
 };
 
 } // namespace rust_compiler::ast

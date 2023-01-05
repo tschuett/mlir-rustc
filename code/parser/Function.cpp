@@ -2,6 +2,9 @@
 
 #include "AST/Function.h"
 #include "AST/FunctionQualifiers.h"
+#include "AST/GenericParams.h"
+#include "AST/Type.h"
+#include "AST/WhereClause.h"
 #include "Generics.h"
 #include "Lexer/Token.h"
 #include "WhereClause.h"
@@ -61,7 +64,12 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
   std::optional<ast::FunctionQualifiers> qual =
       tryParseFunctionQualifiers(view);
 
-  view = view.subspan(1); // FIXME
+  if (!qual) {
+    // FIXME
+  }
+
+  sig.setQualifiers(*qual);
+  view = view.subspan((*qual).getTokens());
 
   if (view.front().getKind() == TokenKind::Keyword &&
       view.front().getIdentifier() == "fn") {
@@ -77,7 +85,8 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
     return std::nullopt;
   }
 
-  tryParseGenericParams(view);
+  std::optional<std::shared_ptr<GenericParams>> generic =
+      tryParseGenericParams(view);
 
   if (view.front().getKind() == TokenKind::ParenOpen) {
     view = view.subspan(1);
@@ -85,7 +94,11 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
     return std::nullopt;
   }
 
-  tryParseFunctionParameters(view);
+  std::optional<FunctionParameters> params = tryParseFunctionParameters(view);
+
+  if (!params) {
+    // FIXME
+  }
 
   if (view.front().getKind() == TokenKind::ParenClose) {
     view = view.subspan(1);
@@ -93,9 +106,10 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
     return std::nullopt;
   }
 
-  tryParseFunctionReturnType(view);
+  std::optional<std::shared_ptr<ast::Type>> returnType =
+      tryParseFunctionReturnType(view);
 
-  tryParseWhereClause(view);
+  std::optional<WhereClause> where = tryParseWhereClause(view);
 
   // todo parse generic params
   // parse parameter
@@ -108,6 +122,9 @@ std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
   std::span<Token> view = tokens;
 
   std::optional<FunctionSignature> sig = tryParseFunctionSignature(view);
+
+  if (sig) {
+  }
 
   if (view.front().getKind() == TokenKind::SemiColon) {
     // return fun

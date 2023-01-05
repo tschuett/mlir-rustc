@@ -19,11 +19,12 @@ std::optional<PathList> tryParsePathList(std::span<Token> tokens) {
   std::span<Token> view = tokens;
   PathList list;
 
-  printf("tryParsePathList\n");
+  //printf("tryParsePathList\n");
 
   printTokenState(view);
 
   if (view.front().getKind() != TokenKind::BraceOpen) {
+    //printf("tryParsePathList: failed6\n");
     return std::nullopt; // failed
   }
 
@@ -32,7 +33,7 @@ std::optional<PathList> tryParsePathList(std::span<Token> tokens) {
   while (view.size() > 4) {
     std::optional<std::shared_ptr<UseTree>> useTree = tryParseUseTree(view);
     if (useTree) {
-      printf("tryParseUseTree success\n");
+      //printf("tryParseUseTree success\n");
       list.addTree(*useTree);
       view = view.subspan((*useTree)->getTokens());
     }
@@ -45,6 +46,7 @@ std::optional<PathList> tryParsePathList(std::span<Token> tokens) {
 
     // }
     if (view.front().getKind() == TokenKind::BraceClose) {
+      //printf("tryParseUseTree found PathList\n");
       return list;
     }
 
@@ -53,8 +55,18 @@ std::optional<PathList> tryParsePathList(std::span<Token> tokens) {
       continue;
     }
 
+    if (view.front().getKind() == TokenKind::Identifier) {
+      continue;
+    }
+
     // failed
     if (view.front().getKind() != TokenKind::Comma) {
+      //printf("tryParsePathList: failed5: %s\n",
+      //       Token2String(view.front().getKind()).c_str());
+      //if (view.front().getKind() == TokenKind::Identifier) {
+      //  printf("tryParsePathList: failed5a: %s\n",
+      //         view.front().getIdentifier().c_str());
+      //}
       return std::nullopt; // failed!
     }
   }
@@ -66,8 +78,8 @@ static std::optional<std::shared_ptr<UseTree>>
 tryParseUseTree(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
-  printf("tryParseUseTree\n");
-  printTokenState(view);
+  //printf("tryParseUseTree\n");
+  //printTokenState(view);
 
   // First line
   if (view.front().getKind() == TokenKind::Star &&
@@ -105,7 +117,8 @@ tryParseUseTree(std::span<Token> tokens) {
 
   std::optional<SimplePath> simplePath = tryParseSimplePath(view);
   if (simplePath) {
-    printf("tryParseUseTree: found simple path\n");
+    //printf("tryParseUseTree: found simple path: %s\n",
+    //       (*simplePath).toString().c_str());
 
     view = view.subspan((*simplePath).getTokens());
 
@@ -118,7 +131,7 @@ tryParseUseTree(std::span<Token> tokens) {
     if (view[0].getKind() == TokenKind::DoubleColon &&
         view[1].getKind() == TokenKind::BraceOpen) {
       // SimplePath :: {;
-      printf("tryParseUseTree: SimplePath :: {\n");
+      //printf("tryParseUseTree: SimplePath :: {\n");
       view = view.subspan(1);
       std::optional<PathList> pathList = tryParsePathList(view);
       if (pathList) {
@@ -169,8 +182,10 @@ tryParseUseTree(std::span<Token> tokens) {
           std::make_shared<SimplePathNode>(node));
     }
 
+    //printf("tryParseUseDeclaration: failed4\n");
     return std::nullopt;
   }
+  //printf("tryParseUseDeclaration: failed3\n");
   return std::nullopt;
 }
 
@@ -186,8 +201,10 @@ std::optional<UseDeclaration> tryParseUseDeclaration(std::span<Token> tokens) {
       useDeclaration.setComponent(*useTree);
       return useDeclaration;
     }
+    //printf("tryParseUseDeclaration: failed2\n");
   }
 
+  //printf("tryParseUseDeclaration: failed1\n");
   return std::nullopt; // FIXME
 }
 

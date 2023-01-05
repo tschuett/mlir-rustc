@@ -83,5 +83,16 @@ TEST(ParserTest, CheckUseTreeDecl) {
   EXPECT_TRUE(use.has_value());
 };
 
+//TEST(ParserTest, CheckUseTree2Decl) {
+//
+//  std::string text = "use aws_sdk_ec2::{error::DescribeInstanceTypesError,model::{InstanceType, InstanceTypeInfo}};";
+//
+//  TokenStream ts = lex(text, "lib.rs");
+//
+//  std::optional<UseDeclaration> use = tryParseUseDeclaration(ts.getAsView());
+//
+//  EXPECT_TRUE(use.has_value());
+//};
+
 
 

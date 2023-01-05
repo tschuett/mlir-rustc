@@ -1,8 +1,8 @@
 #pragma once
 
 #include "AST/AST.h"
+#include "AST/FunctionQualifiers.h"
 #include "AST/Type.h"
-
 #include "Location.h"
 
 #include <span>
@@ -22,6 +22,7 @@ class FunctionSignature {
   Location location;
   std::string name;
   std::shared_ptr<Type> resultType;
+  FunctionQualifiers qual;
 
 public:
   FunctionSignature(Location loc) : location(loc) {}
@@ -35,9 +36,10 @@ public:
   Location getLocation();
 
   void setName(std::string_view name);
+
+  void setQualifiers(FunctionQualifiers qual);
 };
 
 } // namespace rust_compiler::ast
-
 
 // TODO extern Abi

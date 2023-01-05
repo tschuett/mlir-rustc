@@ -27,7 +27,7 @@ std::optional<ast::Module> tryParseModuleTree(std::span<Token> tokens,
   std::optional<ast::Visibility> visibility = tryParseVisibility(tokens);
 
   if (visibility) {
-    printf("found visibility: %zu\n", (*visibility).getTokens());
+    //printf("found visibility: %zu\n", (*visibility).getTokens());
     view = view.subspan((*visibility).getTokens());
   }
 
@@ -53,7 +53,7 @@ std::optional<ast::Module> tryParseModuleTree(std::span<Token> tokens,
     // printTokenState(view);
 
     if (view.front().getKind() == TokenKind::BraceClose) {
-      printf("found end of module tree\n");
+      //printf("found end of module tree\n");
       return module;
     }
 
