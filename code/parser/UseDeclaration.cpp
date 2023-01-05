@@ -132,6 +132,11 @@ tryParseUseTree(std::span<Token> tokens) {
     // Third line
     if (view[0].getKind() == TokenKind::SemiColon) {
       // SimplePath ;
+      SimplePathNode node;
+      node.setSimplePath(*simplePath);
+      return std::static_pointer_cast<UseTree>(
+          std::make_shared<SimplePathNode>(node));
+      // UseTree done
     }
 
     // Rebinding

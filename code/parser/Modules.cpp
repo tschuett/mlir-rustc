@@ -24,6 +24,13 @@ std::optional<ast::Module> tryParseModuleTree(std::span<Token> tokens,
   if (view.front().getKind() != TokenKind::Keyword)
     return std::nullopt;
 
+  std::optional<ast::Visibility> visibility = tryParseVisibility(tokens);
+
+  if (visibility) {
+    printf("found visibility: %zu\n", (*visibility).getTokens());
+    view = view.subspan((*visibility).getTokens());
+  }
+
   if (view.front().getKind() == TokenKind::Keyword &&
       view.front().getIdentifier() != "mod")
     return std::nullopt;
@@ -43,7 +50,7 @@ std::optional<ast::Module> tryParseModuleTree(std::span<Token> tokens,
   while (view.size() > 0) {
     last = view.size();
 
-    //printTokenState(view);
+    // printTokenState(view);
 
     if (view.front().getKind() == TokenKind::BraceClose) {
       printf("found end of module tree\n");
@@ -72,12 +79,13 @@ std::optional<ast::Module> tryParseModule(std::span<Token> tokens,
 
   std::span<Token> view = tokens;
 
-  if (view.front().getKind() == TokenKind::Keyword && view.front().getIdentifier() == "mod") {
+  if (view.front().getKind() == TokenKind::Keyword &&
+      view.front().getIdentifier() == "mod") {
     if (view[1].getKind() == TokenKind::Identifier) {
       if (view[2].getKind() == TokenKind::SemiColon) {
         std::stringstream s;
         s << modulePath << std::string("::") << view[1].getIdentifier();
-        //printf("found module: %s\n", s.str().c_str());
+        // printf("found module: %s\n", s.str().c_str());
         return Module(view.front().getLocation(), ModuleKind::Module, s.str());
       }
     }

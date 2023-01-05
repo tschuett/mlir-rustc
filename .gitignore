@@ -49,6 +49,7 @@ tools/rustc/rustc
 tablegen_compile_commands.yml
 tests/lexer/LexerTests
 Testing/
+tests/parser/ParserTests
 
 code/include/Mir/MirDialect.cpp.inc
 code/include/Mir/MirDialect.h.inc

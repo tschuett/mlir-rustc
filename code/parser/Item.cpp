@@ -17,6 +17,33 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
 
   printf("tryParseItem\n");
 
+  if (view.front().getKind() == TokenKind::Hash) {
+    if (view[1].getKind() == TokenKind::Exclaim) {
+      if (view[2].getKind() == TokenKind::SquareOpen) {
+        if (view[3].getKind() == TokenKind::Identifier) {
+          if (view[3].getIdentifier() == "warn" or
+              view[3].getIdentifier() == "allow" or
+              view[3].getIdentifier() == "deny") {
+            if (view[4].getKind() == TokenKind::ParenOpen) {
+              std::optional<ClippyAttribute> clippy =
+                  tryParseClippyAttribute(view);
+              if (clippy) {
+                ClippyAttribute attr = *clippy;
+                tokens = tokens.subspan(attr.getTokens()); // why?
+                std::shared_ptr<Item> item = std::static_pointer_cast<Item>(
+                    std::make_shared<ClippyAttribute>(attr));
+                return item;
+              }
+            }
+          }
+        }
+      }
+      tryParseInnerAttribute(view); // FIXME
+    } else {
+      tryParseOuterAttribute(view); // FIXME
+    }
+  }
+
   std::optional<ast::Visibility> visibility = tryParseVisibility(tokens);
 
   if (visibility) {
@@ -54,33 +81,6 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
           return item;
         }
       }
-    }
-  }
-
-  if (view.front().getKind() == TokenKind::Hash) {
-    if (view[1].getKind() == TokenKind::Exclaim) {
-      if (view[2].getKind() == TokenKind::SquareOpen) {
-        if (view[3].getKind() == TokenKind::Identifier) {
-          if (view[3].getIdentifier() == "warn" or
-              view[3].getIdentifier() == "allow" or
-              view[3].getIdentifier() == "deny") {
-            if (view[4].getKind() == TokenKind::ParenOpen) {
-              std::optional<ClippyAttribute> clippy =
-                  tryParseClippyAttribute(view);
-              if (clippy) {
-                ClippyAttribute attr = *clippy;
-                tokens = tokens.subspan(attr.getTokens()); // why?
-                std::shared_ptr<Item> item = std::static_pointer_cast<Item>(
-                    std::make_shared<ClippyAttribute>(attr));
-                return item;
-              }
-            }
-          }
-        }
-      }
-      tryParseInnerAttribute(view); // FIXME
-    } else {
-      tryParseOuterAttribute(view); // FIXME
     }
   }
 

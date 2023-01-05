@@ -13,13 +13,13 @@ namespace rust_compiler::parser {
 
 using namespace rust_compiler::ast;
 
-extern std::optional<OuterAttribute>
+std::optional<OuterAttribute>
 tryParseOuterAttribute(std::span<lexer::Token> tokens);
 
-extern std::optional<InnerAttribute>
+std::optional<InnerAttribute>
 tryParseInnerAttribute(std::span<lexer::Token> tokens);
 
-extern std::optional<ClippyAttribute>
+std::optional<ClippyAttribute>
 tryParseClippyAttribute(std::span<lexer::Token> tokens);
 
 } // namespace rust_compiler::parser

@@ -8,16 +8,14 @@
 > export MLIR=$LLVM_BUILD_DIR/lib/cmake/mlir
 > cmake -DCMAKE_BUILD_TYPE=Debug -DLLVM_DIR=$LLVM -DMLIR_DIR=$MLIR .
 > make
+> ctest
 ```
 
 # Requirements
 
 * trunk LLVM/MLIR
 * cmake
-
-```console
->  brew install llvm
-```
+* Google Test
 
 
 # TODO
