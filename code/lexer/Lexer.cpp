@@ -169,12 +169,14 @@ std::optional<std::string> tryLexIdentifier(std::string_view code) {
     } else {
       if (id.size() > 0)
         return id;
-      else
+      else {
+        printf("unknown identifier token: x%sx\n", code.data());
         return std::nullopt;
+      }
     }
   }
 
-  return std::nullopt;
+  return id;
 }
 
 std::optional<std::string> tryLexString(std::string_view code) {

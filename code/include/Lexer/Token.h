@@ -88,7 +88,7 @@ public:
   FloatKind getFloatKind() const { return fk; }
   KeyWordKind getKeyWordKind() const { return kw; }
 
-  bool isKeyWord() const;
+  bool isKeyWord() const { return kind == TokenKind::Keyword; }
 
   bool isUseToken() const;
   bool isPubToken() const;
