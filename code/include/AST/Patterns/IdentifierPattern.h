@@ -15,6 +15,7 @@ class IdentifierPattern : public PatternWithoutRange {
 public:
   void setRef() { ref = true; }
   void setMut() { mut = true; }
+  void setIdentifier(std::string_view id) { identifier = id; }
 };
 
 } // namespace rust_compiler::ast::patterns

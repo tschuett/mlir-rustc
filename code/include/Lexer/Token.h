@@ -86,6 +86,7 @@ public:
   TokenKind getKind() const { return kind; }
   IntegerKind getIntegerKind() const { return ik; }
   FloatKind getFloatKind() const { return fk; }
+  KeyWordKind getKeyWordKind() const { return kw; }
 
   bool isKeyWord() const;
 

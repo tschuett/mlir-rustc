@@ -42,3 +42,15 @@ TEST(TypesTest, Checkisize) {
 
   EXPECT_TRUE(type.has_value());
 };
+
+//TEST(TypesTest, CheckBool) {
+//
+//  std::string text = "bool";
+//
+//  TokenStream ts = lex(text, "lib.rs");
+//
+//  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
+//      tryParsePrimitiveType(ts.getAsView());
+//
+//  EXPECT_TRUE(type.has_value());
+//};
