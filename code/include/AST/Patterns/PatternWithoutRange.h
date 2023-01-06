@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AST/Patterns/PatternNoTopAlt.h
+#include "AST/Patterns/PatternNoTopAlt.h"
 
 namespace rust_compiler::ast::patterns {
 

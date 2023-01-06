@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AST/Patterns/Pattern.h
+#include "AST/Patterns/Patterns.h"
 
 namespace rust_compiler::ast::patterns {
 

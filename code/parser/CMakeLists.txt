@@ -14,6 +14,7 @@ add_library(parser
            WhereClause.cpp
            FunctionParameters.cpp
            BlockExpression.cpp
+           IdentifierPattern.cpp
            )
 
 
