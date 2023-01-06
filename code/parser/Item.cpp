@@ -1,6 +1,7 @@
 #include "Item.h"
 
 #include "AST/ClippyAttribute.h"
+#include "AST/Function.h"
 #include "AST/UseDeclaration.h"
 #include "AST/Visiblity.h"
 #include "Attributes.h"
@@ -15,7 +16,7 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
 
   std::span<Token> view = tokens;
 
-  //printf("tryParseItem\n");
+  printf("tryParseItem\n");
 
   if (view.front().getKind() == TokenKind::Hash) {
     if (view[1].getKind() == TokenKind::Exclaim) {
@@ -97,7 +98,13 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
 
   if (view.front().getKind() == TokenKind::Keyword &&
       view.front().getIdentifier() == "fn") {
-    tryParseFunction(tokens, modulePath);
+    std::optional<ast::Function> fun = tryParseFunction(view, modulePath);
+    if (fun) {
+      std::shared_ptr<Item> item =
+          std::static_pointer_cast<Item>(std::make_shared<ast::Function>(*fun));
+
+      return item;
+    }
   }
 
   if (view.front().getKind() == TokenKind::Keyword &&
@@ -105,7 +112,12 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
        view.front().getIdentifier() == "const")) {
     if (view[1].getKind() == TokenKind::Keyword &&
         view[1].getIdentifier() == "fn") {
-      tryParseFunction(tokens, modulePath);
+      std::optional<ast::Function> fun = tryParseFunction(view, modulePath);
+      if (fun) {
+        std::shared_ptr<Item> item = std::static_pointer_cast<Item>(
+            std::make_shared<ast::Function>(*fun));
+        return item;
+      }
     }
   }
 

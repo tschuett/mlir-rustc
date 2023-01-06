@@ -16,8 +16,18 @@ void FunctionQualifiers::setExtern(std::string_view _abi) {
 }
 
 size_t FunctionQualifiers::getTokens() {
-  assert(false);
-  return 0;
+  size_t count = 0;
+
+  if (isAsync)
+    ++count;
+  if (isConst)
+    ++count;
+  if (isUnsafe)
+    ++count;
+  if (isExtern)
+    count += 2;
+
+  return count;
 }
 
 } // namespace rust_compiler::ast

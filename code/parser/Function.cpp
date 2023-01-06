@@ -20,6 +20,8 @@ tryParseFunctionQualifiers(std::span<lexer::Token> tokens) {
   std::span<Token> view = tokens;
   FunctionQualifiers qual;
 
+  printf("tryParseFunctionQualifiers: start\n");
+
   if (view.front().getKind() == TokenKind::Keyword) {
     if (view.front().getIdentifier() == "const") {
       qual.setConst();
@@ -61,6 +63,8 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
   std::span<Token> view = tokens;
   FunctionSignature sig;
 
+  printf("tryParseFunctionSignature: start\n");
+
   std::optional<ast::FunctionQualifiers> qual =
       tryParseFunctionQualifiers(view);
 
@@ -68,6 +72,7 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
     // FIXME
   }
 
+  printf("qualifiers found %zu\n", (*qual).getTokens());
   sig.setQualifiers(*qual);
   view = view.subspan((*qual).getTokens());
 
@@ -75,6 +80,8 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
       view.front().getIdentifier() == "fn") {
     view = view.subspan(1);
   } else {
+    printTokenState(view);
+    printf("tryParseFunctionSignature: found no fn\n");
     return std::nullopt;
   }
 
@@ -82,6 +89,7 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
     sig.setName(view.front().getIdentifier());
     view = view.subspan(1);
   } else {
+    printf("tryParseFunctionSignature: found no name\n");
     return std::nullopt;
   }
 
@@ -95,6 +103,7 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
   if (view.front().getKind() == TokenKind::ParenOpen) {
     view = view.subspan(1);
   } else {
+    printf("tryParseFunctionSignature: found no (\n");
     return std::nullopt;
   }
 
@@ -109,6 +118,7 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
   if (view.front().getKind() == TokenKind::ParenClose) {
     view = view.subspan(1);
   } else {
+    printf("tryParseFunctionSignature: found no )\n");
     return std::nullopt;
   }
 
@@ -133,11 +143,16 @@ std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
 
   Function f = {view.front().getLocation()};
 
+  printf("tryParseFunction: start\n");
+  printTokenState(view);
+
+
   std::optional<FunctionSignature> sig = tryParseFunctionSignature(view);
 
   if (sig) {
     f.setSignature(*sig);
   } else {
+    printf("tryParseFunction: found no signature\n");
     return std::nullopt;
   }
 
@@ -145,11 +160,14 @@ std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
     return f;
   }
 
-  std::optional<std::shared_ptr<BlockExpression>> block = tryParseBlockExpression(view);
+  std::optional<std::shared_ptr<BlockExpression>> block =
+      tryParseBlockExpression(view);
   if (block) {
     f.setBody(*block);
     return f;
   }
+
+  printf("tryParseFunction: found function\n");
 
   return std::nullopt;
 }
