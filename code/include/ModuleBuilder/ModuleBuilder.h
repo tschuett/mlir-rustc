@@ -50,7 +50,7 @@ private:
   mlir::func::FuncOp buildFunctionSignature(ast::FunctionSignature sig,
                                             mlir::Location locaction);
   std::optional<mlir::Value>
-  emitBlockExpression(std::shared_ptr<ast::ExpressionWithBlock> blk);
+  emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk);
 
   std::optional<mlir::Value>
   emitStatement(std::shared_ptr<ast::Statement> stmt);

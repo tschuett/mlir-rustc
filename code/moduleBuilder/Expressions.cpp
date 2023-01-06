@@ -12,12 +12,10 @@ mlir::Value ModuleBuilder::emitExpression(std::shared_ptr<Expression> expr) {
   case ExpressionKind::ExpressionWithBlock: {
     return emitExpressionWithBlock(
         static_pointer_cast<rust_compiler::ast::ExpressionWithBlock>(expr));
-    break;
   }
   case ExpressionKind::ExpressionWithoutBlock: {
     return buildExpressionWithoutBlock(
         static_pointer_cast<rust_compiler::ast::ExpressionWithoutBlock>(expr));
-    break;
   }
   }
 }

@@ -10,7 +10,7 @@ namespace rust_compiler::ast {
 // class FunctionReturnType {};
 
 class Function : public Item {
-  std::shared_ptr<ExpressionWithBlock> body;
+  std::shared_ptr<BlockExpression> body;
   FunctionSignature signature;
   FunctionQualifiers qualifiers;
 
@@ -21,13 +21,13 @@ public:
   Location getLocation() const;
   FunctionQualifiers getFunctionQualifiers() const;
 
-  std::shared_ptr<ExpressionWithBlock> getBody();
+  std::shared_ptr<BlockExpression> getBody();
 
   size_t getTokens() override;
 
   void setSignature(FunctionSignature nature);
 
-  void setBody(std::shared_ptr<ExpressionWithBlock> block);
+  void setBody(std::shared_ptr<BlockExpression> block);
 };
 
 } // namespace rust_compiler::ast

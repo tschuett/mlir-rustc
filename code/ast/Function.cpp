@@ -1,8 +1,10 @@
 #include "AST/Function.h"
 
+#include "AST/BlockExpression.h"
+
 namespace rust_compiler::ast {
 
-std::shared_ptr<ExpressionWithBlock> Function::getBody() { return body; }
+std::shared_ptr<BlockExpression> Function::getBody() { return body; }
 
 Location Function::getLocation() const { return location; }
 
@@ -14,7 +16,7 @@ FunctionQualifiers Function::getFunctionQualifiers() const {
 
 void Function::setSignature(FunctionSignature _nature) { signature = _nature; }
 
-void Function::setBody(std::shared_ptr<ExpressionWithBlock> _body) { body = _body; }
+void Function::setBody(std::shared_ptr<BlockExpression> _body) { body = _body; }
 
 size_t Function::getTokens() {
   assert(false);

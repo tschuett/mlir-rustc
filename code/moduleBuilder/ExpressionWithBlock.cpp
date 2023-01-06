@@ -12,7 +12,9 @@ mlir::Value ModuleBuilder::emitExpressionWithBlock(
     std::shared_ptr<ExpressionWithBlock> expr) {
   switch (expr->getKind()) {
   case ExpressionWithBlockKind::BlockExpression: {
-    std::optional<mlir::Value> result = emitBlockExpression(expr);
+    std::shared_ptr<ast::BlockExpression> blk =
+        std::static_pointer_cast<ast::BlockExpression>(expr);
+    std::optional<mlir::Value> result = emitBlockExpression(blk);
     if (result)
       return *result;
     return nullptr;

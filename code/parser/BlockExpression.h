@@ -9,7 +9,7 @@
 
 namespace rust_compiler::lexer {
 
-  std::optional<std::shared_ptr<ast::ExpressionWithBlock>>
+  std::optional<std::shared_ptr<ast::BlockExpression>>
 tryParseBlockExpression(std::span<lexer::Token> tokens);
 
 } // namespace rust_compiler::lexer

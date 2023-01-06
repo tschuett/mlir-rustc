@@ -145,7 +145,7 @@ std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
     return f;
   }
 
-  std::optional<std::shared_ptr<ExpressionWithBlock>> block = tryParseBlockExpression(view);
+  std::optional<std::shared_ptr<BlockExpression>> block = tryParseBlockExpression(view);
   if (block) {
     f.setBody(*block);
     return f;
