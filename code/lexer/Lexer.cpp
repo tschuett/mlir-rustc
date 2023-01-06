@@ -1,13 +1,28 @@
 #include "Lexer/Lexer.h"
 
-#include "Lexer/TokenStream.h"
 #include "Lexer/KeyWords.h"
+#include "Lexer/Token.h"
+#include "Lexer/TokenStream.h"
 
 #include <optional>
 
 namespace rust_compiler::lexer {
 
 using rust_compiler::Location;
+
+static const std::pair<IntegerKind, std::string> IK[] = {
+    {IntegerKind::I8, "i8"},       {IntegerKind::I16, "i16"},
+    {IntegerKind::I32, "i32"},     {IntegerKind::I64, "i64"},
+    {IntegerKind::I128, "i128"},   {IntegerKind::U8, "u8"},
+    {IntegerKind::U16, "u16"},     {IntegerKind::U32, "u32"},
+    {IntegerKind::U64, "u64"},     {IntegerKind::U128, "u128"},
+    {IntegerKind::ISize, "isize"}, {IntegerKind::USize, "usize"},
+};
+
+static const std::pair<FloatKind, std::string> FK[] = {
+    {FloatKind::F32, "f32"},
+    {FloatKind::F64, "f64"},
+};
 
 std::string tryLexComment(std::string_view code) {
   std::string_view view = code;
@@ -283,6 +298,26 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
     std::string ws = tryLexWhiteSpace(code);
     code.remove_prefix(ws.size());
 
+    for (auto &ik : IK) {
+      if (code.starts_with(std::get<1>(ik))) {
+        ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                        std::get<0>(ik)));
+        code.remove_prefix(std::get<1>(ik).size());
+        columnNumber += std::get<1>(ik).size();
+        continue;
+      }
+    }
+
+    for (auto &fk : FK) {
+      if (code.starts_with(std::get<1>(fk))) {
+        ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                        std::get<0>(fk)));
+        code.remove_prefix(std::get<1>(fk).size());
+        columnNumber += std::get<1>(fk).size();
+        continue;
+      }
+    }
+
     if (code.starts_with("//")) {
       std::string comment = tryLexComment(code);
       code.remove_prefix(comment.size());
@@ -455,12 +490,19 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
           Token(Location(fileName, lineNumber, columnNumber), TokenKind::Pipe));
       code.remove_prefix(1);
       columnNumber += 1;
+    } else if (code.starts_with("!")) {
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Not));
+      code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("\n")) {
       code.remove_prefix(1);
       ++lineNumber;
       columnNumber = 0;
     } else {
-      printf("unknown token: x%s\n", code.data());
+      if (code.size() == 0)
+        return ts;
+      printf("unknown token: x%sx\n", code.data());
       exit(EXIT_FAILURE);
     }
   }

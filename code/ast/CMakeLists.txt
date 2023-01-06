@@ -14,6 +14,7 @@ add_library(ast
            UseTree.cpp
            WhereClause.cpp
            FunctionQualifiers.cpp
+           FunctionParameters.cpp
            )
 
 

@@ -109,11 +109,14 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
 
   std::optional<FunctionParameters> params = tryParseFunctionParameters(view);
 
-  if (!params) {
+  if (params) {
+    sig.setParameters(*params);
+    view = view.subspan((*params).getTokens());
+  } else {
     // FIXME
+    printf("tryParseFunctionSignature: found no parameters\n");
+    return std::nullopt;
   }
-
-  sig.setParameters(*params);
 
   if (view.front().getKind() == TokenKind::ParenClose) {
     view = view.subspan(1);
@@ -145,7 +148,6 @@ std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
 
   printf("tryParseFunction: start\n");
   printTokenState(view);
-
 
   std::optional<FunctionSignature> sig = tryParseFunctionSignature(view);
 

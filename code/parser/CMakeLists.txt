@@ -15,6 +15,7 @@ add_library(parser
            FunctionParameters.cpp
            BlockExpression.cpp
            IdentifierPattern.cpp
+           PrimitiveType.cpp
            )
 
 

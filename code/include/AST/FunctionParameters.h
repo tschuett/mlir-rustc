@@ -15,6 +15,8 @@ public:
   std::span<std::shared_ptr<FunctionParameter>> getParams() {
     return params;
   }
+
+  size_t getTokens();
 };
 
 } // namespace rust_compiler::ast

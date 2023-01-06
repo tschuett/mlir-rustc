@@ -9,6 +9,23 @@
 
 namespace rust_compiler::lexer {
 
+enum class IntegerKind {
+  I8,
+  I16,
+  I32,
+  I64,
+  I128,
+  ISize,
+  U8,
+  U16,
+  U32,
+  U64,
+  U128,
+  USize
+};
+
+enum class FloatKind { F32, F64 };
+
 enum class TokenKind {
   DoubleColon,
   Colon,
@@ -38,13 +55,18 @@ enum class TokenKind {
   Dash,
   Char,
   Plus,
-  Keyword
+  Keyword,
+  Not,
+  Integer,
+  Float
 };
 
 class Token {
   rust_compiler::Location loc;
   TokenKind kind;
   std::string id;
+  IntegerKind ik;
+  FloatKind fk;
   KeyWordKind kw;
 
 public:
@@ -55,7 +77,15 @@ public:
   Token(rust_compiler::Location loc, KeyWordKind kw, std::string_view id)
       : loc(loc), kind(TokenKind::Keyword), id(id), kw(kw){};
 
+  Token(rust_compiler::Location loc, IntegerKind ik)
+      : loc(loc), kind(TokenKind::Integer), ik(ik){};
+
+  Token(rust_compiler::Location loc, FloatKind fk)
+      : loc(loc), kind(TokenKind::Float), fk(fk){};
+
   TokenKind getKind() const { return kind; }
+  IntegerKind getIntegerKind() const { return ik; }
+  FloatKind getFloatKind() const { return fk; }
 
   bool isKeyWord() const;
 

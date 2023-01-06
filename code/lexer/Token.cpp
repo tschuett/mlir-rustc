@@ -105,6 +105,15 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::Plus: {
     return std::string("+");
   }
+  case TokenKind::Not: {
+    return std::string("!");
+  }
+  case TokenKind::Float: {
+    return std::string("float");
+  }
+  case TokenKind::Integer: {
+    return std::string("integer");
+  }
   }
 }
 

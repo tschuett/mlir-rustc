@@ -1,38 +1,44 @@
-#include "Attributes.h"
 #include "Lexer/Lexer.h"
-#include "UseDeclaration.h"
-#include "Modules.h"
+#include "PrimitiveType.h"
 #include "gtest/gtest.h"
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
 
-TEST(TypesTest, CheckClippy) {
+TEST(TypesTest, Checki128) {
 
-  std::string text = "#![deny(clippy::as_conversions,clippy::missing_safety_"
-                     "doc,clippy::undocumented_unsafe_blocks)]\n";
+  std::string text = "i128";
 
   TokenStream ts = lex(text, "lib.rs");
 
-  std::optional<ClippyAttribute> clippy =
-      tryParseClippyAttribute(ts.getAsView());
+  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
+      tryParsePrimitiveType(ts.getAsView());
 
-  // size_t expectedLendth = 2;
-  EXPECT_TRUE(clippy.has_value());
-
-  //  EXPECT_EQ(ts.getLength(), expectedLendth);
+  EXPECT_TRUE(type.has_value());
 };
 
-TEST(TypesTest, CheckModuleDecl) {
+TEST(TypesTest, Checkf64) {
 
-  std::string text =
-      "mod print_spot_region {pub mod print_spot_regions;mod "
-      "data_collector;mod spot_region;mod reorder;mod printer;}\n";
+  std::string text = "f64";
 
   TokenStream ts = lex(text, "lib.rs");
 
-  std::optional<rust_compiler::ast::Module> module = tryParseModule(ts.getAsView(), "");
+  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
+      tryParsePrimitiveType(ts.getAsView());
 
-  EXPECT_TRUE(module.has_value());
+  EXPECT_TRUE(type.has_value());
+};
+
+
+TEST(TypesTest, Checkisize) {
+
+  std::string text = "isize";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
+      tryParsePrimitiveType(ts.getAsView());
+
+  EXPECT_TRUE(type.has_value());
 };

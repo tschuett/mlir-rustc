@@ -27,13 +27,17 @@ enum class PrimitiveTypeKind {
   Binary64,
   Usize,
   Isize,
-  Never
+  Never,
+  F32,
+  F64
 };
 
 class PrimitiveType : public Type {
   PrimitiveTypeKind kind;
 
 public:
+  PrimitiveType(PrimitiveTypeKind kind) : kind(kind) {}
+
   PrimitiveTypeKind getKind() const { return kind; }
 };
 
