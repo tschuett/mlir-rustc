@@ -8,7 +8,7 @@
 
 namespace rust_compiler::parser {
 
-std::optional<std::shared_ptr<ast::Type>>
+  std::optional<std::shared_ptr<ast::types::Type>>
 tryParseType(std::span<lexer::Token> tokens);
 
 }

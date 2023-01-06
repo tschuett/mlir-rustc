@@ -2,7 +2,7 @@
 
 namespace rust_compiler::lexer {
 
-std::optional<ast::BlockExpression>
+  std::optional<std::shared_ptr<ast::ExpressionWithBlock>>
 tryParseBlockExpression(std::span<lexer::Token> tokens) {
   // FIXME
   return std::nullopt;

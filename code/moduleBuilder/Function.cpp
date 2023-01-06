@@ -28,7 +28,7 @@ mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
 
   builder.setInsertionPointToEnd(theModule.getBody());
   mlir::func::FuncOp function =
-      buildFunctionSignature(f->getSignature(), f->getLocation());
+      buildFunctionSignature(f->getSignature(), getLocation(f->getLocation()));
   if (!function)
     return nullptr;
 
@@ -60,7 +60,7 @@ mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   if (!entryBlock.empty())
     returnOp = dyn_cast<Mir::ReturnOp>(entryBlock.back());
   if (!returnOp) {
-    builder.create<Mir::ReturnOp>(getLocation(f->getSignature().getLocation()));
+    builder.create<Mir::ReturnOp>(getLocation(f->getLocation()));
   } else if (returnOp.hasOperand()) {
     // Otherwise, if this return operation has an operand then add a result to
     // the function.
@@ -81,16 +81,17 @@ ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
                                       mlir::Location location) {
   SmallVector<mlir::Type, 10> argTypes;
   TypeBuilder typeBuilder;
+  ast::FunctionParameters params = sig.getParameters();
 
-  for (auto &arg : sig.getArgs()) {
-    mlir::Type type = typeBuilder.getType(arg.getType());
+  for (auto &param : params.getParams()) {
+    mlir::Type type = typeBuilder.getType(param->getType());
     if (!type)
       return nullptr;
 
     argTypes.push_back(type);
   }
 
-  mlir::Type resultType = typeBuilder.getType(sig.getResult());
+  mlir::Type resultType = typeBuilder.getType(sig.getReturnType());
 
   auto funcType =
       builder.getFunctionType(argTypes, resultType /*std::nullopt results*/);

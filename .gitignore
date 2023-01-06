@@ -50,6 +50,8 @@ tablegen_compile_commands.yml
 tests/lexer/LexerTests
 Testing/
 tests/parser/ParserTests
+tests/patterns/PatternTests
+tests/types/TypesTests
 
 code/include/Mir/MirDialect.cpp.inc
 code/include/Mir/MirDialect.h.inc

@@ -42,7 +42,7 @@ tryParseFunctionQualifiers(std::span<lexer::Token> tokens) {
   return qual;
 }
 
-std::optional<std::shared_ptr<ast::Type>>
+std::optional<std::shared_ptr<ast::types::Type>>
 tryParseFunctionReturnType(std::span<lexer::Token> tokens) {
   std::span<Token> view = tokens;
 
@@ -51,7 +51,7 @@ tryParseFunctionReturnType(std::span<lexer::Token> tokens) {
 
   view = view.subspan(1);
 
-  std::optional<std::shared_ptr<ast::Type>> type = tryParseType(view);
+  std::optional<std::shared_ptr<ast::types::Type>> type = tryParseType(view);
 
   return type;
 }
@@ -59,7 +59,7 @@ tryParseFunctionReturnType(std::span<lexer::Token> tokens) {
 std::optional<ast::FunctionSignature>
 tryParseFunctionSignature(std::span<lexer::Token> tokens) {
   std::span<Token> view = tokens;
-  FunctionSignature sig = {view.front().getLocation()};
+  FunctionSignature sig;
 
   std::optional<ast::FunctionQualifiers> qual =
       tryParseFunctionQualifiers(view);
@@ -88,6 +88,10 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
   std::optional<std::shared_ptr<GenericParams>> generic =
       tryParseGenericParams(view);
 
+  if (generic) {
+    sig.setGenericParams(*generic);
+  }
+
   if (view.front().getKind() == TokenKind::ParenOpen) {
     view = view.subspan(1);
   } else {
@@ -100,39 +104,53 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
     // FIXME
   }
 
+  sig.setParameters(*params);
+
   if (view.front().getKind() == TokenKind::ParenClose) {
     view = view.subspan(1);
   } else {
     return std::nullopt;
   }
 
-  std::optional<std::shared_ptr<ast::Type>> returnType =
+  std::optional<std::shared_ptr<ast::types::Type>> returnType =
       tryParseFunctionReturnType(view);
 
+  if (returnType) {
+    sig.setReturnType(*returnType);
+  }
+
   std::optional<WhereClause> where = tryParseWhereClause(view);
+  if (where) {
+    sig.setWhereClause(*where);
+  }
 
-  // todo parse generic params
-  // parse parameter
-
-  return std::nullopt; // FIXME
+  return sig;
 }
 
 std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
                                               std::string_view modulePath) {
   std::span<Token> view = tokens;
 
+  Function f = {view.front().getLocation()};
+
   std::optional<FunctionSignature> sig = tryParseFunctionSignature(view);
 
   if (sig) {
+    f.setSignature(*sig);
+  } else {
+    return std::nullopt;
   }
 
   if (view.front().getKind() == TokenKind::SemiColon) {
-    // return fun
+    return f;
   }
 
-  tryParseBlockExpression(view);
+  std::optional<std::shared_ptr<ExpressionWithBlock>> block = tryParseBlockExpression(view);
+  if (block) {
+    f.setBody(*block);
+    return f;
+  }
 
-  // FIXME
   return std::nullopt;
 }
 

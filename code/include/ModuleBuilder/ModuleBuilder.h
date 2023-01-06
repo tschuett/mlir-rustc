@@ -8,6 +8,7 @@
 #include "AST/Statement.h"
 #include "Mir/MirDialect.h"
 #include "Target.h"
+#include "AST/BlockExpression.h"
 
 #include <llvm/ADT/ScopedHashTable.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
@@ -20,6 +21,7 @@
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/IR/Verifier.h>
 #include <string_view>
+#include "AST/Expression.h"
 
 namespace rust_compiler {
 
@@ -48,7 +50,7 @@ private:
   mlir::func::FuncOp buildFunctionSignature(ast::FunctionSignature sig,
                                             mlir::Location locaction);
   std::optional<mlir::Value>
-  emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk);
+  emitBlockExpression(std::shared_ptr<ast::ExpressionWithBlock> blk);
 
   std::optional<mlir::Value>
   emitStatement(std::shared_ptr<ast::Statement> stmt);

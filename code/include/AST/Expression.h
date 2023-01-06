@@ -66,6 +66,8 @@ enum class ExpressionWithBlockKind {
 class ExpressionWithBlock : public Expression {
 
 public:
+  ExpressionWithBlock(Location loc)
+      : Expression(loc, ExpressionKind::ExpressionWithBlock) {}
   ExpressionWithBlockKind getKind() const { return kind; }
 
 protected:

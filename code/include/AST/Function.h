@@ -1,32 +1,36 @@
 #pragma once
 
-#include "AST/AST.h"
+#include "AST/Item.h"
 #include "AST/BlockExpression.h"
 #include "AST/FunctionQualifiers.h"
 #include "AST/FunctionSignature.h"
 
-#include <mlir/IR/Location.h>
-
 namespace rust_compiler::ast {
 
-class FunctionParameters {};
+// class FunctionReturnType {};
 
-class FunctionReturnType {};
-
-class Function : public Node {
-  mlir::Location location;
-  std::shared_ptr<BlockExpression> body;
+class Function : public Item {
+  std::shared_ptr<ExpressionWithBlock> body;
   FunctionSignature signature;
   FunctionQualifiers qualifiers;
 
 public:
+  Function(Location loc) : Item(loc) {}
+
   FunctionSignature getSignature() const;
-  mlir::Location getLocation() const;
+  Location getLocation() const;
   FunctionQualifiers getFunctionQualifiers() const;
 
-  std::shared_ptr<BlockExpression> getBody();
+  std::shared_ptr<ExpressionWithBlock> getBody();
 
   size_t getTokens() override;
+
+  void setSignature(FunctionSignature nature);
+
+  void setBody(std::shared_ptr<ExpressionWithBlock> block);
 };
 
 } // namespace rust_compiler::ast
+
+
+// BlockExpression

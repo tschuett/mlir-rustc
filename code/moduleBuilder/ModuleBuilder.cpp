@@ -28,7 +28,7 @@ void ModuleBuilder::build(std::shared_ptr<ast::Module> mod, Target &target) {
 }
 
 std::optional<mlir::Value>
-ModuleBuilder::emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
+ModuleBuilder::emitBlockExpression(std::shared_ptr<ast::ExpressionWithBlock> blk) {
   ScopedHashTableScope<llvm::StringRef, mlir::Value> varScope(symbolTable);
 
   std::optional<mlir::Value> result = std::nullopt;

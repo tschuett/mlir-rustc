@@ -4,17 +4,19 @@
 #include "AST/Expression.h"
 #include "AST/Statement.h"
 
-#include <mlir/IR/Location.h>
 #include <span>
+#include <vector>
+#include <memory>
 
 namespace rust_compiler::ast {
 
 class BlockExpression : public ExpressionWithBlock {
-  mlir::Location location;
 
   std::vector<std::shared_ptr<Statement>> stmts;
 
 public:
+  BlockExpression(Location loc) : ExpressionWithBlock(loc) {}
+
   std::span<std::shared_ptr<Statement>> getExpressions();
 
   size_t getTokens() override;
