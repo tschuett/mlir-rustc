@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/Expression.h"
+#include "AST/OperatorExpression.h"
 
 #include <memory>
 
@@ -19,7 +20,7 @@ enum class ArithmeticOrLogicalExpressionKind {
   RightShift
 };
 
-class ArithmeticOrLogicalExpression : public Expression {
+class ArithmeticOrLogicalExpression : public OperatorExpression {
   ArithmeticOrLogicalExpressionKind kind;
   std::shared_ptr<Expression> left;
   std::shared_ptr<Expression> right;
@@ -29,13 +30,17 @@ public:
                                 ArithmeticOrLogicalExpressionKind kind,
                                 std::shared_ptr<Expression> left,
                                 std::shared_ptr<Expression> right)
-      : Expression(loc, ExpressionKind::ExpressionWithoutBlock), kind(kind),
+   : OperatorExpression(loc), kind(kind),
         left(left), right(right) {}
 
-  ArithmeticOrLogicalExpressionKind getKind() const { return kind; }
+  ArithmeticOrLogicalExpressionKind getKind() const {
+    return kind; }
 
-  std::shared_ptr<Expression> getRHS() const { return right; };
-  std::shared_ptr<Expression> getLHS() const { return left; };
+  std::shared_ptr<Expression> getRHS() const {
+    return right; };
+
+  std::shared_ptr<Expression> getLHS() const {
+    return left; };
 };
 
 } // namespace rust_compiler::ast
