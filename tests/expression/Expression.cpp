@@ -1,31 +1,21 @@
 #include "Lexer/Lexer.h"
-#include "PrimitiveType.h"
+#include "ReturnExpression.h"
 #include "gtest/gtest.h"
+
+#include "AST/ReturnExpression.h"
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
 
-TEST(TypesTest, Checki128) {
+TEST(TypesTest, CheckReturnExpr) {
 
-  std::string text = "i128";
-
-  TokenStream ts = lex(text, "lib.rs");
-
-  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      tryParsePrimitiveType(ts.getAsView());
-
-  EXPECT_TRUE(type.has_value());
-};
-
-TEST(TypesTest, Checkf64) {
-
-  std::string text = "f64";
+  std::string text = "return left + right";
 
   TokenStream ts = lex(text, "lib.rs");
 
-  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      tryParsePrimitiveType(ts.getAsView());
+  std::optional<rust_compiler::ast::ReturnExpression> ret =
+      tryParseReturnExpression(ts.getAsView());
 
-  EXPECT_TRUE(type.has_value());
+  EXPECT_TRUE(ret.has_value());
 };
