@@ -9,7 +9,7 @@ using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
 
-TEST(TypesTest, CheckReturnExpr) {
+TEST(ExpressionTest, CheckReturnExpr) {
 
   std::string text = "return left + right";
 
@@ -23,7 +23,7 @@ TEST(TypesTest, CheckReturnExpr) {
 
 
 
-TEST(TypesTest, CheckLiteralExpr) {
+TEST(ExpressionTest, CheckLiteralExpr) {
 
   std::string text = "128";
 

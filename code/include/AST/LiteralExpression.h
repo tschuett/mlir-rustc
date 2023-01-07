@@ -4,7 +4,7 @@
 
 namespace rust_compiler::ast {
 
-enum class LiteralExpressionKind {}
+// enum class LiteralExpressionKind {}
 
 class LiteralExpression : public ExpressionWithoutBlock {
 public:

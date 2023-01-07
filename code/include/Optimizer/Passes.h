@@ -10,6 +10,7 @@ namespace rust_compiler::optimizer {
 #include "Optimizer/Passes.h.inc"
 
 std::unique_ptr<mlir::Pass> createTestPass();
+std::unique_ptr<mlir::Pass> createAttributerPass();
 
 // declarative passes
 #define GEN_PASS_REGISTRATION

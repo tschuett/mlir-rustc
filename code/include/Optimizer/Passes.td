@@ -9,3 +9,12 @@ def Test : Pass<"test", "mlir::func::FuncOp"> {
   }];
   let constructor = "rust_compiler::optimizer::createTestPass()";
 }
+
+
+def AttributerLite : Pass<"attributer-lite", "mlir::ModuleOp"> {
+  let summary = "Attributer lite";
+  let description = [{
+    Try to derive some attributes.
+  }];
+  let constructor = "rust_compiler::optimizer::createAttributerPass()";
+}
