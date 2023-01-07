@@ -52,6 +52,7 @@ Testing/
 tests/parser/ParserTests
 tests/patterns/PatternTests
 tests/types/TypesTests
+tests/expression/ExpressionTests
 
 code/include/Mir/MirDialect.cpp.inc
 code/include/Mir/MirDialect.h.inc

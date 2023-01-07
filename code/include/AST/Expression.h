@@ -48,8 +48,10 @@ enum class ExpressionWithoutBlockKind {
 };
 
 class ExpressionWithoutBlock : public Expression {
-
 public:
+ ExpressionWithoutBlock(Location loc)
+      : Expression(loc, ExpressionKind::ExpressionWithBlock) {}
+
 protected:
   ExpressionWithoutBlockKind kind;
 };

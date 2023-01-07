@@ -15,6 +15,8 @@ add_library(ast
            WhereClause.cpp
            FunctionQualifiers.cpp
            FunctionParameters.cpp
+           ReturnExpression.cpp
+           ExpressionStatement.cpp
            )
 
 

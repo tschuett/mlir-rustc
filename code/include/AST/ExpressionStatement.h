@@ -1,15 +1,18 @@
 #pragma once
 
+#include "AST/Expression.h"
 #include "AST/Statement.h"
-
-#include <mlir/IR/Location.h>
 
 namespace rust_compiler::ast {
 
 class ExpressionStatement : public Statement {
-  mlir::Location location;
+  std::shared_ptr<Expression> expr;
 
 public:
+  ExpressionStatement(Location loc, std::shared_ptr<Expression> expr)
+      : Statement(loc), expr(expr) {}
+
+  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

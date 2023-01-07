@@ -1,0 +1,31 @@
+#include "Lexer/Lexer.h"
+#include "PrimitiveType.h"
+#include "gtest/gtest.h"
+
+using namespace rust_compiler::lexer;
+using namespace rust_compiler::parser;
+using namespace rust_compiler::ast;
+
+TEST(TypesTest, Checki128) {
+
+  std::string text = "i128";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
+      tryParsePrimitiveType(ts.getAsView());
+
+  EXPECT_TRUE(type.has_value());
+};
+
+TEST(TypesTest, Checkf64) {
+
+  std::string text = "f64";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
+      tryParsePrimitiveType(ts.getAsView());
+
+  EXPECT_TRUE(type.has_value());
+};
