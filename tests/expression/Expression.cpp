@@ -109,3 +109,15 @@ TEST(ExpressionTest, CheckFunctionParameter) {
 
   EXPECT_TRUE(param.has_value());
 };
+
+TEST(ExpressionTest, CheckFunctionParameters) {
+
+  std::string text = "left: u128, right: i8";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  std::optional<rust_compiler::ast::FunctionParameters> params =
+      tryParseFunctionParameters(ts.getAsView());
+
+  EXPECT_TRUE(params.has_value());
+};
