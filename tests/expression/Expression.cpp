@@ -1,5 +1,6 @@
 #include "Lexer/Lexer.h"
 #include "ReturnExpression.h"
+#include "LiteralExpression.h"
 #include "gtest/gtest.h"
 
 #include "AST/ReturnExpression.h"
@@ -14,8 +15,22 @@ TEST(TypesTest, CheckReturnExpr) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  std::optional<rust_compiler::ast::ReturnExpression> ret =
+  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ret =
       tryParseReturnExpression(ts.getAsView());
 
   EXPECT_TRUE(ret.has_value());
+};
+
+
+
+TEST(TypesTest, CheckLiteralExpr) {
+
+  std::string text = "128";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> lit =
+      tryParseLiteralExpression(ts.getAsView());
+
+  EXPECT_TRUE(lit.has_value());
 };

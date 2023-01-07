@@ -1,6 +1,10 @@
 #pragma once
 
+#include "AST/Expression.h"
+
 namespace rust_compiler::ast {
+
+enum class LiteralExpressionKind {}
 
 class LiteralExpression : public ExpressionWithoutBlock {
 public:

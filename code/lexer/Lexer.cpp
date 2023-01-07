@@ -4,6 +4,7 @@
 #include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
 
+#include <cctype>
 #include <optional>
 
 namespace rust_compiler::lexer {
@@ -23,6 +24,22 @@ static const std::pair<FloatKind, std::string> FK[] = {
     {FloatKind::F32, "f32"},
     {FloatKind::F64, "f64"},
 };
+
+std::optional<std::string> tryLexDecIntegerLiteral(std::string_view code) {
+  std::string_view view = code;
+  std::string ws;
+
+  while (view.size() > 0) {
+    if (std::isdigit(view.front())) {
+      view.remove_prefix(1);
+      ws.push_back(view.front());
+    } else {
+      return std::nullopt;
+    }
+  }
+
+  return ws;
+}
 
 std::string tryLexComment(std::string_view code) {
   std::string_view view = code;
@@ -324,6 +341,15 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       std::string comment = tryLexComment(code);
       code.remove_prefix(comment.size());
       columnNumber += comment.size();
+      continue;
+    }
+
+    std::optional<std::string> decInt = tryLexDecIntegerLiteral(code);
+    if (decInt) {
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::DecIntegerLiteral, *decInt));
+      code.remove_prefix(decInt->size());
+      columnNumber += decInt->size();
       continue;
     }
 

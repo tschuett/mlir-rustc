@@ -26,3 +26,31 @@ TEST(LexerTest, CheckUse) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 };
+
+
+TEST(LexerTest, CheckInteger) {
+  std::string text = "128";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  size_t expectedLendth = 1;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecIntegerLiteral);
+
+};
+
+
+TEST(LexerTest, CheckDecInteger) {
+  std::string text = "1";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  size_t expectedLendth = 1;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecIntegerLiteral);
+
+};

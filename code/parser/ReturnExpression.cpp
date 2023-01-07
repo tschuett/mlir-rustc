@@ -5,11 +5,14 @@
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 
+#include <memory>
+
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
-std::optional<ast::ReturnExpression>
+std::optional<std::shared_ptr<ast::Expression>>
 tryParseReturnExpression(std::span<Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
@@ -20,7 +23,9 @@ tryParseReturnExpression(std::span<Token> tokens) {
         tryParseExpression(view);
 
     if (expr) {
-      return ReturnExpression(tokens.front().getLocation(), *expr);
+      auto foo = std::make_shared<ReturnExpression>(
+          tokens.front().getLocation(), *expr);
+      return std::static_pointer_cast<Expression>(foo);
     }
   }
 

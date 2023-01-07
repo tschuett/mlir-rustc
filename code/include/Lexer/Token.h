@@ -27,6 +27,7 @@ enum class IntegerKind {
 enum class FloatKind { F32, F64 };
 
 enum class TokenKind {
+  DecIntegerLiteral,
   DoubleColon,
   Colon,
   ThinArrow,
