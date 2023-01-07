@@ -1,6 +1,8 @@
+#include "AST/FunctionParameter.h"
 #include "AST/ReturnExpression.h"
 #include "BlockExpression.h"
 #include "FunctionParameters.h"
+#include "FunctionParameter.h"
 #include "Lexer/Lexer.h"
 #include "LiteralExpression.h"
 #include "PathInExpression.h"
@@ -94,4 +96,16 @@ TEST(ExpressionTest, CheckStatement) {
       tryParseStatement(ts.getAsView());
 
   EXPECT_TRUE(stmt.has_value());
+};
+
+TEST(ExpressionTest, CheckFunctionParameter) {
+
+  std::string text = "left: u128";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  std::optional<rust_compiler::ast::FunctionParameter> param =
+      tryParseFunctionParameter(ts.getAsView());
+
+  EXPECT_TRUE(param.has_value());
 };
