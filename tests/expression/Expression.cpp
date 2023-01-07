@@ -26,6 +26,18 @@ TEST(ExpressionTest, CheckReturnExpr) {
   EXPECT_TRUE(ret.has_value());
 };
 
+TEST(ExpressionTest, CheckReturnExpr1) {
+
+  std::string text = "return left";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ret =
+      tryParseReturnExpression(ts.getAsView());
+
+  EXPECT_TRUE(ret.has_value());
+};
+
 TEST(ExpressionTest, CheckLiteralExpr) {
 
   std::string text = "128";

@@ -17,6 +17,7 @@ add_library(ast
            FunctionParameters.cpp
            ReturnExpression.cpp
            ExpressionStatement.cpp
+           LiteralExpression.cpp
            )
 
 
