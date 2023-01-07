@@ -11,6 +11,8 @@ tryParseExpressionWithoutBlock(std::span<lexer::Token> tokens) {
 
   std::optional<ast::ReturnExpression> ret = tryParseReturnExpression(view);
 
+  std::optional<std::shared_ptr<ast::Expression>> op=
+      tryParseOperatorExpression(view);
   // FIXME
 
   return std::nullopt;

@@ -26,7 +26,7 @@ protected:
 enum class ExpressionWithoutBlockKind {
   LiteralExpression,
   PathExpression,
-  OperationExpression,
+  OperatorExpression,
   GroupedExpression,
   ArrayExpression,
   AwaitExpression,
