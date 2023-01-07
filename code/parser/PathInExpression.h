@@ -13,3 +13,7 @@ std::optional<std::shared_ptr<ast::Expression>>
 tryParsePathInExpression(std::span<lexer::Token> tokens);
 
 }
+
+
+
+// https://doc.rust-lang.org/reference/paths.html#paths-in-expressions

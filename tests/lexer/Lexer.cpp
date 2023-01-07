@@ -54,3 +54,17 @@ TEST(LexerTest, CheckDecInteger) {
   EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecIntegerLiteral);
 
 };
+
+
+TEST(LexerTest, CheckDollarCrate) {
+  std::string text = "$crate";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  size_t expectedLendth = 1;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  //EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecIntegerLiteral);
+
+};

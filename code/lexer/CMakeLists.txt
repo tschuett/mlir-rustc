@@ -3,6 +3,7 @@ add_library(lexer
            TokenStream.cpp
            Token.cpp
            KeyWords.cpp
+           CodePoint.cpp
            )
 
 
