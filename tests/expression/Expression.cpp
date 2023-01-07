@@ -1,8 +1,11 @@
 #include "AST/ReturnExpression.h"
+#include "BlockExpression.h"
+#include "FunctionParameters.h"
 #include "Lexer/Lexer.h"
 #include "LiteralExpression.h"
 #include "PathInExpression.h"
 #include "ReturnExpression.h"
+#include "Statement.h"
 #include "gtest/gtest.h"
 
 using namespace rust_compiler::lexer;
@@ -67,4 +70,28 @@ TEST(ExpressionTest, CheckPathInExpr3) {
       tryParsePathInExpression(ts.getAsView());
 
   EXPECT_TRUE(pathIn.has_value());
+};
+
+TEST(ExpressionTest, CheckBlockExpr) {
+
+  std::string text = "{return left + right;}";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
+      tryParseBlockExpression(ts.getAsView());
+
+  EXPECT_TRUE(block.has_value());
+};
+
+TEST(ExpressionTest, CheckStatement) {
+
+  std::string text = "return left + right;";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  std::optional<std::shared_ptr<rust_compiler::ast::Statement>> stmt =
+      tryParseStatement(ts.getAsView());
+
+  EXPECT_TRUE(stmt.has_value());
 };

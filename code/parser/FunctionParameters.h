@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AST/FunctionParameters.h"
+
 #include "Lexer/Token.h"
 
 #include <optional>
