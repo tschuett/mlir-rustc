@@ -1,10 +1,17 @@
 #include "PathInExpression.h"
 
+#include "AST/GenericArgs.h"
+#include "AST/PathExprSegment.h"
 #include "Lexer/KeyWords.h"
 
 using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
+
+std::optional<GenericArgs> tryParseGenericArgs(std::span<lexer::Token> tokens) {
+  // FIXME
+  return std::nullopt;
+}
 
 std::optional<std::string> tryPathIdentSegment(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
@@ -28,7 +35,8 @@ std::optional<std::string> tryPathIdentSegment(std::span<lexer::Token> tokens) {
   return std::nullopt;
 }
 
-std::optional<std::string> tryPathExprSegment(std::span<lexer::Token> tokens) {
+std::optional<PathExprSegment>
+tryPathExprSegment(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
   std::optional<std::string> exprSegment = tryPathIdentSegment(view);
@@ -37,7 +45,7 @@ std::optional<std::string> tryPathExprSegment(std::span<lexer::Token> tokens) {
 
     if (view.front().getKind() == TokenKind::DoubleColon) {
       view = view.subspan(1);
-      // std::optional<std::string> genericArgs = tryParseGenericArgs(view);
+      // std::optional<GenericArgs> genericArgs = tryParseGenericArgs(view);
     }
     return *exprSegment;
   }
@@ -48,7 +56,28 @@ std::optional<std::string> tryPathExprSegment(std::span<lexer::Token> tokens) {
 
 std::optional<std::shared_ptr<ast::Expression>>
 tryParsePathInExpression(std::span<lexer::Token> tokens) {
-  // std::span<lexer::Token> view = tokens;
+  std::span<lexer::Token> view = tokens;
+
+  if (view.front().getKind() == TokenKind::DoubleColon) {
+    view = view.subspan(1);
+  }
+
+  std::optional<PathExprSegment> seg = tryPathExprSegment(view);
+  if (seg) {
+    view = view.subspan((*seg).getTokens());
+  }
+
+  while (view.size() > 1) {
+    if (view.front().getKind() == TokenKind::DoubleColon) {
+      view = view.subspan(1);
+      std::optional<PathExprSegment> seg = tryPathExprSegment(view);
+      if (seg) {
+        view = view.subspan((*seg).getTokens());
+      }
+    } else {
+      return;
+    }
+  }
 
   // FIXME
   return std::nullopt;
