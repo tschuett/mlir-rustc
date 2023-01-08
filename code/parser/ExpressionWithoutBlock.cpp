@@ -15,16 +15,21 @@ tryParseExpressionWithoutBlock(std::span<lexer::Token> tokens) {
   llvm::errs() << "tryParseExpressionWithoutBlock"
                << "\n";
 
-  std::optional<std::shared_ptr<ast::Expression>> path =
-      tryParsePathExpression(view);
-  if (path) {
-    return *path;
+    std::optional<std::shared_ptr<ast::Expression>> ret =
+      tryParseReturnExpression(view);
+  if (ret) {
+    return *ret;
   }
 
   std::optional<std::shared_ptr<ast::Expression>> lit =
       tryParseLiteralExpression(view);
   if (lit) {
     return *lit;
+  }
+  std::optional<std::shared_ptr<ast::Expression>> path =
+      tryParsePathExpression(view);
+  if (path) {
+    return *path;
   }
 
   std::optional<std::shared_ptr<ast::Expression>> op =
@@ -33,11 +38,6 @@ tryParseExpressionWithoutBlock(std::span<lexer::Token> tokens) {
     return *op;
   }
 
-  std::optional<std::shared_ptr<ast::Expression>> ret =
-      tryParseReturnExpression(view);
-  if (ret) {
-    return *ret;
-  }
 
   // FIXME
 

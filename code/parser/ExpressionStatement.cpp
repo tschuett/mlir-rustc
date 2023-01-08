@@ -1,7 +1,7 @@
 #include "ExpressionStatement.h"
 
-#include "ExpressionWithoutBlock.h"
 #include "ExpressionWithBlock.h"
+#include "ExpressionWithoutBlock.h"
 
 namespace rust_compiler::parser {
 
@@ -12,10 +12,18 @@ tryParseExpressionStatement(std::span<lexer::Token> tokens) {
   std::optional<std::shared_ptr<ast::Expression>> woBlock =
       tryParseExpressionWithoutBlock(view);
 
+  if (woBlock) {
+    return *woBlock;
+  }
+
   // then ;
 
   std::optional<std::shared_ptr<ast::Expression>> withBlock =
       tryParseExpressionWithBlock(view);
+
+  if (withBlock) {
+    return *withBlock;
+  }
 
   return std::nullopt;
 }

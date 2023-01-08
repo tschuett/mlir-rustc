@@ -42,4 +42,17 @@ void ModuleBuilder::buildExpressionStatement(
 void ModuleBuilder::emitItemDeclaration(
     std::shared_ptr<ast::ItemDeclaration> item) {}
 
+std::optional<mlir::Value>
+ModuleBuilder::emitStatements(std::shared_ptr<ast::Statements> stmts) {
+
+  for (auto &stmt : stmts->getStmts()) {
+    emitStatement(stmt);
+  }
+
+  if (stmts->hasTrailing())
+    return emitExpression(stmts->getTrailing());
+
+  return std::nullopt;
+}
+
 } // namespace rust_compiler

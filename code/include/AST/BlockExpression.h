@@ -2,22 +2,24 @@
 
 #include "AST/AST.h"
 #include "AST/Expression.h"
-#include "AST/Statement.h"
+#include "AST/Statements.h"
 
+#include <memory>
 #include <span>
 #include <vector>
-#include <memory>
 
 namespace rust_compiler::ast {
 
 class BlockExpression : public ExpressionWithBlock {
 
-  std::vector<std::shared_ptr<Statement>> stmts;
+  std::shared_ptr<Statements> stmts;
 
 public:
   BlockExpression(Location loc) : ExpressionWithBlock(loc) {}
 
-  std::span<std::shared_ptr<Statement>> getExpressions();
+  void setStatements(std::shared_ptr<Statements> stmts);
+
+  std::shared_ptr<Statements> getExpressions();
 
   size_t getTokens() override;
 };

@@ -22,6 +22,7 @@ add_library(ast
            PathInExpression.cpp
            PathExprSegment.cpp
            PathExpression.cpp
+           Statements.cpp
            )
 
 

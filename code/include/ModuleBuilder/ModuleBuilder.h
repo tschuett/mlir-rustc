@@ -1,15 +1,17 @@
 #pragma once
 
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/BlockExpression.h"
 #include "AST/Expression.h"
-#include "AST/ItemDeclaration.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/ItemDeclaration.h"
 #include "AST/LetStatement.h"
+#include "AST/LiteralExpression.h"
 #include "AST/Module.h"
+#include "AST/ReturnExpression.h"
 #include "AST/Statement.h"
 #include "Mir/MirDialect.h"
 #include "Target.h"
-#include "AST/BlockExpression.h"
 
 #include <llvm/ADT/ScopedHashTable.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
@@ -22,7 +24,6 @@
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/IR/Verifier.h>
 #include <string_view>
-#include "AST/Expression.h"
 
 namespace rust_compiler {
 
@@ -57,6 +58,9 @@ private:
   emitStatement(std::shared_ptr<ast::Statement> stmt);
   void buildLetStatement(std::shared_ptr<ast::LetStatement> letStmt);
 
+  std::optional<mlir::Value>
+  emitStatements(std::shared_ptr<ast::Statements> stmts);
+
   mlir::Value emitExpression(std::shared_ptr<ast::Expression> expr);
 
   mlir::Value
@@ -72,6 +76,13 @@ private:
   mlir::Value emitArithmeticOrLogicalExpression(
       std::shared_ptr<ast::ArithmeticOrLogicalExpression> expr);
 
+  mlir::Value
+  emitOperatorExpression(std::shared_ptr<ast::OperatorExpression> opr);
+
+  mlir::Value
+  emitLiteralExpression(std::shared_ptr<ast::LiteralExpression> lit);
+
+  mlir::Value emitReturnExpression(std::shared_ptr<ast::ReturnExpression> ret);
   /// Declare a variable in the current scope, return success if the variable
   /// wasn't declared yet.
   //  mlir::LogicalResult declare(VarDeclExprAST &var, mlir::Value value);

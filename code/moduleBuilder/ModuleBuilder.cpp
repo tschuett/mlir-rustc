@@ -34,9 +34,7 @@ ModuleBuilder::emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
   std::optional<mlir::Value> result = std::nullopt;
 
   // new variable scope?
-  for (auto stmnt : blk->getExpressions()) {
-    result = emitStatement(stmnt);
-  }
+  result = emitStatements(blk->getExpressions());
 
   return result;
 }

@@ -4,8 +4,12 @@
 
 namespace rust_compiler::ast {
 
-std::span<std::shared_ptr<Statement>> BlockExpression::getExpressions() {
+std::shared_ptr<Statements> BlockExpression::getExpressions() {
   return stmts;
+}
+
+void BlockExpression::setStatements(std::shared_ptr<Statements> _stmts) {
+  stmts = _stmts;
 }
 
 size_t BlockExpression::getTokens() {

@@ -1,7 +1,9 @@
 #include "BlockExpression.h"
 
+#include "AST/BlockExpression.h"
 #include "Lexer/Token.h"
 #include "Statement.h"
+#include "Statements.h"
 
 #include <optional>
 
@@ -12,16 +14,26 @@ namespace rust_compiler::parser {
 std::optional<std::shared_ptr<ast::BlockExpression>>
 tryParseBlockExpression(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
+  BlockExpression block = {tokens.front().getLocation()};
 
   if (view.front().getKind() != TokenKind::BraceOpen)
     return std::nullopt;
 
   view = view.subspan(1);
 
-  std::optional<std::shared_ptr<ast::Statement>> stmt = tryParseStatement(view);
+  std::optional<std::shared_ptr<ast::Statements>> stmts =
+      tryParseStatements(view);
+  if (stmts) {
+    view = view.subspan((*stmts)->getTokens());
+    if (view.front().getKind() == TokenKind::BraceClose) {
+      block.setStatements(*stmts);
+      return std::make_shared<ast::BlockExpression>(block);
+    }
+  }
 
-  // FIXME
   return std::nullopt;
 }
 
 } // namespace rust_compiler::parser
+
+// FIXME

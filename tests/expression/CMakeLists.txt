@@ -9,6 +9,8 @@ add_executable(ExpressionTests
         OperatorExpression.cpp
         ArithmeticOrLogicalExpression.cpp
         Utils.cpp
+        Statement.cpp
+        Statements.cpp
 )
 
 llvm_map_components_to_libnames(llvm_libs Support)
