@@ -8,7 +8,7 @@ using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
 
 
-TEST(ExpressionTest, CheckFunctionParameter) {
+TEST(FunctionParameterExpressionTest, CheckFunctionParameter) {
 
   std::string text = "left: u128";
 
@@ -20,7 +20,7 @@ TEST(ExpressionTest, CheckFunctionParameter) {
   EXPECT_TRUE(param.has_value());
 };
 
-TEST(ExpressionTest, CheckFunctionParameters) {
+TEST(FunctionParameterExpressionTest, CheckFunctionParameters) {
 
   std::string text = "left: u128, right: i8";
 

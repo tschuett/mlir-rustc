@@ -102,8 +102,8 @@ tryParsePathInExpression(std::span<lexer::Token> tokens) {
     }
   }
 
-  // FIXME
-  return std::nullopt;
+  return std::static_pointer_cast<ast::Expression>(
+      std::make_shared<PathInExpression>(pathExpr));
 }
 
 } // namespace rust_compiler::parser
