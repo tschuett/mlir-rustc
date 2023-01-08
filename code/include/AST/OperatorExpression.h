@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AST/Expression.h"
+
 namespace rust_compiler::ast {
 
 class OperatorExpression : public ExpressionWithoutBlock {
