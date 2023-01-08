@@ -117,6 +117,30 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::Integer: {
     return std::string("integer");
   }
+  case TokenKind::Minus: {
+    return std::string("-");
+  }
+  case TokenKind::Slash: {
+    return std::string("/");
+  }
+  case TokenKind::Percent: {
+    return std::string("%");
+  }
+  case TokenKind::And: {
+    return std::string("&");
+  }
+  case TokenKind::Or: {
+    return std::string("|");
+  }
+  case TokenKind::Caret: {
+    return std::string("^");
+  }
+  case TokenKind::Shl: {
+    return std::string("<<");
+  }
+  case TokenKind::Shr: {
+    return std::string(">>");
+  }
   }
 }
 

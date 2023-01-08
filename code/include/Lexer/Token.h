@@ -59,7 +59,15 @@ enum class TokenKind {
   Keyword,
   Not,
   Integer,
-  Float
+  Float,
+  Minus,
+  Slash,
+  Percent,
+  And,
+  Or,
+  Caret,
+  Shl,
+  Shr
 };
 
 class Token {

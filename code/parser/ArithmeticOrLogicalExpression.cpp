@@ -1,6 +1,24 @@
 #include "ArithmeticOrLogicalExpression.h"
 
+using namespace rust_compiler::lexer;
+
 namespace rust_compiler::parser {
+
+static const TokenKind operators[] = {
+    TokenKind::Plus,    TokenKind::Minus, TokenKind::Star, TokenKind::Slash,
+    TokenKind::Percent, TokenKind::And,   TokenKind::Or,   TokenKind::Caret,
+    TokenKind::Shl,     TokenKind::Shr};
+
+std::optional<Token> tryParserOperator(std::span<lexer::Token> tokens) {
+  TokenKind front = tokens.front().getKind();
+
+  for (TokenKind tok : operators) {
+    if (front == tok)
+      return tokens.front();
+  }
+
+  return std::nullopt;
+}
 
 std::optional<std::shared_ptr<ast::Expression>>
 tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
@@ -10,10 +28,17 @@ tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
       tryParseExpression(view);
 
   if (left) {
-    std::optional<std::shared_ptr<ast::Expression>> right =
-        tryParseExpression(view);
+    view = view.subspan((*left)->getTokens());
 
-    if (right) {
+    // find Operator
+    std::optional<Token> op = tryParserOperator(view);
+    if (op) {
+      view = view.subspan(1);
+      std::optional<std::shared_ptr<ast::Expression>> right =
+          tryParseExpression(view);
+
+      if (right) {
+      }
     }
   }
   // FIXME

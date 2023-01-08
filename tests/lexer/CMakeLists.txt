@@ -3,6 +3,7 @@ include(GoogleTest)
 add_executable(LexerTests
         LexerTests.cpp
         Lexer.cpp
+        ArithmeticOrLogical.cpp
 )
 
 message(STATUS "Using GTest in: ${GTest_INCLUDE_DIRS}")
