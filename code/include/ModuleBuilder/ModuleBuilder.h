@@ -2,6 +2,7 @@
 
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/Expression.h"
+#include "AST/ItemDeclaration.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/LetStatement.h"
 #include "AST/Module.h"
@@ -66,6 +67,7 @@ private:
   void buildExpressionStatement(std::shared_ptr<ast::ExpressionStatement> expr);
 
   void buildItem(std::shared_ptr<ast::Item> item);
+  void emitItemDeclaration(std::shared_ptr<ast::ItemDeclaration> item);
 
   mlir::Value emitArithmeticOrLogicalExpression(
       std::shared_ptr<ast::ArithmeticOrLogicalExpression> expr);

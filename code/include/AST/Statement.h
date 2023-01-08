@@ -6,7 +6,7 @@
 namespace rust_compiler::ast {
 
 enum class StatementKind {
-  Item,
+  ItemDeclaration,
   LetStatement,
   ExpressionStatement,
   MacroInvocationSemi
@@ -16,13 +16,11 @@ class Statement : public Node {
   StatementKind kind;
 
 public:
-  explicit Statement(rust_compiler::Location location)
-      : Node(location), location(location) {}
+  explicit Statement(Location location)
+      : Node(location) {}
 
   StatementKind getKind() const { return kind; }
 
-protected:
-  rust_compiler::Location location;
 };
 
 } // namespace rust_compiler::ast

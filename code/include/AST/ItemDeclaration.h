@@ -1,15 +1,17 @@
 #pragma once
 
 #include "AST/AST.h"
+#include "AST/Item.h"
 #include "AST/Statement.h"
 #include "Location.h"
 
 namespace rust_compiler::ast {
 
-class Item : public Node {
+class ItemDeclaration : public Statement {
+  std::shared_ptr<Item> item;
 
 public:
-  explicit Item(rust_compiler::Location location) : Node{location} {}
+  ItemDeclaration(Location loc) : Statement(loc) {}
 };
 
 } // namespace rust_compiler::ast
