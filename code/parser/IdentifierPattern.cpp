@@ -1,18 +1,22 @@
 #include "IdentifierPattern.h"
 
+#include "AST/PatternWithoutRange.h"
+#include "AST/Patterns/IdentifierPattern.h"
 #include "Lexer/KeyWords.h"
 
+#include <memory>
 #include <optional>
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
-std::optional<patterns::IdentifierPattern>
+std::optional<std::shared_ptr<ast::PatternWithoutRange>>
 tryParseIdentifierPattern(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
-  patterns::IdentifierPattern pattern;
+  IdentifierPattern pattern = {tokens.front().getLocation()};
 
   if (view.front().isKeyWord()) {
     if (view.front().getKeyWordKind() == KeyWordKind::KW_REF) {
@@ -34,17 +38,20 @@ tryParseIdentifierPattern(std::span<lexer::Token> tokens) {
 
   if (view.front().isIdentifier()) {
     pattern.setIdentifier(view.front().getIdentifier());
-    return pattern;
+    return std::static_pointer_cast<PatternWithoutRange>(
+        std::make_shared<ast::IdentifierPattern>(pattern));
   }
 
   if (view[1].isIdentifier()) {
     pattern.setIdentifier(view[1].getIdentifier());
-    return pattern;
+    return std::static_pointer_cast<PatternWithoutRange>(
+        std::make_shared<ast::IdentifierPattern>(pattern));
   }
 
   if (view[2].isIdentifier()) {
     pattern.setIdentifier(view[2].getIdentifier());
-    return pattern;
+    return std::static_pointer_cast<PatternWithoutRange>(
+        std::make_shared<ast::IdentifierPattern>(pattern));
   }
 
   // FIXME add PatternNoTopAlt

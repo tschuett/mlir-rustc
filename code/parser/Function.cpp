@@ -9,6 +9,7 @@
 #include "Lexer/Token.h"
 #include "WhereClause.h"
 
+#include <llvm/Support/raw_os_ostream.h>
 #include <optional>
 
 using namespace rust_compiler::lexer;
@@ -20,7 +21,7 @@ tryParseFunctionQualifiers(std::span<lexer::Token> tokens) {
   std::span<Token> view = tokens;
   FunctionQualifiers qual{view.front().getLocation()};
 
-  printf("tryParseFunctionQualifiers: start\n");
+  llvm::outs() << "tryParseFunctionQualifiers: start" << "\n";
 
   if (view.front().getKind() == TokenKind::Keyword) {
     if (view.front().getIdentifier() == "const") {
@@ -146,8 +147,8 @@ std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
 
   Function f = {view.front().getLocation()};
 
-  printf("tryParseFunction: start\n");
-  printTokenState(view);
+  llvm::outs() << "tryParseFunction: start" << "\n";
+  //printTokenState(view);
 
   std::optional<FunctionSignature> sig = tryParseFunctionSignature(view);
 

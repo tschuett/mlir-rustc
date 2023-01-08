@@ -1,6 +1,7 @@
 #pragma once
 
-#include "AST/Patterns/IdentifierPattern.h"
+#include "AST/IdentifierPattern.h"
+#include "AST/PatternWithoutRange.h"
 #include "Lexer/Token.h"
 
 #include <optional>
@@ -8,7 +9,7 @@
 
 namespace rust_compiler::parser {
 
-std::optional<patterns::IdentifierPattern>
+std::optional<std::shared_ptr<ast::PatternWithoutRange>>
     tryParseIdentifierPattern(std::span<lexer::Token>);
 
 }

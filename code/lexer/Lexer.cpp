@@ -5,6 +5,7 @@
 #include "Lexer/TokenStream.h"
 
 #include <cctype>
+#include <llvm/Support/raw_os_ostream.h>
 #include <optional>
 
 namespace rust_compiler::lexer {
@@ -311,8 +312,8 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
 
   while (code.size() > 0) {
 
-    //    printf("code.size(): %lu\n", code.size());
-    //    printf("code.size(): %s\n", code.data());
+    //printf("code.size(): %lu\n", code.size());
+    //printf("code.size(): %s\n", code.data());
 
     std::string ws = tryLexWhiteSpace(code);
     code.remove_prefix(ws.size());
@@ -336,6 +337,9 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
         continue;
       }
     }
+
+    ws = tryLexWhiteSpace(code);
+    code.remove_prefix(ws.size());
 
     if (code.starts_with("//")) {
       std::string comment = tryLexComment(code);
@@ -424,18 +428,18 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("-")) {
-      ts.append(
-          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Minus));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::Minus));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with(">>")) {
-      ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::Shr));
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Shr));
       code.remove_prefix(2);
       columnNumber += 2;
     } else if (code.starts_with("<<")) {
-      ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::Shl));
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Shl));
       code.remove_prefix(2);
       columnNumber += 2;
     } else if (code.starts_with(">")) {
@@ -529,18 +533,18 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("^")) {
-      ts.append(
-          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Caret));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::Caret));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("%")) {
-      ts.append(
-          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Percent));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::Percent));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("/")) {
-      ts.append(
-          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Slash));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::Slash));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("\n")) {
@@ -554,6 +558,8 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       exit(EXIT_FAILURE);
     }
   }
+  llvm::outs() << "lexer: done"
+               << "\n";
 
   return ts;
 }
