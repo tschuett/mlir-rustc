@@ -33,9 +33,9 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::LessThan: {
     return std::string("<");
   }
-  case TokenKind::DoubleGreaterThan: {
-    return std::string(">>");
-  }
+//  case TokenKind::DoubleGreaterThan: {
+//    return std::string(">>");
+//  }
   case TokenKind::GreaterThan: {
     return std::string(">");
   }
@@ -84,24 +84,24 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::BraceClose: {
     return std::string("}");
   }
-  case TokenKind::Amp: {
-    return std::string("&");
-  }
+//  case TokenKind::Amp: {
+//    return std::string("&");
+//  }
   case TokenKind::DoubleAmp: {
     return std::string("&&");
   }
   case TokenKind::String: {
     return std::string("string");
   }
-  case TokenKind::Pipe: {
-    return std::string("|");
-  }
+//  case TokenKind::Pipe: {
+//    return std::string("|");
+//  }
   case TokenKind::Star: {
     return std::string("*");
   }
-  case TokenKind::Dash: {
-    return std::string("-");
-  }
+//  case TokenKind::Dash: {
+//    return std::string("-");
+//  }
   case TokenKind::Char: {
     return std::string("char");
   }

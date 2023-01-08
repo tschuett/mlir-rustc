@@ -425,12 +425,17 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       columnNumber += 1;
     } else if (code.starts_with("-")) {
       ts.append(
-          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Dash));
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Minus));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with(">>")) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::DoubleGreaterThan));
+                      TokenKind::Shr));
+      code.remove_prefix(2);
+      columnNumber += 2;
+    } else if (code.starts_with("<<")) {
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::Shl));
       code.remove_prefix(2);
       columnNumber += 2;
     } else if (code.starts_with(">")) {
@@ -455,7 +460,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       columnNumber += 1;
     } else if (code.starts_with("&")) {
       ts.append(
-          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Amp));
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::And));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("&&")) {
@@ -515,12 +520,27 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       columnNumber += 1;
     } else if (code.starts_with("|")) {
       ts.append(
-          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Pipe));
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Or));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("!")) {
       ts.append(
           Token(Location(fileName, lineNumber, columnNumber), TokenKind::Not));
+      code.remove_prefix(1);
+      columnNumber += 1;
+    } else if (code.starts_with("^")) {
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Caret));
+      code.remove_prefix(1);
+      columnNumber += 1;
+    } else if (code.starts_with("%")) {
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Percent));
+      code.remove_prefix(1);
+      columnNumber += 1;
+    } else if (code.starts_with("/")) {
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Slash));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("\n")) {
@@ -541,3 +561,5 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
 } // namespace rust_compiler::lexer
 
 // https://github.com/thepowersgang/mrustc/blob/master/src/parse/lex.cpp
+
+// https://doc.rust-lang.org/reference/tokens.html#punctuation
