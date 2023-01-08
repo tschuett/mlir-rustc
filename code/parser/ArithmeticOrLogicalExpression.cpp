@@ -2,6 +2,7 @@
 
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/Expression.h"
+#include "OperatorFeeding.h"
 
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
@@ -43,7 +44,7 @@ tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
                << "\n";
 
   std::optional<std::shared_ptr<ast::Expression>> left =
-      tryParseExpression(view);
+      tryParseOperatorFeedingExpression(view);
 
   if (left) {
     view = view.subspan((*left)->getTokens());
@@ -54,7 +55,7 @@ tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
     if (kind) {
       view = view.subspan(1);
       std::optional<std::shared_ptr<ast::Expression>> right =
-          tryParseExpression(view);
+          tryParseOperatorFeedingExpression(view);
 
       if (right) {
         llvm::errs() << "tryParseArithmeticOrLogicalExpresion: success"
@@ -75,3 +76,5 @@ tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
 }
 
 } // namespace rust_compiler::parser
+
+// FIXME limit scope of left right expressions
