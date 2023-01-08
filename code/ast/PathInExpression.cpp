@@ -16,4 +16,5 @@ size_t PathInExpression::getTokens() {
 
   return count;
 }
+
 } // namespace rust_compiler::ast

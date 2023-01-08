@@ -3,6 +3,10 @@
 namespace rust_compiler::ast {
 
 size_t LiteralExpression::getTokens() {
+
+  if (kind == LiteralExpressionKind::IntegerLiteral)
+    return 1;
+
   assert(false);
 
   return 1;

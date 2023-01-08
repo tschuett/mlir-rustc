@@ -9,7 +9,7 @@ public:
   PathExpression(rust_compiler::Location loc)
       : ExpressionWithoutBlock(loc) {}
 
-  size_t getTokens() override;
+  //  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

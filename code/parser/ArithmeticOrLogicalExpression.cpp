@@ -4,31 +4,34 @@
 #include "AST/Expression.h"
 #include "OperatorFeeding.h"
 
-#include <llvm/Support/raw_ostream.h>
 #include <memory>
 
 using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
-static const std::pair<TokenKind, ArithmeticOrLogicalExpressionKind>
-    operators[] = {
-        {TokenKind::Plus, ArithmeticOrLogicalExpressionKind::Addition},
-        {TokenKind::Minus, ArithmeticOrLogicalExpressionKind::Subtraction},
-        {TokenKind::Star, ArithmeticOrLogicalExpressionKind::Multiplication},
-        {TokenKind::Slash, ArithmeticOrLogicalExpressionKind::Division},
-        {TokenKind::Percent, ArithmeticOrLogicalExpressionKind::Remainder},
-        {TokenKind::And, ArithmeticOrLogicalExpressionKind::BitwiseAnd},
-        {TokenKind::Or, ArithmeticOrLogicalExpressionKind::BitwiseOr},
-        {TokenKind::Caret, ArithmeticOrLogicalExpressionKind::BitwiseXor},
-        {TokenKind::Shl, ArithmeticOrLogicalExpressionKind::LeftShift},
-        {TokenKind::Shr, ArithmeticOrLogicalExpressionKind::RightShift}};
+static const std::pair<TokenKind, ArithmeticOrLogicalExpressionKind> ops[] = {
+    {TokenKind::Plus, ArithmeticOrLogicalExpressionKind::Addition},
+    {TokenKind::Minus, ArithmeticOrLogicalExpressionKind::Subtraction},
+    {TokenKind::Star, ArithmeticOrLogicalExpressionKind::Multiplication},
+    {TokenKind::Slash, ArithmeticOrLogicalExpressionKind::Division},
+    {TokenKind::Percent, ArithmeticOrLogicalExpressionKind::Remainder},
+    {TokenKind::And, ArithmeticOrLogicalExpressionKind::BitwiseAnd},
+    {TokenKind::Or, ArithmeticOrLogicalExpressionKind::BitwiseOr},
+    {TokenKind::Caret, ArithmeticOrLogicalExpressionKind::BitwiseXor},
+    {TokenKind::Shl, ArithmeticOrLogicalExpressionKind::LeftShift},
+    {TokenKind::Shr, ArithmeticOrLogicalExpressionKind::RightShift}};
 
 std::optional<ArithmeticOrLogicalExpressionKind>
 tryParserOperator(std::span<lexer::Token> tokens) {
+  if (tokens.empty())
+    return std::nullopt;
+
   TokenKind front = tokens.front().getKind();
 
-  for (auto &tok : operators) {
+  std::string Token2String(TokenKind kind);
+
+  for (auto &tok : ops) {
     if (front == std::get<0>(tok))
       return std::get<1>(tok);
   }
@@ -40,9 +43,6 @@ std::optional<std::shared_ptr<ast::Expression>>
 tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
-  llvm::errs() << "tryParseArithmeticOrLogicalExpresion"
-               << "\n";
-
   std::optional<std::shared_ptr<ast::Expression>> left =
       tryParseOperatorFeedingExpression(view);
 
@@ -52,15 +52,13 @@ tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
     // find Operator
     std::optional<ArithmeticOrLogicalExpressionKind> kind =
         tryParserOperator(view);
+
     if (kind) {
       view = view.subspan(1);
       std::optional<std::shared_ptr<ast::Expression>> right =
           tryParseOperatorFeedingExpression(view);
 
       if (right) {
-        llvm::errs() << "tryParseArithmeticOrLogicalExpresion: success"
-                     << "\n";
-
         return std::static_pointer_cast<ast::Expression>(
             std::make_shared<ArithmeticOrLogicalExpression>(
                 tokens.front().getLocation(), *kind, *left, *right));
@@ -68,9 +66,6 @@ tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
     }
   }
   // FIXME
-
-  llvm::errs() << "tryParseArithmeticOrLogicalExpresion: failed"
-               << "\n";
 
   return std::nullopt;
 }

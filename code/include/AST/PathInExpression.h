@@ -7,7 +7,7 @@ namespace rust_compiler::ast {
 
 class PathInExpression : public PathExpression {
   std::vector<PathExprSegment> segs;
-  uint32_t doubleColons;
+  uint32_t doubleColons = 0;
 
 public:
   PathInExpression(Location loc) : PathExpression(loc) {}
