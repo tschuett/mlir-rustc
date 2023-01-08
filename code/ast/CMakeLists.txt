@@ -21,6 +21,7 @@ add_library(ast
            GenericArgs.cpp
            PathInExpression.cpp
            PathExprSegment.cpp
+           PathExpression.cpp
            )
 
 
