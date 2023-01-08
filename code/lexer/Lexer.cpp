@@ -375,7 +375,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
     if (id) {
       if (isKeyWord(*id)) {
         ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                        TokenKind::Keyword, *id));
+                        *isKeyWord(*id), *id));
         code.remove_prefix(id->size());
         columnNumber += id->size();
         continue;

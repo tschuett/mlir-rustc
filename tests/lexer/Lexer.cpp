@@ -1,5 +1,6 @@
 #include "Lexer/Lexer.h"
 
+#include "Lexer/KeyWords.h"
 #include "gtest/gtest.h"
 
 using namespace rust_compiler::lexer;
@@ -27,7 +28,6 @@ TEST(LexerTest, CheckUse) {
   EXPECT_EQ(ts.getLength(), expectedLendth);
 };
 
-
 TEST(LexerTest, CheckInteger) {
   std::string text = "128";
 
@@ -38,9 +38,7 @@ TEST(LexerTest, CheckInteger) {
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
   EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecIntegerLiteral);
-
 };
-
 
 TEST(LexerTest, CheckDecInteger) {
   std::string text = "1";
@@ -52,9 +50,7 @@ TEST(LexerTest, CheckDecInteger) {
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
   EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecIntegerLiteral);
-
 };
-
 
 TEST(LexerTest, CheckDollarCrate) {
   std::string text = "$crate";
@@ -65,6 +61,23 @@ TEST(LexerTest, CheckDollarCrate) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  //EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecIntegerLiteral);
+  // EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecIntegerLiteral);
+};
 
+TEST(LexerTest, CheckKeyword) {
+  std::string text = "return";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  size_t expectedLendth = 1;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  if (KeyWord2String(ts.getAsView().front().getKeyWordKind())) {
+    printf("keyword: %s\n",
+           (*KeyWord2String(ts.getAsView().front().getKeyWordKind())).c_str());
+  }
+
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::Keyword);
+  EXPECT_EQ(ts.getAsView().front().getKeyWordKind(), KeyWordKind::KW_RETURN);
 };

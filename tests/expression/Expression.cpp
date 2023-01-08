@@ -1,8 +1,8 @@
 #include "AST/FunctionParameter.h"
 #include "AST/ReturnExpression.h"
 #include "BlockExpression.h"
-#include "FunctionParameters.h"
 #include "FunctionParameter.h"
+#include "FunctionParameters.h"
 #include "Lexer/Lexer.h"
 #include "LiteralExpression.h"
 #include "PathInExpression.h"
@@ -20,6 +20,10 @@ TEST(ExpressionTest, CheckReturnExpr) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  size_t expectedLendth = 4;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ret =
       tryParseReturnExpression(ts.getAsView());
 
@@ -32,6 +36,10 @@ TEST(ExpressionTest, CheckReturnExpr1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  size_t expectedLendth = 2;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ret =
       tryParseReturnExpression(ts.getAsView());
 
@@ -43,6 +51,10 @@ TEST(ExpressionTest, CheckReturnExpr2) {
   std::string text = "return";
 
   TokenStream ts = lex(text, "lib.rs");
+
+  size_t expectedLendth = 1;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ret =
       tryParseReturnExpression(ts.getAsView());
