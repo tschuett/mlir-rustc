@@ -68,7 +68,7 @@ tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
   }
   // FIXME
 
-  llvm::errs() << "tryParseArithmeticOrLogicalExpresion: failedq"
+  llvm::errs() << "tryParseArithmeticOrLogicalExpresion: failed"
                << "\n";
 
   return std::nullopt;
