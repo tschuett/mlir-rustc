@@ -29,6 +29,9 @@ add_library(parser
            PathInExpression.cpp
            QualifiedPathInExpression.cpp
            FunctionParameter.cpp
+           PathExprSegment.cpp
+           GenericArgs.cpp
+           PathIdentSegment.cpp
            )
 
 
@@ -37,4 +40,4 @@ target_include_directories(parser PRIVATE  ../include)
 
 target_link_libraries(parser ast)
 
-target_precompile_headers(parser PRIVATE Modules.h Visibility.h Attributes.h Item.h Function.h UseDeclaration.h SimplePath.h Util.h Type.h FunctionParameters.h WhereClause.h Generics.h Patterns.h BlockExpression.h WhereClause.h FunctionParameters.h IdentifierPattern.h PrimitiveType.h Statement.h ExpressionWithoutBlock.h ReturnExpression.h ExpressionStatement.h ExpressionWithBlock.h Expression.h OperatorExpression.h ArithmeticOrLogicalExpression.h LiteralExpression.h PathExpression.h PathInExpression.h QualifiedPathInExpression.h FunctionParameter.h)
+target_precompile_headers(parser PRIVATE Modules.h Visibility.h Attributes.h Item.h Function.h UseDeclaration.h SimplePath.h Util.h Type.h FunctionParameters.h WhereClause.h Generics.h Patterns.h BlockExpression.h WhereClause.h FunctionParameters.h IdentifierPattern.h PrimitiveType.h Statement.h ExpressionWithoutBlock.h ReturnExpression.h ExpressionStatement.h ExpressionWithBlock.h Expression.h OperatorExpression.h ArithmeticOrLogicalExpression.h LiteralExpression.h PathExpression.h PathInExpression.h QualifiedPathInExpression.h FunctionParameter.h PathExprSegment.h GenericArgs.h PathIdentSegment.h)

@@ -2,6 +2,7 @@
 
 #include "AST/Expression.h"
 #include "PathInExpression.h"
+#include "QualifiedPathInExpression.h"
 
 namespace rust_compiler::parser {
 

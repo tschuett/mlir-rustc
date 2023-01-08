@@ -11,6 +11,12 @@ std::optional<std::shared_ptr<ast::Expression>>
 tryParseExpressionWithoutBlock(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
+  std::optional<std::shared_ptr<ast::Expression>> path =
+      tryParsePathExpression(view);
+  if (path) {
+    return *path;
+  }
+
   std::optional<std::shared_ptr<ast::Expression>> lit =
       tryParseLiteralExpression(view);
   if (lit) {
@@ -19,7 +25,6 @@ tryParseExpressionWithoutBlock(std::span<lexer::Token> tokens) {
 
   std::optional<std::shared_ptr<ast::Expression>> op =
       tryParseOperatorExpression(view);
-
   if (op) {
     return *op;
   }
