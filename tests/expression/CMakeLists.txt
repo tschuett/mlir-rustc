@@ -3,6 +3,9 @@ include(GoogleTest)
 add_executable(ExpressionTests
         ExpressionTests.cpp
         Expression.cpp
+        ReturnExpressions.cpp
+        PathExpression.cpp
+        FunctionParameter.cpp
 )
 
 llvm_map_components_to_libnames(llvm_libs Support)
