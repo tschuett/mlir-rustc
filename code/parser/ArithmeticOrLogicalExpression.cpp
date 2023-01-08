@@ -3,6 +3,7 @@
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/Expression.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 
 using namespace rust_compiler::lexer;
@@ -38,6 +39,9 @@ std::optional<std::shared_ptr<ast::Expression>>
 tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
+  llvm::errs() << "tryParseArithmeticOrLogicalExpresion"
+               << "\n";
+
   std::optional<std::shared_ptr<ast::Expression>> left =
       tryParseExpression(view);
 
@@ -53,6 +57,9 @@ tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
           tryParseExpression(view);
 
       if (right) {
+        llvm::errs() << "tryParseArithmeticOrLogicalExpresion: success"
+                     << "\n";
+
         return std::static_pointer_cast<ast::Expression>(
             std::make_shared<ArithmeticOrLogicalExpression>(
                 tokens.front().getLocation(), *kind, *left, *right));
@@ -60,6 +67,10 @@ tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
     }
   }
   // FIXME
+
+  llvm::errs() << "tryParseArithmeticOrLogicalExpresion: failedq"
+               << "\n";
+
   return std::nullopt;
 }
 

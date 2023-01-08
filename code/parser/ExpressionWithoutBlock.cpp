@@ -3,6 +3,7 @@
 #include "AST/Expression.h"
 #include "LiteralExpression.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <optional>
 
 namespace rust_compiler::parser {
@@ -10,6 +11,9 @@ namespace rust_compiler::parser {
 std::optional<std::shared_ptr<ast::Expression>>
 tryParseExpressionWithoutBlock(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
+
+  llvm::errs() << "tryParseExpressionWithoutBlock"
+               << "\n";
 
   std::optional<std::shared_ptr<ast::Expression>> path =
       tryParsePathExpression(view);

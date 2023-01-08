@@ -4,4 +4,4 @@
 
 #include <span>
 
-void printTokenState(std::span<lexer::Token> tokens);
+void printTokenState(std::span<rust_compiler::lexer::Token> tokens);
