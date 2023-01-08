@@ -3,9 +3,11 @@
 namespace rust_compiler::ast {
 
 size_t ReturnExpression::getTokens() {
-  assert(false);
 
-  return 0;
+  if (expr)
+    return 1+ expr->getTokens();
+
+  return 1;
 }
 
 } // namespace rust_compiler::ast

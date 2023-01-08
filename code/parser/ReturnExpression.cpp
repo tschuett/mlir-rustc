@@ -26,6 +26,10 @@ tryParseReturnExpression(std::span<Token> tokens) {
       auto foo = std::make_shared<ReturnExpression>(
           tokens.front().getLocation(), *expr);
       return std::static_pointer_cast<Expression>(foo);
+    } else {
+      auto foo = std::make_shared<ReturnExpression>(
+          tokens.front().getLocation());
+      return std::static_pointer_cast<Expression>(foo);
     }
   }
 
