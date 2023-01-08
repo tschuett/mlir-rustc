@@ -12,15 +12,15 @@ namespace rust_compiler::parser {
 static const std::pair<TokenKind, ArithmeticOrLogicalExpressionKind>
     operators[] = {
         {TokenKind::Plus, ArithmeticOrLogicalExpressionKind::Addition},
-        {TokenKind::Minus, ArithmeticOrLogicalExpressionKind::Addition},
-        {TokenKind::Star, ArithmeticOrLogicalExpressionKind::Addition},
-        {TokenKind::Slash, ArithmeticOrLogicalExpressionKind::Addition},
-        {TokenKind::Percent, ArithmeticOrLogicalExpressionKind::Addition},
-        {TokenKind::And, ArithmeticOrLogicalExpressionKind::Addition},
-        {TokenKind::Or, ArithmeticOrLogicalExpressionKind::Addition},
-        {TokenKind::Caret, ArithmeticOrLogicalExpressionKind::Addition},
-        {TokenKind::Shl, ArithmeticOrLogicalExpressionKind::Addition},
-        {TokenKind::Shr, ArithmeticOrLogicalExpressionKind::Addition}};
+        {TokenKind::Minus, ArithmeticOrLogicalExpressionKind::Subtraction},
+        {TokenKind::Star, ArithmeticOrLogicalExpressionKind::Multiplication},
+        {TokenKind::Slash, ArithmeticOrLogicalExpressionKind::Division},
+        {TokenKind::Percent, ArithmeticOrLogicalExpressionKind::Remainder},
+        {TokenKind::And, ArithmeticOrLogicalExpressionKind::BitwiseAnd},
+        {TokenKind::Or, ArithmeticOrLogicalExpressionKind::BitwiseOr},
+        {TokenKind::Caret, ArithmeticOrLogicalExpressionKind::BitwiseXor},
+        {TokenKind::Shl, ArithmeticOrLogicalExpressionKind::LeftShift},
+        {TokenKind::Shr, ArithmeticOrLogicalExpressionKind::RightShift}};
 
 std::optional<ArithmeticOrLogicalExpressionKind>
 tryParserOperator(std::span<lexer::Token> tokens) {

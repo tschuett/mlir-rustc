@@ -21,6 +21,7 @@ tryParsePathInExpression(std::span<lexer::Token> tokens) {
 
   if (view.front().getKind() == TokenKind::DoubleColon) {
     view = view.subspan(1);
+    pathExpr.addDoubleColon();
   }
 
   std::optional<PathExprSegment> seg = tryPathExprSegment(view);
@@ -33,6 +34,7 @@ tryParsePathInExpression(std::span<lexer::Token> tokens) {
 
   while (view.size() > 1) {
     if (view.front().getKind() == TokenKind::DoubleColon) {
+      pathExpr.addDoubleColon();
       view = view.subspan(1);
       std::optional<PathExprSegment> seg = tryPathExprSegment(view);
       if (seg) {

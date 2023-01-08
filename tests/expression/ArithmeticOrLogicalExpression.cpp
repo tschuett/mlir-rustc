@@ -2,6 +2,7 @@
 
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "Lexer/Lexer.h"
+#include "Util.h"
 #include "gtest/gtest.h"
 
 using namespace rust_compiler::lexer;
@@ -13,6 +14,8 @@ TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple) {
   std::string text = "128 + 64";
 
   TokenStream ts = lex(text, "lib.rs");
+
+  printTokenState(ts.getAsView());
 
   size_t expectedLendth = 3;
 
@@ -37,7 +40,6 @@ TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple2) {
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> arith =
       tryParseArithmeticOrLogicalExpresion(ts.getAsView());
 
-
   EXPECT_TRUE(arith.has_value());
 };
 
@@ -53,7 +55,6 @@ TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple3) {
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> arith =
       tryParseArithmeticOrLogicalExpresion(ts.getAsView());
-
 
   EXPECT_TRUE(arith.has_value());
 };
