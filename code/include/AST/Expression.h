@@ -12,7 +12,7 @@ enum class ExpressionKind { ExpressionWithBlock, ExpressionWithoutBlock };
 class Expression : public Node {
 public:
   Expression(rust_compiler::Location loc, ExpressionKind expressionKind)
-      : loc(loc), expressionKind(expressionKind) {}
+    : Node(loc), loc(loc), expressionKind(expressionKind) {}
 
   ExpressionKind getExpressionKind() const { return expressionKind; }
 

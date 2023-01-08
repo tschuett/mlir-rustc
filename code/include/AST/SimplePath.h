@@ -13,6 +13,7 @@ class SimplePath : public Node {
   bool withDoubleColon = false;
 
 public:
+  explicit SimplePath(Location loc) : Node(loc) {}
   void setWithDoubleColon();
   void addPathSegment(SimplePathSegment &seg);
 

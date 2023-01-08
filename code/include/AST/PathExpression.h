@@ -4,10 +4,12 @@
 
 namespace rust_compiler::ast {
 
-class PathExpression : public Expression {};
+class PathExpression : public ExpressionWithoutBlock {
+public:
+  PathExpression(rust_compiler::Location loc)
+      : ExpressionWithoutBlock(loc) {}
 
-class PathInExpression : public PathExpression {};
-
-class QualifiedPathInExpression : public PathExpression {};
+  size_t getTokens() override;
+};
 
 } // namespace rust_compiler::ast

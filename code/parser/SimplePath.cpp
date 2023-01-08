@@ -15,7 +15,7 @@ tryParseSimplePathSegment(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   if (view.front().isIdentifier()) {
-    return ast::SimplePathSegment(view.front().getIdentifier());
+    return ast::SimplePathSegment(view.front().getLocation(), view.front().getIdentifier());
   }
 
   return std::nullopt;
@@ -23,7 +23,7 @@ tryParseSimplePathSegment(std::span<Token> tokens) {
 
 std::optional<ast::SimplePath> tryParseSimplePath(std::span<Token> tokens) {
   std::span<Token> view = tokens;
-  ast::SimplePath simplePath;
+  ast::SimplePath simplePath{view.front().getLocation()};
 
   //printf("tryParseSimplePath\n");
   //printTokenState(view);

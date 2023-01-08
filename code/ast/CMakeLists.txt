@@ -18,6 +18,9 @@ add_library(ast
            ReturnExpression.cpp
            ExpressionStatement.cpp
            LiteralExpression.cpp
+           GenericArgs.cpp
+           PathInExpression.cpp
+           PathExprSegment.cpp
            )
 
 

@@ -1,13 +1,11 @@
 #pragma once
 
-#include "AST/AST.h"
+#include "AST/PathExpression.h"
 
 namespace rust_compiler::ast {
 
-class WhereClause : public Node {
+class QualifiedPathInExpression : public PathExpression {
 public:
-  explicit WhereClause(Location loc) : Node(loc){};
-
   size_t getTokens() override;
 };
 

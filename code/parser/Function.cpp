@@ -18,7 +18,7 @@ namespace rust_compiler::parser {
 std::optional<ast::FunctionQualifiers>
 tryParseFunctionQualifiers(std::span<lexer::Token> tokens) {
   std::span<Token> view = tokens;
-  FunctionQualifiers qual;
+  FunctionQualifiers qual{view.front().getLocation()};
 
   printf("tryParseFunctionQualifiers: start\n");
 
@@ -61,7 +61,7 @@ tryParseFunctionReturnType(std::span<lexer::Token> tokens) {
 std::optional<ast::FunctionSignature>
 tryParseFunctionSignature(std::span<lexer::Token> tokens) {
   std::span<Token> view = tokens;
-  FunctionSignature sig;
+  FunctionSignature sig{view.front().getLocation()};
 
   printf("tryParseFunctionSignature: start\n");
 

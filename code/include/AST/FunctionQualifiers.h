@@ -19,7 +19,7 @@ class FunctionQualifiers : public Node {
   bool isExtern = false;
 
 public:
-  FunctionQualifiers() = default;
+  FunctionQualifiers(Location loc) : Node(loc){};
 
   FunctionQualifierKind getKind() const { return kind; }
 

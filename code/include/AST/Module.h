@@ -15,14 +15,17 @@ namespace rust_compiler::ast {
 enum class ModuleKind { Module, ModuleTree };
 
 class Module : public Item {
+  Visibility vis;
   ModuleKind kind;
   std::string path;
   std::vector<std::shared_ptr<Item>> items;
   std::vector<std::shared_ptr<Function>> funs;
-  Visibility vis = VisibilityKind::Private;
+
 public:
-  Module(rust_compiler::Location location, ModuleKind kind, std::string_view path)
-      : Item(location), kind(kind), path(path){};
+  Module(rust_compiler::Location loc, ModuleKind kind,
+         std::string_view path)
+      : Item(loc), vis(loc, VisibilityKind::Private), kind(kind),
+        path(path){};
 
   void setVisibility(Visibility vis);
 

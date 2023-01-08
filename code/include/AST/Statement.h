@@ -16,7 +16,8 @@ class Statement : public Node {
   StatementKind kind;
 
 public:
-  explicit Statement(rust_compiler::Location location) : location(location) {}
+  explicit Statement(rust_compiler::Location location)
+      : Node(location), location(location) {}
 
   StatementKind getKind() const { return kind; }
 

@@ -1,14 +1,14 @@
 #pragma once
 
-#include "AST/Statement.h"
+#include "AST/AST.h"
 #include "Location.h"
 
 namespace rust_compiler::ast {
 
-class Item : public Statement {
+class Item : public Node {
 
 public:
-  explicit Item(rust_compiler::Location location) : Statement{location} {}
+  explicit Item(rust_compiler::Location location) : Node{location} {}
 };
 
 } // namespace rust_compiler::ast

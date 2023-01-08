@@ -21,10 +21,10 @@ class Visibility : public Node {
   SimplePath simplePath;
 
 public:
-  Visibility(VisibilityKind kind) : kind(kind) {}
+  Visibility(Location loc, VisibilityKind kind) : Node(loc), kind(kind), simplePath(loc) {}
 
-  Visibility(SimplePath simplePath)
-      : kind(VisibilityKind::PublicIn), simplePath(simplePath) {}
+  Visibility(Location loc, SimplePath simplePath)
+    : Node(loc), kind(VisibilityKind::PublicIn), simplePath(simplePath) {}
 
   size_t getTokens() override;
 };

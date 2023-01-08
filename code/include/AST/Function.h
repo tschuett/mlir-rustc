@@ -1,9 +1,9 @@
 #pragma once
 
-#include "AST/Item.h"
 #include "AST/BlockExpression.h"
 #include "AST/FunctionQualifiers.h"
 #include "AST/FunctionSignature.h"
+#include "AST/Item.h"
 
 namespace rust_compiler::ast {
 
@@ -15,7 +15,7 @@ class Function : public Item {
   FunctionQualifiers qualifiers;
 
 public:
-  Function(Location loc) : Item(loc) {}
+  Function(Location loc) : Item(loc), signature(loc), qualifiers(loc) {}
 
   FunctionSignature getSignature() const;
   Location getLocation() const;
@@ -31,6 +31,5 @@ public:
 };
 
 } // namespace rust_compiler::ast
-
 
 // BlockExpression

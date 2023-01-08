@@ -12,7 +12,8 @@ class SimplePathSegment : public Node {
   std::string segment;
 
 public:
-  SimplePathSegment(std::string_view segment) : segment(segment){};
+  SimplePathSegment(Location loc, std::string_view segment)
+      : Node(loc), segment(segment){};
 
   size_t getTokens() override;
 
