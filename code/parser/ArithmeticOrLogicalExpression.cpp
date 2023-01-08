@@ -1,20 +1,34 @@
 #include "ArithmeticOrLogicalExpression.h"
 
+#include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/Expression.h"
+
+#include <memory>
+
 using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
-static const TokenKind operators[] = {
-    TokenKind::Plus,    TokenKind::Minus, TokenKind::Star, TokenKind::Slash,
-    TokenKind::Percent, TokenKind::And,   TokenKind::Or,   TokenKind::Caret,
-    TokenKind::Shl,     TokenKind::Shr};
+static const std::pair<TokenKind, ArithmeticOrLogicalExpressionKind>
+    operators[] = {
+        {TokenKind::Plus, ArithmeticOrLogicalExpressionKind::Addition},
+        {TokenKind::Minus, ArithmeticOrLogicalExpressionKind::Addition},
+        {TokenKind::Star, ArithmeticOrLogicalExpressionKind::Addition},
+        {TokenKind::Slash, ArithmeticOrLogicalExpressionKind::Addition},
+        {TokenKind::Percent, ArithmeticOrLogicalExpressionKind::Addition},
+        {TokenKind::And, ArithmeticOrLogicalExpressionKind::Addition},
+        {TokenKind::Or, ArithmeticOrLogicalExpressionKind::Addition},
+        {TokenKind::Caret, ArithmeticOrLogicalExpressionKind::Addition},
+        {TokenKind::Shl, ArithmeticOrLogicalExpressionKind::Addition},
+        {TokenKind::Shr, ArithmeticOrLogicalExpressionKind::Addition}};
 
-std::optional<Token> tryParserOperator(std::span<lexer::Token> tokens) {
+std::optional<ArithmeticOrLogicalExpressionKind>
+tryParserOperator(std::span<lexer::Token> tokens) {
   TokenKind front = tokens.front().getKind();
 
-  for (TokenKind tok : operators) {
-    if (front == tok)
-      return tokens.front();
+  for (auto &tok : operators) {
+    if (front == std::get<0>(tok))
+      return std::get<1>(tok);
   }
 
   return std::nullopt;
@@ -31,13 +45,17 @@ tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
     view = view.subspan((*left)->getTokens());
 
     // find Operator
-    std::optional<Token> op = tryParserOperator(view);
-    if (op) {
+    std::optional<ArithmeticOrLogicalExpressionKind> kind =
+        tryParserOperator(view);
+    if (kind) {
       view = view.subspan(1);
       std::optional<std::shared_ptr<ast::Expression>> right =
           tryParseExpression(view);
 
       if (right) {
+        return std::static_pointer_cast<ast::Expression>(
+            std::make_shared<ArithmeticOrLogicalExpression>(
+                tokens.front().getLocation(), *kind, *left, *right));
       }
     }
   }

@@ -7,6 +7,7 @@ add_executable(ExpressionTests
         PathExpression.cpp
         FunctionParameter.cpp
         OperatorExpression.cpp
+        ArithmeticOrLogicalExpression.cpp
 )
 
 llvm_map_components_to_libnames(llvm_libs Support)

@@ -26,21 +26,21 @@ class ArithmeticOrLogicalExpression : public OperatorExpression {
   std::shared_ptr<Expression> right;
 
 public:
- ArithmeticOrLogicalExpression(rust_compiler::Location loc,
+  ArithmeticOrLogicalExpression(rust_compiler::Location loc,
                                 ArithmeticOrLogicalExpressionKind kind,
                                 std::shared_ptr<Expression> left,
                                 std::shared_ptr<Expression> right)
-   : OperatorExpression(loc), kind(kind),
-        left(left), right(right) {}
+      : OperatorExpression(loc), kind(kind), left(left), right(right) {}
 
-  ArithmeticOrLogicalExpressionKind getKind() const {
-    return kind; }
+  ArithmeticOrLogicalExpressionKind getKind() const { return kind; }
 
-  std::shared_ptr<Expression> getRHS() const {
-    return right; };
+  std::shared_ptr<Expression> getRHS() const { return right; };
 
-  std::shared_ptr<Expression> getLHS() const {
-    return left; };
+  std::shared_ptr<Expression> getLHS() const { return left; };
+
+  size_t getTokens() override {
+    return left->getTokens() + 1 + right->getTokens();
+  }
 };
 
 } // namespace rust_compiler::ast
