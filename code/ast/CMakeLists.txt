@@ -24,6 +24,7 @@ add_library(ast
            PathExpression.cpp
            Statements.cpp
            FunctionParameter.cpp
+           IdentifierPattern.cpp
            )
 
 
