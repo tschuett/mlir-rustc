@@ -8,7 +8,8 @@
 namespace rust_compiler::ast {
 
 class NegationExpression : public OperatorExpression {
-
+  bool notToken = false;
+  bool minusToken = false;
   std::shared_ptr<Expression> right;
 
 public:
