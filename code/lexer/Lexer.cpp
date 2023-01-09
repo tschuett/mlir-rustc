@@ -188,7 +188,7 @@ std::optional<std::string> tryLexIdentifier(std::string_view code) {
       if (id.size() > 0)
         return id;
       else {
-        printf("unknown identifier token: x%sx\n", code.data());
+        //printf("unknown identifier token: x%sx\n", code.data());
         return std::nullopt;
       }
     }
@@ -519,7 +519,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       columnNumber += 1;
     } else if (code.starts_with(";")) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::SemiColon));
+                      TokenKind::Semi));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("|")) {

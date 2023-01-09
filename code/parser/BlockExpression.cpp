@@ -21,6 +21,10 @@ tryParseBlockExpression(std::span<lexer::Token> tokens) {
 
   view = view.subspan(1);
 
+  if (view.front().getKind() == TokenKind::BraceClose) {
+    return std::make_shared<ast::BlockExpression>(block);
+  }
+
   std::optional<std::shared_ptr<ast::Statements>> stmts =
       tryParseStatements(view);
   if (stmts) {

@@ -8,8 +8,8 @@
 namespace rust_compiler::ast {
 
 class IdentifierPattern : public PatternWithoutRange {
-  bool ref;
-  bool mut;
+  bool ref = false;
+  bool mut = false;
   std::string identifier;
 
 public:

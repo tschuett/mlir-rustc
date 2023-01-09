@@ -2,6 +2,8 @@
 
 #include "Lexer/Token.h"
 
+#include "AST/Item.h"
+
 #include <optional>
 #include <span>
 #include <string_view>

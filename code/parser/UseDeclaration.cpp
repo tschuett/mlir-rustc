@@ -83,7 +83,7 @@ tryParseUseTree(std::span<Token> tokens) {
 
   // First line
   if (view.front().getKind() == TokenKind::Star &&
-      view[1].getKind() == TokenKind::SemiColon) {
+      view[1].getKind() == TokenKind::Semi) {
     // * ;
     std::shared_ptr<UseTree> star = std::static_pointer_cast<UseTree>(
         std::make_shared<Star>(view.front().getLocation()));
@@ -92,7 +92,7 @@ tryParseUseTree(std::span<Token> tokens) {
 
   if (view.front().getKind() == TokenKind::DoubleColon &&
       view[1].getKind() == TokenKind::Star &&
-      view[2].getKind() == TokenKind::SemiColon) {
+      view[2].getKind() == TokenKind::Semi) {
     // :: * ;
     std::shared_ptr<UseTree> star = std::static_pointer_cast<UseTree>(
         std::make_shared<DoubleColonStar>(view.front().getLocation()));
@@ -124,7 +124,7 @@ tryParseUseTree(std::span<Token> tokens) {
 
     if (view[0].getKind() == TokenKind::DoubleColon &&
         view[1].getKind() == TokenKind::Star &&
-        view[2].getKind() == TokenKind::SemiColon) {
+        view[2].getKind() == TokenKind::Semi) {
       // SimplePath :: * ;
     }
 
@@ -143,7 +143,7 @@ tryParseUseTree(std::span<Token> tokens) {
     }
 
     // Third line
-    if (view[0].getKind() == TokenKind::SemiColon) {
+    if (view[0].getKind() == TokenKind::Semi) {
       // SimplePath ;
       SimplePathNode node{view.front().getLocation()};
       node.setSimplePath(*simplePath);
@@ -154,7 +154,7 @@ tryParseUseTree(std::span<Token> tokens) {
 
     // Rebinding
     if (view.front().isIdentifier() && view[1].isAs() &&
-        view[2].isIdentifier() && view[3].getKind() == TokenKind::SemiColon) {
+        view[2].isIdentifier() && view[3].getKind() == TokenKind::Semi) {
       // SimplePath as Id or _ ;
     }
 

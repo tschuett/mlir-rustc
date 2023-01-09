@@ -39,6 +39,7 @@ add_library(parser
            SelfParam.cpp
            ShorthandSelf.cpp
            TypedSelf.cpp
+           NegationExpression.cpp
            )
 
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AST/AST.h"
+
 // https://doc.rust-lang.org/reference/types.html
 
 namespace rust_compiler::ast::types {
@@ -16,7 +18,9 @@ namespace rust_compiler::ast::types {
 
 // trait types
 
-class Type {};
-
+class Type : public Node {
+public:
+  Type(Location loc) : Node(loc) {}
+};
 
 } // namespace rust_compiler::ast::types

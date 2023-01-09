@@ -6,6 +6,7 @@
 #include "Lexer/Token.h"
 #include "Util.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 
 using namespace rust_compiler::lexer;
@@ -17,16 +18,29 @@ std::optional<std::shared_ptr<ast::Expression>>
 tryParseReturnExpression(std::span<Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
-  printTokenState(view);
+  llvm::errs() << "tryParseReturnExpression"
+               << "\n";
+
+  // printTokenState(view);
+
+  if (not view.front().isKeyWord())
+    return std::nullopt;
+
+  if (view.front().isKeyWord() and
+      view.front().getKeyWordKind() != KeyWordKind::KW_RETURN)
+    return std::nullopt;
 
   if (view.front().isKeyWord() and
       view.front().getKeyWordKind() == KeyWordKind::KW_RETURN) {
     view = view.subspan(1);
 
-    printf("tryParseReturnExpression: found return\n");
+    llvm::errs() << "tryParseReturnExpression: found return"
+                 << "\n";
 
     std::optional<std::shared_ptr<ast::Expression>> expr =
         tryParseExpression(view);
+
+    llvm::errs() << "tryParseReturnExpression: " << expr.has_value() << "\n";
 
     if (expr) {
       auto foo = std::make_shared<ReturnExpression>(

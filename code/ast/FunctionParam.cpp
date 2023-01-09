@@ -13,10 +13,7 @@ void FunctionParam::setType(std::shared_ptr<ast::types::Type> _type) {
 }
 
 size_t FunctionParam::getTokens() {
-  assert(false);
-
-  return 0;
+  return name->getTokens() + 1 + type->getTokens();
 }
 
 } // namespace rust_compiler::ast
-

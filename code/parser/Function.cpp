@@ -159,7 +159,7 @@ std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
     return std::nullopt;
   }
 
-  if (view.front().getKind() == TokenKind::SemiColon) {
+  if (view.front().getKind() == TokenKind::Semi) {
     return f;
   }
 

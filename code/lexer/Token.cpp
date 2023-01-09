@@ -75,7 +75,7 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::ParenClose: {
     return std::string(")");
   }
-  case TokenKind::SemiColon: {
+  case TokenKind::Semi: {
     return std::string(";");
   }
   case TokenKind::BraceOpen: {

@@ -82,7 +82,7 @@ std::optional<ast::Module> tryParseModule(std::span<Token> tokens,
   if (view.front().getKind() == TokenKind::Keyword &&
       view.front().getIdentifier() == "mod") {
     if (view[1].getKind() == TokenKind::Identifier) {
-      if (view[2].getKind() == TokenKind::SemiColon) {
+      if (view[2].getKind() == TokenKind::Semi) {
         std::stringstream s;
         s << modulePath << std::string("::") << view[1].getIdentifier();
         // printf("found module: %s\n", s.str().c_str());

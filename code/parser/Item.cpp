@@ -55,7 +55,7 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
   if (view.front().getKind() == TokenKind::Keyword &&
       view.front().getIdentifier() == "mod") {
     if (view[1].getKind() == TokenKind::Identifier) {
-      if (view[2].getKind() == TokenKind::SemiColon) {
+      if (view[2].getKind() == TokenKind::Semi) {
         std::optional<Module> module = tryParseModule(view, modulePath);
         if (module) {
           Module mod = *module;

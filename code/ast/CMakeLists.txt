@@ -28,6 +28,7 @@ add_library(ast
            ShorthandSelf.cpp
            SelfParam.cpp
            TypedSelf.cpp
+           NegationExpression.cpp
            )
 
 

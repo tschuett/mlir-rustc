@@ -15,7 +15,7 @@ tryParseExpressionWithoutBlock(std::span<lexer::Token> tokens) {
   llvm::errs() << "tryParseExpressionWithoutBlock"
                << "\n";
 
-    std::optional<std::shared_ptr<ast::Expression>> ret =
+  std::optional<std::shared_ptr<ast::Expression>> ret =
       tryParseReturnExpression(view);
   if (ret) {
     return *ret;
@@ -26,11 +26,6 @@ tryParseExpressionWithoutBlock(std::span<lexer::Token> tokens) {
   if (lit) {
     return *lit;
   }
-  std::optional<std::shared_ptr<ast::Expression>> path =
-      tryParsePathExpression(view);
-  if (path) {
-    return *path;
-  }
 
   std::optional<std::shared_ptr<ast::Expression>> op =
       tryParseOperatorExpression(view);
@@ -38,6 +33,11 @@ tryParseExpressionWithoutBlock(std::span<lexer::Token> tokens) {
     return *op;
   }
 
+  std::optional<std::shared_ptr<ast::Expression>> path =
+      tryParsePathExpression(view);
+  if (path) {
+    return *path;
+  }
 
   // FIXME
 
@@ -45,6 +45,5 @@ tryParseExpressionWithoutBlock(std::span<lexer::Token> tokens) {
 }
 
 } // namespace rust_compiler::parser
-
 
 // FIXME not in correct order

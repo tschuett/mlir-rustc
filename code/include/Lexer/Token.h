@@ -45,7 +45,7 @@ enum class TokenKind {
   Identifier,
   ParenOpen,
   ParenClose,
-  SemiColon,
+  Semi,
   BraceOpen,
   BraceClose,
   //Amp,

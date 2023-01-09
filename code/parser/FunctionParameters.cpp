@@ -16,22 +16,29 @@ tryParseFunctionParameters(std::span<lexer::Token> tokens) {
   llvm::errs() << "tryParseFunctionParameters"
                << "\n";
 
-  std::optional<std::shared_ptr<ast::SelfParam>> self = tryParseSelfParam(view);
-  if (self) {
-    view = view.subspan((*self)->getTokens());
-    if (view.front().getKind() == lexer::TokenKind::Comma) {
-
-    } else {
-    }
-  }
+  //  std::optional<std::shared_ptr<ast::SelfParam>> self =
+  //  tryParseSelfParam(view); if (self) {
+  //    view = view.subspan((*self)->getTokens());
+  //    if (view.front().getKind() == lexer::TokenKind::Comma) {
+  //
+  //    } else {
+  //    }
+  //  }
 
   std::optional<ast::FunctionParam> param = tryParseFunctionParam(view);
+
+  llvm::errs() << "tryParseFunctionParameters: " << param.has_value() << "\n";
+
   if (param) {
     view = view.subspan((*param).getTokens());
     params.addFunctionParam(*param);
 
+    llvm::errs() << "tryParseFunctionParameters: found first"
+                 << "\n";
+
     while (view.size() > 3) {
       if (view.front().getKind() == lexer::TokenKind::Comma) {
+        view = view.subspan(1);
         std::optional<ast::FunctionParam> param = tryParseFunctionParam(view);
         if (param) {
           view = view.subspan((*param).getTokens());
