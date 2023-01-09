@@ -5,9 +5,15 @@
 namespace rust_compiler::ast {
 
 size_t NegationExpression::getTokens() {
+  size_t count = 0;
 
-  assert(false);
-  return 0;
+  if (minusToken)
+    ++count;
+
+  if (notToken)
+    ++count;
+
+  return count + right->getTokens();
 }
 
 void NegationExpression::setRight(std::shared_ptr<Expression> ri) {

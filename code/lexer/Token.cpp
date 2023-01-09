@@ -51,9 +51,6 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::Hash: {
     return std::string("#");
   }
-  case TokenKind::Exclaim: {
-    return std::string("!");
-  }
   case TokenKind::SquareOpen: {
     return std::string("[");
   }

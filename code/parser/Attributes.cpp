@@ -53,7 +53,7 @@ static std::optional<InnerAttribute>
 tryParseWarnAttribute(std::span<Token> tokens) {
   std::span<Token> view = tokens;
   if (view[0].getKind() == TokenKind::Hash and
-      view[1].getKind() == TokenKind::Exclaim and
+      view[1].getKind() == TokenKind::Not and
       view[2].getKind() == TokenKind::SquareOpen and
       view[3].getKind() == TokenKind::Identifier and
       view[3].getIdentifier() == "warn" and
@@ -67,7 +67,7 @@ static std::optional<InnerAttribute>
 tryParseDenyAttribute(std::span<Token> tokens) {
   std::span<Token> view = tokens;
   if (view[0].getKind() == TokenKind::Hash and
-      view[1].getKind() == TokenKind::Exclaim and
+      view[1].getKind() == TokenKind::Not and
       view[2].getKind() == TokenKind::SquareOpen and
       view[3].getKind() == TokenKind::Identifier and
       view[3].getIdentifier() == "deny" and
@@ -86,7 +86,7 @@ std::optional<InnerAttribute> tryParseInnerAttribute(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   if (not(view[0].getKind() == TokenKind::Hash and
-          view[1].getKind() == TokenKind::Exclaim and
+          view[1].getKind() == TokenKind::Not and
           view[2].getKind() == TokenKind::SquareOpen)) {
     return std::nullopt;
   } else if (view[3].getKind() == TokenKind::Identifier and
@@ -105,7 +105,7 @@ tryParseClippyAttribute(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   if (view.front().getKind() == TokenKind::Hash) {
-    if (view[1].getKind() == TokenKind::Exclaim) {
+    if (view[1].getKind() == TokenKind::Not) {
       if (view[2].getKind() == TokenKind::SquareOpen) {
         if (view[3].getKind() == TokenKind::Identifier) {
           if (view[3].getIdentifier() == "warn" or

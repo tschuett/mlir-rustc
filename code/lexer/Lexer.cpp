@@ -394,7 +394,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
 
     if (code.starts_with("!")) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::Exclaim));
+                      TokenKind::Not));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("->")) {
@@ -514,7 +514,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       columnNumber += 1;
     } else if (code.starts_with("!")) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::Exclaim));
+                      TokenKind::Not));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with(";")) {

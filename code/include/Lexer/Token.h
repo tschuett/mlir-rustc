@@ -38,7 +38,7 @@ enum class TokenKind {
   Dot,
   QMark,
   Hash,
-  Exclaim,
+  //Exclaim,
   SquareOpen,
   SquareClose,
   Comma,

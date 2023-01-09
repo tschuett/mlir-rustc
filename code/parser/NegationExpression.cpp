@@ -2,7 +2,9 @@
 
 #include "AST/Expression.h"
 #include "AST/NegationExpression.h"
+#include "Lexer/Token.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 
 using namespace rust_compiler::lexer;
@@ -14,10 +16,17 @@ tryParseNegationExpression(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
   Location loc = tokens.front().getLocation();
 
+  llvm::errs() << "tryParseNegationExpression: "
+               << Token2String(view.front().getKind()) << "\n";
+
   if (view.front().getKind() == TokenKind::Minus) {
+    view = view.subspan(1);
 
     std::optional<std::shared_ptr<ast::Expression>> expr =
         tryParseExpression(view);
+
+    llvm::errs() << "tryParseNegationExpression: " << expr.has_value() << "\n";
+
     if (expr) {
       NegationExpression neg = {loc};
       neg.setMinus();
@@ -26,12 +35,16 @@ tryParseNegationExpression(std::span<lexer::Token> tokens) {
       return std::static_pointer_cast<ast::Expression>(
           std::make_shared<NegationExpression>(neg));
     }
-  }
+  } else if (view.front().getKind() == TokenKind::Not) {
+    view = view.subspan(1);
 
-  if (view.front().getKind() == TokenKind::Not) {
+    llvm::errs() << "tryParseNegationExpression: Not"
+                 << "\n";
 
     std::optional<std::shared_ptr<ast::Expression>> expr =
         tryParseExpression(view);
+
+    llvm::errs() << "tryParseNegationExpression: " << expr.has_value() << "\n";
 
     if (expr) {
       NegationExpression neg = {loc};

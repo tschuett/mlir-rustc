@@ -19,7 +19,7 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
   printf("tryParseItem\n");
 
   if (view.front().getKind() == TokenKind::Hash) {
-    if (view[1].getKind() == TokenKind::Exclaim) {
+    if (view[1].getKind() == TokenKind::Not) {
       if (view[2].getKind() == TokenKind::SquareOpen) {
         if (view[3].getKind() == TokenKind::Identifier) {
           if (view[3].getIdentifier() == "warn" or
