@@ -22,9 +22,10 @@ tryParseStatement(std::span<lexer::Token> tokens) {
   if (expr) {
     view = view.subspan((*expr)->getTokens());
 
-    if (view.front().getKind() == TokenKind::Semi) {
+    //if (view.front().getKind() == TokenKind::Semi) {
+      ExpressionStatement stmt = {tokens.front().getLocation(), *expr};
       return std::make_shared<ExpressionStatement>(tokens.front().getLocation(), *expr);
-    }
+      //}
   }
 
   // FIXME

@@ -19,6 +19,8 @@ tryParseExpressionStatement(std::span<lexer::Token> tokens) {
     if (view.front().getKind() == lexer::TokenKind::Semi) {
       (*woBlock)->setHasTrailingSemi();
       return *woBlock;
+    } else {
+      return std::nullopt;
     }
   }
 
