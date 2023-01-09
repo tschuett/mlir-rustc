@@ -1,5 +1,7 @@
 #include "Util.h"
 
+#include <llvm/Support/raw_ostream.h>
+
 namespace rust_compiler::parser {
 
 void printTokenState(std::span<lexer::Token> tokens) {
@@ -7,7 +9,7 @@ void printTokenState(std::span<lexer::Token> tokens) {
   if (tokens.size() < 4)
     return;
 
-  printf("next token@%zu ", tokens.size());
+  llvm::errs() << "next token@%" << tokens.size() << "\n";
 
   if (tokens[0].isIdentifier()) {
     printf("%s ", tokens[0].getIdentifier().c_str());

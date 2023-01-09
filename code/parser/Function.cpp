@@ -116,7 +116,7 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
   } else {
     // FIXME
     printf("tryParseFunctionSignature: found no parameters\n");
-    return std::nullopt;
+    //return std::nullopt;
   }
 
   if (view.front().getKind() == TokenKind::ParenClose) {
@@ -172,6 +172,7 @@ std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
 
   printf("tryParseFunction: found function\n");
 
+  return f;
   return std::nullopt;
 }
 
