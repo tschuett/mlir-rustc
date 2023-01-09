@@ -1,6 +1,7 @@
 #pragma once
 
-#include "AST/FunctionParameter.h"
+#include "AST/FunctionParam.h"
+#include "AST/SelfParam.h"
 
 #include <memory>
 #include <vector>
@@ -9,10 +10,10 @@
 namespace rust_compiler::ast {
 
 class FunctionParameters {
-  std::vector<std::shared_ptr<FunctionParameter>> params;
+  std::vector<std::shared_ptr<FunctionParam>> params;
 
 public:
-  std::span<std::shared_ptr<FunctionParameter>> getParams() {
+  std::span<std::shared_ptr<FunctionParam>> getParams() {
     return params;
   }
 

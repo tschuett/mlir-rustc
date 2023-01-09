@@ -1,9 +1,34 @@
-#include "FunctionParameters.h"
+#include "AST/SelfParam.h"
+#include "FunctionParam.h"
+#include "SelfParam.h"
+
+#include <llvm/Support/raw_os_ostream.h>
+
+using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
 std::optional<ast::FunctionParameters>
 tryParseFunctionParameters(std::span<lexer::Token> tokens) {
+  std::span<lexer::Token> view = tokens;
+
+  llvm::errs() << "tryParseFunctionParameters"
+               << "\n";
+
+  std::optional<std::shared_ptr<ast::SelfParam>> self = tryParseSelfParam(view);
+  if (self) {
+    view = view.subspan((*self)->getTokens());
+    if (view.front().getKind() == lexer::TokenKind::Comma) {
+    }
+  }
+
+  std::optional<ast::FunctionParam> param = tryParseFunctionParam(view);
+  if (param) {
+    view = view.subspan((*param).getTokens());
+    if (view.front().getKind() == lexer::TokenKind::Comma) {
+    }
+  }
+
   // FIXME
   return std::nullopt;
 }

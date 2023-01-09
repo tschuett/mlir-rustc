@@ -1,4 +1,4 @@
-add_library(ast
+gadd_library(ast
            OuterAttribute.cpp
            Module.cpp
            InnerAttribute.cpp
@@ -23,7 +23,7 @@ add_library(ast
            PathExprSegment.cpp
            PathExpression.cpp
            Statements.cpp
-           FunctionParameter.cpp
+           FunctionParam.cpp
            IdentifierPattern.cpp
            )
 

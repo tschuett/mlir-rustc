@@ -8,12 +8,12 @@
 
 namespace rust_compiler::ast {
 
-class FunctionParameter : public Node {
+class FunctionParamPattern : public Node {
   std::shared_ptr<ast::types::Type> type;
   std::shared_ptr<ast::PatternNoTopAlt> name;
 
 public:
-  FunctionParameter(Location loc) : Node(loc) {}
+  FunctionParamPattern(Location loc) : Node(loc) {}
 
   void setName(std::shared_ptr<ast::PatternNoTopAlt> name);
 
