@@ -74,7 +74,7 @@ TEST(BlockExpressionTest, CheckBlockExpr5) {
 };
 
 
-TEST(BlockExpressionTest, CheckBlockExpr20) {
+TEST(BlockExpressionTest, CheckBlockExpr30) {
 
   std::string text = "{return left + right;}";
 

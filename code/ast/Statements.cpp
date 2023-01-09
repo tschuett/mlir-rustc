@@ -5,7 +5,10 @@ namespace rust_compiler::ast {
 size_t Statements::getTokens() {
   size_t count = 0;
 
-  for (auto& stmt: stmts)
+  if (onlySemi)
+    return 1;
+
+  for (auto &stmt : stmts)
     count += stmt->getTokens();
 
   if (trailing)

@@ -17,6 +17,8 @@ class Statements : public Node {
 
   std::shared_ptr<Expression> trailing;
 
+  bool onlySemi = false;
+
 public:
   Statements(Location loc) : Node(loc) {}
 
@@ -27,6 +29,8 @@ public:
 
   bool hasTrailing() { return (bool)trailing; }
   std::shared_ptr<Expression> getTrailing() { return trailing; }
+
+  void setOnlySemi() { onlySemi = true; };
 
   size_t getTokens() override;
 };

@@ -5,6 +5,7 @@
 #include "Statement.h"
 #include "Statements.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <optional>
 
 using namespace rust_compiler::lexer;
@@ -15,6 +16,9 @@ std::optional<std::shared_ptr<ast::BlockExpression>>
 tryParseBlockExpression(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
   BlockExpression block = {tokens.front().getLocation()};
+
+  llvm::errs() << "tryParseBlockExpression"
+               << "\n";
 
   if (view.front().getKind() != TokenKind::BraceOpen)
     return std::nullopt;
