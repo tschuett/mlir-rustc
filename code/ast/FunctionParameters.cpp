@@ -7,14 +7,16 @@ void FunctionParameters::addFunctionParam(ast::FunctionParam param) {
 }
 
 size_t FunctionParameters::getTokens() {
-  //  size_t count = 0;
-  //  for (auto &param : params) {
-  //    count += param->getCount();
-  //  }
-  //
-  assert(false);
+  size_t count = 0;
+  for (auto &param : params) {
+    count += param.getTokens();
+  }
 
-  return 0;
+  if (params.size() > 0) {
+    count += params.size() - 1;
+  }
+
+  return count;
 }
 
 } // namespace rust_compiler::ast

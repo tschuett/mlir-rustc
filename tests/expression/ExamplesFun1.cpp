@@ -25,10 +25,49 @@ TEST(ExamplesFun1Test, CheckFun5) {
   EXPECT_TRUE(fun.has_value());
 };
 
+TEST(ExamplesFun1Test, CheckFun4a) {
+
+  std::string text =
+      "fn add(left: usize) { }";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  std::optional<rust_compiler::ast::Function> fun =
+    tryParseFunction(ts.getAsView(), "");
+
+  EXPECT_TRUE(fun.has_value());
+};
+
 TEST(ExamplesFun1Test, CheckFun4) {
 
   std::string text =
       "fn add(left: usize, right: usize) { }";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  std::optional<rust_compiler::ast::Function> fun =
+    tryParseFunction(ts.getAsView(), "");
+
+  EXPECT_TRUE(fun.has_value());
+};
+
+TEST(ExamplesFun1Test, CheckFun3a) {
+
+  std::string text =
+      "fn add() -> usize { }";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  std::optional<rust_compiler::ast::Function> fun =
+    tryParseFunction(ts.getAsView(), "");
+
+  EXPECT_TRUE(fun.has_value());
+};
+
+TEST(ExamplesFun1Test, CheckFun3b) {
+
+  std::string text =
+      "fn add(right: usize) -> usize { }";
 
   TokenStream ts = lex(text, "lib.rs");
 

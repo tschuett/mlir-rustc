@@ -1,5 +1,6 @@
 #include "AST/SelfParam.h"
 #include "FunctionParam.h"
+#include "Lexer/Token.h"
 #include "SelfParam.h"
 
 #include <llvm/Support/raw_os_ostream.h>
@@ -16,7 +17,7 @@ tryParseFunctionParameters(std::span<lexer::Token> tokens) {
   llvm::errs() << "tryParseFunctionParameters"
                << "\n";
 
-  printTokenState(view);
+  //printTokenState(view);
 
   //  std::optional<std::shared_ptr<ast::SelfParam>> self =
   //  tryParseSelfParam(view); if (self) {
@@ -38,6 +39,9 @@ tryParseFunctionParameters(std::span<lexer::Token> tokens) {
     llvm::errs() << "tryParseFunctionParameters: found first"
                  << "\n";
 
+    if (view.front().getKind() == TokenKind::ParenClose) {
+      return params;
+    }
     while (view.size() > 3) {
       if (view.front().getKind() == lexer::TokenKind::Comma) {
         view = view.subspan(1);
