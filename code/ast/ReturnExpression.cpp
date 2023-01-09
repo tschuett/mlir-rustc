@@ -3,11 +3,15 @@
 namespace rust_compiler::ast {
 
 size_t ReturnExpression::getTokens() {
+  size_t count = 1;
 
   if (expr)
-    return 1+ expr->getTokens();
+    count += expr->getTokens();
 
-  return 1;
+  if (hasTrailingSemi)
+    ++count;
+
+  return count;
 }
 
 } // namespace rust_compiler::ast

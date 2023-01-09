@@ -33,6 +33,10 @@ tryParseBlockExpression(std::span<lexer::Token> tokens) {
       tryParseStatements(view);
   if (stmts) {
     view = view.subspan((*stmts)->getTokens());
+    if (view.front().getKind() == TokenKind::Semi) {
+      view = view.subspan(1);
+      block.setHasTrailingSemi();
+    }
     if (view.front().getKind() == TokenKind::BraceClose) {
       block.setStatements(*stmts);
       return std::make_shared<ast::BlockExpression>(block);

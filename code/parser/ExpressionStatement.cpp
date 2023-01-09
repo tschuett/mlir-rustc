@@ -2,6 +2,7 @@
 
 #include "ExpressionWithBlock.h"
 #include "ExpressionWithoutBlock.h"
+#include "Lexer/Token.h"
 
 namespace rust_compiler::parser {
 
@@ -13,7 +14,12 @@ tryParseExpressionStatement(std::span<lexer::Token> tokens) {
       tryParseExpressionWithoutBlock(view);
 
   if (woBlock) {
-    return *woBlock;
+    view = view.subspan((*woBlock)->getTokens());
+
+    if (view.front().getKind() == lexer::TokenKind::Semi) {
+      (*woBlock)->setHasTrailingSemi();
+      return *woBlock;
+    }
   }
 
   // then ;
@@ -22,6 +28,11 @@ tryParseExpressionStatement(std::span<lexer::Token> tokens) {
       tryParseExpressionWithBlock(view);
 
   if (withBlock) {
+    view = view.subspan((*woBlock)->getTokens());
+    if (view.front().getKind() == lexer::TokenKind::Semi) {
+      (*withBlock)->setHasTrailingSemi();
+    }
+
     return *withBlock;
   }
 

@@ -18,9 +18,12 @@ public:
 
   rust_compiler::Location getLocation() const { return loc; }
 
+  void setHasTrailingSemi() { hasTrailingSemi = true; }
+
 protected:
   rust_compiler::Location loc;
   ExpressionKind expressionKind;
+  bool hasTrailingSemi = false;
 };
 
 enum class ExpressionWithoutBlockKind {
