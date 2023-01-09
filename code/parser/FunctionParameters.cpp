@@ -11,6 +11,7 @@ namespace rust_compiler::parser {
 std::optional<ast::FunctionParameters>
 tryParseFunctionParameters(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
+  FunctionParameters params = {tokens.front().getLocation()};
 
   llvm::errs() << "tryParseFunctionParameters"
                << "\n";
@@ -19,14 +20,26 @@ tryParseFunctionParameters(std::span<lexer::Token> tokens) {
   if (self) {
     view = view.subspan((*self)->getTokens());
     if (view.front().getKind() == lexer::TokenKind::Comma) {
+
+    } else {
     }
   }
 
   std::optional<ast::FunctionParam> param = tryParseFunctionParam(view);
   if (param) {
     view = view.subspan((*param).getTokens());
-    if (view.front().getKind() == lexer::TokenKind::Comma) {
+    params.addFunctionParam(*param);
+
+    while (view.size() > 3) {
+      if (view.front().getKind() == lexer::TokenKind::Comma) {
+        std::optional<ast::FunctionParam> param = tryParseFunctionParam(view);
+        if (param) {
+          view = view.subspan((*param).getTokens());
+          params.addFunctionParam(*param);
+        }
+      }
     }
+    return params;
   }
 
   // FIXME

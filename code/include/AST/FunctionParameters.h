@@ -4,18 +4,21 @@
 #include "AST/SelfParam.h"
 
 #include <memory>
-#include <vector>
 #include <span>
+#include <vector>
 
 namespace rust_compiler::ast {
 
 class FunctionParameters {
-  std::vector<std::shared_ptr<FunctionParam>> params;
+  std::vector<FunctionParam> params;
+  Location loc;
 
 public:
-  std::span<std::shared_ptr<FunctionParam>> getParams() {
-    return params;
-  }
+  FunctionParameters(Location loc) : loc(loc) {}
+
+  std::span<FunctionParam> getParams() { return params; }
+
+  void addFunctionParam(ast::FunctionParam param);
 
   size_t getTokens();
 };

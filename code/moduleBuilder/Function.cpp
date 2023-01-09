@@ -84,7 +84,7 @@ ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
   ast::FunctionParameters params = sig.getParameters();
 
   for (auto &param : params.getParams()) {
-    mlir::Type type = typeBuilder.getType(param->getType());
+    mlir::Type type = typeBuilder.getType(param.getType());
     if (!type)
       return nullptr;
 

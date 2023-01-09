@@ -24,7 +24,7 @@ class FunctionSignature {
   std::shared_ptr<GenericParams> gen;
 
 public:
-  FunctionSignature(Location loc) : qual(loc), where(loc){};
+  FunctionSignature(Location loc) : qual(loc), parm(loc), where(loc){};
 
   std::string getName();
 

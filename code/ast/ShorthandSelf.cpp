@@ -6,9 +6,15 @@ void ShorthandSelf::setMut() { mut = true; }
 void ShorthandSelf::setAnd() { andP = true; }
 
 size_t ShorthandSelf::getTokens() {
-  assert(false);
+  size_t count = 0;
 
-  return 0;
+  if (mut)
+    ++count;
+
+  if (andP)
+    ++count;
+
+  return 1 + count;
 }
 
 } // namespace rust_compiler::ast
