@@ -1,4 +1,4 @@
-gadd_library(ast
+add_library(ast
            OuterAttribute.cpp
            Module.cpp
            InnerAttribute.cpp
@@ -25,6 +25,9 @@ gadd_library(ast
            Statements.cpp
            FunctionParam.cpp
            IdentifierPattern.cpp
+           ShorthandSelf.cpp
+           SelfParam.cpp
+           TypedSelf.cpp
            )
 
 

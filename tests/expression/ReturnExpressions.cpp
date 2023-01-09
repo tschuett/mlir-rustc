@@ -1,7 +1,6 @@
-#include "AST/FunctionParameter.h"
+#include "AST/FunctionParam.h"
 #include "AST/ReturnExpression.h"
 #include "BlockExpression.h"
-#include "FunctionParameter.h"
 #include "FunctionParameters.h"
 #include "Lexer/Lexer.h"
 #include "LiteralExpression.h"

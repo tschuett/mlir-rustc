@@ -9,8 +9,7 @@ class SelfParam : public Node {
 public:
   SelfParam(Location loc) : Node(loc) {}
 
-    size_t getTokens() override;
-
+  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

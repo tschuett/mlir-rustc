@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "FunctionParameter.h"
+#include "FunctionParam.h"
 #include "FunctionParameters.h"
 #include "Lexer/Lexer.h"
 
@@ -14,8 +14,8 @@ TEST(FunctionParameterExpressionTest, CheckFunctionParameter) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  std::optional<rust_compiler::ast::FunctionParameter> param =
-      tryParseFunctionParameter(ts.getAsView());
+  std::optional<rust_compiler::ast::FunctionParam> param =
+      tryParseFunctionParam(ts.getAsView());
 
   EXPECT_TRUE(param.has_value());
 };
