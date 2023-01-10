@@ -7,8 +7,10 @@
 #include "AST/Types/Types.h"
 #include "AST/WhereClause.h"
 #include "Location.h"
+#include "AST/Visiblity.h"
 
 #include <memory>
+#include <optional>
 #include <span>
 #include <vector>
 
@@ -22,10 +24,10 @@ class FunctionSignature : public Node {
   FunctionParameters parm;
   std::shared_ptr<WhereClause> where;
   std::shared_ptr<GenericParams> gen;
+  std::optional<Visibility> vis;
 
 public:
-  FunctionSignature(Location loc)
-      : Node(loc), qual(loc), parm(loc){};
+  FunctionSignature(Location loc) : Node(loc), qual(loc), parm(loc){};
 
   std::string getName();
 
@@ -44,6 +46,8 @@ public:
   std::shared_ptr<ast::types::Type> getReturnType() const { return returnType; }
 
   void setWhereClause(std::shared_ptr<WhereClause> where);
+
+  void setVisibility(Visibility _vis) { vis = _vis; }
 
   size_t getTokens() override;
 };

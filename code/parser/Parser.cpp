@@ -26,7 +26,7 @@ std::shared_ptr<ast::Module> parser(TokenStream &ts,
 
   std::span<Token> tokens = ts.getAsView();
 
-  Module module = {tokens.front().getLocation(), ModuleKind::ModuleTree,
+  Module module = {tokens.front().getLocation(), ModuleKind::Outer,
                    modulePath};
 
   // ts.print(60);
@@ -43,6 +43,9 @@ std::shared_ptr<ast::Module> parser(TokenStream &ts,
       llvm::errs() << "found tokens: " << (*item)->getTokens() << "\n";
       tokens = tokens.subspan((*item)->getTokens());
       module.addItem(*item);
+    } else {
+      return std::make_shared<ast::Module>(module);
+
     }
 
     //    if (tokens.front().getKind() == TokenKind::Hash) {

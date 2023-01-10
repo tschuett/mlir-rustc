@@ -1,4 +1,5 @@
 #include "AST/Function.h"
+#include "AST/Visiblity.h"
 
 #include "AST/BlockExpression.h"
 #include "llvm/Support/raw_ostream.h"
@@ -16,6 +17,8 @@ FunctionQualifiers Function::getFunctionQualifiers() const {
 };
 
 void Function::setSignature(FunctionSignature _nature) { signature = _nature; }
+
+void Function::setVisibility(Visibility _vis) { signature.setVisibility(_vis); }
 
 void Function::setBody(std::shared_ptr<BlockExpression> _body) { body = _body; }
 

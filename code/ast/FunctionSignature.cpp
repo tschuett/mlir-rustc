@@ -19,7 +19,9 @@ void FunctionSignature::setReturnType(
   returnType = _returnType;
 }
 
-  void FunctionSignature::setWhereClause(std::shared_ptr<WhereClause> _where) { where = _where; }
+void FunctionSignature::setWhereClause(std::shared_ptr<WhereClause> _where) {
+  where = _where;
+}
 
 void FunctionSignature::setGenericParams(std::shared_ptr<GenericParams> _gen) {
   gen = _gen;
@@ -37,6 +39,8 @@ size_t FunctionSignature::getTokens() {
     count += returnType->getTokens() + 1; // ->
   if (where)
     count += where->getTokens();
+  if (vis)
+    count += vis->getTokens();
 
   return count;
 }

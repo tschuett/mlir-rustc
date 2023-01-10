@@ -9,11 +9,19 @@ size_t Module::getTokens() {
   }
   case ModuleKind::ModuleTree: {
     size_t size = 0;
-    for (auto&i: items) {
+    for (auto &i : items) {
       size += i->getTokens();
     }
     // FIXME
     return size + 5 + vis.getTokens();
+  }
+  case ModuleKind::Outer: {
+    size_t size = 0;
+    for (auto &i : items) {
+      size += i->getTokens();
+    }
+    // FIXME
+    return size;
   }
   }
 }
@@ -24,6 +32,6 @@ std::span<std::shared_ptr<Function>> Module::getFuncs() {
 
 void Module::addItem(std::shared_ptr<Item> item) { items.push_back(item); }
 
-  void Module::setVisibility(Visibility _vis) { vis = _vis; }
+void Module::setVisibility(Visibility _vis) { vis = _vis; }
 
 } // namespace rust_compiler::ast

@@ -103,6 +103,8 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
       view.front().getIdentifier() == "fn") {
     std::optional<ast::Function> fun = tryParseFunction(view, modulePath);
     if (fun) {
+      if (visibility)
+      fun->setVisibility(*visibility);
       std::shared_ptr<Item> item =
           std::static_pointer_cast<Item>(std::make_shared<ast::Function>(*fun));
 

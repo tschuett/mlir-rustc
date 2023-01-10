@@ -28,6 +28,8 @@ public:
   void setSignature(FunctionSignature nature);
 
   void setBody(std::shared_ptr<BlockExpression> block);
+
+  void setVisibility(Visibility vis);
 };
 
 } // namespace rust_compiler::ast
