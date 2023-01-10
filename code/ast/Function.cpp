@@ -1,6 +1,7 @@
 #include "AST/Function.h"
 
 #include "AST/BlockExpression.h"
+#include "llvm/Support/raw_ostream.h"
 
 namespace rust_compiler::ast {
 
@@ -21,12 +22,20 @@ void Function::setBody(std::shared_ptr<BlockExpression> _body) { body = _body; }
 size_t Function::getTokens() {
   size_t count = 0;
 
-  count += signature.getTokens() + 2;
+  llvm::errs() << "Function::getTokens()"
+               << "\n";
+
+  llvm::errs() << "Function::getTokens(): " << signature.getTokens() << "\n";
+
+  if (body)
+    llvm::errs() << "Function::getTokens(): " << body->getTokens() << "\n";
+
+  count += signature.getTokens();
 
   if (body)
     count += body->getTokens();
 
-  return 1 + count;
+  return count; // fn
 };
 
 } // namespace rust_compiler::ast

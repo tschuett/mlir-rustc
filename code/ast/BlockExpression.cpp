@@ -4,17 +4,21 @@
 
 namespace rust_compiler::ast {
 
-std::shared_ptr<Statements> BlockExpression::getExpressions() {
-  return stmts;
-}
+std::shared_ptr<Statements> BlockExpression::getExpressions() { return stmts; }
 
 void BlockExpression::setStatements(std::shared_ptr<Statements> _stmts) {
   stmts = _stmts;
 }
 
 size_t BlockExpression::getTokens() {
-  assert(false);
-  return 0;
+  size_t count = 0;
+
+  count += stmts->getTokens();
+
+  if (hasTrailingSemi)
+    ++count;
+
+  return 1 + count + 1; // { }
 }
 
 } // namespace rust_compiler::ast

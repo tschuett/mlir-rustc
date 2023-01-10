@@ -156,8 +156,9 @@ std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
 
   if (sig) {
     f.setSignature(*sig);
+    view = view.subspan((*sig).getTokens());
+    printf("tryParseFunction: found signature\n");
   } else {
-    printf("tryParseFunction: found no signature\n");
     return std::nullopt;
   }
 
@@ -168,6 +169,7 @@ std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
   std::optional<std::shared_ptr<BlockExpression>> block =
       tryParseBlockExpression(view);
   if (block) {
+  printf("tryParseFunction: found body\n");
     f.setBody(*block);
     return f;
   }

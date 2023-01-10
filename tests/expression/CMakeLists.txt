@@ -15,9 +15,8 @@ add_executable(ExpressionTests
         ExpressionWithoutBlock.cpp
         Function.cpp
         Types.cpp
+        ExamplesFun1.cpp
 )
-
-        #ExamplesFun1.cpp
 
 llvm_map_components_to_libnames(llvm_libs Support)
 
