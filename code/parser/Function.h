@@ -12,4 +12,10 @@ namespace rust_compiler::parser {
 std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
                                               std::string_view modulePath);
 
+std::optional<ast::FunctionQualifiers>
+tryParseFunctionQualifiers(std::span<lexer::Token> tokens);
+
+  std::optional<ast::FunctionSignature>
+  tryParseFunctionSignature(std::span<lexer::Token> tokens) ;
+
 } // namespace rust_compiler::parser

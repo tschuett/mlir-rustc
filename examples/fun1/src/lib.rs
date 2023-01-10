@@ -1,3 +1,3 @@
-pub fn add(left: usize, right: usize) -> usize {
-    return left + right;
+pub fn add(right: usize) -> usize {
+    return right + right;
 }

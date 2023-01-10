@@ -10,6 +10,7 @@
 #include "Modules.h"
 #include "Util.h"
 #include "Visibility.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include <cstdlib>
 #include <memory>
@@ -134,7 +135,8 @@ std::shared_ptr<ast::Module> parser(TokenStream &ts,
     //    }
 
     if (tokens.size() == last) {
-      printf("parser: no progress\n");
+      llvm::errs() << "parser: no progress"
+                   << "\n";
       printTokenState(tokens);
       exit(EXIT_FAILURE);
     }

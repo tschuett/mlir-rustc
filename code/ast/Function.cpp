@@ -19,8 +19,14 @@ void Function::setSignature(FunctionSignature _nature) { signature = _nature; }
 void Function::setBody(std::shared_ptr<BlockExpression> _body) { body = _body; }
 
 size_t Function::getTokens() {
-  assert(false);
-  return 0;
+  size_t count = 0;
+
+  count += signature.getTokens() + 2;
+
+  if (body)
+    count += body->getTokens();
+
+  return 1 + count;
 };
 
 } // namespace rust_compiler::ast

@@ -2,6 +2,7 @@
 #include "FunctionParam.h"
 #include "Lexer/Token.h"
 #include "SelfParam.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include <llvm/Support/raw_os_ostream.h>
 
@@ -42,6 +43,7 @@ tryParseFunctionParameters(std::span<lexer::Token> tokens) {
     if (view.front().getKind() == TokenKind::ParenClose) {
       return params;
     }
+    size_t old = view.size();
     while (view.size() > 3) {
       if (view.front().getKind() == lexer::TokenKind::Comma) {
         view = view.subspan(1);
@@ -50,6 +52,10 @@ tryParseFunctionParameters(std::span<lexer::Token> tokens) {
           view = view.subspan((*param).getTokens());
           params.addFunctionParam(*param);
         }
+      }
+      if (old == view.size()) {
+        llvm::errs() << "no progress: " << old << "\n";
+        exit(EXIT_FAILURE);
       }
     }
     return params;

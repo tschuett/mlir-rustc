@@ -10,6 +10,9 @@ void Attributer::setup() {
     if (auto call = mlir::dyn_cast<mlir::func::CallOp>(op)) {
     }
     if (auto fun = mlir::dyn_cast<mlir::func::FuncOp>(op)) {
+      //for(auto& rs : fun.getResultTypes()) {
+      //  
+      //}
     }
   });
 }

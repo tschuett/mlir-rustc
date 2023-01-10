@@ -14,17 +14,18 @@
 
 namespace rust_compiler::ast {
 
-class FunctionSignature {
+class FunctionSignature : public Node {
   // std::vector<Argument> args;
   std::string name;
   std::shared_ptr<ast::types::Type> returnType;
   FunctionQualifiers qual;
   FunctionParameters parm;
-  WhereClause where;
+  std::shared_ptr<WhereClause> where;
   std::shared_ptr<GenericParams> gen;
 
 public:
-  FunctionSignature(Location loc) : qual(loc), parm(loc), where(loc){};
+  FunctionSignature(Location loc)
+      : Node(loc), qual(loc), parm(loc){};
 
   std::string getName();
 
@@ -42,7 +43,9 @@ public:
 
   std::shared_ptr<ast::types::Type> getReturnType() const { return returnType; }
 
-  void setWhereClause(WhereClause where);
+  void setWhereClause(std::shared_ptr<WhereClause> where);
+
+  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

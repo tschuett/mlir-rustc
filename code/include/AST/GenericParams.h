@@ -4,6 +4,9 @@
 
 namespace rust_compiler::ast {
 
-class GenericParams {};
+class GenericParams : public Node {
+public:
+  size_t getTokens() override;
+};
 
-}
+} // namespace rust_compiler::ast
