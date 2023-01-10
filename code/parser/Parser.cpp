@@ -40,7 +40,7 @@ std::shared_ptr<ast::Module> parser(TokenStream &ts,
     std::optional<std::shared_ptr<ast::Item>> item =
         tryParseItem(tokens, modulePath);
     if (item) {
-      printf("found tokens: %zu\n", (*item)->getTokens());
+      llvm::errs() << "found tokens: " << (*item)->getTokens() << "\n";
       tokens = tokens.subspan((*item)->getTokens());
       module.addItem(*item);
     }

@@ -7,6 +7,8 @@
 #include "Attributes.h"
 #include "UseDeclaration.h"
 
+#include <llvm/Support/raw_ostream.h>
+
 using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
@@ -16,7 +18,8 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
 
   std::span<Token> view = tokens;
 
-  printf("tryParseItem\n");
+  llvm::errs() << "tryParseItem"
+               << "\n";
 
   if (view.front().getKind() == TokenKind::Hash) {
     if (view[1].getKind() == TokenKind::Not) {
@@ -48,7 +51,7 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
   std::optional<ast::Visibility> visibility = tryParseVisibility(tokens);
 
   if (visibility) {
-    //printf("found visibility: %zu\n", (*visibility).getTokens());
+    // printf("found visibility: %zu\n", (*visibility).getTokens());
     view = view.subspan((*visibility).getTokens());
   }
 
