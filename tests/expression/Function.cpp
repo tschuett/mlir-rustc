@@ -10,6 +10,38 @@ using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
 
+TEST(FunctionTest, CheckFunctionReturnType1) {
+
+  std::string text = "-> usize";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
+      tryParseFunctionReturnType(ts.getAsView());
+
+  EXPECT_TRUE(type.has_value());
+
+  size_t expectedLendth = 1; // ->
+
+  EXPECT_EQ((*type)->getTokens(), expectedLendth);
+};
+
+TEST(FunctionTest, CheckFunctionReturnType2) {
+
+  std::string text = "-> f32";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
+      tryParseFunctionReturnType(ts.getAsView());
+
+  EXPECT_TRUE(type.has_value());
+
+  size_t expectedLendth = 1; // ->
+
+  EXPECT_EQ((*type)->getTokens(), expectedLendth);
+};
+
 TEST(FunctionTest, CheckFunctionQual1) {
 
   std::string text = "const async";

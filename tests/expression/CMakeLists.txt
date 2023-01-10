@@ -14,6 +14,7 @@ add_executable(ExpressionTests
         BlockExpression.cpp
         ExpressionWithoutBlock.cpp
         Function.cpp
+        Types.cpp
 )
 
         #ExamplesFun1.cpp

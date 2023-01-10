@@ -12,30 +12,30 @@ void printTokenState(std::span<lexer::Token> tokens) {
   llvm::errs() << "next token@%" << tokens.size() << "\n";
 
   if (tokens[0].isIdentifier()) {
-    printf("%s ", tokens[0].getIdentifier().c_str());
+    llvm::errs() << tokens[0].getIdentifier().c_str() << " ";
   } else {
-    printf("%s ", Token2String(tokens[0].getKind()).c_str());
+    llvm::errs() << Token2String(tokens[0].getKind()).c_str() << "";
   }
 
   if (tokens[1].isIdentifier()) {
-    printf("%s ", tokens[1].getIdentifier().c_str());
+    llvm::errs() << tokens[1].getIdentifier().c_str() << " ";
   } else {
-    printf("%s ", Token2String(tokens[1].getKind()).c_str());
+    llvm::errs() << Token2String(tokens[1].getKind()).c_str() << " ";
   }
 
   if (tokens[2].isIdentifier()) {
-    printf("%s ", tokens[2].getIdentifier().c_str());
+    llvm::errs() << tokens[2].getIdentifier().c_str() << " ";
   } else {
-    printf("%s ", Token2String(tokens[2].getKind()).c_str());
+    llvm::errs() << Token2String(tokens[2].getKind()).c_str() << " ";
   }
 
   if (tokens[3].isIdentifier()) {
-    printf("%s ", tokens[3].getIdentifier().c_str());
+    llvm::errs() << tokens[3].getIdentifier().c_str() << " ";
   } else {
-    printf("%s ", Token2String(tokens[3].getKind()).c_str());
+    llvm::errs() << Token2String(tokens[3].getKind()).c_str() << " ";
   }
 
-  printf("\n");
+  llvm::errs() << "\n";
 }
 
 void printStringSpan(std::span<std::string> lintTokens) {

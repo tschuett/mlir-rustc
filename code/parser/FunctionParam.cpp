@@ -31,11 +31,16 @@ tryParseFunctionParam(std::span<lexer::Token> tokens) {
       llvm::errs() << "tryParseFunctionParam: found colon"
                    << "\n";
 
+      printTokenState(view);
+
       std::optional<std::shared_ptr<ast::types::Type>> type =
           tryParseType(view);
 
       if (type) {
         FunctionParam param{tokens.front().getLocation()};
+
+        llvm::errs() << "tryParseFunctionParam: found type"
+                   << "\n";
 
         param.setName(*notopalt);
         param.setType(*type);

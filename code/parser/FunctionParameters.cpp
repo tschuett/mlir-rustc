@@ -18,7 +18,7 @@ tryParseFunctionParameters(std::span<lexer::Token> tokens) {
   llvm::errs() << "tryParseFunctionParameters"
                << "\n";
 
-  //printTokenState(view);
+  // printTokenState(view);
 
   //  std::optional<std::shared_ptr<ast::SelfParam>> self =
   //  tryParseSelfParam(view); if (self) {
@@ -49,9 +49,13 @@ tryParseFunctionParameters(std::span<lexer::Token> tokens) {
         view = view.subspan(1);
         std::optional<ast::FunctionParam> param = tryParseFunctionParam(view);
         if (param) {
+          llvm::errs() << "tryParseFunctionParameters: found param"
+                       << "\n";
           view = view.subspan((*param).getTokens());
           params.addFunctionParam(*param);
         }
+      } else if (view.front().getKind() == lexer::TokenKind::ParenClose) {
+        return params;
       }
       if (old == view.size()) {
         llvm::errs() << "no progress: " << old << "\n";

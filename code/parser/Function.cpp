@@ -134,10 +134,10 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
     sig.setReturnType(*returnType);
   }
 
-  std::optional<WhereClause> where = tryParseWhereClause(view);
-  if (where) {
-    sig.setWhereClause(std::make_shared<WhereClause>(*where));
-  }
+//  std::optional<WhereClause> where = tryParseWhereClause(view);
+//  if (where) {
+//    sig.setWhereClause(std::make_shared<WhereClause>(*where));
+//  }
 
   return sig;
 }
