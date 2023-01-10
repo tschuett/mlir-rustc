@@ -18,6 +18,9 @@ class IRPosition {
   };
 
 public:
+  static const IRPosition EmptyKey;
+  static const IRPosition TombstoneKey;
+
   static IRPosition forReturnedValue(mlir::Operation *op, unsigned resultIdx) {
     return IRPosition(Kind::ReturnedValue, op, resultIdx);
   }
@@ -26,7 +29,13 @@ public:
 
   void *getPosition() { return ptr; }
 
+  // Conversion into a void * to allow reuse of pointer hashing.
+  operator void *() const { return ptr; }
+
 private:
+  template <typename T, typename Enable> friend struct llvm::DenseMapInfo;
+  friend llvm::raw_ostream &operator<<(llvm::raw_ostream &os, IRPosition pos);
+
   explicit IRPosition(Kind kind, void *ptr, unsigned ordinal)
       : kind(kind), ptr(ptr), ordinal(ordinal) {}
 
@@ -37,3 +46,25 @@ private:
 };
 
 } // namespace rust_compiler::analysis::attributer
+
+namespace llvm {
+
+using rust_compiler::analysis::attributer::IRPosition;
+
+// Helper that allows Position as a key in a DenseMap.
+template <> struct DenseMapInfo<IRPosition> {
+  static inline IRPosition getEmptyKey() { return IRPosition::EmptyKey; }
+  static inline IRPosition getTombstoneKey() {
+    return IRPosition::TombstoneKey;
+  }
+  static unsigned getHashValue(const IRPosition &pos) {
+    return (DenseMapInfo<void *>::getHashValue(pos) << 4) ^
+           (DenseMapInfo<unsigned>::getHashValue(pos.ordinal));
+  }
+
+  static bool isEqual(const IRPosition &a, const IRPosition &b) {
+    return a == b;
+  }
+};
+
+} // end namespace llvm

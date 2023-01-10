@@ -77,7 +77,7 @@ TEST(ExamplesFun1Test, CheckFun3b) {
   EXPECT_TRUE(fun.has_value());
 };
 
-TEST(ExamplesFun1Test, CheckFun3) {
+TEST(ExamplesFun1Test, CheckFun3c) {
 
   std::string text =
       "fn add(left: usize, right: usize) -> usize { }";
