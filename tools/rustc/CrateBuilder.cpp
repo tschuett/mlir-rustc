@@ -2,9 +2,9 @@
 
 #include "Lexer/Lexer.h"
 #include "ModuleBuilder/ModuleBuilder.h"
+#include "ModuleBuilder/Target.h"
 #include "Parser/Parser.h"
 #include "Sema/Sema.h"
-#include "ModuleBuilder/Target.h"
 
 #include <fstream>
 #include <llvm/MC/TargetRegistry.h>
@@ -59,12 +59,18 @@ void buildCrate(std::string_view path, std::string_view edition) {
   lexer::TokenStream ts = lexer::lex(str, "lib.rs");
   std::shared_ptr<ast::Module> module = parser::parser(ts, "crate");
 
+  llvm::outs() << "finished parsing"
+               << "\n";
+
   sema::analyzeSemantics(module);
 
   std::string fn = "lib.yaml";
 
   std::error_code EC;
   llvm::raw_fd_stream stream = {fn, EC};
+
+  llvm::outs() << "code generation"
+               << "\n";
 
   rust_compiler::ModuleBuilder mb = {"lib", stream};
 
