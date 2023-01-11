@@ -9,6 +9,8 @@
 #include "Lexer/Token.h"
 #include "WhereClause.h"
 
+#include "Parser/Parser.h"
+
 #include <llvm/Support/raw_os_ostream.h>
 #include <optional>
 
@@ -17,7 +19,7 @@ using namespace rust_compiler::lexer;
 namespace rust_compiler::parser {
 
 std::optional<ast::FunctionQualifiers>
-tryParseFunctionQualifiers(std::span<lexer::Token> tokens) {
+Parser::tryParseFunctionQualifiers(std::span<lexer::Token> tokens) {
   std::span<Token> view = tokens;
   FunctionQualifiers qual{view.front().getLocation()};
 
@@ -47,7 +49,7 @@ tryParseFunctionQualifiers(std::span<lexer::Token> tokens) {
 }
 
 std::optional<std::shared_ptr<ast::types::Type>>
-tryParseFunctionReturnType(std::span<lexer::Token> tokens) {
+Parser::tryParseFunctionReturnType(std::span<lexer::Token> tokens) {
   std::span<Token> view = tokens;
 
   if (view.front().getKind() != TokenKind::ThinArrow)
@@ -61,7 +63,7 @@ tryParseFunctionReturnType(std::span<lexer::Token> tokens) {
 }
 
 std::optional<ast::FunctionSignature>
-tryParseFunctionSignature(std::span<lexer::Token> tokens) {
+Parser::tryParseFunctionSignature(std::span<lexer::Token> tokens) {
   std::span<Token> view = tokens;
   FunctionSignature sig{view.front().getLocation()};
 
@@ -144,7 +146,7 @@ tryParseFunctionSignature(std::span<lexer::Token> tokens) {
   return sig;
 }
 
-std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
+std::optional<ast::Function> Parser::tryParseFunction(std::span<lexer::Token> tokens,
                                               std::string_view modulePath) {
   std::span<Token> view = tokens;
 

@@ -3,11 +3,12 @@
 #include "ExpressionWithBlock.h"
 #include "ExpressionWithoutBlock.h"
 #include "Lexer/Token.h"
+#include "Parser/Parser.h"
 
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::Expression>>
-tryParseExpressionStatement(std::span<lexer::Token> tokens) {
+Parser::tryParseExpressionStatement(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
   std::optional<std::shared_ptr<ast::Expression>> woBlock =

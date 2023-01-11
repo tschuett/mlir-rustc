@@ -1,11 +1,12 @@
 #include "ExpressionWithBlock.h"
 
 #include "BlockExpression.h"
+#include "Parser/Parser.h"
 
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::Expression>>
-tryParseExpressionWithBlock(std::span<lexer::Token> tokens) {
+Parser::tryParseExpressionWithBlock(std::span<lexer::Token> tokens) {
 
   std::span<lexer::Token> view = tokens;
 

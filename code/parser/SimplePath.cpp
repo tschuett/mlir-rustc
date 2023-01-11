@@ -3,6 +3,7 @@
 #include "AST/SimplePath.h"
 #include "AST/SimplePathSegment.h"
 #include "Lexer/Token.h"
+#include "Parser/Parser.h"
 
 #include <optional>
 
@@ -21,7 +22,7 @@ tryParseSimplePathSegment(std::span<Token> tokens) {
   return std::nullopt;
 }
 
-std::optional<ast::SimplePath> tryParseSimplePath(std::span<Token> tokens) {
+  std::optional<ast::SimplePath> Parser::tryParseSimplePath(std::span<Token> tokens) {
   std::span<Token> view = tokens;
   ast::SimplePath simplePath{view.front().getLocation()};
 

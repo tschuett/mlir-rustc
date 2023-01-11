@@ -10,7 +10,7 @@ namespace rust_compiler::ast {
 
 class LetStatement : public Statement {
   VariableDeclaration var;
-  std::shared_ptr<Type> type;
+  std::shared_ptr<ast::types::Type> type;
 public:
 };
 

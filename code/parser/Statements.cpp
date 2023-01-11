@@ -1,6 +1,7 @@
 #include "Statements.h"
 
 #include "AST/Statements.h"
+#include "Parser/Parser.h"
 
 #include <llvm/Support/raw_ostream.h>
 
@@ -9,12 +10,12 @@ using namespace rust_compiler::lexer;
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::Statements>>
-tryParseStatements(std::span<lexer::Token> tokens) {
+Parser::tryParseStatements(std::span<lexer::Token> tokens) {
   Statements stmts = {tokens.front().getLocation()};
   std::span<lexer::Token> view = tokens;
 
-  llvm::errs() << "tryParseStatements: "
-               << Token2String(view.front().getKind()) << "\n";
+  llvm::errs() << "tryParseStatements: " << Token2String(view.front().getKind())
+               << "\n";
 
   if (view.front().getKind() == TokenKind::Semi) {
     stmts.setOnlySemi();

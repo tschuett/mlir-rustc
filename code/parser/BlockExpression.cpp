@@ -2,6 +2,7 @@
 
 #include "AST/BlockExpression.h"
 #include "Lexer/Token.h"
+#include "Parser/Parser.h"
 #include "Statement.h"
 #include "Statements.h"
 
@@ -13,7 +14,7 @@ using namespace rust_compiler::lexer;
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::BlockExpression>>
-tryParseBlockExpression(std::span<lexer::Token> tokens) {
+Parser::tryParseBlockExpression(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
   BlockExpression block = {tokens.front().getLocation()};
 

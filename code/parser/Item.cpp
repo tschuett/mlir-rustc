@@ -6,6 +6,7 @@
 #include "AST/Visiblity.h"
 #include "Attributes.h"
 #include "UseDeclaration.h"
+#include "Parser/Parser.h"
 
 #include <llvm/Support/raw_ostream.h>
 
@@ -14,7 +15,7 @@ using namespace rust_compiler::lexer;
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::Item>>
-tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
+Parser::tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
 
   std::span<Token> view = tokens;
 
@@ -104,7 +105,7 @@ tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
     std::optional<ast::Function> fun = tryParseFunction(view, modulePath);
     if (fun) {
       if (visibility)
-      fun->setVisibility(*visibility);
+        fun->setVisibility(*visibility);
       std::shared_ptr<Item> item =
           std::static_pointer_cast<Item>(std::make_shared<ast::Function>(*fun));
 

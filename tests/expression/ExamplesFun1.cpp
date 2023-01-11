@@ -8,6 +8,7 @@
 #include "ReturnExpression.h"
 #include "Statement.h"
 #include "gtest/gtest.h"
+#include "Parser/Parser.h"
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
@@ -121,8 +122,9 @@ TEST(ExamplesFun1Test, CheckModule1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
   std::optional<std::shared_ptr<rust_compiler::ast::Module>> mod =
-      parser(ts, "");
+      parser.parse();
 
   size_t expectedLendth = 17;
 

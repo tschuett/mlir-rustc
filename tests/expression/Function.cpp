@@ -4,6 +4,7 @@
 #include "FunctionParam.h"
 #include "FunctionParameters.h"
 #include "Lexer/Lexer.h"
+#include "Parser/Parser.h"
 #include "gtest/gtest.h"
 
 using namespace rust_compiler::lexer;
@@ -16,8 +17,10 @@ TEST(FunctionTest, CheckFunctionReturnType1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      tryParseFunctionReturnType(ts.getAsView());
+      parser.tryParseFunctionReturnType();
 
   EXPECT_TRUE(type.has_value());
 
@@ -32,8 +35,10 @@ TEST(FunctionTest, CheckFunctionReturnType2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      tryParseFunctionReturnType(ts.getAsView());
+      parser.tryParseFunctionReturnType();
 
   EXPECT_TRUE(type.has_value());
 
@@ -48,8 +53,10 @@ TEST(FunctionTest, CheckFunctionQual1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<rust_compiler::ast::FunctionQualifiers> fun =
-      tryParseFunctionQualifiers(ts.getAsView());
+      parser.tryParseFunctionQualifiers();
 
   EXPECT_TRUE(fun.has_value());
 

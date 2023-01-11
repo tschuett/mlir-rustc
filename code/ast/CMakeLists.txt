@@ -29,6 +29,7 @@ add_library(ast
            SelfParam.cpp
            TypedSelf.cpp
            NegationExpression.cpp
+           VariableDeclaration.cpp
            )
 
 

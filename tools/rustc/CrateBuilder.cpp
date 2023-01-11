@@ -57,7 +57,8 @@ void buildCrate(std::string_view path, std::string_view edition) {
                   (*outputBuffer)->getBufferEnd());
 
   lexer::TokenStream ts = lexer::lex(str, "lib.rs");
-  std::shared_ptr<ast::Module> module = parser::parser(ts, "crate");
+  Parser parser = {ts, "crate"};
+  std::shared_ptr<ast::Module> module = parser.parse();
 
   llvm::outs() << "finished parsing"
                << "\n";

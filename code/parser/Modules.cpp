@@ -4,6 +4,7 @@
 #include "Item.h"
 #include "Lexer/Token.h"
 #include "Util.h"
+#include "Parser/Parser.h"
 
 #include <optional>
 #include <sstream>
@@ -13,8 +14,9 @@ using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
-std::optional<ast::Module> tryParseModuleTree(std::span<Token> tokens,
-                                              std::string_view modulePath) {
+std::optional<ast::Module>
+Parser::tryParseModuleTree(std::span<Token> tokens,
+                           std::string_view modulePath) {
 
   Module module = {tokens.front().getLocation(), ModuleKind::ModuleTree,
                    modulePath};
@@ -27,7 +29,7 @@ std::optional<ast::Module> tryParseModuleTree(std::span<Token> tokens,
   std::optional<ast::Visibility> visibility = tryParseVisibility(tokens);
 
   if (visibility) {
-    //printf("found visibility: %zu\n", (*visibility).getTokens());
+    // printf("found visibility: %zu\n", (*visibility).getTokens());
     view = view.subspan((*visibility).getTokens());
   }
 
@@ -53,7 +55,7 @@ std::optional<ast::Module> tryParseModuleTree(std::span<Token> tokens,
     // printTokenState(view);
 
     if (view.front().getKind() == TokenKind::BraceClose) {
-      //printf("found end of module tree\n");
+      // printf("found end of module tree\n");
       return module;
     }
 
@@ -74,8 +76,8 @@ std::optional<ast::Module> tryParseModuleTree(std::span<Token> tokens,
   return std::nullopt;
 }
 
-std::optional<ast::Module> tryParseModule(std::span<Token> tokens,
-                                          std::string_view modulePath) {
+std::optional<ast::Module> Parser::tryParseModule(std::span<Token> tokens,
+                                                  std::string_view modulePath) {
 
   std::span<Token> view = tokens;
 
