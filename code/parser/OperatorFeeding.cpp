@@ -3,10 +3,12 @@
 #include "LiteralExpression.h"
 #include "PathExpression.h"
 
+#include "Parser/Parser.h"
+
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::Expression>>
-tryParseOperatorFeedingExpression(std::span<lexer::Token> tokens) {
+Parser::tryParseOperatorFeedingExpression(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
   std::optional<std::shared_ptr<ast::Expression>> literal =

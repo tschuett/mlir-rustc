@@ -1,11 +1,11 @@
 #include "Statement.h"
 
-#include "ExpressionWithoutBlock.h"
-
-#include "ReturnExpression.h"
-#include "ExpressionStatement.h"
 #include "BlockExpression.h"
+#include "ExpressionStatement.h"
+#include "ExpressionWithoutBlock.h"
 #include "Lexer/Lexer.h"
+#include "Parser/Parser.h"
+#include "ReturnExpression.h"
 #include "gtest/gtest.h"
 
 using namespace rust_compiler::lexer;
@@ -18,8 +18,10 @@ TEST(StatementTest, CheckStatement) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> stmt =
-      tryParseStatement(ts.getAsView());
+      parser.tryParseStatement(ts.getAsView());
 
   EXPECT_TRUE(stmt.has_value());
 };
@@ -30,8 +32,10 @@ TEST(StatementTest, CheckReturnStatement) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> stmt =
-      tryParseStatement(ts.getAsView());
+      parser.tryParseStatement(ts.getAsView());
 
   EXPECT_TRUE(stmt.has_value());
 };
@@ -42,8 +46,10 @@ TEST(StatementTest, CheckExpressionStatement) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> stmt =
-      tryParseExpressionStatement(ts.getAsView());
+      parser.tryParseExpressionStatement(ts.getAsView());
 
   EXPECT_TRUE(stmt.has_value());
 };
@@ -54,8 +60,10 @@ TEST(StatementTest, CheckExpressionWithoutBlock) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> stmt =
-      tryParseExpressionWithoutBlock(ts.getAsView());
+      parser.tryParseExpressionWithoutBlock(ts.getAsView());
 
   EXPECT_TRUE(stmt.has_value());
 };
@@ -66,8 +74,10 @@ TEST(StatementTest, CheckReturnExpression) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> stmt =
-      tryParseReturnExpression(ts.getAsView());
+      parser.tryParseReturnExpression(ts.getAsView());
 
   EXPECT_TRUE(stmt.has_value());
 };

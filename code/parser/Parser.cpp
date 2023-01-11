@@ -21,13 +21,13 @@ namespace rust_compiler::parser {
 using namespace rust_compiler::ast;
 using namespace rust_compiler::lexer;
 
-std::shared_ptr<ast::Module> parser(TokenStream &ts,
-                                    std::string_view modulePath) {
+//  TokenStream &ts,
+//                                            std::string_view modulePath
+std::shared_ptr<ast::Module> Parser::parse() {
 
   std::span<Token> tokens = ts.getAsView();
 
-  Module module = {tokens.front().getLocation(), ModuleKind::Outer,
-                   modulePath};
+  Module module = {tokens.front().getLocation(), ModuleKind::Outer, modulePath};
 
   // ts.print(60);
 
@@ -45,7 +45,6 @@ std::shared_ptr<ast::Module> parser(TokenStream &ts,
       module.addItem(*item);
     } else {
       return std::make_shared<ast::Module>(module);
-
     }
 
     //    if (tokens.front().getKind() == TokenKind::Hash) {

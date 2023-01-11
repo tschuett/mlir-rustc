@@ -1,4 +1,5 @@
 #include "Lexer/Lexer.h"
+#include "Parser/Parser.h"
 #include "PrimitiveType.h"
 #include "Type.h"
 #include "gtest/gtest.h"
@@ -13,8 +14,10 @@ TEST(TypesTest, Checki128) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      tryParsePrimitiveType(ts.getAsView());
+      parser.tryParsePrimitiveType(ts.getAsView());
 
   EXPECT_TRUE(type.has_value());
 };
@@ -25,12 +28,13 @@ TEST(TypesTest, Checkf64) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      tryParsePrimitiveType(ts.getAsView());
+      parser.tryParsePrimitiveType(ts.getAsView());
 
   EXPECT_TRUE(type.has_value());
 };
-
 
 TEST(TypesTest, Checkisize) {
 
@@ -38,8 +42,10 @@ TEST(TypesTest, Checkisize) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      tryParsePrimitiveType(ts.getAsView());
+      parser.tryParsePrimitiveType(ts.getAsView());
 
   EXPECT_TRUE(type.has_value());
 };
@@ -50,12 +56,13 @@ TEST(TypesTest, CheckBool) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      tryParsePrimitiveType(ts.getAsView());
+      parser.tryParsePrimitiveType(ts.getAsView());
 
   EXPECT_TRUE(type.has_value());
 };
-
 
 TEST(TypesTest, CheckBoolAsType) {
 
@@ -63,12 +70,13 @@ TEST(TypesTest, CheckBoolAsType) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      tryParseType(ts.getAsView());
+      parser.tryParseType(ts.getAsView());
 
   EXPECT_TRUE(type.has_value());
 };
-
 
 TEST(TypesTest, CheckI128AsType) {
 
@@ -76,8 +84,10 @@ TEST(TypesTest, CheckI128AsType) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      tryParseType(ts.getAsView());
+      parser.tryParseType(ts.getAsView());
 
   EXPECT_TRUE(type.has_value());
 };

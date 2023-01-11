@@ -1,22 +1,30 @@
 #include "FunctionParam.h"
 
+#include "AST/Patterns/IdentifierPattern.h"
+#include "IdentifierPattern.h"
 #include "PatternNoTopAlt.h"
 
 #include <llvm/Support/raw_ostream.h>
+#include <memory>
+
+#include "Parser/Parser.h"
 
 using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
 std::optional<ast::FunctionParam>
-tryParseFunctionParam(std::span<lexer::Token> tokens) {
+Parser::tryParseFunctionParam(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
 //  llvm::errs() << "tryParseFunctionParam"
 //               << "\n";
 
-  std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>> notopalt =
-      tryParsePatternNoTopAlt(view);
+  //std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>> notopalt =
+  //    tryParsePatternNoTopAlt(view);
+
+    std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>> notopalt =
+      tryParseIdentifierPattern(view);
 
   //llvm::errs() << "tryParseFunctionParam " << notopalt.has_value() << "\n";
 
@@ -31,7 +39,7 @@ tryParseFunctionParam(std::span<lexer::Token> tokens) {
       //llvm::errs() << "tryParseFunctionParam: found colon"
       //             << "\n";
 
-      printTokenState(view);
+      //printTokenState(view);
 
       std::optional<std::shared_ptr<ast::types::Type>> type =
           tryParseType(view);
@@ -42,7 +50,7 @@ tryParseFunctionParam(std::span<lexer::Token> tokens) {
         //llvm::errs() << "tryParseFunctionParam: found type"
         //           << "\n";
 
-        param.setName(*notopalt);
+        param.setName(std::static_pointer_cast<ast::patterns::IdentifierPattern>(*notopalt));
         param.setType(*type);
 
         return param;

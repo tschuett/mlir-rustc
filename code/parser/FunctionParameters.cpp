@@ -4,6 +4,8 @@
 #include "SelfParam.h"
 #include "llvm/Support/raw_ostream.h"
 
+#include "Parser/Parser.h"
+
 #include <llvm/Support/raw_os_ostream.h>
 
 using namespace rust_compiler::lexer;
@@ -11,7 +13,7 @@ using namespace rust_compiler::lexer;
 namespace rust_compiler::parser {
 
 std::optional<ast::FunctionParameters>
-tryParseFunctionParameters(std::span<lexer::Token> tokens) {
+Parser::tryParseFunctionParameters(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
   FunctionParameters params = {tokens.front().getLocation()};
 

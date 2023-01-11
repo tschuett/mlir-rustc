@@ -20,7 +20,7 @@ TEST(FunctionTest, CheckFunctionReturnType1) {
   Parser parser = {ts, ""};
 
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      parser.tryParseFunctionReturnType();
+      parser.tryParseFunctionReturnType(ts.getAsView());
 
   EXPECT_TRUE(type.has_value());
 
@@ -38,7 +38,7 @@ TEST(FunctionTest, CheckFunctionReturnType2) {
   Parser parser = {ts, ""};
 
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      parser.tryParseFunctionReturnType();
+      parser.tryParseFunctionReturnType(ts.getAsView());
 
   EXPECT_TRUE(type.has_value());
 
@@ -56,7 +56,7 @@ TEST(FunctionTest, CheckFunctionQual1) {
   Parser parser = {ts, ""};
 
   std::optional<rust_compiler::ast::FunctionQualifiers> fun =
-      parser.tryParseFunctionQualifiers();
+      parser.tryParseFunctionQualifiers(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 
@@ -71,8 +71,10 @@ TEST(FunctionTest, CheckFunctionParameters1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<rust_compiler::ast::FunctionParameters> fun =
-      tryParseFunctionParameters(ts.getAsView());
+      parser.tryParseFunctionParameters(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 
@@ -87,8 +89,10 @@ TEST(FunctionTest, CheckFunctionParam1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<rust_compiler::ast::FunctionParam> fun =
-      tryParseFunctionParam(ts.getAsView());
+      parser.tryParseFunctionParam(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 
@@ -103,8 +107,10 @@ TEST(FunctionTest, CheckFunctionSig0) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<rust_compiler::ast::FunctionSignature> fun =
-      tryParseFunctionSignature(ts.getAsView());
+      parser.tryParseFunctionSignature(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 
@@ -119,8 +125,10 @@ TEST(FunctionTest, CheckFunctionSig0b) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<rust_compiler::ast::FunctionSignature> fun =
-      tryParseFunctionSignature(ts.getAsView());
+      parser.tryParseFunctionSignature(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 
@@ -135,8 +143,10 @@ TEST(FunctionTest, CheckFunctionSig1a) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<rust_compiler::ast::FunctionSignature> fun =
-      tryParseFunctionSignature(ts.getAsView());
+      parser.tryParseFunctionSignature(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 
@@ -151,8 +161,10 @@ TEST(FunctionTest, CheckFunctionSig1b) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<rust_compiler::ast::FunctionSignature> fun =
-      tryParseFunctionSignature(ts.getAsView());
+      parser.tryParseFunctionSignature(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 
@@ -167,8 +179,10 @@ TEST(FunctionTest, CheckFunctionSig2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<rust_compiler::ast::FunctionSignature> fun =
-      tryParseFunctionSignature(ts.getAsView());
+      parser.tryParseFunctionSignature(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 
@@ -183,8 +197,10 @@ TEST(FunctionTest, CheckFunctionSig3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<rust_compiler::ast::FunctionSignature> fun =
-      tryParseFunctionSignature(ts.getAsView());
+      parser.tryParseFunctionSignature(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 
@@ -199,8 +215,10 @@ TEST(FunctionTest, CheckFunctionBody1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<BlockExpression>> block =
-      tryParseBlockExpression(ts.getAsView());
+      parser.tryParseBlockExpression(ts.getAsView());
 
   EXPECT_TRUE(block.has_value());
 
@@ -215,8 +233,10 @@ TEST(FunctionTest, CheckFunctionBody2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<BlockExpression>> block =
-      tryParseBlockExpression(ts.getAsView());
+      parser.tryParseBlockExpression(ts.getAsView());
 
   EXPECT_TRUE(block.has_value());
 
@@ -231,8 +251,10 @@ TEST(FunctionTest, CheckFunction1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<rust_compiler::ast::Function> fun =
-      tryParseFunction(ts.getAsView(), "");
+      parser.tryParseFunction(ts.getAsView(), "");
 
   EXPECT_TRUE(fun.has_value());
 

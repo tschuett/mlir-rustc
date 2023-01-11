@@ -1,4 +1,5 @@
 #include "Lexer/Lexer.h"
+#include "Parser/Parser.h"
 #include "Type.h"
 #include "gtest/gtest.h"
 
@@ -12,8 +13,10 @@ TEST(TypeTest, CheckType1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      tryParseType(ts.getAsView());
+      parser.tryParseType(ts.getAsView());
 
   EXPECT_TRUE(type.has_value());
 
@@ -28,8 +31,10 @@ TEST(TypeTest, CheckType2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      tryParseType(ts.getAsView());
+      parser.tryParseType(ts.getAsView());
 
   EXPECT_TRUE(type.has_value());
 

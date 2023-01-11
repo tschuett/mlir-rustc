@@ -16,18 +16,20 @@ tryParseSimplePathSegment(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   if (view.front().isIdentifier()) {
-    return ast::SimplePathSegment(view.front().getLocation(), view.front().getIdentifier());
+    return ast::SimplePathSegment(view.front().getLocation(),
+                                  view.front().getIdentifier());
   }
 
   return std::nullopt;
 }
 
-  std::optional<ast::SimplePath> Parser::tryParseSimplePath(std::span<Token> tokens) {
+std::optional<ast::SimplePath>
+Parser::tryParseSimplePath(std::span<Token> tokens) {
   std::span<Token> view = tokens;
   ast::SimplePath simplePath{view.front().getLocation()};
 
-  //printf("tryParseSimplePath\n");
-  //printTokenState(view);
+  // printf("tryParseSimplePath\n");
+  // printTokenState(view);
 
   if ((view.front().getKind() != TokenKind::DoubleColon) and
       (view.front().getKind() != TokenKind::Identifier))
@@ -38,7 +40,7 @@ tryParseSimplePathSegment(std::span<Token> tokens) {
     view = view.subspan(1);
   }
 
-  //printf("tryParseSimplePath2\n");
+  // printf("tryParseSimplePath2\n");
 
   std::optional<ast::SimplePathSegment> simplePathSegment =
       tryParseSimplePathSegment(view);
@@ -46,8 +48,8 @@ tryParseSimplePathSegment(std::span<Token> tokens) {
   if (simplePathSegment) {
     view = view.subspan((*simplePathSegment).getTokens());
 
-    //printf("tryParseSimplePath3: %s\n",
-    //       (*simplePathSegment).getSegment().c_str());
+    // printf("tryParseSimplePath3: %s\n",
+    //        (*simplePathSegment).getSegment().c_str());
 
     simplePath.addPathSegment(*simplePathSegment);
 
@@ -59,8 +61,8 @@ tryParseSimplePathSegment(std::span<Token> tokens) {
       std::optional<ast::SimplePathSegment> simplePathSegment =
           tryParseSimplePathSegment(view);
       if (simplePathSegment) {
-        //printf("tryParseSimplePath3b: %s\n",
-        //       (*simplePathSegment).getSegment().c_str());
+        // printf("tryParseSimplePath3b: %s\n",
+        //        (*simplePathSegment).getSegment().c_str());
 
         view = view.subspan((*simplePathSegment).getTokens());
         simplePath.addPathSegment(*simplePathSegment);
@@ -73,7 +75,7 @@ tryParseSimplePathSegment(std::span<Token> tokens) {
     }
   }
 
-  //printf("tryParseSimplePath4\n");
+  // printf("tryParseSimplePath4\n");
   return std::nullopt;
 }
 

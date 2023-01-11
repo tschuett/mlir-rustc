@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "Parser/Parser.h"
+
 using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
@@ -23,7 +25,7 @@ static const std::pair<TokenKind, ArithmeticOrLogicalExpressionKind> ops[] = {
     {TokenKind::Shr, ArithmeticOrLogicalExpressionKind::RightShift}};
 
 std::optional<ArithmeticOrLogicalExpressionKind>
-tryParserOperator(std::span<lexer::Token> tokens) {
+Parser::tryParserOperator(std::span<lexer::Token> tokens) {
   if (tokens.empty())
     return std::nullopt;
 
@@ -40,7 +42,7 @@ tryParserOperator(std::span<lexer::Token> tokens) {
 }
 
 std::optional<std::shared_ptr<ast::Expression>>
-tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
+Parser::tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
   std::optional<std::shared_ptr<ast::Expression>> left =

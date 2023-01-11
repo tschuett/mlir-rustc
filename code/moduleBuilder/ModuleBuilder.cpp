@@ -1,6 +1,7 @@
 #include "ModuleBuilder/ModuleBuilder.h"
 
 #include "AST/Statement.h"
+#include "AST/VariableDeclaration.h"
 #include "Mir/MirDialect.h"
 // #include "mlir/IR/AsmState.h"
 #include "Mir/MirOps.h"
@@ -30,7 +31,9 @@ void ModuleBuilder::build(std::shared_ptr<ast::Module> mod, Target &target) {
 
 std::optional<mlir::Value>
 ModuleBuilder::emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
-  ScopedHashTableScope<llvm::StringRef, mlir::Value> varScope(symbolTable);
+  ScopedHashTableScope<llvm::StringRef,
+                       std::pair<mlir::Value, ast::VariableDeclaration *>>
+      varScope(symbolTable);
 
   std::optional<mlir::Value> result = std::nullopt;
 
@@ -42,12 +45,13 @@ ModuleBuilder::emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
 
 // Declare a variable in the current scope, return success if the variable
 // wasn't declared yet.
-mlir::LogicalResult ModuleBuilder::declare(VarDeclExprAST &var,
-                                           mlir::Value value) {
-  if (symbolTable.count(var.getName()))
-    return mlir::failure();
-  symbolTable.insert(var.getName(), {value, &var});
-  return mlir::success();
+mlir::LogicalResult
+ModuleBuilder::declare(ast::VariableDeclaration &var,
+                       mlir::Value value) {
+    if (symbolTable.count(var.getName()))
+      return mlir::failure();
+    symbolTable.insert(var.getName(), {value, &var});
+    return mlir::success();
 }
 
 } // namespace rust_compiler

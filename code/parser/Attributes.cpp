@@ -5,6 +5,7 @@
 #include "Lexer/Token.h"
 #include "Util.h"
 #include "mlir/IR/Location.h"
+#include "Parser/Parser.h"
 
 #include <optional>
 #include <sstream>
@@ -14,7 +15,7 @@ namespace rust_compiler::parser {
 
 using namespace rust_compiler::lexer;
 
-std::optional<std::pair<std::string, unsigned>>
+static std::optional<std::pair<std::string, unsigned>>
 tryParseLint(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
@@ -37,7 +38,7 @@ tryParseLint(std::span<Token> tokens) {
   return std::nullopt;
 }
 
-std::optional<OuterAttribute> tryParseOuterAttribute(std::span<Token> tokens) {
+std::optional<OuterAttribute> Parser::tryParseOuterAttribute(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   if (not(view[0].getKind() == TokenKind::Hash and
@@ -82,7 +83,7 @@ tryParseDenyAttribute(std::span<Token> tokens) {
   return std::nullopt;
 }
 
-std::optional<InnerAttribute> tryParseInnerAttribute(std::span<Token> tokens) {
+std::optional<InnerAttribute> Parser::tryParseInnerAttribute(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   if (not(view[0].getKind() == TokenKind::Hash and
@@ -101,7 +102,7 @@ std::optional<InnerAttribute> tryParseInnerAttribute(std::span<Token> tokens) {
 }
 
 std::optional<ClippyAttribute>
-tryParseClippyAttribute(std::span<Token> tokens) {
+Parser::tryParseClippyAttribute(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   if (view.front().getKind() == TokenKind::Hash) {

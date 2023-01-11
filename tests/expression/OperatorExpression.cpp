@@ -2,6 +2,7 @@
 
 #include "Lexer/Lexer.h"
 #include "OperatorExpression.h"
+#include "Parser/Parser.h"
 #include "gtest/gtest.h"
 
 using namespace rust_compiler::lexer;
@@ -18,8 +19,10 @@ TEST(OperatorExpressionTest, CheckOperatorExprSimple) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> op =
-      tryParseOperatorExpression(ts.getAsView());
+      parser.tryParseOperatorExpression(ts.getAsView());
 
   EXPECT_TRUE(op.has_value());
 };
@@ -34,8 +37,10 @@ TEST(OperatorExpressionTest, CheckOperatorExprSimple2) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> op =
-      tryParseOperatorExpression(ts.getAsView());
+      parser.tryParseOperatorExpression(ts.getAsView());
 
   EXPECT_TRUE(op.has_value());
 };
@@ -50,8 +55,10 @@ TEST(OperatorExpressionTest, CheckOperatorExprSimple3) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> op =
-      tryParseOperatorExpression(ts.getAsView());
+      parser.tryParseOperatorExpression(ts.getAsView());
 
   EXPECT_TRUE(op.has_value());
 };

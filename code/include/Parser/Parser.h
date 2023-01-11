@@ -1,6 +1,12 @@
 #pragma once
 
+#include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/ClippyAttribute.h"
+#include "AST/InnerAttribute.h"
 #include "AST/Module.h"
+#include "AST/OuterAttribute.h"
+#include "AST/UseDeclaration.h"
+#include "AST/UseTree.h"
 #include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
 
@@ -20,8 +26,8 @@ public:
 
   std::shared_ptr<ast::Module> parse();
 
-  //private:
-  
+  // private:
+
   std::optional<std::shared_ptr<ast::Item>>
   tryParseItem(std::span<lexer::Token> tokens, std::string_view modulePath);
 
@@ -69,6 +75,58 @@ public:
 
   std::optional<std::shared_ptr<ast::Expression>>
   tryParseLiteralExpression(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::Expression>>
+  tryParseOperatorExpression(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::Expression>>
+  tryParseOperatorFeedingExpression(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::Expression>>
+  tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens);
+
+  std::optional<ast::ArithmeticOrLogicalExpressionKind>
+  tryParserOperator(std::span<lexer::Token> tokens);
+
+  std::optional<ast::FunctionParameters>
+  tryParseFunctionParameters(std::span<lexer::Token> tokens);
+
+  std::optional<ast::FunctionParam>
+  tryParseFunctionParam(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::Expression>>
+      tryParseExpression(std::span<lexer::Token>);
+
+  std::optional<ast::UseDeclaration>
+  tryParseUseDeclaration(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<rust_compiler::ast::use_tree::UseTree>>
+  tryParseUseTree(std::span<lexer::Token> tokens);
+
+  std::optional<ast::use_tree::PathList>
+  tryParsePathList(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::Expression>>
+  tryParseReturnExpression(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::types::Type>>
+  tryParseType(std::span<lexer::Token> tokens);
+
+  std::optional<ast::OuterAttribute>
+  tryParseOuterAttribute(std::span<lexer::Token> tokens);
+
+  std::optional<ast::InnerAttribute>
+  tryParseInnerAttribute(std::span<lexer::Token> tokens);
+
+  std::optional<ast::ClippyAttribute>
+  tryParseClippyAttribute(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::types::Type>>
+  tryParsePrimitiveType(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::Expression>>
+tryParseNegationExpression(std::span<lexer::Token> tokens);
+
 };
 
 } // namespace rust_compiler::parser

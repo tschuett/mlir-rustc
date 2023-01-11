@@ -86,7 +86,7 @@
 
 * PGO + Instruction counters: where to optimize and not how to optimize
 
-
+* ThinLTO at MLIR
 
 * https://reviews.llvm.org/D137956
 

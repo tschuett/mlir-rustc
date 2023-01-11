@@ -14,4 +14,6 @@ size_t IdentifierPattern::getTokens() {
   return 1 + count;
 }
 
-} // namespace rust_compiler::ast
+std::string IdentifierPattern::getIdentifier() { return identifier; }
+
+} // namespace rust_compiler::ast::patterns

@@ -19,6 +19,8 @@ public:
   void setMut() { mut = true; }
   void setIdentifier(std::string_view id) { identifier = id; }
   size_t getTokens() override;
+
+  std::string getIdentifier();
 };
 
 } // namespace rust_compiler::ast::patterns

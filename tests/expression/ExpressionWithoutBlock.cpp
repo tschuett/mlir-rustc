@@ -2,6 +2,7 @@
 
 #include "Lexer/Lexer.h"
 #include "LiteralExpression.h"
+#include "Parser/Parser.h"
 #include "gtest/gtest.h"
 
 #include <string>
@@ -16,8 +17,10 @@ TEST(ExpressionWithoutBlockTest, CheckLiteralBlock) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
-      tryParseExpressionWithoutBlock(ts.getAsView());
+      parser.tryParseExpressionWithoutBlock(ts.getAsView());
 
   EXPECT_TRUE(wo.has_value());
 };
@@ -28,8 +31,10 @@ TEST(ExpressionWithoutBlockTest, CheckPathBlock1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
-      tryParseExpressionWithoutBlock(ts.getAsView());
+      parser.tryParseExpressionWithoutBlock(ts.getAsView());
 
   EXPECT_TRUE(wo.has_value());
 };
@@ -40,8 +45,10 @@ TEST(ExpressionWithoutBlockTest, CheckPathBlock2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
-      tryParseExpressionWithoutBlock(ts.getAsView());
+      parser.tryParseExpressionWithoutBlock(ts.getAsView());
 
   EXPECT_TRUE(wo.has_value());
 };
@@ -52,8 +59,10 @@ TEST(ExpressionWithoutBlockTest, CheckOperatorBlock1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
-      tryParseExpressionWithoutBlock(ts.getAsView());
+      parser.tryParseExpressionWithoutBlock(ts.getAsView());
 
   EXPECT_TRUE(wo.has_value());
 };
@@ -64,8 +73,10 @@ TEST(ExpressionWithoutBlockTest, CheckOperatorBlock2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
-      tryParseExpressionWithoutBlock(ts.getAsView());
+      parser.tryParseExpressionWithoutBlock(ts.getAsView());
 
   EXPECT_TRUE(wo.has_value());
 };

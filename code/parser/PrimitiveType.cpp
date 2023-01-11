@@ -3,13 +3,14 @@
 #include "AST/Types/PrimitiveTypes.h"
 #include "Lexer/Token.h"
 #include "Location.h"
+#include "Parser/Parser.h"
 
 #include <optional>
 
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::types::Type>>
-tryParsePrimitiveType(std::span<lexer::Token> tokens) {
+Parser::tryParsePrimitiveType(std::span<lexer::Token> tokens) {
 
   std::span<lexer::Token> view = tokens;
   Location loc = tokens.front().getLocation();

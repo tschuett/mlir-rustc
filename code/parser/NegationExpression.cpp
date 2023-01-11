@@ -3,6 +3,7 @@
 #include "AST/Expression.h"
 #include "AST/NegationExpression.h"
 #include "Lexer/Token.h"
+#include "Parser/Parser.h"
 
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
@@ -12,7 +13,7 @@ using namespace rust_compiler::lexer;
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::Expression>>
-tryParseNegationExpression(std::span<lexer::Token> tokens) {
+Parser::tryParseNegationExpression(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
   Location loc = tokens.front().getLocation();
 

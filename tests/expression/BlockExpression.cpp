@@ -1,11 +1,11 @@
-#include "Statement.h"
-
-#include "ExpressionWithoutBlock.h"
-
-#include "ReturnExpression.h"
-#include "ExpressionStatement.h"
 #include "BlockExpression.h"
+
+#include "ExpressionStatement.h"
+#include "ExpressionWithoutBlock.h"
 #include "Lexer/Lexer.h"
+#include "Parser/Parser.h"
+#include "ReturnExpression.h"
+#include "Statement.h"
 #include "gtest/gtest.h"
 
 using namespace rust_compiler::lexer;
@@ -18,8 +18,10 @@ TEST(BlockExpressionTest, CheckBlockExpr1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
-      tryParseBlockExpression(ts.getAsView());
+      parser.tryParseBlockExpression(ts.getAsView());
 
   EXPECT_TRUE(block.has_value());
 };
@@ -30,8 +32,10 @@ TEST(BlockExpressionTest, CheckBlockExpr2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
-      tryParseBlockExpression(ts.getAsView());
+      parser.tryParseBlockExpression(ts.getAsView());
 
   EXPECT_TRUE(block.has_value());
 };
@@ -42,12 +46,13 @@ TEST(BlockExpressionTest, CheckBlockExpr3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
-      tryParseBlockExpression(ts.getAsView());
+      parser.tryParseBlockExpression(ts.getAsView());
 
   EXPECT_TRUE(block.has_value());
 };
-
 
 TEST(BlockExpressionTest, CheckBlockExpr4) {
 
@@ -55,8 +60,10 @@ TEST(BlockExpressionTest, CheckBlockExpr4) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
-      tryParseBlockExpression(ts.getAsView());
+      parser.tryParseBlockExpression(ts.getAsView());
 
   EXPECT_TRUE(block.has_value());
 };
@@ -67,12 +74,13 @@ TEST(BlockExpressionTest, CheckBlockExpr5) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
-      tryParseBlockExpression(ts.getAsView());
+      parser.tryParseBlockExpression(ts.getAsView());
 
   EXPECT_TRUE(block.has_value());
 };
-
 
 TEST(BlockExpressionTest, CheckBlockExpr40) {
 
@@ -80,9 +88,10 @@ TEST(BlockExpressionTest, CheckBlockExpr40) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
-      tryParseBlockExpression(ts.getAsView());
+      parser.tryParseBlockExpression(ts.getAsView());
 
   EXPECT_TRUE(block.has_value());
 };
-

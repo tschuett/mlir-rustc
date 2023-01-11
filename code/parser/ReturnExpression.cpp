@@ -5,6 +5,7 @@
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Util.h"
+#include "Parser/Parser.h"
 
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
@@ -15,7 +16,7 @@ using namespace rust_compiler::ast;
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::Expression>>
-tryParseReturnExpression(std::span<Token> tokens) {
+Parser::tryParseReturnExpression(std::span<Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
   llvm::errs() << "tryParseReturnExpression"

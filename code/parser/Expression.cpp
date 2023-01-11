@@ -2,13 +2,15 @@
 
 #include <llvm/Support/raw_ostream.h>
 
+#include "Parser/Parser.h"
+
 using namespace rust_compiler::ast;
 using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::Expression>>
-tryParseExpression(std::span<lexer::Token> tokens) {
+Parser::tryParseExpression(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
     llvm::errs() << "tryParseExpression: "

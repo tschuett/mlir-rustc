@@ -4,6 +4,7 @@
 #include "FunctionParameters.h"
 #include "Lexer/Lexer.h"
 #include "LiteralExpression.h"
+#include "Parser/Parser.h"
 #include "PathInExpression.h"
 #include "ReturnExpression.h"
 #include "Statement.h"
@@ -23,8 +24,10 @@ TEST(ReturnExpressionTest, CheckReturnExpr) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ret =
-      tryParseReturnExpression(ts.getAsView());
+      parser.tryParseReturnExpression(ts.getAsView());
 
   EXPECT_TRUE(ret.has_value());
 };
@@ -39,8 +42,10 @@ TEST(ReturnExpressionTest, CheckReturnExpr1) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ret =
-      tryParseReturnExpression(ts.getAsView());
+      parser.tryParseReturnExpression(ts.getAsView());
 
   EXPECT_TRUE(ret.has_value());
 };
@@ -55,8 +60,10 @@ TEST(ReturnExpressionTest, CheckReturnExpr2) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ret =
-      tryParseReturnExpression(ts.getAsView());
+      parser.tryParseReturnExpression(ts.getAsView());
 
   EXPECT_TRUE(ret.has_value());
 };

@@ -22,7 +22,9 @@ namespace rust_compiler {
 // }
 
 mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
-  ScopedHashTableScope<llvm::StringRef, mlir::Value> varScope(symbolTable);
+  ScopedHashTableScope<llvm::StringRef,
+                       std::pair<mlir::Value, ast::VariableDeclaration *>>
+      varScope(symbolTable);
 
   OptimizationRemarkEmitter ORE = {f, &serializer};
 
@@ -37,10 +39,15 @@ mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   auto protoArgs = f->getSignature().getParameters().getParams();
 
   // Declare all the function arguments in the symbol table.
-  for (const auto nameValue : llvm::zip(protoArgs, entryBlock.getArguments())) {
-    if (failed(declare(*std::get<0>(nameValue), std::get<1>(nameValue))))
+  for (unsigned i = 0; i < entryBlock.getNumArguments(); ++i) {
+    if (failed(declare(protoArgs[i], entryBlock.getArgument(i))))
       return nullptr;
   }
+  //  for (const auto nameValue : llvm::zip(protoArgs,
+  //  entryBlock.getArguments())) {
+  //    if (failed(declare(std::get<0>(nameValue), std::get<1>(nameValue))))
+  //      return nullptr;
+  //  }
 
   // Set the insertion point in the builder to the beginning of the function
   // body, it will be used throughout the codegen to create operations in this

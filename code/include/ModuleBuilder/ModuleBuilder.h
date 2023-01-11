@@ -36,7 +36,12 @@ class ModuleBuilder {
   mlir::ModuleOp theModule;
   llvm::remarks::YAMLRemarkSerializer serializer;
 
-  llvm::ScopedHashTable<llvm::StringRef, mlir::Value> symbolTable;
+  llvm::ScopedHashTable<llvm::StringRef,
+                        std::pair<mlir::Value, ast::VariableDeclaration *>>
+      symbolTable;
+
+  /// A mapping for the functions that have been code generated to MLIR.
+  llvm::StringMap<mlir::func::FuncOp> functionMap;
 
 public:
   ModuleBuilder(std::string_view moduleName, llvm::raw_ostream &OS)

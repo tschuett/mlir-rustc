@@ -17,6 +17,8 @@
 #include <llvm/TargetParser/Host.h>
 #include <sstream>
 
+using namespace rust_compiler::parser;
+
 namespace rust_compiler::rustc {
 
 void buildCrate(std::string_view path, std::string_view edition) {

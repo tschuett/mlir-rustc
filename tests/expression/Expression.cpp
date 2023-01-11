@@ -1,6 +1,7 @@
 #include "Lexer/Lexer.h"
 #include "LiteralExpression.h"
 #include "NegationExpression.h"
+#include "Parser/Parser.h"
 #include "gtest/gtest.h"
 
 using namespace rust_compiler::lexer;
@@ -13,8 +14,10 @@ TEST(ExpressionTest, CheckLiteralExpr) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> lit =
-      tryParseLiteralExpression(ts.getAsView());
+      parser.tryParseLiteralExpression(ts.getAsView());
 
   EXPECT_TRUE(lit.has_value());
 };
@@ -25,8 +28,10 @@ TEST(ExpressionTest, CheckNegationExpr1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> neg =
-      tryParseNegationExpression(ts.getAsView());
+      parser.tryParseNegationExpression(ts.getAsView());
 
   EXPECT_TRUE(neg.has_value());
 };
@@ -37,8 +42,10 @@ TEST(ExpressionTest, CheckNegationExpr2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> neg =
-      tryParseNegationExpression(ts.getAsView());
+      parser.tryParseNegationExpression(ts.getAsView());
 
   EXPECT_TRUE(neg.has_value());
 };

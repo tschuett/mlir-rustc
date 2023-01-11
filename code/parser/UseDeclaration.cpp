@@ -3,6 +3,7 @@
 #include "AST/UseDeclaration.h"
 #include "AST/UseTree.h"
 #include "Lexer/Token.h"
+#include "Parser/Parser.h"
 #include "SimplePath.h"
 
 #include <optional>
@@ -12,10 +13,7 @@ using namespace rust_compiler::ast::use_tree;
 
 namespace rust_compiler::parser {
 
-static std::optional<std::shared_ptr<UseTree>>
-tryParseUseTree(std::span<Token> tokens);
-
-std::optional<PathList> tryParsePathList(std::span<Token> tokens) {
+std::optional<PathList> Parser::tryParsePathList(std::span<Token> tokens) {
   std::span<Token> view = tokens;
   PathList list{view.front().getLocation()};
 
@@ -74,8 +72,8 @@ std::optional<PathList> tryParsePathList(std::span<Token> tokens) {
   return std::nullopt;
 }
 
-static std::optional<std::shared_ptr<UseTree>>
-tryParseUseTree(std::span<Token> tokens) {
+std::optional<std::shared_ptr<UseTree>>
+Parser::tryParseUseTree(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   // printf("tryParseUseTree\n");
@@ -189,7 +187,8 @@ tryParseUseTree(std::span<Token> tokens) {
   return std::nullopt;
 }
 
-std::optional<UseDeclaration> tryParseUseDeclaration(std::span<Token> tokens) {
+std::optional<UseDeclaration>
+Parser::tryParseUseDeclaration(std::span<Token> tokens) {
   std::span<Token> view = tokens;
   UseDeclaration useDeclaration = {view.front().getLocation()};
 
