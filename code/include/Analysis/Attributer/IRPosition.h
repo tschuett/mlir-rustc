@@ -1,9 +1,11 @@
 #pragma once
 
+#include "mlir/Dialect/Func/IR/FuncOps.h"
+
 #include <mlir/IR/Operation.h>
 #include <mlir/IR/Value.h>
 
-namespace rust_compiler::analysis::attributer {
+namespace rust_compiler::analysis::attributor {
 
 // Represents a position in the IR.
 // This may directly reference an MLIR instance such as a Value or Operation or
@@ -13,9 +15,7 @@ namespace rust_compiler::analysis::attributer {
 // llvm/Transforms/IPO/Attributor.h).
 
 class IRPosition {
-  enum class Kind {
-    ReturnedValue,
-  };
+  enum class Kind { ReturnedValue, Function };
 
 public:
   static const IRPosition EmptyKey;
@@ -25,12 +25,19 @@ public:
     return IRPosition(Kind::ReturnedValue, op, resultIdx);
   }
 
+  static IRPosition forFuncOp(mlir::func::FuncOp *op) {
+    return IRPosition(Kind::Function, op, 0);
+  }
+
   bool isReturnedValue() const { return kind == Kind::ReturnedValue; }
 
   void *getPosition() { return ptr; }
 
   // Conversion into a void * to allow reuse of pointer hashing.
   operator void *() const { return ptr; }
+
+  void print(llvm::raw_ostream &os) const;
+  void print(llvm::raw_ostream &os, mlir::AsmState &asmState) const;
 
 private:
   template <typename T, typename Enable> friend struct llvm::DenseMapInfo;
@@ -49,7 +56,7 @@ private:
 
 namespace llvm {
 
-using rust_compiler::analysis::attributer::IRPosition;
+using rust_compiler::analysis::attributor::IRPosition;
 
 // Helper that allows Position as a key in a DenseMap.
 template <> struct DenseMapInfo<IRPosition> {

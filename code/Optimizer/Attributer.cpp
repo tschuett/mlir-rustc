@@ -23,7 +23,7 @@ public:
 
 } // namespace
 
-using namespace rust_compiler::analysis::attributer;
+using namespace rust_compiler::analysis::attributor;
 
 AttributerPass::AttributerPass(const AttributerPass &pass)
     : rust_compiler::optimizer::impl::AttributerLiteBase<AttributerPass>(pass) {}
@@ -35,7 +35,7 @@ void AttributerPass::runOnOperation() {
 //  module.walk([&](mlir::func::FuncOp *f) {
 //  });
 
-  Attributer attr = {module};
+  Attributor attr = {module};
 }
 
 std::unique_ptr<mlir::Pass> createAttributerPass() {

@@ -8,6 +8,9 @@ namespace rust_compiler::ast {
 class LiteralPattern : public PatternWithoutRange {
 
 public:
+  LiteralPattern(Location loc)
+      : PatternWithoutRange(loc, PatternWithoutRangeKind::LiteralPattern) {}
+
   size_t getTokens() override;
 };
 

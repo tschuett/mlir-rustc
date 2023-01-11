@@ -6,9 +6,9 @@
 
 #include <mlir/IR/BuiltinOps.h>
 
-namespace rust_compiler::analysis::attributer {
+namespace rust_compiler::analysis::attributor {
 
-class Attributer {
+class Attributor {
   mlir::ModuleOp module;
 
   /// A nested map to lookup abstract attributes based on the argument position
@@ -66,7 +66,18 @@ class Attributer {
   }
 
 public:
-  Attributer(mlir::ModuleOp module);
+  Attributor(mlir::ModuleOp module);
+
+  /// This method should be used in conjunction with the `getAAFor` method and
+  /// with the DepClass enum passed to the method set to None. This can
+  /// be beneficial to avoid false dependences but it requires the users of
+  /// `getAAFor` to explicitly record true dependences through this method.
+  /// The \p DepClass flag indicates if the dependence is striclty necessary.
+  /// That means for required dependences, if \p FromAA changes to an invalid
+  /// state, \p ToAA can be moved to a pessimistic fixpoint because it required
+  /// information from \p FromAA but none are available anymore.
+  void recordDependence(const AbstractElement &FromAA,
+                        const AbstractElement &ToAA, DepClass DepClass);
 
   template <typename AAType>
   const AAType &getOrCreateAAFor(IRPosition IRP,
@@ -81,11 +92,20 @@ public:
     }
   }
 
+  template <typename AAType>
+  const AAType &getOrCreateAAFor(const IRPosition &IRP) {
+    return getOrCreateAAFor<AAType>(IRP, /* QueryingAA */ nullptr,
+                                    DepClass::NONE);
+  }
+
   void setup();
 
   void run();
 
 private:
+  /// Run `::update` on \p AA and track the dependences queried while doing so.
+  /// Also adjust the state if we know further updates are not necessary.
+  ChangeStatus updateAA(AbstractElement &AA);
 };
 
-} // namespace rust_compiler::analysis::attributer
+} // namespace rust_compiler::analysis::attributor

@@ -10,6 +10,7 @@
 #include "AST/Module.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Statement.h"
+#include "AST/VariableDeclaration.h"
 #include "Mir/MirDialect.h"
 #include "Target.h"
 
@@ -85,7 +86,7 @@ private:
   mlir::Value emitReturnExpression(std::shared_ptr<ast::ReturnExpression> ret);
   /// Declare a variable in the current scope, return success if the variable
   /// wasn't declared yet.
-  //  mlir::LogicalResult declare(VarDeclExprAST &var, mlir::Value value);
+  mlir::LogicalResult declare(ast::VariableDeclaration &var, mlir::Value value);
 
   /// Helper conversion for a Toy AST location to an MLIR location.
   mlir::Location getLocation(const Location &loc) {

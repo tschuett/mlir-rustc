@@ -31,14 +31,14 @@ tryParseFunctionParameters(std::span<lexer::Token> tokens) {
 
   std::optional<ast::FunctionParam> param = tryParseFunctionParam(view);
 
-  llvm::errs() << "tryParseFunctionParameters: " << param.has_value() << "\n";
+  //  llvm::errs() << "tryParseFunctionParameters: " << param.has_value() << "\n";
 
   if (param) {
     view = view.subspan((*param).getTokens());
     params.addFunctionParam(*param);
 
-    llvm::errs() << "tryParseFunctionParameters: found first"
-                 << "\n";
+    //llvm::errs() << "tryParseFunctionParameters: found first"
+    //             << "\n";
 
     if (view.front().getKind() == TokenKind::ParenClose) {
       return params;
@@ -49,8 +49,8 @@ tryParseFunctionParameters(std::span<lexer::Token> tokens) {
         view = view.subspan(1);
         std::optional<ast::FunctionParam> param = tryParseFunctionParam(view);
         if (param) {
-          llvm::errs() << "tryParseFunctionParameters: found param"
-                       << "\n";
+//          llvm::errs() << "tryParseFunctionParameters: found param"
+//                       << "\n";
           view = view.subspan((*param).getTokens());
           params.addFunctionParam(*param);
         }

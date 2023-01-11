@@ -25,6 +25,7 @@ void ModuleBuilder::build(std::shared_ptr<ast::Module> mod, Target &target) {
   for (auto f : mod->getFuncs()) {
     buildFun(f);
   }
+  //  module->print(llvm::outs());
 }
 
 std::optional<mlir::Value>
@@ -39,15 +40,15 @@ ModuleBuilder::emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
   return result;
 }
 
-/// Declare a variable in the current scope, return success if the variable
-/// wasn't declared yet.
-// mlir::LogicalResult ModuleBuilder::declare(VarDeclExprAST &var,
-//                                            mlir::Value value) {
-//   if (symbolTable.count(var.getName()))
-//     return mlir::failure();
-//   symbolTable.insert(var.getName(), {value, &var});
-//   return mlir::success();
-// }
+// Declare a variable in the current scope, return success if the variable
+// wasn't declared yet.
+mlir::LogicalResult ModuleBuilder::declare(VarDeclExprAST &var,
+                                           mlir::Value value) {
+  if (symbolTable.count(var.getName()))
+    return mlir::failure();
+  symbolTable.insert(var.getName(), {value, &var});
+  return mlir::success();
+}
 
 } // namespace rust_compiler
 

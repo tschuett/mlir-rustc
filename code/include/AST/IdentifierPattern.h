@@ -13,7 +13,8 @@ class IdentifierPattern : public PatternWithoutRange {
   std::string identifier;
 
 public:
-  IdentifierPattern(Location loc) : PatternWithoutRange(loc) {}
+  IdentifierPattern(Location loc)
+      : PatternWithoutRange(loc, PatternWithoutRangeKind::IdentifierPattern) {}
   void setRef() { ref = true; }
   void setMut() { mut = true; }
   void setIdentifier(std::string_view id) { identifier = id; }

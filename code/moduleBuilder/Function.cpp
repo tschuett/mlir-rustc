@@ -34,15 +34,13 @@ mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
 
   // Let's start the body of the function now!
   mlir::Block &entryBlock = function.front();
-  // auto protoArgs = f->getSignature().getArgs();
+  auto protoArgs = f->getSignature().getParameters().getParams();
 
-  // FIXME
   // Declare all the function arguments in the symbol table.
-  //  for (const auto nameValue : llvm::zip(protoArgs,
-  //  entryBlock.getArguments())) {
-  //    if (failed(declare(*std::get<0>(nameValue), std::get<1>(nameValue))))
-  //      return nullptr;
-  //  }
+  for (const auto nameValue : llvm::zip(protoArgs, entryBlock.getArguments())) {
+    if (failed(declare(*std::get<0>(nameValue), std::get<1>(nameValue))))
+      return nullptr;
+  }
 
   // Set the insertion point in the builder to the beginning of the function
   // body, it will be used throughout the codegen to create operations in this
