@@ -9,10 +9,11 @@
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::ast::patterns;
 
 namespace rust_compiler::parser {
 
-std::optional<std::shared_ptr<ast::PatternWithoutRange>>
+std::optional<std::shared_ptr<ast::patterns::PatternWithoutRange>>
 tryParseIdentifierPattern(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
@@ -39,19 +40,19 @@ tryParseIdentifierPattern(std::span<lexer::Token> tokens) {
   if (view.front().isIdentifier()) {
     pattern.setIdentifier(view.front().getIdentifier());
     return std::static_pointer_cast<PatternWithoutRange>(
-        std::make_shared<ast::IdentifierPattern>(pattern));
+        std::make_shared<ast::patterns::IdentifierPattern>(pattern));
   }
 
   if (view[1].isIdentifier()) {
     pattern.setIdentifier(view[1].getIdentifier());
     return std::static_pointer_cast<PatternWithoutRange>(
-        std::make_shared<ast::IdentifierPattern>(pattern));
+        std::make_shared<ast::patterns::IdentifierPattern>(pattern));
   }
 
   if (view[2].isIdentifier()) {
     pattern.setIdentifier(view[2].getIdentifier());
     return std::static_pointer_cast<PatternWithoutRange>(
-        std::make_shared<ast::IdentifierPattern>(pattern));
+        std::make_shared<ast::patterns::IdentifierPattern>(pattern));
   }
 
   // FIXME add PatternNoTopAlt

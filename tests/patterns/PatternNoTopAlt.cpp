@@ -13,7 +13,7 @@ TEST(PatternNoTopAltTest, CheckIdentifierPattern1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  std::optional<std::shared_ptr<rust_compiler::ast::PatternNoTopAlt>> pattern =
+  std::optional<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>> pattern =
       tryParsePatternNoTopAlt(ts.getAsView());
 
   EXPECT_TRUE(pattern.has_value());

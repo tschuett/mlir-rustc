@@ -4,7 +4,7 @@
 
 namespace rust_compiler::ast {
 
-void FunctionParam::setName(std::shared_ptr<ast::PatternNoTopAlt> _name) {
+void FunctionParam::setName(std::shared_ptr<ast::patterns::PatternNoTopAlt> _name) {
   name = _name;
 }
 

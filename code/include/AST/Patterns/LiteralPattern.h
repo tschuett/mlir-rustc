@@ -3,7 +3,7 @@
 #include "AST/AST.h"
 #include "AST/PatternWithoutRange.h"
 
-namespace rust_compiler::ast {
+namespace rust_compiler::ast::patterns {
 
 class LiteralPattern : public PatternWithoutRange {
 
@@ -14,4 +14,4 @@ public:
   size_t getTokens() override;
 };
 
-} // namespace rust_compiler::ast
+} // namespace rust_compiler::ast::patterns

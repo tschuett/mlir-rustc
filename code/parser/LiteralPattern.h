@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AST/PatternNoTopAlt.h"
+#include "AST/Patterns/PatternNoTopAlt.h"
 #include "Lexer/Token.h"
 
 #include <memory>
@@ -9,7 +9,7 @@
 
 namespace rust_compiler::parser {
 
-std::optional<std::shared_ptr<ast::PatternNoTopAlt>>
+  std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 tryParseLiteralPattern(std::span<lexer::Token> tokens);
 
 }

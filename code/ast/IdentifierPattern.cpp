@@ -1,6 +1,6 @@
-#include "AST/IdentifierPattern.h"
+#include "AST/Patterns/IdentifierPattern.h"
 
-namespace rust_compiler::ast {
+namespace rust_compiler::ast::patterns {
 
 size_t IdentifierPattern::getTokens() {
   size_t count = 0;

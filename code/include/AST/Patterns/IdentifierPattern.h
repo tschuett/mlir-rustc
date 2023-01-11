@@ -8,14 +8,17 @@
 namespace rust_compiler::ast::patterns {
 
 class IdentifierPattern : public PatternWithoutRange {
-  bool ref;
-  bool mut;
+  bool ref = false;
+  bool mut = false;
   std::string identifier;
 
 public:
+  IdentifierPattern(Location loc)
+      : PatternWithoutRange(loc, PatternWithoutRangeKind::IdentifierPattern) {}
   void setRef() { ref = true; }
   void setMut() { mut = true; }
   void setIdentifier(std::string_view id) { identifier = id; }
+  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast::patterns

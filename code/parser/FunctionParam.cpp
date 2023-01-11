@@ -15,7 +15,7 @@ tryParseFunctionParam(std::span<lexer::Token> tokens) {
 //  llvm::errs() << "tryParseFunctionParam"
 //               << "\n";
 
-  std::optional<std::shared_ptr<ast::PatternNoTopAlt>> notopalt =
+  std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>> notopalt =
       tryParsePatternNoTopAlt(view);
 
   //llvm::errs() << "tryParseFunctionParam " << notopalt.has_value() << "\n";
