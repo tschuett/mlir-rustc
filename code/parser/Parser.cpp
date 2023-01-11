@@ -35,7 +35,7 @@ std::shared_ptr<ast::Module> Parser::parse() {
   while (tokens.size() > 0) {
     last = tokens.size();
 
-    printTokenState(tokens);
+    // printTokenState(tokens);
 
     std::optional<std::shared_ptr<ast::Item>> item =
         tryParseItem(tokens, modulePath);
@@ -43,6 +43,8 @@ std::shared_ptr<ast::Module> Parser::parse() {
       llvm::errs() << "found tokens: " << (*item)->getTokens() << "\n";
       tokens = tokens.subspan((*item)->getTokens());
       module.addItem(*item);
+      llvm::errs() << "added item"
+                   << "\n";
     } else {
       return std::make_shared<ast::Module>(module);
     }

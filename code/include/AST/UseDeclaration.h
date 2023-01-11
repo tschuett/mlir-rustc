@@ -11,7 +11,7 @@ class UseDeclaration : public Item {
   std::shared_ptr<use_tree::UseTree> tree;
 
 public:
-  UseDeclaration(rust_compiler::Location location) : Item(location){};
+  UseDeclaration(rust_compiler::Location location) : Item(location, ItemKind::UseDeclaration){};
 
   void setComponent(std::shared_ptr<use_tree::UseTree> tree);
 

@@ -19,8 +19,8 @@ std::optional<std::shared_ptr<ast::Expression>>
 Parser::tryParseReturnExpression(std::span<Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
-  llvm::errs() << "tryParseReturnExpression"
-               << "\n";
+//  llvm::errs() << "tryParseReturnExpression"
+//               << "\n";
 
   // printTokenState(view);
 
@@ -35,13 +35,13 @@ Parser::tryParseReturnExpression(std::span<Token> tokens) {
       view.front().getKeyWordKind() == KeyWordKind::KW_RETURN) {
     view = view.subspan(1);
 
-    llvm::errs() << "tryParseReturnExpression: found return"
-                 << "\n";
+//    llvm::errs() << "tryParseReturnExpression: found return"
+//                 << "\n";
 
     std::optional<std::shared_ptr<ast::Expression>> expr =
         tryParseExpression(view);
 
-    llvm::errs() << "tryParseReturnExpression: " << expr.has_value() << "\n";
+    //    llvm::errs() << "tryParseReturnExpression: " << expr.has_value() << "\n";
 
     if (expr) {
       auto foo = std::make_shared<ReturnExpression>(
@@ -53,16 +53,16 @@ Parser::tryParseReturnExpression(std::span<Token> tokens) {
     }
   }
 
-  printf("tryParseReturnExpression: failed: %lu\n", tokens.size());
+  //  printf("tryParseReturnExpression: failed: %lu\n", tokens.size());
   if (view[0].isIdentifier()) {
-    printf("%s s\n", view[0].getIdentifier().c_str());
+    //printf("%s s\n", view[0].getIdentifier().c_str());
   } else {
-    printf("%s x%sx\n", Token2String(view[0].getKind()).c_str(),
-           view[0].getIdentifier().c_str());
+    //printf("%s x%sx\n", Token2String(view[0].getKind()).c_str(),
+    //       view[0].getIdentifier().c_str());
     if (isKeyWord(view[0].getIdentifier())) {
       if (KeyWord2String(view.front().getKeyWordKind())) {
-        printf("found keyword: %s\n",
-               (*KeyWord2String(view.front().getKeyWordKind())).c_str());
+      //  printf("found keyword: %s\n",
+      //         (*KeyWord2String(view.front().getKeyWordKind())).c_str());
       }
     }
   }

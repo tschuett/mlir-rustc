@@ -25,13 +25,13 @@ void Function::setBody(std::shared_ptr<BlockExpression> _body) { body = _body; }
 size_t Function::getTokens() {
   size_t count = 0;
 
-  llvm::errs() << "Function::getTokens()"
-               << "\n";
+//  llvm::errs() << "Function::getTokens()"
+//               << "\n";
 
-  llvm::errs() << "Function::getTokens(): " << signature.getTokens() << "\n";
+  //llvm::errs() << "Function::getTokens(): " << signature.getTokens() << "\n";
 
-  if (body)
-    llvm::errs() << "Function::getTokens(): " << body->getTokens() << "\n";
+//  if (body)
+//    llvm::errs() << "Function::getTokens(): " << body->getTokens() << "\n";
 
   count += signature.getTokens();
 

@@ -21,12 +21,15 @@ namespace rust_compiler {
 //   return r;
 // }
 
-mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
+mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
   ScopedHashTableScope<llvm::StringRef,
                        std::pair<mlir::Value, ast::VariableDeclaration *>>
       varScope(symbolTable);
 
   OptimizationRemarkEmitter ORE = {f, &serializer};
+
+  llvm::outs() << "build function signature"
+               << "\n";
 
   builder.setInsertionPointToEnd(theModule.getBody());
   mlir::func::FuncOp function =
@@ -38,11 +41,18 @@ mlir::func::FuncOp ModuleBuilder::buildFun(std::shared_ptr<ast::Function> f) {
   mlir::Block &entryBlock = function.front();
   auto protoArgs = f->getSignature().getParameters().getParams();
 
+  llvm::outs() << "declare function arguments"
+               << "\n";
+
   // Declare all the function arguments in the symbol table.
   for (unsigned i = 0; i < entryBlock.getNumArguments(); ++i) {
     if (failed(declare(protoArgs[i], entryBlock.getArgument(i))))
       return nullptr;
   }
+
+  llvm::outs() << "declared function arguments"
+               << "\n";
+
   //  for (const auto nameValue : llvm::zip(protoArgs,
   //  entryBlock.getArguments())) {
   //    if (failed(declare(std::get<0>(nameValue), std::get<1>(nameValue))))
@@ -87,6 +97,9 @@ ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
   SmallVector<mlir::Type, 10> argTypes;
   TypeBuilder typeBuilder;
   ast::FunctionParameters params = sig.getParameters();
+
+      llvm::outs() << "buildFunctionSignature"
+               << "\n";
 
   for (auto &param : params.getParams()) {
     mlir::Type type = typeBuilder.getType(param.getType());

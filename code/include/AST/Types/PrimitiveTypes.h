@@ -36,9 +36,8 @@ class PrimitiveType : public Type {
   PrimitiveTypeKind kind;
 
 public:
-  PrimitiveType(Location loc, PrimitiveTypeKind kind) : Type(loc), kind(kind) {}
-
-  size_t getTokens() override { return 1; };
+  PrimitiveType(Location loc, PrimitiveTypeKind kind)
+      : Type(loc, TypeKind::PrimitiveType), kind(kind) {}
 
   PrimitiveTypeKind getKind() const { return kind; }
 };

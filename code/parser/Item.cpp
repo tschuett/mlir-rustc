@@ -19,8 +19,8 @@ Parser::tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
 
   std::span<Token> view = tokens;
 
-  llvm::errs() << "tryParseItem"
-               << "\n";
+//  llvm::errs() << "tryParseItem"
+//               << "\n";
 
   if (view.front().getKind() == TokenKind::Hash) {
     if (view[1].getKind() == TokenKind::Not) {

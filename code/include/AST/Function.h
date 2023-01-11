@@ -15,7 +15,7 @@ class Function : public Item {
   FunctionQualifiers qualifiers;
 
 public:
-  Function(Location loc) : Item(loc), signature(loc), qualifiers(loc) {}
+  Function(Location loc) : Item(loc, ItemKind::Function), signature(loc), qualifiers(loc) {}
 
   FunctionSignature getSignature() const;
   Location getLocation() const;

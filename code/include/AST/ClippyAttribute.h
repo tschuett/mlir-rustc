@@ -17,7 +17,7 @@ class ClippyAttribute : public Item {
 public:
   ClippyAttribute(rust_compiler::Location location,
                   std::span<std::string> _lints, unsigned lintTokens)
-      : Item{location}, lintTokens(lintTokens) {
+    : Item(location, ItemKind::ClippyAttribute), lintTokens(lintTokens) {
     lints = {_lints.begin(), _lints.end()};
   }
 

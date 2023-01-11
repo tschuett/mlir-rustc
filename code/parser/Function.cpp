@@ -152,8 +152,8 @@ std::optional<ast::Function> Parser::tryParseFunction(std::span<lexer::Token> to
 
   Function f = {view.front().getLocation()};
 
-  llvm::errs() << "tryParseFunction: start"
-               << "\n";
+//  llvm::errs() << "tryParseFunction: start"
+//               << "\n";
   // printTokenState(view);
 
   std::optional<FunctionSignature> sig = tryParseFunctionSignature(view);

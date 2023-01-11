@@ -7,7 +7,7 @@ namespace rust_compiler::ast {
 
 class InnerAttribute : public Item {
 public:
-  InnerAttribute(rust_compiler::Location location) : Item(location) {}
+  InnerAttribute(rust_compiler::Location location) : Item(location, ItemKind::InnerAttribute) {}
 
   size_t getTokens() override;
 };

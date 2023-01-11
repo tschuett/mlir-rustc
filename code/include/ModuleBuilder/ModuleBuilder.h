@@ -13,6 +13,7 @@
 #include "AST/VariableDeclaration.h"
 #include "Mir/MirDialect.h"
 #include "Target.h"
+#include "TypeBuilder.h"
 
 #include <llvm/ADT/ScopedHashTable.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
@@ -35,6 +36,7 @@ class ModuleBuilder {
   mlir::OpBuilder builder;
   mlir::ModuleOp theModule;
   llvm::remarks::YAMLRemarkSerializer serializer;
+  TypeBuilder typeBuilder;
 
   llvm::ScopedHashTable<llvm::StringRef,
                         std::pair<mlir::Value, ast::VariableDeclaration *>>
@@ -46,7 +48,8 @@ class ModuleBuilder {
 public:
   ModuleBuilder(std::string_view moduleName, llvm::raw_ostream &OS)
       : moduleName(moduleName), context(), builder(&context),
-        serializer(OS, llvm::remarks::SerializerMode::Separate) {
+        serializer(OS, llvm::remarks::SerializerMode::Separate),
+        typeBuilder(builder) {
     context.getOrLoadDialect<Mir::MirDialect>();
     theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
   };
@@ -54,7 +57,7 @@ public:
   void build(std::shared_ptr<ast::Module> m, Target &target);
 
 private:
-  mlir::func::FuncOp buildFun(std::shared_ptr<ast::Function> f);
+  mlir::func::FuncOp emitFun(std::shared_ptr<ast::Function> f);
   mlir::func::FuncOp buildFunctionSignature(ast::FunctionSignature sig,
                                             mlir::Location locaction);
   std::optional<mlir::Value>
@@ -76,7 +79,7 @@ private:
 
   void buildExpressionStatement(std::shared_ptr<ast::ExpressionStatement> expr);
 
-  void buildItem(std::shared_ptr<ast::Item> item);
+  // void buildItem(std::shared_ptr<ast::Item> item);
   void emitItemDeclaration(std::shared_ptr<ast::ItemDeclaration> item);
 
   mlir::Value emitArithmeticOrLogicalExpression(
@@ -84,6 +87,9 @@ private:
 
   mlir::Value
   emitOperatorExpression(std::shared_ptr<ast::OperatorExpression> opr);
+
+  void emitItem(std::shared_ptr<ast::Item> item);
+  void emitModule(std::shared_ptr<ast::Module> module);
 
   mlir::Value
   emitLiteralExpression(std::shared_ptr<ast::LiteralExpression> lit);
@@ -99,6 +105,7 @@ private:
                                      loc.getLineNumber(),
                                      loc.getColumnNumber());
   }
+  mlir::Type getType(std::shared_ptr<ast::types::Type>);
 };
 
 } // namespace rust_compiler

@@ -18,9 +18,19 @@ namespace rust_compiler::ast::types {
 
 // trait types
 
+enum class TypeKind {
+  PrimitiveType
+};
+
 class Type : public Node {
+  TypeKind kind;
+
 public:
-  Type(Location loc) : Node(loc) {}
+  Type(Location loc, TypeKind kind) : Node(loc) {}
+
+  TypeKind getKind() const { return kind; }
+
+  size_t getTokens() override { return 1; };
 };
 
 } // namespace rust_compiler::ast::types
