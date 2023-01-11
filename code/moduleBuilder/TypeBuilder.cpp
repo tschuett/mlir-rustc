@@ -65,6 +65,7 @@ mlir::Type TypeBuilder::getType(std::shared_ptr<ast::types::Type> type) {
       return builder.getF32Type();
     }
     default: {
+      llvm::outs() << "unknown type" << "\n";
       exit(EXIT_FAILURE);
     }
     }

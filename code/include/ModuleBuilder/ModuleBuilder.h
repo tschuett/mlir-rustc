@@ -26,6 +26,7 @@
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/IR/Verifier.h>
 #include <string_view>
+#include <mlir/Dialect/Func/IR/FuncOps.h>
 
 namespace rust_compiler {
 
@@ -48,10 +49,11 @@ class ModuleBuilder {
 public:
   ModuleBuilder(std::string_view moduleName, llvm::raw_ostream &OS)
       : moduleName(moduleName), context(), builder(&context),
-        serializer(OS, llvm::remarks::SerializerMode::Separate),
-        typeBuilder(builder) {
+        serializer(OS, llvm::remarks::SerializerMode::Separate) {
     context.getOrLoadDialect<Mir::MirDialect>();
+    context.getOrLoadDialect<mlir::func::FuncDialect>();
     theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
+    typeBuilder = {mlir::Builder(&context)};
   };
 
   void build(std::shared_ptr<ast::Module> m, Target &target);
