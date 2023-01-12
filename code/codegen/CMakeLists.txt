@@ -3,7 +3,6 @@ add_library(codegen
            PassPipeline.cpp
            DumpLLVMIR.cpp
            LowerToLLVM.cpp
-           TypeBuilder.cpp
            )
 
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ModuleBuilder/Target.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/Expression.h"
@@ -13,6 +12,7 @@
 #include "AST/Statement.h"
 #include "AST/VariableDeclaration.h"
 #include "Mir/MirDialect.h"
+#include "ModuleBuilder/Target.h"
 #include "Target.h"
 
 #include <llvm/ADT/ScopedHashTable.h>
@@ -48,8 +48,8 @@ class ModuleBuilder {
 
 public:
   ModuleBuilder(std::string_view moduleName, Target *target,
-                llvm::raw_ostream &OS)
-      : moduleName(moduleName), context(), builder(&context),
+                llvm::raw_ostream &OS, mlir::MLIRContext &context)
+      : moduleName(moduleName), builder(&context),
         serializer(OS, llvm::remarks::SerializerMode::Separate) {
     context.getOrLoadDialect<Mir::MirDialect>();
     context.getOrLoadDialect<mlir::func::FuncDialect>();
@@ -76,8 +76,8 @@ private:
 
   mlir::Value
   emitExpressionWithBlock(std::shared_ptr<ast::ExpressionWithBlock> expr);
-  mlir::Value emitExpressionWithoutBlock(
-      std::shared_ptr<ast::ExpressionWithoutBlock> expr);
+  mlir::Value
+  emitExpressionWithoutBlock(std::shared_ptr<ast::ExpressionWithoutBlock> expr);
 
   void buildExpressionStatement(std::shared_ptr<ast::ExpressionStatement> expr);
 
@@ -96,7 +96,7 @@ private:
   mlir::Value
   emitLiteralExpression(std::shared_ptr<ast::LiteralExpression> lit);
 
-  mlir::Value emitReturnExpression(std::shared_ptr<ast::ReturnExpression> ret);
+  void emitReturnExpression(std::shared_ptr<ast::ReturnExpression> ret);
   /// Declare a variable in the current scope, return success if the variable
   /// wasn't declared yet.
   mlir::LogicalResult declare(ast::VariableDeclaration &var, mlir::Value value);

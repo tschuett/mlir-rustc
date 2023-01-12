@@ -8,7 +8,6 @@ add_library(modulebuilder
            Function.cpp
            Item.cpp
            OperatorExpression.cpp
-           TypeBuilder.cpp
            Types.cpp
            Expression.cpp
            )

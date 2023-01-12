@@ -8,7 +8,7 @@ size_t ReturnExpression::getTokens() {
   if (expr)
     count += expr->getTokens();
 
-  if (hasTrailingSemi)
+  if (getHasTrailingSemi())
     ++count;
 
   return count;

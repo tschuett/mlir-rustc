@@ -15,7 +15,7 @@ size_t BlockExpression::getTokens() {
 
   count += stmts->getTokens();
 
-  if (hasTrailingSemi)
+  if (getHasTrailingSemi())
     ++count;
 
   return 1 + count + 1; // { }

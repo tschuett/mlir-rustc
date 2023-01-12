@@ -12,18 +12,17 @@ namespace rust_compiler {
 mlir::Value ModuleBuilder::emitExpressionWithoutBlock(
     std::shared_ptr<ast::ExpressionWithoutBlock> expr) {
 
-      llvm::outs() << "emitExpressionWithoutBlock"
+  llvm::outs() << "emitExpressionWithoutBlock"
                << "\n";
 
-
-  switch (expr->getKind()) {
+  switch (expr->getWithoutBlockKind()) {
   case ast::ExpressionWithoutBlockKind::LiteralExpression: {
     return emitLiteralExpression(
         std::static_pointer_cast<ast::LiteralExpression>(expr));
   }
   case ast::ExpressionWithoutBlockKind::ReturnExpression: {
-    return emitReturnExpression(
-        std::static_pointer_cast<ast::ReturnExpression>(expr));
+    emitReturnExpression(std::static_pointer_cast<ast::ReturnExpression>(expr));
+    return mlir::Value();
   }
   case ast::ExpressionWithoutBlockKind::OperatorExpression: {
     return emitOperatorExpression(

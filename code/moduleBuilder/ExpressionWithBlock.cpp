@@ -11,11 +11,13 @@ using namespace rust_compiler::ast;
 mlir::Value ModuleBuilder::emitExpressionWithBlock(
     std::shared_ptr<ExpressionWithBlock> expr) {
 
-  llvm::outs() << "emitExpressionWithBlock"
-               << "\n";
+  llvm::outs() << "emitExpressionWithBlock: "
+               << uint32_t(expr->getWithBlockKind()) << "\n";
 
-  switch (expr->getKind()) {
+  switch (expr->getWithBlockKind()) {
   case ExpressionWithBlockKind::BlockExpression: {
+    llvm::outs() << "emitExpressionWithBlock: block"
+                 << "\n";
     std::shared_ptr<ast::BlockExpression> blk =
         std::static_pointer_cast<ast::BlockExpression>(expr);
     std::optional<mlir::Value> result = emitBlockExpression(blk);
@@ -24,18 +26,33 @@ mlir::Value ModuleBuilder::emitExpressionWithBlock(
     return nullptr;
   }
   case ExpressionWithBlockKind::UnsafeBlockExpression: {
+    llvm::outs() << "emitExpressionWithBlock: unsafe"
+                 << "\n";
     break;
   }
   case ExpressionWithBlockKind::LoopExpression: {
+    llvm::outs() << "emitExpressionWithBlock: loop"
+                 << "\n";
     break;
   }
   case ExpressionWithBlockKind::IfExpression: {
+    llvm::outs() << "emitExpressionWithBlock: if"
+                 << "\n";
     break;
   }
   case ExpressionWithBlockKind::IfLetExpression: {
+    llvm::outs() << "emitExpressionWithBlock: iflet"
+                 << "\n";
     break;
   }
   case ExpressionWithBlockKind::MatchExpression: {
+    llvm::outs() << "emitExpressionWithBlock: match"
+                 << "\n";
+    break;
+  }
+  case ExpressionWithBlockKind::Unknown: {
+    llvm::outs() << "emitExpressionWithBlock: unknown UPS!!!!"
+                 << "\n";
     break;
   }
   }

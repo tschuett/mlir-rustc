@@ -43,6 +43,8 @@ Parser::tryParseBorrowExpression(std::span<lexer::Token> tokens) {
   } else {
     return std::nullopt;
   }
+
+  return std::nullopt;
 }
 
 } // namespace rust_compiler::parser

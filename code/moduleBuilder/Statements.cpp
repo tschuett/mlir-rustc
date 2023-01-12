@@ -48,14 +48,17 @@ void ModuleBuilder::emitItemDeclaration(
 std::optional<mlir::Value>
 ModuleBuilder::emitStatements(std::shared_ptr<ast::Statements> stmts) {
 
-  llvm::outs() << "emitStatements: " << stmts->getStmts().size() << "\n";
+  llvm::outs() << "emitStatements: " << stmts->getStmts().size() << " "
+               << stmts->hasTrailing() << "\n";
 
   for (auto &stmt : stmts->getStmts()) {
     emitStatement(stmt);
   }
 
   if (stmts->hasTrailing())
-    return emitExpression(stmts->getTrailing());
+    return emitExpressionWithoutBlock(
+        std::static_pointer_cast<ast::ExpressionWithoutBlock>(
+            stmts->getTrailing()));
 
   return std::nullopt;
 }

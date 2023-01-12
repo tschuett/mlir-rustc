@@ -3,6 +3,8 @@
 #include "AST/AST.h"
 #include "Location.h"
 
+#include <llvm/Support/raw_ostream.h>
+
 // #include <mlir/IR/Location.h>
 
 namespace rust_compiler::ast {
@@ -20,7 +22,9 @@ public:
 
   void setHasTrailingSemi() { hasTrailingSemi = true; }
 
-protected:
+  bool getHasTrailingSemi() { return hasTrailingSemi; }
+
+private:
   rust_compiler::Location loc;
   ExpressionKind expressionKind;
   bool hasTrailingSemi = false;
@@ -52,33 +56,40 @@ enum class ExpressionWithoutBlockKind {
 
 class ExpressionWithoutBlock : public Expression {
 public:
-  ExpressionWithoutBlock(Location loc, ExpressionWithoutBlockKind kind)
-: Expression(loc, ExpressionKind::ExpressionWithBlock), kind(kind) {}
+  ExpressionWithoutBlock(Location loc, ExpressionWithoutBlockKind withoutKind)
+      : Expression(loc, ExpressionKind::ExpressionWithBlock),
+        withoutKind(withoutKind) {}
 
-  ExpressionWithoutBlockKind getKind() const { return kind; }
+  ExpressionWithoutBlockKind getWithoutBlockKind() const { return withoutKind; }
 
-protected:
-  ExpressionWithoutBlockKind kind;
+private:
+  ExpressionWithoutBlockKind withoutKind;
 };
 
-enum class ExpressionWithBlockKind {
-  BlockExpression,
-  UnsafeBlockExpression,
-  LoopExpression,
-  IfExpression,
-  IfLetExpression,
-  MatchExpression
+enum class ExpressionWithBlockKind : uint32_t {
+  Unknown = 0,
+  BlockExpression = 1,
+  UnsafeBlockExpression = 2,
+  LoopExpression = 3,
+  IfExpression = 4,
+  IfLetExpression = 5,
+  MatchExpression = 6
 };
 
 class ExpressionWithBlock : public Expression {
 
 public:
-  ExpressionWithBlock(Location loc, ExpressionWithBlockKind kind)
-      : Expression(loc, ExpressionKind::ExpressionWithBlock), kind(kind) {}
-  ExpressionWithBlockKind getKind() const { return kind; }
+  ExpressionWithBlock() = delete;
 
-protected:
-  ExpressionWithBlockKind kind;
+  ExpressionWithBlock(Location loc, ExpressionWithBlockKind withKind)
+      : Expression(loc, ExpressionKind::ExpressionWithBlock),
+        withKind(withKind) {
+    llvm::outs() << "ExpressionWithBlock: " << (uint32_t)withKind << "\n";
+  }
+  ExpressionWithBlockKind getWithBlockKind() const { return withKind; }
+
+private:
+  ExpressionWithBlockKind withKind = ExpressionWithBlockKind::Unknown;
 };
 
 } // namespace rust_compiler::ast

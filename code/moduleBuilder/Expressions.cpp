@@ -9,7 +9,7 @@ namespace rust_compiler {
 mlir::Value ModuleBuilder::emitExpression(std::shared_ptr<Expression> expr) {
   ExpressionKind kind = expr->getExpressionKind();
 
-    llvm::outs() << "emitExpression"
+  llvm::outs() << "emitExpression"
                << "\n";
 
   switch (kind) {
@@ -31,16 +31,21 @@ mlir::Value ModuleBuilder::emitLiteralExpression(
   return nullptr;
 }
 
-mlir::Value ModuleBuilder::emitReturnExpression(
+void ModuleBuilder::emitReturnExpression(
     std::shared_ptr<ast::ReturnExpression> ret) {
   // mlir::Value reti = emitExpression(ret->getExpression());
 
   llvm::outs() << "emitReturnExpression"
                << "\n";
 
-  assert(false);
-
-  return nullptr;
+  if (ret->getExpression()) {
+    mlir::Value expr = emitExpression(ret->getExpression());
+    builder.create<mlir::func::ReturnOp>(getLocation(ret->getLocation()),
+                                                expr);
+  } else {
+    builder.create<mlir::func::ReturnOp>(
+        getLocation(ret->getLocation()));
+  }
 }
 
 mlir::Value ModuleBuilder::emitOperatorExpression(

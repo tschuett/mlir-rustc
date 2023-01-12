@@ -11,15 +11,11 @@ public:
   ReturnExpression(Location loc, std::shared_ptr<ast::Expression> expr)
       : ExpressionWithoutBlock(loc,
                                ExpressionWithoutBlockKind::ReturnExpression),
-        expr(expr) {
-    kind = ExpressionWithoutBlockKind::ReturnExpression;
-  }
+        expr(expr) {}
 
   ReturnExpression(Location loc)
       : ExpressionWithoutBlock(loc,
-                               ExpressionWithoutBlockKind::ReturnExpression) {
-    kind = ExpressionWithoutBlockKind::ReturnExpression;
-  }
+                               ExpressionWithoutBlockKind::ReturnExpression) {}
 
   size_t getTokens() override;
 

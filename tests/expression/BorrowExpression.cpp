@@ -20,7 +20,49 @@ TEST(BorrowExpressionTest, CheckBorrowExpr1) {
   Parser parser = {ts, ""};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
-    parser.tryParseBorrowExpression(ts.getAsView());
- 
+      parser.tryParseBorrowExpression(ts.getAsView());
+
+  EXPECT_TRUE(borrow.has_value());
+};
+
+TEST(BorrowExpressionTest, CheckBorrowExpr2) {
+
+  std::string text = "&&foo";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts, ""};
+
+  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
+      parser.tryParseBorrowExpression(ts.getAsView());
+
+  EXPECT_TRUE(borrow.has_value());
+};
+
+TEST(BorrowExpressionTest, CheckBorrowExpr3) {
+
+  std::string text = "&&mut foo";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts, ""};
+
+  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
+      parser.tryParseBorrowExpression(ts.getAsView());
+
+  EXPECT_TRUE(borrow.has_value());
+};
+
+TEST(BorrowExpressionTest, CheckBorrowExpr4) {
+
+  std::string text = "&mut foo";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts, ""};
+
+  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
+      parser.tryParseBorrowExpression(ts.getAsView());
+
   EXPECT_TRUE(borrow.has_value());
 };

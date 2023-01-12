@@ -71,18 +71,21 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
   // Implicitly return void if no return statement was emitted.
   // FIXME: we may fix the parser instead to always return the last expression
   // (this would possibly help the REPL case later)
-  Mir::ReturnOp returnOp;
+  mlir::func::ReturnOp returnOp;
   if (!entryBlock.empty())
-    returnOp = dyn_cast<Mir::ReturnOp>(entryBlock.back());
+    returnOp = dyn_cast<mlir::func::ReturnOp>(entryBlock.back());
   if (!returnOp) {
-    builder.create<Mir::ReturnOp>(getLocation(f->getLocation()));
-  } else if (returnOp.hasOperand()) {
+    builder.create<mlir::func::ReturnOp>(getLocation(f->getLocation()));
+  } else if (returnOp.getOperands().size() > 0) {
     // Otherwise, if this return operation has an operand then add a result to
     // the function.
     function.setType(
         builder.getFunctionType(function.getFunctionType().getInputs(),
                                 *returnOp.operand_type_begin()));
   }
+
+  llvm::outs() << "declared function HAPPY!"
+               << "\n";
 
   //  // If this function isn't main, then set the visibility to private.
   //  if (funcAST.getProto()->getName() != "main")

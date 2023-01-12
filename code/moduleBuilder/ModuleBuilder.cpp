@@ -6,7 +6,6 @@
 #include "Mir/MirDialect.h"
 // #include "mlir/IR/AsmState.h"
 #include "Mir/MirOps.h"
-#include "TypeBuilder.h"
 
 #include <llvm/Remarks/Remark.h>
 #include <llvm/Target/TargetMachine.h>
