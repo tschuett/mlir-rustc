@@ -10,6 +10,10 @@ using namespace rust_compiler::ast;
 
 mlir::Value ModuleBuilder::emitExpressionWithBlock(
     std::shared_ptr<ExpressionWithBlock> expr) {
+
+  llvm::outs() << "emitExpressionWithBlock"
+               << "\n";
+
   switch (expr->getKind()) {
   case ExpressionWithBlockKind::BlockExpression: {
     std::shared_ptr<ast::BlockExpression> blk =
@@ -35,6 +39,9 @@ mlir::Value ModuleBuilder::emitExpressionWithBlock(
     break;
   }
   }
+  llvm::outs() << "emitExpressionWithBlock: failed"
+               << "\n";
+
   // FIXME
   return nullptr;
 }

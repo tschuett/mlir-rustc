@@ -24,7 +24,7 @@ namespace rust_compiler {
 using namespace llvm;
 using namespace mlir;
 
-void ModuleBuilder::build(std::shared_ptr<ast::Module> mod, Target &target) {
+void ModuleBuilder::build(std::shared_ptr<ast::Module> mod) {
   llvm::outs() << "ModuleBuilder::build: " << mod->getItems().size() << "\n";
 
   for (auto i : mod->getItems()) {
@@ -99,10 +99,6 @@ void ModuleBuilder::emitItem(std::shared_ptr<ast::Item> item) {
 
 void ModuleBuilder::emitModule(std::shared_ptr<ast::Module> module) {
   // FIXME
-}
-
-mlir::Type ModuleBuilder::getType(std::shared_ptr<ast::types::Type> type) {
-  return typeBuilder.getType(type);
 }
 
 } // namespace rust_compiler

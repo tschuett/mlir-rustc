@@ -469,7 +469,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       columnNumber += 1;
     } else if (code.starts_with("&&")) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::DoubleAmp));
+                      TokenKind::AndAnd));
       code.remove_prefix(2);
       columnNumber += 2;
     } else if (code.starts_with("#")) {

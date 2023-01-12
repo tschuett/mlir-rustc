@@ -9,11 +9,15 @@ class ReturnExpression : public ExpressionWithoutBlock {
 
 public:
   ReturnExpression(Location loc, std::shared_ptr<ast::Expression> expr)
-      : ExpressionWithoutBlock(loc), expr(expr) {
+      : ExpressionWithoutBlock(loc,
+                               ExpressionWithoutBlockKind::ReturnExpression),
+        expr(expr) {
     kind = ExpressionWithoutBlockKind::ReturnExpression;
   }
 
-  ReturnExpression(Location loc) : ExpressionWithoutBlock(loc) {
+  ReturnExpression(Location loc)
+      : ExpressionWithoutBlock(loc,
+                               ExpressionWithoutBlockKind::ReturnExpression) {
     kind = ExpressionWithoutBlockKind::ReturnExpression;
   }
 

@@ -27,6 +27,7 @@ def Mir_Dialect : Dialect {
     static constexpr llvm::StringRef getMangledFunctionNameAttrName() { return "MangledFunctionName"; }
     static constexpr llvm::StringRef getTypeNameAttrName() { return "TypeName"; }
   }];
+  let useFoldAPI = kEmitFoldAdaptorFolder;
 }
 
 // Types

@@ -84,7 +84,7 @@ std::string Token2String(TokenKind kind) {
 //  case TokenKind::Amp: {
 //    return std::string("&");
 //  }
-  case TokenKind::DoubleAmp: {
+  case TokenKind::AndAnd: {
     return std::string("&&");
   }
   case TokenKind::String: {

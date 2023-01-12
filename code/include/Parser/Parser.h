@@ -126,6 +126,9 @@ public:
 
   std::optional<std::shared_ptr<ast::Expression>>
   tryParseNegationExpression(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::Expression>>
+  tryParseBorrowExpression(std::span<lexer::Token> tokens);
 };
 
 } // namespace rust_compiler::parser

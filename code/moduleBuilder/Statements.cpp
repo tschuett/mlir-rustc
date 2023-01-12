@@ -9,6 +9,9 @@ namespace rust_compiler {
 
 std::optional<mlir::Value> ModuleBuilder::emitStatement(
     std::shared_ptr<rust_compiler::ast::Statement> stmt) {
+  llvm::outs() << "emitStatement"
+               << "\n";
+
   switch (stmt->getKind()) {
   case ast::StatementKind::ItemDeclaration: {
     emitItemDeclaration(
@@ -44,6 +47,8 @@ void ModuleBuilder::emitItemDeclaration(
 
 std::optional<mlir::Value>
 ModuleBuilder::emitStatements(std::shared_ptr<ast::Statements> stmts) {
+
+  llvm::outs() << "emitStatements: " << stmts->getStmts().size() << "\n";
 
   for (auto &stmt : stmts->getStmts()) {
     emitStatement(stmt);

@@ -13,7 +13,8 @@ class NegationExpression : public OperatorExpression {
   std::shared_ptr<Expression> right;
 
 public:
-  NegationExpression(Location loc) : OperatorExpression(loc){};
+  NegationExpression(Location loc)
+      : OperatorExpression(loc, OperatorExpressionKind::NegationExpression){};
 
   void setRight(std::shared_ptr<Expression>);
   void setMinus();

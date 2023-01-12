@@ -9,13 +9,16 @@ namespace rust_compiler {
 mlir::Value ModuleBuilder::emitExpression(std::shared_ptr<Expression> expr) {
   ExpressionKind kind = expr->getExpressionKind();
 
+    llvm::outs() << "emitExpression"
+               << "\n";
+
   switch (kind) {
   case ExpressionKind::ExpressionWithBlock: {
     return emitExpressionWithBlock(
         static_pointer_cast<rust_compiler::ast::ExpressionWithBlock>(expr));
   }
   case ExpressionKind::ExpressionWithoutBlock: {
-    return buildExpressionWithoutBlock(
+    return emitExpressionWithoutBlock(
         static_pointer_cast<rust_compiler::ast::ExpressionWithoutBlock>(expr));
   }
   }
@@ -30,7 +33,10 @@ mlir::Value ModuleBuilder::emitLiteralExpression(
 
 mlir::Value ModuleBuilder::emitReturnExpression(
     std::shared_ptr<ast::ReturnExpression> ret) {
-  //mlir::Value reti = emitExpression(ret->getExpression());
+  // mlir::Value reti = emitExpression(ret->getExpression());
+
+  llvm::outs() << "emitReturnExpression"
+               << "\n";
 
   assert(false);
 

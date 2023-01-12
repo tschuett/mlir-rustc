@@ -62,8 +62,7 @@ void buildCrate(std::string_view path, std::string_view edition) {
   Parser parser = {ts, "crate"};
   std::shared_ptr<ast::Module> module = parser.parse();
 
-  llvm::outs() << "finished parsing"
-               << "\n";
+  llvm::outs() << "finished parsing: " << module->getItems().size() << "\n";
 
   sema::analyzeSemantics(module);
 
@@ -75,10 +74,11 @@ void buildCrate(std::string_view path, std::string_view edition) {
   llvm::outs() << "code generation"
                << "\n";
 
-  rust_compiler::ModuleBuilder mb = {"lib", stream};
-
   Target target = {tm.get()};
-  mb.build(module, target);
+
+  rust_compiler::ModuleBuilder mb = {"lib", &target, stream};
+
+  mb.build(module);
 }
 
 } // namespace rust_compiler::rustc

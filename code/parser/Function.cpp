@@ -174,8 +174,8 @@ std::optional<ast::Function> Parser::tryParseFunction(std::span<lexer::Token> to
   std::optional<std::shared_ptr<BlockExpression>> block =
       tryParseBlockExpression(view);
   if (block) {
-  //  llvm::errs() << "tryParseFunction: found body"
-  //               << "\n";
+    llvm::errs() << "tryParseFunction: found body"
+                 << "\n";
     f.setBody(*block);
     return f;
   }

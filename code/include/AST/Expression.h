@@ -52,8 +52,8 @@ enum class ExpressionWithoutBlockKind {
 
 class ExpressionWithoutBlock : public Expression {
 public:
-  ExpressionWithoutBlock(Location loc)
-      : Expression(loc, ExpressionKind::ExpressionWithBlock) {}
+  ExpressionWithoutBlock(Location loc, ExpressionWithoutBlockKind kind)
+: Expression(loc, ExpressionKind::ExpressionWithBlock), kind(kind) {}
 
   ExpressionWithoutBlockKind getKind() const { return kind; }
 
@@ -73,8 +73,8 @@ enum class ExpressionWithBlockKind {
 class ExpressionWithBlock : public Expression {
 
 public:
-  ExpressionWithBlock(Location loc)
-      : Expression(loc, ExpressionKind::ExpressionWithBlock) {}
+  ExpressionWithBlock(Location loc, ExpressionWithBlockKind kind)
+      : Expression(loc, ExpressionKind::ExpressionWithBlock), kind(kind) {}
   ExpressionWithBlockKind getKind() const { return kind; }
 
 protected:

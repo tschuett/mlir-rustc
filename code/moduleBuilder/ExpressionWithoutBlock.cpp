@@ -9,8 +9,12 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler {
 
-mlir::Value ModuleBuilder::buildExpressionWithoutBlock(
+mlir::Value ModuleBuilder::emitExpressionWithoutBlock(
     std::shared_ptr<ast::ExpressionWithoutBlock> expr) {
+
+      llvm::outs() << "emitExpressionWithoutBlock"
+               << "\n";
+
 
   switch (expr->getKind()) {
   case ast::ExpressionWithoutBlockKind::LiteralExpression: {

@@ -15,7 +15,8 @@ class BlockExpression : public ExpressionWithBlock {
   std::shared_ptr<Statements> stmts;
 
 public:
-  BlockExpression(Location loc) : ExpressionWithBlock(loc) {}
+  BlockExpression(Location loc)
+      : ExpressionWithBlock(loc, ExpressionWithBlockKind::BlockExpression) {}
 
   void setStatements(std::shared_ptr<Statements> stmts);
 

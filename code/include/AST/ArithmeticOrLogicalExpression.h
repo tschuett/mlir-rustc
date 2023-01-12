@@ -30,7 +30,9 @@ public:
                                 ArithmeticOrLogicalExpressionKind kind,
                                 std::shared_ptr<Expression> left,
                                 std::shared_ptr<Expression> right)
-      : OperatorExpression(loc), kind(kind), left(left), right(right) {}
+      : OperatorExpression(
+            loc, OperatorExpressionKind::ArithmeticOrLogicalExpression),
+        kind(kind), left(left), right(right) {}
 
   ArithmeticOrLogicalExpressionKind getKind() const { return kind; }
 

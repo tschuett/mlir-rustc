@@ -7,7 +7,8 @@ namespace rust_compiler::ast {
 class PathExpression : public ExpressionWithoutBlock {
 public:
   PathExpression(rust_compiler::Location loc)
-      : ExpressionWithoutBlock(loc) {}
+      : ExpressionWithoutBlock(loc,
+                               ExpressionWithoutBlockKind::LiteralExpression) {}
 
   //  size_t getTokens() override;
 };

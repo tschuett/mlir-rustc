@@ -40,6 +40,7 @@ add_library(parser
            ShorthandSelf.cpp
            TypedSelf.cpp
            NegationExpression.cpp
+           BorrowExpression.cpp
            )
 
 

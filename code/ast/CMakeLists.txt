@@ -30,6 +30,7 @@ add_library(ast
            TypedSelf.cpp
            NegationExpression.cpp
            VariableDeclaration.cpp
+           BorrowExpression.cpp
            )
 
 

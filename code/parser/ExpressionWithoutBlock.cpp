@@ -19,6 +19,7 @@ Parser::tryParseExpressionWithoutBlock(std::span<lexer::Token> tokens) {
   std::optional<std::shared_ptr<ast::Expression>> ret =
       tryParseReturnExpression(view);
   if (ret) {
+
     return *ret;
   }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ModuleBuilder/Target.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/Expression.h"
@@ -13,12 +14,12 @@
 #include "AST/VariableDeclaration.h"
 #include "Mir/MirDialect.h"
 #include "Target.h"
-#include "TypeBuilder.h"
 
 #include <llvm/ADT/ScopedHashTable.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
+#include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/Attributes.h>
 #include <mlir/IR/Builders.h>
 #include <mlir/IR/BuiltinOps.h>
@@ -26,7 +27,6 @@
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/IR/Verifier.h>
 #include <string_view>
-#include <mlir/Dialect/Func/IR/FuncOps.h>
 
 namespace rust_compiler {
 
@@ -37,7 +37,7 @@ class ModuleBuilder {
   mlir::OpBuilder builder;
   mlir::ModuleOp theModule;
   llvm::remarks::YAMLRemarkSerializer serializer;
-  TypeBuilder typeBuilder;
+  Target *target;
 
   llvm::ScopedHashTable<llvm::StringRef,
                         std::pair<mlir::Value, ast::VariableDeclaration *>>
@@ -47,16 +47,16 @@ class ModuleBuilder {
   llvm::StringMap<mlir::func::FuncOp> functionMap;
 
 public:
-  ModuleBuilder(std::string_view moduleName, llvm::raw_ostream &OS)
+  ModuleBuilder(std::string_view moduleName, Target *target,
+                llvm::raw_ostream &OS)
       : moduleName(moduleName), context(), builder(&context),
         serializer(OS, llvm::remarks::SerializerMode::Separate) {
     context.getOrLoadDialect<Mir::MirDialect>();
     context.getOrLoadDialect<mlir::func::FuncDialect>();
     theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
-    typeBuilder = {mlir::Builder(&context)};
   };
 
-  void build(std::shared_ptr<ast::Module> m, Target &target);
+  void build(std::shared_ptr<ast::Module> m);
 
 private:
   mlir::func::FuncOp emitFun(std::shared_ptr<ast::Function> f);
@@ -76,7 +76,7 @@ private:
 
   mlir::Value
   emitExpressionWithBlock(std::shared_ptr<ast::ExpressionWithBlock> expr);
-  mlir::Value buildExpressionWithoutBlock(
+  mlir::Value emitExpressionWithoutBlock(
       std::shared_ptr<ast::ExpressionWithoutBlock> expr);
 
   void buildExpressionStatement(std::shared_ptr<ast::ExpressionStatement> expr);

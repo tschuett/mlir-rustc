@@ -1,7 +1,6 @@
 #include "Mir/MirOps.h"
 #include "ModuleBuilder/ModuleBuilder.h"
 #include "Remarks/OptimizationRemarkEmitter.h"
-#include "TypeBuilder.h"
 
 #include <llvm/Remarks/Remark.h>
 #include <mlir/IR/BuiltinOps.h>
@@ -31,6 +30,7 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
   llvm::outs() << "build function signature"
                << "\n";
 
+  // FIXME: only first function?
   builder.setInsertionPointToEnd(theModule.getBody());
   mlir::func::FuncOp function =
       buildFunctionSignature(f->getSignature(), getLocation(f->getLocation()));
@@ -95,21 +95,20 @@ mlir::func::FuncOp
 ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
                                       mlir::Location location) {
   SmallVector<mlir::Type, 10> argTypes;
-  TypeBuilder typeBuilder;
   ast::FunctionParameters params = sig.getParameters();
 
-      llvm::outs() << "buildFunctionSignature"
+  llvm::outs() << "buildFunctionSignature"
                << "\n";
 
   for (auto &param : params.getParams()) {
-    mlir::Type type = typeBuilder.getType(param.getType());
+    mlir::Type type = getType(param.getType());
     if (!type)
       return nullptr;
 
     argTypes.push_back(type);
   }
 
-  mlir::Type resultType = typeBuilder.getType(sig.getReturnType());
+  mlir::Type resultType = getType(sig.getReturnType());
 
   auto funcType =
       builder.getFunctionType(argTypes, resultType /*std::nullopt results*/);
