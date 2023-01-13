@@ -18,4 +18,8 @@ std::shared_ptr<ast::Expression> ReturnExpression::getExpression() {
   return expr;
 }
 
+std::shared_ptr<ast::types::Type> ReturnExpression::getType() {
+  
+}
+
 } // namespace rust_compiler::ast

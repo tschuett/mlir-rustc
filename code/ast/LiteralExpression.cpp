@@ -18,4 +18,6 @@ size_t LiteralExpression::getTokens() {
   return 1;
 }
 
+std::shared_ptr<ast::types::Type> LiteralExpression::getType() {}
+
 } // namespace rust_compiler::ast

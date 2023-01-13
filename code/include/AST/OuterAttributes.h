@@ -3,6 +3,9 @@
 #include "AST/AST.h"
 #include "AST/OuterAttribute.h"
 
+#include <memory>
+#include <vector>
+
 namespace rust_compiler::ast {
 
 class OuterAttributes : public Node {

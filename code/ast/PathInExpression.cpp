@@ -17,4 +17,6 @@ size_t PathInExpression::getTokens() {
   return count;
 }
 
+std::shared_ptr<ast::types::Type> PathInExpression::getType() {}
+
 } // namespace rust_compiler::ast

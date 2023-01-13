@@ -11,4 +11,9 @@ void analyzeSemantics(std::shared_ptr<ast::Module> &ast) {
   sema.analyze(ast);
 }
 
+void Sema::analyze(std::shared_ptr<ast::Module> &ast) {
+  // FIXME
+  assert(false);
+}
+
 } // namespace rust_compiler::sema

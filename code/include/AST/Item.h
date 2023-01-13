@@ -11,7 +11,7 @@
 namespace rust_compiler::ast {
 
 class Item : public Node {
-  std::shared_ptr<OuterAttribute> outerAttributes;
+  std::shared_ptr<OuterAttributes> outerAttributes;
   std::shared_ptr<VisItem> visItem;
 
 public:

@@ -31,6 +31,8 @@ add_library(ast
            NegationExpression.cpp
            VariableDeclaration.cpp
            BorrowExpression.cpp
+           ArithmeticOrLogicalExpression.cpp
+           Item.cpp
            )
 
 
