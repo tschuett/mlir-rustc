@@ -1,5 +1,6 @@
+#include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/Expression.h"
-#include "AST/LiteralExpression.h"
+#include "AST/OperatorExpression.h"
 #include "ModuleBuilder/ModuleBuilder.h"
 
 using namespace llvm;
@@ -9,9 +10,6 @@ namespace rust_compiler {
 
 mlir::Value ModuleBuilder::emitExpression(std::shared_ptr<Expression> expr) {
   ExpressionKind kind = expr->getExpressionKind();
-
-  llvm::outs() << "emitExpression"
-               << "\n";
 
   switch (kind) {
   case ExpressionKind::ExpressionWithBlock: {
@@ -25,37 +23,15 @@ mlir::Value ModuleBuilder::emitExpression(std::shared_ptr<Expression> expr) {
   }
 }
 
-mlir::Value ModuleBuilder::emitLiteralExpression(
-    std::shared_ptr<ast::LiteralExpression> lit) {
-  assert(false);
-
-  // builder.create<ConstantOp>()
-  return nullptr;
-}
 
 void ModuleBuilder::emitReturnExpression(
     std::shared_ptr<ast::ReturnExpression> ret) {
   // mlir::Value reti = emitExpression(ret->getExpression());
 
-  llvm::outs() << "emitReturnExpression"
-               << "\n";
-
   // builder.create<mlir::func::ReturnOp>(getLocation(ret->getLocation()));
 
   if (ret->getExpression()) {
     std::shared_ptr<ast::Expression> expr = ret->getExpression();
-    switch (expr->getExpressionKind()) {
-    case ExpressionKind::ExpressionWithBlock: {
-      llvm::outs() << "ExpressionWithBlock"
-                   << "\n";
-      break;
-    }
-    case ExpressionKind::ExpressionWithoutBlock: {
-      llvm::outs() << "ExpressionWithoutBlock"
-                   << "\n";
-      break;
-    }
-    }
     mlir::Value mlirExpr = emitExpression(ret->getExpression());
     builder.create<mlir::func::ReturnOp>(getLocation(ret->getLocation()),
                                          ArrayRef(mlirExpr));
@@ -66,7 +42,16 @@ void ModuleBuilder::emitReturnExpression(
 
 mlir::Value ModuleBuilder::emitOperatorExpression(
     std::shared_ptr<ast::OperatorExpression> opr) {
-  assert(false);
+
+  switch (opr->getKind()) {
+  case OperatorExpressionKind::ArithmeticOrLogicalExpression: {
+    return emitArithmeticOrLogicalExpression(
+        static_pointer_cast<ArithmeticOrLogicalExpression>(opr));
+  }
+  default: {
+    assert(false);
+  }
+  }
 
   return nullptr;
 }

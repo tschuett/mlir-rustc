@@ -15,6 +15,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/TargetParser/Host.h>
+#include <mlir/Dialect/Arith/IR/Arith.h>
 #include <sstream>
 
 using namespace rust_compiler::parser;
@@ -78,6 +79,7 @@ void buildCrate(std::string_view path, std::string_view edition) {
   mlir::MLIRContext context;
   context.getOrLoadDialect<Mir::MirDialect>();
   context.getOrLoadDialect<mlir::func::FuncDialect>();
+  context.getOrLoadDialect<mlir::arith::ArithDialect>();
 
   rust_compiler::ModuleBuilder mb = {"lib", &target, stream, context};
 

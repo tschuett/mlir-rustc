@@ -14,4 +14,8 @@ size_t ReturnExpression::getTokens() {
   return count;
 }
 
+std::shared_ptr<ast::Expression> ReturnExpression::getExpression() {
+  return expr;
+}
+
 } // namespace rust_compiler::ast

@@ -81,9 +81,7 @@ public:
 
   ExpressionWithBlock(Location loc, ExpressionWithBlockKind withKind)
       : Expression(loc, ExpressionKind::ExpressionWithBlock),
-        withKind(withKind) {
-    llvm::outs() << "ExpressionWithBlock: " << (uint32_t)withKind << "\n";
-  }
+        withKind(withKind) {}
   ExpressionWithBlockKind getWithBlockKind() const { return withKind; }
 
 private:

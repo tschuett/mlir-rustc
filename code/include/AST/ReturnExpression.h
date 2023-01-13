@@ -19,7 +19,7 @@ public:
 
   size_t getTokens() override;
 
-  std::shared_ptr<ast::Expression> getExpression() { return expr; }
+  std::shared_ptr<ast::Expression> getExpression();
 };
 
 } // namespace rust_compiler::ast

@@ -10,6 +10,7 @@ add_library(modulebuilder
            OperatorExpression.cpp
            Types.cpp
            Expression.cpp
+           LiteralExpression.cpp
            )
 
 
