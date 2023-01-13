@@ -24,4 +24,8 @@ void NegationExpression::setMinus() { minusToken = true; }
 
 void NegationExpression::setNot() { notToken = true; }
 
+std::shared_ptr<ast::types::Type> NegationExpression::getType() {
+  return right->getType();
+}
+
 } // namespace rust_compiler::ast

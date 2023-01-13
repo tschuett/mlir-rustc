@@ -16,4 +16,8 @@ void BorrowExpression::setExpression(std::shared_ptr<Expression> _expr) {
 
 void BorrowExpression::setMut() { isMut = false; }
 
+std::shared_ptr<ast::types::Type> BorrowExpression::getType() {
+  return expr->getType();
+}
+
 } // namespace rust_compiler::ast
