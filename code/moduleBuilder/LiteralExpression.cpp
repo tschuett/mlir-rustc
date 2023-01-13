@@ -1,6 +1,9 @@
 #include "AST/LiteralExpression.h"
 
 #include "ModuleBuilder/ModuleBuilder.h"
+#include "mlir/Dialect/Arith/IR/Arith.h"
+
+#include <_types/_uint64_t.h>
 
 using namespace rust_compiler::ast;
 
@@ -28,9 +31,11 @@ mlir::Value ModuleBuilder::emitLiteralExpression(
     break;
   }
   case LiteralExpressionKind::IntegerLiteral: {
+    std::string value = lit->getValue();
+    uint64_t integer = stoi(value);
     std::shared_ptr<ast::types::Type> type = lit->getType();
-    return builder.create<mlir::func::ConstantOp>(
-        getLocation(lit->getLocation()), getType(type), xxx);
+    return builder.create<mlir::arith::ConstantIntOp>(
+        getLocation(lit->getLocation()), integer, 64);
     break;
   }
   case LiteralExpressionKind::FloatLiteral: {

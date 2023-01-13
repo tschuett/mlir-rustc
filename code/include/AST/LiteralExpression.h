@@ -36,6 +36,8 @@ public:
   size_t getTokens() override;
 
   std::shared_ptr<ast::types::Type> getType() override;
+
+  std::string getValue() const { return value; }
 };
 
 } // namespace rust_compiler::ast
