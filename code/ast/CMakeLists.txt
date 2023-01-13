@@ -33,6 +33,7 @@ add_library(ast
            BorrowExpression.cpp
            ArithmeticOrLogicalExpression.cpp
            Item.cpp
+           OuterAttributes.cpp
            )
 
 

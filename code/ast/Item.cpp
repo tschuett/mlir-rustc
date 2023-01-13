@@ -11,9 +11,18 @@ void Item::setOuterAttributes(std::shared_ptr<OuterAttributes> outer) {
 void Item::setVisItem(std::shared_ptr<VisItem> _visItem) { visItem = _visItem; }
 
 size_t Item::getTokens() {
-  assert(false);
+  size_t count = 0;
 
-  return 1;
+  if (outerAttributes)
+    count += outerAttributes->getTokens();
+
+  return count + visItem->getTokens();
+}
+
+std::shared_ptr<VisItem> Item::getVisItem() const { return visItem; }
+
+std::shared_ptr<OuterAttributes> Item::getOuterAttributes() const {
+  return outerAttributes;
 }
 
 } // namespace rust_compiler::ast

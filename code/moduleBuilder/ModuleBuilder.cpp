@@ -59,12 +59,6 @@ mlir::LogicalResult ModuleBuilder::declare(ast::VariableDeclaration &var,
   return mlir::success();
 }
 
-void ModuleBuilder::emitItem(std::shared_ptr<ast::Item> item) {
-  llvm::outs() << "emitItem"
-               << "\n";
-  assert(false);
-}
-
 void ModuleBuilder::emitVisItem(std::shared_ptr<ast::VisItem> item) {
   llvm::outs() << "emitItem"
                << "\n";

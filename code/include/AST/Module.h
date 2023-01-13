@@ -2,9 +2,8 @@
 
 #include "AST/AST.h"
 #include "AST/Function.h"
-#include "AST/VisItem.h"
 #include "AST/Item.h"
-
+#include "AST/VisItem.h"
 #include "AST/Visiblity.h"
 
 #include <span>
@@ -28,6 +27,7 @@ public:
       : VisItem(loc, VisItemKind::Module), vis(loc, VisibilityKind::Private),
         kind(kind), path(path){};
 
+  ModuleKind getModuleKind() const { return kind; }
   void setVisibility(Visibility vis);
 
   void addItem(std::shared_ptr<Item> item);
