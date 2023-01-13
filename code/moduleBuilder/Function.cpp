@@ -30,8 +30,9 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
   llvm::outs() << "build function signature"
                << "\n";
 
-  // FIXME: only first function?
+  // Create an MLIR function for the given prototype.
   builder.setInsertionPointToEnd(theModule.getBody());
+
   mlir::func::FuncOp function =
       buildFunctionSignature(f->getSignature(), getLocation(f->getLocation()));
   if (!function)
@@ -41,8 +42,10 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
   mlir::Block &entryBlock = function.front();
   auto protoArgs = f->getSignature().getParameters().getParams();
 
-  llvm::outs() << "declare function arguments"
+  llvm::outs() << "declare function arguments: " << entryBlock.getNumArguments()
                << "\n";
+
+  //assert(entryBlock.getNumArguments() == 1);
 
   // Declare all the function arguments in the symbol table.
   for (unsigned i = 0; i < entryBlock.getNumArguments(); ++i) {
@@ -113,9 +116,17 @@ ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
 
   mlir::Type resultType = getType(sig.getReturnType());
 
-  auto funcType =
+  llvm::outs() << "buildFunctionSignature: " << argTypes.size() << "\n";
+
+  mlir::FunctionType funcType =
       builder.getFunctionType(argTypes, resultType /*std::nullopt results*/);
-  return builder.create<mlir::func::FuncOp>(location, sig.getName(), funcType);
+
+  mlir::func::FuncOp f =
+      builder.create<mlir::func::FuncOp>(location, sig.getName(), funcType);
+  assert(f.getArgumentTypes().size() == 1);
+  assert(f.getResultTypes().size() == 1);
+
+  return f;
 }
 
 } // namespace rust_compiler

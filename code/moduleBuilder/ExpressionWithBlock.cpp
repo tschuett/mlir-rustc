@@ -28,6 +28,7 @@ mlir::Value ModuleBuilder::emitExpressionWithBlock(
   case ExpressionWithBlockKind::UnsafeBlockExpression: {
     llvm::outs() << "emitExpressionWithBlock: unsafe"
                  << "\n";
+  exit(EXIT_FAILURE);
     break;
   }
   case ExpressionWithBlockKind::LoopExpression: {

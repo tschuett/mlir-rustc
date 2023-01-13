@@ -3,10 +3,9 @@
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/Expression.h"
 #include "OperatorFeeding.h"
+#include "Parser/Parser.h"
 
 #include <memory>
-
-#include "Parser/Parser.h"
 
 using namespace rust_compiler::lexer;
 
@@ -31,7 +30,7 @@ Parser::tryParserOperator(std::span<lexer::Token> tokens) {
 
   TokenKind front = tokens.front().getKind();
 
-  std::string Token2String(TokenKind kind);
+  //  std::string Token2String(TokenKind kind);
 
   for (auto &tok : ops) {
     if (front == std::get<0>(tok))
@@ -44,6 +43,9 @@ Parser::tryParserOperator(std::span<lexer::Token> tokens) {
 std::optional<std::shared_ptr<ast::Expression>>
 Parser::tryParseArithmeticOrLogicalExpresion(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
+
+  llvm::outs() << "tryParseArithmeticOrLogicalExpresion"
+               << "\n";
 
   std::optional<std::shared_ptr<ast::Expression>> left =
       tryParseOperatorFeedingExpression(view);

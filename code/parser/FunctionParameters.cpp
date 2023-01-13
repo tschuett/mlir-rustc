@@ -17,9 +17,9 @@ Parser::tryParseFunctionParameters(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
   FunctionParameters params = {tokens.front().getLocation()};
 
-  llvm::errs() << "tryParseFunctionParameters"
-               << "\n";
-
+//  llvm::errs() << "tryParseFunctionParameters"
+//               << "\n";
+//
   // printTokenState(view);
 
   //  std::optional<std::shared_ptr<ast::SelfParam>> self =

@@ -76,6 +76,8 @@ void buildCrate(std::string_view path, std::string_view edition) {
 
   Target target = {tm.get()};
   mlir::MLIRContext context;
+  context.getOrLoadDialect<Mir::MirDialect>();
+  context.getOrLoadDialect<mlir::func::FuncDialect>();
 
   rust_compiler::ModuleBuilder mb = {"lib", &target, stream, context};
 

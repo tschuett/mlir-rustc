@@ -14,8 +14,8 @@ Parser::tryParseStatements(std::span<lexer::Token> tokens) {
   Statements stmts = {tokens.front().getLocation()};
   std::span<lexer::Token> view = tokens;
 
-  llvm::errs() << "tryParseStatements: "
-               << "\n";
+//  llvm::errs() << "tryParseStatements: "
+//               << "\n";
 
   if (view.front().getKind() == TokenKind::Semi) {
     stmts.setOnlySemi();
@@ -26,8 +26,8 @@ Parser::tryParseStatements(std::span<lexer::Token> tokens) {
       tryParseExpressionWithoutBlock(view);
 
   if (woBlock) {
-    llvm::errs() << "tryParseStatements: found woBlock TRAILING"
-                 << "\n";
+//    llvm::errs() << "tryParseStatements: found woBlock TRAILING"
+//                 << "\n";
     stmts.setTrailing(*woBlock);
     return std::make_shared<ast::Statements>(stmts);
   }

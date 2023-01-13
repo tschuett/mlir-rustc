@@ -2,6 +2,7 @@
 #include "AST/LiteralExpression.h"
 #include "ModuleBuilder/ModuleBuilder.h"
 
+using namespace llvm;
 using namespace rust_compiler::ast;
 
 namespace rust_compiler {
@@ -28,6 +29,7 @@ mlir::Value ModuleBuilder::emitLiteralExpression(
     std::shared_ptr<ast::LiteralExpression> lit) {
   assert(false);
 
+  // builder.create<ConstantOp>()
   return nullptr;
 }
 
@@ -38,13 +40,27 @@ void ModuleBuilder::emitReturnExpression(
   llvm::outs() << "emitReturnExpression"
                << "\n";
 
+  // builder.create<mlir::func::ReturnOp>(getLocation(ret->getLocation()));
+
   if (ret->getExpression()) {
-    mlir::Value expr = emitExpression(ret->getExpression());
+    std::shared_ptr<ast::Expression> expr = ret->getExpression();
+    switch (expr->getExpressionKind()) {
+    case ExpressionKind::ExpressionWithBlock: {
+      llvm::outs() << "ExpressionWithBlock"
+                   << "\n";
+      break;
+    }
+    case ExpressionKind::ExpressionWithoutBlock: {
+      llvm::outs() << "ExpressionWithoutBlock"
+                   << "\n";
+      break;
+    }
+    }
+    mlir::Value mlirExpr = emitExpression(ret->getExpression());
     builder.create<mlir::func::ReturnOp>(getLocation(ret->getLocation()),
-                                                expr);
+                                         ArrayRef(mlirExpr));
   } else {
-    builder.create<mlir::func::ReturnOp>(
-        getLocation(ret->getLocation()));
+    builder.create<mlir::func::ReturnOp>(getLocation(ret->getLocation()));
   }
 }
 

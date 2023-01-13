@@ -61,9 +61,9 @@ int main(int argc, char **argv) {
       });
 
   // Initialize targets first, so that --version shows registered targets.
-  llvm::InitializeAllTargets();
-  llvm::InitializeAllTargetMCs();
-  llvm::InitializeAllAsmPrinters();
+  // Initialize LLVM targets.
+  llvm::InitializeNativeTarget();
+  llvm::InitializeNativeTargetAsmPrinter();
 
   if (Args.hasArg(OPT_help)) {
     tbl.printHelp(llvm::outs(), "rustc [options]", "rustc");

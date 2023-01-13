@@ -32,8 +32,8 @@ namespace rust_compiler {
 
 class ModuleBuilder {
   std::string moduleName;
-  mlir::MLIRContext context;
-  mlir::OwningOpRef<mlir::ModuleOp> module;
+  //mlir::MLIRContext context;
+  //mlir::OwningOpRef<mlir::ModuleOp> module;
   mlir::OpBuilder builder;
   mlir::ModuleOp theModule;
   llvm::remarks::YAMLRemarkSerializer serializer;
@@ -51,8 +51,6 @@ public:
                 llvm::raw_ostream &OS, mlir::MLIRContext &context)
       : moduleName(moduleName), builder(&context),
         serializer(OS, llvm::remarks::SerializerMode::Separate) {
-    context.getOrLoadDialect<Mir::MirDialect>();
-    context.getOrLoadDialect<mlir::func::FuncDialect>();
     theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
   };
 

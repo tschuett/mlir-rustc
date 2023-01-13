@@ -13,8 +13,8 @@ std::optional<std::shared_ptr<ast::Expression>>
 Parser::tryParseExpression(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
-    llvm::errs() << "tryParseExpression: "
-               << Token2String(view.front().getKind()) << "\n";
+//    llvm::errs() << "tryParseExpression: "
+//               << Token2String(view.front().getKind()) << "\n";
 
   std::optional<std::shared_ptr<ast::Expression>> woBlock =
       tryParseExpressionWithoutBlock(view);

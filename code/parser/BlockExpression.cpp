@@ -33,8 +33,8 @@ Parser::tryParseBlockExpression(std::span<lexer::Token> tokens) {
   std::optional<std::shared_ptr<ast::Statements>> stmts =
       tryParseStatements(view);
   if (stmts) {
-    llvm::errs() << "tryParseBlockExpression: found stms"
-               << "\n";
+//    llvm::errs() << "tryParseBlockExpression: found stms"
+//               << "\n";
     view = view.subspan((*stmts)->getTokens());
     if (view.front().getKind() == TokenKind::Semi) {
       view = view.subspan(1);
