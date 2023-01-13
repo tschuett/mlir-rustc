@@ -16,6 +16,7 @@ public:
   void setMut();
 
   size_t getTokens() override;
+  std::shared_ptr<ast::types::Type> getType() override;
 };
 
 } // namespace rust_compiler::ast

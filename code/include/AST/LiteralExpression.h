@@ -31,9 +31,11 @@ public:
                                ExpressionWithoutBlockKind::LiteralExpression),
         kind(kind), value(value) {}
 
+  LiteralExpressionKind getLiteralKind() const { return kind; }
+
   size_t getTokens() override;
 
-  LiteralExpressionKind getLiteralKind() const { return kind; }
+  std::shared_ptr<ast::types::Type> getType() override;
 };
 
 } // namespace rust_compiler::ast

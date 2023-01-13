@@ -62,36 +62,33 @@ mlir::LogicalResult ModuleBuilder::declare(ast::VariableDeclaration &var,
 void ModuleBuilder::emitItem(std::shared_ptr<ast::Item> item) {
   llvm::outs() << "emitItem"
                << "\n";
+  assert(false);
+}
+
+void ModuleBuilder::emitVisItem(std::shared_ptr<ast::VisItem> item) {
+  llvm::outs() << "emitItem"
+               << "\n";
   switch (item->getKind()) {
-  case ast::ItemKind::Function: {
+  case ast::VisItemKind::Function: {
     llvm::outs() << "found function"
                  << "\n";
     emitFun(std::static_pointer_cast<ast::Function>(item));
     break;
   }
-  case ast::ItemKind::Module: {
+  case ast::VisItemKind::Module: {
     llvm::outs() << "found module"
                  << "\n";
     emitModule(std::static_pointer_cast<ast::Module>(item));
     break;
   }
-  case ast::ItemKind::InnerAttribute: {
-    llvm::outs() << "found inner attribute"
-                 << "\n";
-    // buildFun(item);
-    break;
-  }
-  case ast::ItemKind::UseDeclaration: {
+  case ast::VisItemKind::UseDeclaration: {
     llvm::outs() << "found use declaration"
                  << "\n";
     // buildFun(item);
     break;
   }
-  case ast::ItemKind::ClippyAttribute: {
-    llvm::outs() << "found clippy attribute"
-                 << "\n";
-    // buildFun(item);
-    break;
+  default: {
+    assert(false);
   }
   }
 }

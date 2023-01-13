@@ -2,6 +2,7 @@
 
 #include "AST/AST.h"
 #include "Location.h"
+#include "AST/Types/Types.h"
 
 #include <llvm/Support/raw_ostream.h>
 
@@ -21,6 +22,8 @@ public:
   void setHasTrailingSemi() { hasTrailingSemi = true; }
 
   bool getHasTrailingSemi() { return hasTrailingSemi; }
+
+  virtual std::shared_ptr<ast::types::Type> getType() = 0;
 
 private:
   rust_compiler::Location loc;

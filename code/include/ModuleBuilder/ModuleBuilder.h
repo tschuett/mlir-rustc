@@ -89,6 +89,7 @@ private:
   emitOperatorExpression(std::shared_ptr<ast::OperatorExpression> opr);
 
   void emitItem(std::shared_ptr<ast::Item> item);
+  void emitVisItem(std::shared_ptr<ast::VisItem> item);
   void emitModule(std::shared_ptr<ast::Module> module);
 
   mlir::Value

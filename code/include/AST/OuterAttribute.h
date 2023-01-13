@@ -1,11 +1,19 @@
 #pragma once
 
-#include "AST/Item.h"
+#include "AST/AST.h"
 
 namespace rust_compiler::ast {
 
-class OuterAttribute : public Item {
+enum class OuterAttributeKind {
+  ClippyAttribute,
+};
+
+class OuterAttribute : public Node {
+  OuterAttributeKind kind;
+
 public:
+  OuterAttribute(Location loc, OuterAttributeKind kind)
+      : Node(loc), kind(kind) {}
   size_t getTokens() override;
 };
 

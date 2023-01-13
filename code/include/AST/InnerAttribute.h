@@ -1,13 +1,13 @@
 #pragma once
 
-#include "AST/Item.h"
+#include "AST/AST.h"
 #include "Location.h"
 
 namespace rust_compiler::ast {
 
-class InnerAttribute : public Item {
+class InnerAttribute : public Node {
 public:
-  InnerAttribute(rust_compiler::Location location) : Item(location, ItemKind::InnerAttribute) {}
+  InnerAttribute(rust_compiler::Location location) : Node(location) {}
 
   size_t getTokens() override;
 };

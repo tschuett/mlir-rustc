@@ -1,7 +1,6 @@
 #pragma once
 
-#include "AST/Item.h"
-#include "AST/Statement.h"
+#include "AST/OuterAttribute.h"
 #include "Location.h"
 
 #include <span>
@@ -10,14 +9,14 @@
 
 namespace rust_compiler::ast {
 
-class ClippyAttribute : public Item {
+class ClippyAttribute : public OuterAttribute {
   unsigned lintTokens;
   std::vector<std::string> lints;
 
 public:
   ClippyAttribute(rust_compiler::Location location,
                   std::span<std::string> _lints, unsigned lintTokens)
-    : Item(location, ItemKind::ClippyAttribute), lintTokens(lintTokens) {
+    : OuterAttribute(location, OuterAttributeKind::ClippyAttribute), lintTokens(lintTokens) {
     lints = {_lints.begin(), _lints.end()};
   }
 

@@ -3,19 +3,19 @@
 #include "AST/BlockExpression.h"
 #include "AST/FunctionQualifiers.h"
 #include "AST/FunctionSignature.h"
-#include "AST/Item.h"
+#include "AST/VisItem.h"
 
 namespace rust_compiler::ast {
 
 // class FunctionReturnType {};
 
-class Function : public Item {
+class Function : public VisItem {
   std::shared_ptr<BlockExpression> body;
   FunctionSignature signature;
   FunctionQualifiers qualifiers;
 
 public:
-  Function(Location loc) : Item(loc, ItemKind::Function), signature(loc), qualifiers(loc) {}
+  Function(Location loc) : VisItem(loc, VisItemKind::Function), signature(loc), qualifiers(loc) {}
 
   FunctionSignature getSignature() const;
   Location getLocation() const;

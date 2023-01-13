@@ -41,6 +41,9 @@ add_library(parser
            TypedSelf.cpp
            NegationExpression.cpp
            BorrowExpression.cpp
+           OuterAttribute.cpp
+           VisItem.cpp
+           OuterAttributes.cpp
            )
 
 

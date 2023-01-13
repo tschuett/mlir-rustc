@@ -13,7 +13,7 @@ protected:
 public:
   explicit Node(Location location) : location(location) {}
   virtual ~Node() = default;
-   virtual size_t getTokens() = 0;
+  virtual size_t getTokens() = 0;
 };
 
 } // namespace rust_compiler::ast

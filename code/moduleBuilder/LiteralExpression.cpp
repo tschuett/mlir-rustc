@@ -24,9 +24,13 @@ mlir::Value ModuleBuilder::emitLiteralExpression(
   case LiteralExpressionKind::ByteStringLiteral: {
     break;
   }
+  case LiteralExpressionKind::RawByteStringLiteral: {
+    break;
+  }
   case LiteralExpressionKind::IntegerLiteral: {
+    std::shared_ptr<ast::types::Type> type = lit->getType();
     return builder.create<mlir::func::ConstantOp>(
-        getLocation(lit->getLocation()), );
+        getLocation(lit->getLocation()), getType(type), xxx);
     break;
   }
   case LiteralExpressionKind::FloatLiteral: {

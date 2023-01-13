@@ -5,6 +5,7 @@
 #include "AST/InnerAttribute.h"
 #include "AST/Module.h"
 #include "AST/OuterAttribute.h"
+#include "AST/OuterAttributes.h"
 #include "AST/UseDeclaration.h"
 #include "AST/UseTree.h"
 #include "Lexer/Token.h"
@@ -13,6 +14,7 @@
 #include <span>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace rust_compiler::parser {
 
@@ -129,6 +131,17 @@ public:
 
   std::optional<std::shared_ptr<ast::Expression>>
   tryParseBorrowExpression(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::OuterAttribute>>
+  tryParseOuterAttribute(std::span<lexer::Token> tokens,
+                         std::string_view modulePath);
+
+  std::optional<std::shared_ptr<ast::OuterAttributes>>
+  tryParseOuterAttributes(std::span<lexer::Token> tokens,
+                          std::string_view modulePath);
+
+  std::optional<std::shared_ptr<ast::VisItem>>
+  tryParseVisItem(std::span<lexer::Token> tokens, std::string_view modulePath);
 };
 
 } // namespace rust_compiler::parser

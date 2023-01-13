@@ -43,6 +43,8 @@ public:
   size_t getTokens() override {
     return left->getTokens() + 1 + right->getTokens();
   }
+
+  std::shared_ptr<ast::types::Type> getType() override;
 };
 
 } // namespace rust_compiler::ast

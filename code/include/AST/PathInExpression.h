@@ -11,10 +11,13 @@ class PathInExpression : public PathExpression {
 
 public:
   PathInExpression(Location loc) : PathExpression(loc) {}
-  size_t getTokens() override;
 
   void addSegment(PathExprSegment segment) { segs.push_back(segment); }
   void addDoubleColon() { ++doubleColons; };
+
+  size_t getTokens() override;
+
+  std::shared_ptr<ast::types::Type> getType() override;
 };
 
 } // namespace rust_compiler::ast
