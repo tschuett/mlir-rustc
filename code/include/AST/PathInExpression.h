@@ -10,7 +10,8 @@ class PathInExpression : public PathExpression {
   uint32_t doubleColons = 0;
 
 public:
-  PathInExpression(Location loc) : PathExpression(loc) {}
+  PathInExpression(Location loc)
+      : PathExpression(loc, PathExpressionKind::PathInExpression) {}
 
   void addSegment(PathExprSegment segment) { segs.push_back(segment); }
   void addDoubleColon() { ++doubleColons; };

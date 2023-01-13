@@ -4,6 +4,7 @@
 #include "mlir/Dialect/Arith/IR/Arith.h"
 
 #include <_types/_uint64_t.h>
+#include <cstdlib>
 
 using namespace rust_compiler::ast;
 
@@ -51,6 +52,9 @@ mlir::Value ModuleBuilder::emitLiteralExpression(
 
   llvm::outs() << "emitLiteralExpression: failed"
                << "\n";
+
+  exit(EXIT_FAILURE);
+  
   return nullptr;
 }
 

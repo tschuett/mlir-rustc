@@ -1,9 +1,8 @@
 #include "OperatorFeeding.h"
 
 #include "LiteralExpression.h"
-#include "PathExpression.h"
-
 #include "Parser/Parser.h"
+#include "PathExpression.h"
 
 namespace rust_compiler::parser {
 

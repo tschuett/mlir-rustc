@@ -8,6 +8,9 @@
 #include "AST/LetStatement.h"
 #include "AST/LiteralExpression.h"
 #include "AST/Module.h"
+#include "AST/PathExpression.h"
+#include "AST/PathInExpression.h"
+#include "AST/QualifiedPathInExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Statement.h"
 #include "AST/VariableDeclaration.h"
@@ -32,8 +35,8 @@ namespace rust_compiler {
 
 class ModuleBuilder {
   std::string moduleName;
-  //mlir::MLIRContext context;
-  //mlir::OwningOpRef<mlir::ModuleOp> module;
+  // mlir::MLIRContext context;
+  // mlir::OwningOpRef<mlir::ModuleOp> module;
   mlir::OpBuilder builder;
   mlir::ModuleOp theModule;
   llvm::remarks::YAMLRemarkSerializer serializer;
@@ -107,6 +110,12 @@ private:
                                      loc.getColumnNumber());
   }
   mlir::Type getType(std::shared_ptr<ast::types::Type>);
+
+  mlir::Value emitPathExpression(std::shared_ptr<ast::PathExpression> path);
+
+  mlir::Value emitPathInExpression(std::shared_ptr<ast::PathInExpression> path);
+  mlir::Value emitQualifiedPathInExpression(
+      std::shared_ptr<ast::QualifiedPathInExpression> path);
 };
 
 } // namespace rust_compiler
