@@ -21,6 +21,7 @@
 # TODO
 
 - [x] keywords
+- [x] Rewriter for borrow ops
 - [ ] UTF-8
 - [ ] Remarks
 - [ ] Mir to LLVM

@@ -1,5 +1,5 @@
 include "mlir/Pass/PassBase.td"
-
+include "mlir/Rewrite/PassUtil.td"
 
 def Test : Pass<"test", "mlir::func::FuncOp"> {
   let summary = "Move local array allocations from heap memory into stack memory";
@@ -17,4 +17,13 @@ def AttributerLite : Pass<"attributer-lite", "mlir::ModuleOp"> {
     Try to derive some attributes.
   }];
   let constructor = "rust_compiler::optimizer::createAttributerPass()";
+}
+
+
+def RewritePass : Pass<"rewrite", "mlir::ModuleOp"> {
+  let summary = "...";
+
+  // Inherit the common pattern rewrite options from `RewritePassUtils`.
+  let options = RewritePassUtils.options;
+  let constructor = "rust_compiler::optimizer::createRewriterPass()";
 }
