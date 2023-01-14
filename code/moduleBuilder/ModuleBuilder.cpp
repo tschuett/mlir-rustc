@@ -53,8 +53,10 @@ ModuleBuilder::emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
 // wasn't declared yet.
 mlir::LogicalResult ModuleBuilder::declare(ast::VariableDeclaration &var,
                                            mlir::Value value) {
+  llvm::outs() << "add variable to symbol table: " << var.getName() << "\n";
   if (symbolTable.count(var.getName()))
     return mlir::failure();
+  llvm::outs() << "add variable to symbol table (insert): " << var.getName() << "\n";
   symbolTable.insert(var.getName(), {value, &var});
   return mlir::success();
 }

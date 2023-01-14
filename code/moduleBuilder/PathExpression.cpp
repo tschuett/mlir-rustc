@@ -30,7 +30,15 @@ ModuleBuilder::emitPathExpression(std::shared_ptr<ast::PathExpression> path) {
 
 mlir::Value ModuleBuilder::emitPathInExpression(
     std::shared_ptr<ast::PathInExpression> path) {
-  // symbolTable.
+  std::vector<PathExprSegment> segments = path->getSegments();
+  assert(segments.size() == 1);
+
+  llvm::outs() << segments[0].getIdent() << "\n";
+
+  if (symbolTable.count(segments[0].getIdent()) == 1) {
+    return std::get<0>(symbolTable.lookup(segments[0].getIdent()));
+  }
+
   assert(false);
 }
 

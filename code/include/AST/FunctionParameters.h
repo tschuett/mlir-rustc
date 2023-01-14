@@ -16,7 +16,7 @@ class FunctionParameters {
 public:
   FunctionParameters(Location loc) : loc(loc) {}
 
-  std::span<FunctionParam> getParams() { return params; }
+  std::vector<FunctionParam> getParams() { return params; }
 
   void addFunctionParam(ast::FunctionParam param);
 

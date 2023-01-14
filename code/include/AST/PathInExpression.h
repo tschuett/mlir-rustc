@@ -19,6 +19,8 @@ public:
   size_t getTokens() override;
 
   std::shared_ptr<ast::types::Type> getType() override;
+
+  std::vector<PathExprSegment> getSegments() const { return segs; }
 };
 
 } // namespace rust_compiler::ast

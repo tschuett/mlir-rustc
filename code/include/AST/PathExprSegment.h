@@ -3,10 +3,10 @@
 #include "AST/AST.h"
 #include "AST/GenericArgs.h"
 
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <optional>
 
 namespace rust_compiler::ast {
 
@@ -21,6 +21,8 @@ public:
 
   void addIdentSegment(std::string_view _ident) { ident = _ident; }
   void addGenerics(GenericArgs generic) { generics = generic; }
+
+  std::string getIdent() const { return ident; }
 };
 
 } // namespace rust_compiler::ast

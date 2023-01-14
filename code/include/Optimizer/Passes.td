@@ -20,7 +20,7 @@ def AttributerLite : Pass<"attributer-lite", "mlir::ModuleOp"> {
 }
 
 
-def RewritePass : Pass<"rewrite", "mlir::ModuleOp"> {
+def RewritePass : Pass<"rewrite", "mlir::func::FuncOp"> {
   let summary = "...";
 
   // Inherit the common pattern rewrite options from `RewritePassUtils`.

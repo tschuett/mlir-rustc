@@ -10,7 +10,7 @@ namespace rust_compiler::ast::patterns {
 class IdentifierPattern : public PatternWithoutRange {
   bool ref = false;
   bool mut = false;
-  std::string identifier;
+  std::string identifier = "";
 
 public:
   IdentifierPattern(Location loc)

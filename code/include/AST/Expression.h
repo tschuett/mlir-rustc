@@ -17,8 +17,6 @@ public:
 
   ExpressionKind getExpressionKind() const { return expressionKind; }
 
-  rust_compiler::Location getLocation() const { return loc; }
-
   void setHasTrailingSemi() { hasTrailingSemi = true; }
 
   bool getHasTrailingSemi() { return hasTrailingSemi; }

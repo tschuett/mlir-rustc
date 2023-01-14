@@ -49,6 +49,8 @@ class ModuleBuilder {
   /// A mapping for the functions that have been code generated to MLIR.
   llvm::StringMap<mlir::func::FuncOp> functionMap;
 
+  mlir::Block *currentBlock = nullptr;
+
 public:
   ModuleBuilder(std::string_view moduleName, Target *target,
                 llvm::raw_ostream &OS, mlir::MLIRContext &context)

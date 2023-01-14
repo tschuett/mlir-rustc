@@ -63,6 +63,7 @@ LogicalResult EliminateBorrowPattern::match(Operation *op) const {
     return success();
   return failure();
 }
+
 void EliminateBorrowPattern::rewrite(Operation *op,
                                      PatternRewriter &rewriter) const {
   rewriter.eraseOp(op);
@@ -96,11 +97,11 @@ LogicalResult RewritePass::initialize(MLIRContext *context) {
 }
 
 void RewritePass::runOnOperation() {
-  mlir::ModuleOp module = getOperation();
+  mlir::func::FuncOp fun = getOperation();
 
-  LogicalResult result = applyPatternsAndFoldGreedily(module, frozenPatterns);
+  LogicalResult result = applyPatternsAndFoldGreedily(fun, frozenPatterns);
 
-  if(result.succeeded()) {
+  if (result.succeeded()) {
   }
 }
 

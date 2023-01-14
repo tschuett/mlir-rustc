@@ -7,7 +7,7 @@ namespace rust_compiler::ast {
 
 enum class VariableDeclarationKind { FunctionParameter };
 
-class VariableDeclaration : Node {
+class VariableDeclaration : public Node {
   VariableDeclarationKind kind;
 
 public:

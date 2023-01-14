@@ -19,6 +19,9 @@ size_t FunctionParam::getTokens() {
   return name->getTokens() + 1 + type->getTokens();
 }
 
-std::string FunctionParam::getName() { return name->getIdentifier(); }
+std::string FunctionParam::getName() {
+  assert(name);
+  return name->getIdentifier();
+}
 
 } // namespace rust_compiler::ast
