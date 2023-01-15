@@ -1,5 +1,3 @@
-#include "Modules.h"
-
 #include "AST/Module.h"
 #include "Item.h"
 #include "Lexer/Token.h"
@@ -11,6 +9,7 @@
 #include <string>
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 

@@ -1,11 +1,11 @@
-#include "PrimitiveType.h"
-
 #include "AST/Types/PrimitiveTypes.h"
 #include "Lexer/Token.h"
 #include "Location.h"
 #include "Parser/Parser.h"
 
 #include <optional>
+
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 

@@ -7,11 +7,11 @@
 #include "Attributes.h"
 #include "Item.h"
 #include "Parser/Parser.h"
-#include "UseDeclaration.h"
 
 #include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 

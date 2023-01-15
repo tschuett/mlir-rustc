@@ -1,11 +1,14 @@
-#include "PathIdentSegment.h"
+#include "Parser/Parser.h"
+
+#include "Lexer/KeyWords.h"
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
 std::optional<std::string>
-tryParsePathIdentSegment(std::span<lexer::Token> tokens) {
+Parser::tryParsePathIdentSegment(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
   if (view.front().isIdentifier())

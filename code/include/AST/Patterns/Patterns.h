@@ -4,6 +4,6 @@
 
 namespace rust_compiler::ast::patterns {
 
-class Pattern {};
+  //class Pattern {};
 
 } // namespace rust_compiler::ast::patterns

@@ -1,11 +1,10 @@
-#include "Visibility.h"
-
 #include "AST/Visiblity.h"
 #include "SimplePath.h"
 
 #include "Parser/Parser.h"
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 

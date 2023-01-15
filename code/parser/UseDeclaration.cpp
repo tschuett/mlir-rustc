@@ -1,14 +1,16 @@
-#include "UseDeclaration.h"
-
 #include "AST/UseDeclaration.h"
+
 #include "AST/UseTree.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 #include "SimplePath.h"
 
+#include "Util.h"
+
 #include <optional>
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 using namespace rust_compiler::ast::use_tree;
 
 namespace rust_compiler::parser {

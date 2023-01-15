@@ -1,5 +1,3 @@
-#include "BlockExpression.h"
-
 #include "AST/BlockExpression.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
@@ -10,6 +8,7 @@
 #include <optional>
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 

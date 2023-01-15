@@ -1,5 +1,3 @@
-#include "NegationExpression.h"
-
 #include "AST/Expression.h"
 #include "AST/NegationExpression.h"
 #include "Lexer/Token.h"
@@ -9,6 +7,7 @@
 #include <memory>
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 

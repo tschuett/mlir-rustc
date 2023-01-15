@@ -1,6 +1,5 @@
-#include "PatternNoTopAlt.h"
-
 #include "Lexer/Lexer.h"
+#include "Parser/Parser.h"
 #include "gtest/gtest.h"
 
 using namespace rust_compiler::lexer;
@@ -13,8 +12,10 @@ TEST(PatternNoTopAltTest, CheckIdentifierPattern1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  std::optional<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>> pattern =
-      tryParsePatternNoTopAlt(ts.getAsView());
+  Parser parser = {ts, ""};
+
+  std::optional<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>>
+      pattern = parser.tryParsePatternNoTopAlt(ts.getAsView());
 
   EXPECT_TRUE(pattern.has_value());
 }

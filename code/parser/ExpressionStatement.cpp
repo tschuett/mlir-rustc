@@ -1,9 +1,7 @@
-#include "ExpressionStatement.h"
-
-#include "ExpressionWithBlock.h"
-#include "ExpressionWithoutBlock.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
+
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 

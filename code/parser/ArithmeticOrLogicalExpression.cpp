@@ -1,13 +1,11 @@
-#include "ArithmeticOrLogicalExpression.h"
-
 #include "AST/ArithmeticOrLogicalExpression.h"
-#include "AST/Expression.h"
-#include "OperatorFeeding.h"
+
 #include "Parser/Parser.h"
 
 #include <memory>
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 

@@ -1,16 +1,17 @@
-#include "ShorthandSelf.h"
+#include "AST/ShorthandSelf.h"
 
 #include "AST/SelfParam.h"
-#include "AST/ShorthandSelf.h"
+#include "Parser/Parser.h"
 
 #include <memory>
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::SelfParam>>
-tryParseShorthandSelf(std::span<lexer::Token> tokens) {
+Parser::tryParseShorthandSelf(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
   ShorthandSelf shortSelf = {tokens.front().getLocation()};
@@ -31,6 +32,5 @@ tryParseShorthandSelf(std::span<lexer::Token> tokens) {
 }
 
 } // namespace rust_compiler::parser
-
 
 // FIXME lifetime

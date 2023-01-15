@@ -1,20 +1,16 @@
-#include "PathInExpression.h"
-
-#include "AST/GenericArgs.h"
 #include "AST/PathInExpression.h"
-#include "GenericArgs.h"
-#include "Lexer/KeyWords.h"
-#include "PathExprSegment.h"
+
+#include "Parser/Parser.h"
 
 #include <memory>
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
-
 std::optional<std::shared_ptr<ast::Expression>>
-tryParsePathInExpression(std::span<lexer::Token> tokens) {
+Parser::tryParsePathInExpression(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
   PathInExpression pathExpr = {view.front().getLocation()};

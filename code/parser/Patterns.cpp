@@ -1,11 +1,11 @@
-#include "Patterns.h"
+#include "Parser/Parser.h"
 
-namespace rust_compiler::lexer {
+namespace rust_compiler::parser {
 
-  std::optional < std::shared_ptr<ast::patterns::Pattern>>
-  tryParsePattern(std::span<lexer::Token> tokens) {
-    // FIXME
-    return std::nullopt;
-  }
-
+std::optional<std::shared_ptr<ast::patterns::Pattern>>
+Parser::tryParsePattern(std::span<lexer::Token> tokens) {
+  // FIXME
+  return std::nullopt;
 }
+
+} // namespace rust_compiler::parser

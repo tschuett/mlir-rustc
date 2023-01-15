@@ -2,10 +2,16 @@
 
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/ClippyAttribute.h"
+#include "AST/GenericArgs.h"
+#include "AST/IfExpression.h"
+#include "AST/IfLetExpression.h"
 #include "AST/InnerAttribute.h"
 #include "AST/Module.h"
 #include "AST/OuterAttribute.h"
 #include "AST/OuterAttributes.h"
+#include "AST/PathExprSegment.h"
+#include "AST/Patterns/Patterns.h"
+#include "AST/Scrutinee.h"
 #include "AST/UseDeclaration.h"
 #include "AST/UseTree.h"
 #include "Lexer/Token.h"
@@ -148,6 +154,48 @@ public:
 
   std::optional<std::shared_ptr<ast::Expression>>
   tryParseIfLetExpression(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::patterns::Pattern>>
+  tryParsePattern(std::span<lexer::Token> tokens);
+
+  std::optional<ast::Scrutinee>
+  tryParseScrutinee(std::span<lexer::Token> tokens);
+
+  std::optional<ast::WhereClause>
+  tryParseWhereClause(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::Expression>>
+  tryParsePathExpression(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::Expression>>
+  tryParsePathInExpression(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::Expression>>
+  tryParseQualifiedPathInExpression(std::span<lexer::Token> tokens);
+
+  std::optional<ast::PathExprSegment>
+  tryPathExprSegment(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::patterns::PatternWithoutRange>>
+  tryParseIdentifierPattern(std::span<lexer::Token> tokens);
+
+  std::optional<std::string>
+  tryParsePathIdentSegment(std::span<lexer::Token> tokens);
+
+  std::optional<ast::GenericArgs>
+  tryParseGenericArgs(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  tryParsePatternNoTopAlt(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  tryParseLiteralPattern(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::SelfParam>>
+  tryParseShorthandSelf(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::SelfParam>>
+  tryParseTypedSelf(std::span<lexer::Token> tokens);
 };
 
 } // namespace rust_compiler::parser

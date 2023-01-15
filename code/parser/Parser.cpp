@@ -3,13 +3,8 @@
 #include "AST/ClippyAttribute.h"
 #include "AST/Module.h"
 #include "AST/OuterAttribute.h"
-#include "Attributes.h"
-#include "Item.h"
 #include "Lexer/Token.h"
-#include "Location.h"
-#include "Modules.h"
 #include "Util.h"
-#include "Visibility.h"
 #include "llvm/Support/raw_ostream.h"
 
 #include <cstdlib>

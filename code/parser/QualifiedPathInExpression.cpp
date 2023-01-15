@@ -1,11 +1,9 @@
-#include "QualifiedPathInExpression.h"
-
-#include "PathExprSegment.h"
+#include "Parser/Parser.h"
 
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::Expression>>
-tryParseQualifiedPathInExpression(std::span<lexer::Token> tokens) {
+Parser::tryParseQualifiedPathInExpression(std::span<lexer::Token> tokens) {
   // FIXME
   return std::nullopt;
 }

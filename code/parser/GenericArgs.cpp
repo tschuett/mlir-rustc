@@ -1,11 +1,14 @@
-#include "GenericArgs.h"
+#include "Parser/Parser.h"
+
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
-std::optional<GenericArgs> tryParseGenericArgs(std::span<lexer::Token> tokens) {
+std::optional<GenericArgs>
+Parser::tryParseGenericArgs(std::span<lexer::Token> tokens) {
 
   // FIXME
   return std::nullopt;
 }
 
-} // namespace rust_compiler::parse
+} // namespace rust_compiler::parser

@@ -1,18 +1,19 @@
-#include "TypedSelf.h"
-
 #include "AST/TypedSelf.h"
+
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Type.h"
+#include "Parser/Parser.h"
 
 #include <memory>
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::SelfParam>>
-tryParseTypedSelf(std::span<lexer::Token> tokens) {
+Parser::tryParseTypedSelf(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
   TypedSelf typedSelf = {tokens.front().getLocation()};

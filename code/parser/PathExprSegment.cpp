@@ -1,13 +1,13 @@
-#include "PathExprSegment.h"
 
-#include "PathIdentSegment.h"
+#include "Parser/Parser.h"
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
 std::optional<PathExprSegment>
-tryPathExprSegment(std::span<lexer::Token> tokens) {
+Parser::tryPathExprSegment(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
   PathExprSegment expr = {view.front().getLocation()};

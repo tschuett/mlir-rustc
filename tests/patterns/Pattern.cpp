@@ -1,5 +1,5 @@
-#include "IdentifierPattern.h"
 #include "Lexer/Lexer.h"
+#include "Parser/Parser.h"
 #include "gtest/gtest.h"
 
 using namespace rust_compiler::lexer;
@@ -13,8 +13,11 @@ TEST(PatternTest, CheckIdentifierPattern1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  std::optional<std::shared_ptr<rust_compiler::ast::patterns::PatternWithoutRange>>
-      pattern = tryParseIdentifierPattern(ts.getAsView());
+  Parser parser = {ts, ""};
+
+  std::optional<
+      std::shared_ptr<rust_compiler::ast::patterns::PatternWithoutRange>>
+      pattern = parser.tryParseIdentifierPattern(ts.getAsView());
 
   EXPECT_TRUE(pattern.has_value());
 };
@@ -25,8 +28,11 @@ TEST(PatternTest, CheckIdentifierPattern2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  std::optional<std::shared_ptr<rust_compiler::ast::patterns::PatternWithoutRange>>
-      pattern = tryParseIdentifierPattern(ts.getAsView());
+  Parser parser = {ts, ""};
+
+  std::optional<
+      std::shared_ptr<rust_compiler::ast::patterns::PatternWithoutRange>>
+      pattern = parser.tryParseIdentifierPattern(ts.getAsView());
 
   EXPECT_TRUE(pattern.has_value());
 };
@@ -37,8 +43,11 @@ TEST(PatternTest, CheckIdentifierPattern3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  std::optional<std::shared_ptr<rust_compiler::ast::patterns::PatternWithoutRange>>
-      pattern = tryParseIdentifierPattern(ts.getAsView());
+  Parser parser = {ts, ""};
+
+  std::optional<
+      std::shared_ptr<rust_compiler::ast::patterns::PatternWithoutRange>>
+      pattern = parser.tryParseIdentifierPattern(ts.getAsView());
 
   EXPECT_TRUE(pattern.has_value());
 };

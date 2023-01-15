@@ -1,8 +1,8 @@
-#include "IdentifierPattern.h"
-
 #include "AST/PatternWithoutRange.h"
 #include "AST/Patterns/IdentifierPattern.h"
 #include "Lexer/KeyWords.h"
+
+#include "Parser/Parser.h"
 
 #include <memory>
 #include <optional>
@@ -14,7 +14,7 @@ using namespace rust_compiler::ast::patterns;
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::patterns::PatternWithoutRange>>
-tryParseIdentifierPattern(std::span<lexer::Token> tokens) {
+Parser::tryParseIdentifierPattern(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
   IdentifierPattern pattern = {tokens.front().getLocation()};
