@@ -17,6 +17,8 @@ add_executable(ExpressionTests
         Types.cpp
         ExamplesFun1.cpp
         BorrowExpression.cpp
+        IfExpression.cpp
+        IfLetExpression.cpp
 )
 
 llvm_map_components_to_libnames(llvm_libs Support)

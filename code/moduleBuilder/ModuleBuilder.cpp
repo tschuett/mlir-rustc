@@ -34,9 +34,11 @@ void ModuleBuilder::build(std::shared_ptr<ast::Module> mod) {
 
 std::optional<mlir::Value>
 ModuleBuilder::emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
+  llvm::outs() << "block count: " << symbolTable.count("right") << "\n";
   ScopedHashTableScope<llvm::StringRef,
                        std::pair<mlir::Value, ast::VariableDeclaration *>>
       varScope(symbolTable);
+  llvm::outs() << "block count: " << symbolTable.count("right") << "\n";
 
   std::optional<mlir::Value> result = std::nullopt;
 
@@ -56,8 +58,15 @@ mlir::LogicalResult ModuleBuilder::declare(ast::VariableDeclaration &var,
   llvm::outs() << "add variable to symbol table: " << var.getName() << "\n";
   if (symbolTable.count(var.getName()))
     return mlir::failure();
-  llvm::outs() << "add variable to symbol table (insert): " << var.getName() << "\n";
+
+  llvm::outs() << "add variable to symbol table (insert): x" << var.getName()
+               << "x"
+               << "\n";
   symbolTable.insert(var.getName(), {value, &var});
+  llvm::outs() << "count: " << symbolTable.count("right") << "\n";
+
+  llvm::outs() << symbolTable.getCurScope() << "\n";
+
   return mlir::success();
 }
 

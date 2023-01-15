@@ -44,6 +44,8 @@ add_library(parser
            OuterAttribute.cpp
            VisItem.cpp
            OuterAttributes.cpp
+           IfExpression.cpp
+           IfLetExpression.cpp
            )
 
 

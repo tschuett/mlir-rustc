@@ -54,7 +54,7 @@ mlir::Value ModuleBuilder::emitLiteralExpression(
                << "\n";
 
   exit(EXIT_FAILURE);
-  
+
   return nullptr;
 }
 

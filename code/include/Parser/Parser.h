@@ -142,6 +142,12 @@ public:
 
   std::optional<std::shared_ptr<ast::VisItem>>
   tryParseVisItem(std::span<lexer::Token> tokens, std::string_view modulePath);
+
+  std::optional<std::shared_ptr<ast::Expression>>
+  tryParseIfExpression(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::Expression>>
+  tryParseIfLetExpression(std::span<lexer::Token> tokens);
 };
 
 } // namespace rust_compiler::parser

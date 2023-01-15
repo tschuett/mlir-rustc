@@ -39,24 +39,10 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
   if (!function)
     return nullptr;
 
-  llvm::outs() << "declare function arguments: "
-               << function.getArgumentTypes().size() << "\n";
-
-  llvm::outs() << "declare function arguments: "
-               << function.getBody().getNumArguments() << "\n";
-
   // Let's start the body of the function now!
   // mlir::Block &entryBlock = function.front();
   mlir::Block *entryBlock = currentBlock;
   auto protoArgs = f->getSignature().getParameters().getParams();
-
-  llvm::outs() << "declare function arguments: "
-               << entryBlock->getNumArguments() << "\n";
-
-  llvm::outs() << "declare function arguments: " << entryBlock->isEntryBlock()
-               << "\n";
-
-  // assert(entryBlock.getNumArguments() == 1);
 
   // Declare all the function arguments in the symbol table.
   for (unsigned i = 0; i < entryBlock->getNumArguments(); ++i) {
@@ -66,6 +52,10 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
 
   llvm::outs() << "declared function arguments"
                << "\n";
+
+  llvm::outs() << "count: " << symbolTable.count("right") << "\n";
+
+  llvm::outs() << symbolTable.getCurScope() << "\n";
 
   //  for (const auto nameValue : llvm::zip(protoArgs,
   //  entryBlock.getArguments())) {

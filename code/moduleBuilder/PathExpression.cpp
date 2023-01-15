@@ -34,6 +34,7 @@ mlir::Value ModuleBuilder::emitPathInExpression(
   assert(segments.size() == 1);
 
   llvm::outs() << segments[0].getIdent() << "\n";
+  llvm::outs() << symbolTable.count(segments[0].getIdent()) << "\n";
 
   if (symbolTable.count(segments[0].getIdent()) == 1) {
     return std::get<0>(symbolTable.lookup(segments[0].getIdent()));
