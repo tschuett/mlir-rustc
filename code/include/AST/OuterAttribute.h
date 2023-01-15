@@ -14,6 +14,9 @@ class OuterAttribute : public Node {
 public:
   OuterAttribute(Location loc, OuterAttributeKind kind)
       : Node(loc), kind(kind) {}
+
+  OuterAttributeKind getOuterAttributeKind() { return kind; }
+
   size_t getTokens() override;
 };
 

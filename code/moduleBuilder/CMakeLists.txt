@@ -12,6 +12,7 @@ add_library(modulebuilder
            Expression.cpp
            LiteralExpression.cpp
            PathExpression.cpp
+           BlockExpression.cpp
            )
 
 

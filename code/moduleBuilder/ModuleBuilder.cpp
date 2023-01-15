@@ -32,25 +32,6 @@ void ModuleBuilder::build(std::shared_ptr<ast::Module> mod) {
   //  module->print(llvm::outs());
 }
 
-std::optional<mlir::Value>
-ModuleBuilder::emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
-  llvm::outs() << "block count: " << symbolTable.count("right") << "\n";
-  ScopedHashTableScope<llvm::StringRef,
-                       std::pair<mlir::Value, ast::VariableDeclaration *>>
-      varScope(symbolTable);
-  llvm::outs() << "block count: " << symbolTable.count("right") << "\n";
-
-  std::optional<mlir::Value> result = std::nullopt;
-
-  llvm::outs() << "emitBlockExpression"
-               << "\n";
-
-  // new variable scope?
-  result = emitStatements(blk->getExpressions());
-
-  return result;
-}
-
 // Declare a variable in the current scope, return success if the variable
 // wasn't declared yet.
 mlir::LogicalResult ModuleBuilder::declare(ast::VariableDeclaration &var,

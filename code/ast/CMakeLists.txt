@@ -34,6 +34,7 @@ add_library(ast
            ArithmeticOrLogicalExpression.cpp
            Item.cpp
            OuterAttributes.cpp
+           IfExpression.cpp
            )
 
 
