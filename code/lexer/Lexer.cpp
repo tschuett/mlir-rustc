@@ -188,7 +188,7 @@ std::optional<std::string> tryLexIdentifier(std::string_view code) {
       if (id.size() > 0)
         return id;
       else {
-        //printf("unknown identifier token: x%sx\n", code.data());
+        // printf("unknown identifier token: x%sx\n", code.data());
         return std::nullopt;
       }
     }
@@ -312,8 +312,8 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
 
   while (code.size() > 0) {
 
-    //printf("code.size(): %lu\n", code.size());
-    //printf("code.size(): %s\n", code.data());
+    // printf("code.size(): %lu\n", code.size());
+    // printf("code.size(): %s\n", code.data());
 
     std::string ws = tryLexWhiteSpace(code);
     code.remove_prefix(ws.size());
@@ -393,8 +393,8 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
     }
 
     if (code.starts_with("!")) {
-      ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::Not));
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Not));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("->")) {
@@ -513,13 +513,13 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("!")) {
-      ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::Not));
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Not));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with(";")) {
-      ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::Semi));
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Semi));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("|")) {
@@ -547,6 +547,11 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
                       TokenKind::Slash));
       code.remove_prefix(1);
       columnNumber += 1;
+    } else if (code.starts_with("..")) {
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::DotDot));
+      code.remove_prefix(2);
+      columnNumber += 2;
     } else if (code.starts_with("\n")) {
       code.remove_prefix(1);
       ++lineNumber;

@@ -13,7 +13,12 @@ class Scrutinee : public Node {
 public:
   Scrutinee(Location loc) : Node(loc){};
 
-  size_t getTokens() override;
+  void setExpression(std::shared_ptr<ast::Expression> _expr) { expr = _expr; }
+
+  size_t getTokens() override {
+    assert(expr);
+    return expr->getTokens();
+  }
 };
 
 } // namespace rust_compiler::ast

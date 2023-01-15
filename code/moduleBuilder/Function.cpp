@@ -50,12 +50,15 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
       return nullptr;
   }
 
+  // symbolTable.insert(protoArgs[0].getName(), {entryBlock->getArgument(0),
+  // &protoArgs[0]});
+
   llvm::outs() << "declared function arguments"
                << "\n";
 
   llvm::outs() << "count: " << symbolTable.count("right") << "\n";
 
-  llvm::outs() << symbolTable.getCurScope() << "\n";
+  assert(symbolTable.count("right") == 1);
 
   //  for (const auto nameValue : llvm::zip(protoArgs,
   //  entryBlock.getArguments())) {

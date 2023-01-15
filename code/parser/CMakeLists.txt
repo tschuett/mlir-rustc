@@ -9,7 +9,7 @@ add_library(parser
            SimplePath.cpp
            Util.cpp
            Type.cpp
-           Patterns.cpp
+           Pattern.cpp
            Generics.cpp
            WhereClause.cpp
            FunctionParameters.cpp
@@ -47,6 +47,8 @@ add_library(parser
            IfExpression.cpp
            IfLetExpression.cpp
            Scrutinee.cpp
+           RestPattern.cpp
+           TuplePattern.cpp
            )
 
 

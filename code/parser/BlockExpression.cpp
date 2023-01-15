@@ -1,11 +1,11 @@
 #include "AST/BlockExpression.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
-#include "Statement.h"
-#include "Statements.h"
 
 #include <llvm/Support/raw_ostream.h>
 #include <optional>
+#include <cassert>
+#include <memory>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
@@ -35,6 +35,7 @@ Parser::tryParseBlockExpression(std::span<lexer::Token> tokens) {
 //    llvm::errs() << "tryParseBlockExpression: found stms"
 //               << "\n";
     view = view.subspan((*stmts)->getTokens());
+    assert(view.size() > 0);
     if (view.front().getKind() == TokenKind::Semi) {
       view = view.subspan(1);
       block.setHasTrailingSemi();

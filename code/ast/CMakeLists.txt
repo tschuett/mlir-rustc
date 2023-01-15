@@ -36,6 +36,8 @@ add_library(ast
            OuterAttributes.cpp
            IfExpression.cpp
            IfLetExpression.cpp
+           Pattern.cpp
+           RestPattern.cpp
            )
 
 

@@ -17,7 +17,7 @@ TEST(IfLetExpressionTest, CheckIfLetExpression) {
 
   printTokenState(ts.getAsView());
 
-  size_t expectedLendth = 3;
+  size_t expectedLendth = 10;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 

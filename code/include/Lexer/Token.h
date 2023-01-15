@@ -32,13 +32,13 @@ enum class TokenKind {
   Colon,
   ThinArrow,
   LessThan,
-  //DoubleGreaterThan,
+  // DoubleGreaterThan,
   GreaterThan,
   Equals,
   Dot,
   QMark,
   Hash,
-  //Exclaim,
+  // Exclaim,
   SquareOpen,
   SquareClose,
   Comma,
@@ -48,12 +48,12 @@ enum class TokenKind {
   Semi,
   BraceOpen,
   BraceClose,
-  //Amp,
-  //DoubleAmp,
+  // Amp,
+  // DoubleAmp,
   String,
-  //Pipe,
+  // Pipe,
   Star,
-  //Dash,
+  // Dash,
   Char,
   Plus,
   Keyword,
@@ -68,7 +68,8 @@ enum class TokenKind {
   Or,
   Caret,
   Shl,
-  Shr
+  Shr,
+  DotDot
 };
 
 class Token {

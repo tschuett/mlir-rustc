@@ -1,3 +1,3 @@
 pub fn add(right: usize) -> usize {
-    return right + right;
+    return if 5 { right } else { right + right };
 }

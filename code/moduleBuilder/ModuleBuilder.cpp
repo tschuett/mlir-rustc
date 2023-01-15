@@ -32,25 +32,6 @@ void ModuleBuilder::build(std::shared_ptr<ast::Module> mod) {
   //  module->print(llvm::outs());
 }
 
-// Declare a variable in the current scope, return success if the variable
-// wasn't declared yet.
-mlir::LogicalResult ModuleBuilder::declare(ast::VariableDeclaration &var,
-                                           mlir::Value value) {
-  llvm::outs() << "add variable to symbol table: " << var.getName() << "\n";
-  if (symbolTable.count(var.getName()))
-    return mlir::failure();
-
-  llvm::outs() << "add variable to symbol table (insert): x" << var.getName()
-               << "x"
-               << "\n";
-  symbolTable.insert(var.getName(), {value, &var});
-  llvm::outs() << "count: " << symbolTable.count("right") << "\n";
-
-  llvm::outs() << symbolTable.getCurScope() << "\n";
-
-  return mlir::success();
-}
-
 void ModuleBuilder::emitVisItem(std::shared_ptr<ast::VisItem> item) {
   llvm::outs() << "emitItem"
                << "\n";

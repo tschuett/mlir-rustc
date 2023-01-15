@@ -1,14 +1,19 @@
 #pragma once
 
-#include "AST/PatternNoTopAlt.h"
-#include "AST/Patterns/PatternNoTopAlt.h
+#include "AST/Patterns/PatternWithoutRange.h"
+
+#include "AST/Patterns/TuplePatternItems.h"
+
+#include <vector>
+#include <memory>
 
 namespace rust_compiler::ast::patterns {
 
-class TuplePattern : public PatternNoTopAlt {
+class TuplePattern : public PatternWithoutRange {
+  std::vector<std::shared_ptr<TuplePatternItems>> items;
 public:
   TuplePattern(Location loc)
-      : PatternNoTopAlt(loc, PatternNoTopAltKind::TuplePattern) {}
+      : PatternWithoutRange(loc, PatternWithoutRangeKind::TuplePattern) {}
 };
 
 } // namespace rust_compiler::ast::patterns

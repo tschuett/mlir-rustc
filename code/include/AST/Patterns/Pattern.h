@@ -15,10 +15,11 @@ class Pattern : public Node {
 public:
   Pattern(Location loc) : Node(loc) {}
 
+  void addPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt>);
+
   size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast::patterns
-
 
 // https://doc.rust-lang.org/reference/patterns.html

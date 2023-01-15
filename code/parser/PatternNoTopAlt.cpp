@@ -23,6 +23,16 @@ Parser::tryParsePatternNoTopAlt(std::span<lexer::Token> tokens) {
   if (identifier)
     return *identifier;
 
+  std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>> tuple =
+      tryParseTuplePattern(view);
+  if (tuple)
+    return *tuple;
+
+  std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>> rest =
+      tryParseRestPattern(view);
+  if (rest)
+    return *rest;
+
   // FIXME
 
   return std::nullopt;

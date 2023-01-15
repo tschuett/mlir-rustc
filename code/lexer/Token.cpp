@@ -138,6 +138,9 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::Shr: {
     return std::string(">>");
   }
+  case TokenKind::DotDot: {
+    return std::string("..");
+  }
   }
 }
 
