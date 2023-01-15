@@ -35,6 +35,7 @@ add_library(ast
            Item.cpp
            OuterAttributes.cpp
            IfExpression.cpp
+           IfLetExpression.cpp
            )
 
 

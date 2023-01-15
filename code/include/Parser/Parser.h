@@ -158,7 +158,7 @@ public:
   std::optional<std::shared_ptr<ast::patterns::Pattern>>
   tryParsePattern(std::span<lexer::Token> tokens);
 
-  std::optional<ast::Scrutinee>
+  std::optional<std::shared_ptr<ast::Scrutinee>>
   tryParseScrutinee(std::span<lexer::Token> tokens);
 
   std::optional<ast::WhereClause>

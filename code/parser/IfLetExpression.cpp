@@ -2,6 +2,8 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <memory>
+
 using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
@@ -24,10 +26,10 @@ Parser::tryParseIfLetExpression(std::span<lexer::Token> tokens) {
         if (view.front().getKind() == lexer::TokenKind::Equals) {
           view = view.subspan(1);
 
-          std::optional<ast::Scrutinee> scrutinee =
+          std::optional<std::shared_ptr<ast::Scrutinee>> scrutinee =
               tryParseScrutinee(view);
           if (scrutinee) {
-            view = view.subspan((*scrutinee).getTokens());
+            view = view.subspan((*scrutinee)->getTokens());
             std::optional<std::shared_ptr<ast::Expression>> block =
                 tryParseBlockExpression(view);
             if (block) {

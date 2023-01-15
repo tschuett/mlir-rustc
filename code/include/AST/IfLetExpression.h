@@ -8,14 +8,17 @@
 namespace rust_compiler::ast {
 
 class IfLetExpression : public ExpressionWithBlock {
-
+  std::shared_ptr<Scrutinee> scrutinee;
+  std::shared_ptr<ast::patterns::Pattern> pattern;
+  std::shared_ptr<ast::Expression> block;
+  std::shared_ptr<ast::Expression> trailing;
 public:
   IfLetExpression(Location loc)
       : ExpressionWithBlock(loc, ExpressionWithBlockKind::IfLetExpression) {}
 
   void setPattern(std::shared_ptr<ast::patterns::Pattern> pattern);
 
-  void setScrutinee(ast::Scrutinee scrutinee);
+  void setScrutinee(std::shared_ptr<ast::Scrutinee> scrutinee);
 
   void setBlock(std::shared_ptr<ast::Expression> block);
 

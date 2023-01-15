@@ -2,6 +2,7 @@
 #include "PathInExpression.h"
 #include "ReturnExpression.h"
 #include "gtest/gtest.h"
+#include "Parser/Parser.h"
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
@@ -13,8 +14,10 @@ TEST(PathExpressionTest, CheckPathInExpr1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> pathIn =
-      tryParsePathInExpression(ts.getAsView());
+      parser.tryParsePathInExpression(ts.getAsView());
 
   EXPECT_TRUE(pathIn.has_value());
 };
@@ -25,8 +28,10 @@ TEST(PathExpressionTest, CheckPathInExpr2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> pathIn =
-      tryParsePathInExpression(ts.getAsView());
+      parser.tryParsePathInExpression(ts.getAsView());
 
   EXPECT_TRUE(pathIn.has_value());
 };
@@ -37,8 +42,10 @@ TEST(PathExpressionTest, CheckPathInExpr3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  Parser parser = {ts, ""};
+
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> pathIn =
-      tryParsePathInExpression(ts.getAsView());
+      parser.tryParsePathInExpression(ts.getAsView());
 
   EXPECT_TRUE(pathIn.has_value());
 };

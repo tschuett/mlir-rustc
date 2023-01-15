@@ -46,6 +46,7 @@ add_library(parser
            OuterAttributes.cpp
            IfExpression.cpp
            IfLetExpression.cpp
+           Scrutinee.cpp
            )
 
 
