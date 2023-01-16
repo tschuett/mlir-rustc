@@ -13,3 +13,6 @@ target_link_libraries(TargetInfo  ${llvm_libs} )
 
 #target_precompile_headers(modulebuilder PRIVATE ../include/ModuleBuilder/ModuleBuilder.h)
 
+
+
+add_subdirectory(Linux)
