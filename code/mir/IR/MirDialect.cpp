@@ -64,7 +64,7 @@ struct MirInlinerInterface : public DialectInlinerInterface {
   void handleTerminator(Operation *op,
                         ArrayRef<Value> valuesToReplace) const override {
     // Only "Mir.return" needs to be handled here.
-    auto returnOp = llvm::cast<ReturnOp>(op);
+    auto returnOp = llvm::cast<mlir::func::ReturnOp>(op);
 
     // Replace the values directly with the return operands.
     assert(returnOp.getNumOperands() == valuesToReplace.size());
