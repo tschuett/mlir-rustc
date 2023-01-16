@@ -13,6 +13,8 @@
 #include <mlir/Transforms/InliningUtils.h>
 #include <optional>
 
+#include "Mir/MirInterfaces.h"
+
 #define DEBUG_TYPE "MirDialect"
 
 using namespace mlir;

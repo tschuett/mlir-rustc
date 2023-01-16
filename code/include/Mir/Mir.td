@@ -10,6 +10,8 @@ include "mlir/Interfaces/ControlFlowInterfaces.td"
 include "mlir/IR/BuiltinTypeInterfaces.td"
 include "mlir/Dialect/LLVMIR/LLVMOpsInterfaces.td"
 
+include "MirInterfaces.td"
+
 def Mir_Dialect : Dialect {
   let name = "mir";
   let cppNamespace = "::rust_compiler::Mir";
@@ -49,7 +51,7 @@ class Mir_Type<string name, string typeMnemonic, list<Trait> traits = []>
 class Mir_Op<string mnemonic, list<Trait> traits = []> :
     Op<Mir_Dialect, mnemonic, traits>;
 
-def BorrowOp : Mir_Op<"borrow", [Pure]> {
+def BorrowOp : Mir_Op<"borrow", [Pure, BorrowOpInterface]> {
   let summary = "Performs a borrow on the  input.";
 
   let description = [{
@@ -60,7 +62,7 @@ window in `value`.
   let arguments = (ins AnyType:$rhs);
 }
 
-def MutBorrowOp : Mir_Op<"mutborrow", [Pure]> {
+def MutBorrowOp : Mir_Op<"mutborrow", [Pure, BorrowOpInterface]> {
   let summary = "Performs a mutable borrow on the  input.";
 
   let description = [{

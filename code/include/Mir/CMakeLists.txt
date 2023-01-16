@@ -13,3 +13,10 @@ add_public_tablegen_target(MirOpsIncGen)
 
 #mlir_tablegen(MirOps.h.inc -gen-op-decls)
 #mlir_tablegen(MirOps.cpp.inc -gen-op-defs)
+
+
+# Most dialects should use add_mlir_interfaces().
+set(LLVM_TARGET_DEFINITIONS MirInterfaces.td)
+mlir_tablegen(MirInterfaces.h.inc -gen-op-interface-decls)
+mlir_tablegen(MirInterfaces.cpp.inc -gen-op-interface-defs)
+add_public_tablegen_target(MirInterfacesIncGen)
