@@ -72,3 +72,6 @@ mlir::Type ModuleBuilder::getType(std::shared_ptr<ast::types::Type> type) {
 }
 
 } // namespace rust_compiler
+
+
+// Usize and Isize depend on Target!

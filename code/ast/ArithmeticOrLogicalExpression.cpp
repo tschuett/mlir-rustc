@@ -2,6 +2,9 @@
 
 namespace rust_compiler::ast {
 
-std::shared_ptr<ast::types::Type> ArithmeticOrLogicalExpression::getType() {}
+std::shared_ptr<ast::types::Type> ArithmeticOrLogicalExpression::getType() {
+  assert(false);
+  return nullptr;
+}
 
 } // namespace rust_compiler::ast

@@ -29,7 +29,8 @@ enum class PrimitiveTypeKind {
   Isize,
   Never,
   F32,
-  F64
+  F64,
+  Unit
 };
 
 class PrimitiveType : public Type {
@@ -47,3 +48,7 @@ std::optional<std::string> PrimitiveType2String(PrimitiveTypeKind);
 std::optional<PrimitiveTypeKind> isPrimitiveType(std::string_view identifier);
 
 } // namespace rust_compiler::ast::types
+
+
+
+// The () type, also called “unit”.

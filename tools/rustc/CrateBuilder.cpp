@@ -17,6 +17,7 @@
 #include <llvm/TargetParser/Host.h>
 #include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/Async/IR/Async.h>
+#include <mlir/Dialect/MemRef/IR/MemRef.h>
 #include <sstream>
 
 using namespace rust_compiler::parser;
@@ -82,6 +83,7 @@ void buildCrate(std::string_view path, std::string_view edition) {
   context.getOrLoadDialect<mlir::func::FuncDialect>();
   context.getOrLoadDialect<mlir::arith::ArithDialect>();
   context.getOrLoadDialect<mlir::async::AsyncDialect>();
+  context.getOrLoadDialect<mlir::memref::MemRefDialect>();
 
   rust_compiler::ModuleBuilder mb = {"lib", &target, stream, context};
 

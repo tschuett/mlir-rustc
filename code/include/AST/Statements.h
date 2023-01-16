@@ -33,6 +33,9 @@ public:
   void setOnlySemi() { onlySemi = true; };
 
   size_t getTokens() override;
+
+  std::shared_ptr<ast::types::Type> getType();
+
 };
 
 } // namespace rust_compiler::ast
