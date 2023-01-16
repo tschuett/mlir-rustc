@@ -10,6 +10,7 @@ using namespace llvm;
 using namespace mlir;
 
 using namespace rust_compiler::remarks;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler {
 
@@ -24,7 +25,7 @@ namespace rust_compiler {
 mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
   ScopedHashTableScope<llvm::StringRef,
                        std::pair<mlir::Value, ast::VariableDeclaration *>>
-      varScope(symbolTable);
+      _FunScope(symbolTable);
 
   OptimizationRemarkEmitter ORE = {f, &serializer};
 
@@ -42,7 +43,8 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
   // Let's start the body of the function now!
   // mlir::Block &entryBlock = function.front();
   mlir::Block *entryBlock = currentBlock;
-  auto protoArgs = f->getSignature().getParameters().getParams();
+  std::vector<FunctionParam> protoArgs =
+      f->getSignature().getParameters().getParams();
 
   // Declare all the function arguments in the symbol table.
   for (unsigned i = 0; i < entryBlock->getNumArguments(); ++i) {
