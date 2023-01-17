@@ -1,7 +1,7 @@
 #include "Mir/MirOps.h"
 #include "ModuleBuilder/ModuleBuilder.h"
 #include "Remarks/OptimizationRemarkEmitter.h"
-#include "llvm/ADT/SmallVector.h"
+#include <llvm/ADT/SmallVector.h>
 
 #include <llvm/Remarks/Remark.h>
 #include <mlir/IR/Attributes.h>
