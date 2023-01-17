@@ -1,6 +1,10 @@
 #include "Mir/MirDialect.h"
 
+#include "Mir/MirAttr.h"
+#include "Mir/MirDialect.h"
+#include "Mir/MirInterfaces.h"
 #include "Mir/MirOps.h"
+#include "Mir/MirTypes.h"
 
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/WithColor.h>
@@ -12,8 +16,6 @@
 #include <mlir/IR/Types.h>
 #include <mlir/Transforms/InliningUtils.h>
 #include <optional>
-
-#include "Mir/MirInterfaces.h"
 
 #define DEBUG_TYPE "MirDialect"
 

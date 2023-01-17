@@ -77,3 +77,11 @@ tools/rustc/Opts.inc
 .ninja_deps
 .ninja_log
 build.ninja
+
+
+code/include/Mir/MirAttr.cpp.inc
+code/include/Mir/MirAttr.h.inc
+code/include/Mir/MirEnumAttr.cpp.inc
+code/include/Mir/MirEnumAttr.h.inc
+code/include/Mir/MirOpsTypes.cpp.inc
+code/include/Mir/MirOpsTypes.h.inc

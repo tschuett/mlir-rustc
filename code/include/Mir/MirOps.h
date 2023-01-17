@@ -9,6 +9,10 @@
 #include <mlir/Interfaces/SideEffectInterfaces.h>
 #include <type_traits>
 
+#include "Mir/MirAttr.h"
+#include "Mir/MirTypes.h"
+#include "Mir/MirInterfaces.h"
+
 namespace rust_compiler::Mir {}
 
 /// Include the auto-generated header file containing the declarations of the

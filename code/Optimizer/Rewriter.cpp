@@ -1,4 +1,5 @@
 #include "Mir/MirDialect.h"
+#include "Mir/MirInterfaces.h"
 #include "Mir/MirOps.h"
 #include "Optimizer/Passes.h"
 
