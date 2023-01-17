@@ -19,7 +19,12 @@ namespace rust_compiler::ast::types {
 // trait types
 
 enum class TypeKind {
-  PrimitiveType
+  PrimitiveType,
+  SequenceType,
+  UserDefinedTypes,
+  FunctionTypes,
+  PointerTypes,
+  TraitTypes
 };
 
 class Type : public Node {

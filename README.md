@@ -36,6 +36,7 @@
 - [ ] cover all tokens
 - [ ] types
 - [ ] patterns
+- [ ] error progation
 
 # References
 
@@ -107,4 +108,5 @@
 * Mir
 * arith
 * func
+* async
 * memref

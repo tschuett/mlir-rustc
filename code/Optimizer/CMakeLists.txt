@@ -2,6 +2,7 @@ add_library(optimizer
            Attributer.cpp
            Test.cpp
            Rewriter.cpp
+           LowerAwait.cpp
            )
 
 

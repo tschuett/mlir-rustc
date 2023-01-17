@@ -1,8 +1,10 @@
 #include "Mir/MirOps.h"
 #include "ModuleBuilder/ModuleBuilder.h"
 #include "Remarks/OptimizationRemarkEmitter.h"
+#include "llvm/ADT/SmallVector.h"
 
 #include <llvm/Remarks/Remark.h>
+#include <mlir/IR/Attributes.h>
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/IR/TypeRange.h>
 
@@ -129,8 +131,14 @@ ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
   mlir::FunctionType funcType =
       builder.getFunctionType(argTypes, resultType /*std::nullopt results*/);
 
-  mlir::func::FuncOp f =
-      builder.create<mlir::func::FuncOp>(location, sig.getName(), funcType);
+  llvm::SmallVector<mlir::NamedAttribute> attrs;
+  attrs.push_back(
+      builder.getNamedAttr("visibility", builder.getStringAttr("pub")));
+  attrs.push_back(
+      builder.getNamedAttr("function type", builder.getStringAttr("async")));
+
+  mlir::func::FuncOp f = builder.create<mlir::func::FuncOp>(
+      location, sig.getName(), funcType, attrs);
   assert(f.getArgumentTypes().size() == 1);
   assert(f.getResultTypes().size() == 1);
 

@@ -9,7 +9,7 @@ include "MirTypes.td"
 include "MirAttr.td"
 include "mlir/IR/BuiltinAttributes.td"
 include "MirInterfaces.td"
-
+include "mlir/Interfaces/ControlFlowInterfaces.td"
 
 // Ops
 class Mir_Op<string mnemonic, list<Trait> traits = []> :
@@ -37,7 +37,7 @@ window in `value`. NoMemoryEffect
   let arguments = (ins AnyType:$rhs);
 }
 
-def AwaitOp : Mir_Op<"await", [Pure]> {
+def AwaitOp : Mir_Op<"await", []> {
   let summary = "a Rust await op.";
 
   let description = [{
@@ -45,7 +45,18 @@ Each entry in `output` is the mean of the corresponding size `ksize`
 window in `value`. NoMemoryEffect
   }];
 
-  let arguments = (ins AnyType:$rhs);
+  let arguments = (ins AnyType:$lhs);
+}
+
+def ErrorPropagationOp : Mir_Op<"question_mark", []> {
+  let summary = "a Rust ? op.";
+
+  let description = [{
+Each entry in `output` is the mean of the corresponding size `ksize`
+window in `value`. NoMemoryEffect
+  }];
+
+  let arguments = (ins AnyType:$lhs);
 }
 
 
