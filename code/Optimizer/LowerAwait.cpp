@@ -1,10 +1,10 @@
 #include "Mir/MirOps.h"
 #include "Optimizer/Passes.h"
+
 #include <mlir/Dialect/Async/IR/Async.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
-#include <mlir/IR/Operation.h>
-
 #include <mlir/IR/BuiltinOps.h>
+#include <mlir/IR/Operation.h>
 
 namespace rust_compiler::optimizer {
 #define GEN_PASS_DEF_LOWERAWAITPASS
@@ -33,17 +33,17 @@ LowerAwaitPass::LowerAwaitPass(const LowerAwaitPass &pass)
 llvm::StringRef LowerAwaitPass::getDescription() const { return "test pass"; }
 
 void LowerAwaitPass::runOnOperation() {
-  mlir::func::FuncOp f = getOperation();
-  f.walk([&](mlir::Operation *op) {
-    if (isa<rust_compiler::Mir::AwaitOp>(op)) {
-    }
+  mlir::ModuleOp module = getOperation();
+  module.walk([&](mlir::func::FuncOp f) {
+  // isAsync() -> rewrite
+   // if (isa<rust_compiler::Mir::AwaitOp>(op)) {
+   // }
   });
 }
 
 std::unique_ptr<mlir::Pass> createLowerAwaitPass() {
   return std::make_unique<LowerAwaitPass>();
 }
-
 
 // https://mlir.llvm.org/docs/Dialects/AsyncDialect/
 
