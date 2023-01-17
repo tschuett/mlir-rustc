@@ -3,6 +3,7 @@ add_library(optimizer
            Test.cpp
            Rewriter.cpp
            LowerAwait.cpp
+           LowerErrorPropagation.cpp
            )
 
 

@@ -28,9 +28,14 @@ def RewritePass : Pass<"rewrite", "mlir::func::FuncOp"> {
   let constructor = "rust_compiler::optimizer::createRewriterPass()";
 }
 
-
 def LowerAwaitPass : Pass<"LowerAwait", "mlir::func::FuncOp"> {
   let summary = "...";
 
   let constructor = "rust_compiler::optimizer::createLowerAwaitPass()";
+}
+
+def LowerErrorPropagationPass : Pass<"ErrorPropagation", "mlir::func::FuncOp"> {
+  let summary = "...";
+
+  let constructor = "rust_compiler::optimizer::createLowerErrorPropagationPass()";
 }
