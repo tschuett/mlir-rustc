@@ -59,5 +59,61 @@ window in `value`. NoMemoryEffect
   let arguments = (ins AnyType:$lhs);
 }
 
+//===----------------------------------------------------------------------===//
+// StructAccessOp
+//===----------------------------------------------------------------------===//
+
+def StructAccessOp : Mir_Op<"struct_access", [Pure]> {
+  let summary = "struct access";
+  let description = [{
+    Access the Nth element of a value returning a struct type.
+  }];
+
+  let arguments = (ins Mir_StructType:$input, I64Attr:$index);
+  let results = (outs AnyType:$output);
+
+  let assemblyFormat = [{
+    $input `[` $index `]` attr-dict `:` type($input) `->` type($output)
+  }];
+
+  // Allow building a StructAccessOp with just a struct value and an index.
+  let builders = [
+    OpBuilder<(ins "mlir::Value":$input, "size_t":$index)>
+  ];
+
+  // Indicate that additional verification for this operation is necessary.
+  let hasVerifier = 1;
+
+  // Set the folder bit so that we can fold constant accesses.
+  let hasFolder = 1;
+}
+
+//===----------------------------------------------------------------------===//
+// StructConstantOp
+//===----------------------------------------------------------------------===//
+
+def StructConstantOp : Mir_Op<"struct_constant", [ConstantLike, Pure]> {
+  let summary = "struct constant";
+  let description = [{
+    Constant operation turns a literal struct value into an SSA value. The data
+    is attached to the operation as an attribute. The struct constant is encoded
+    as an array of other constant values. For example:
+
+    ```mlir
+      %0 = Mir.struct_constant [
+        dense<[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]> : tensor<2x3xf64>
+      ] : !Mir.struct<tensor<*xf64>>
+    ```
+  }];
+
+  let arguments = (ins ArrayAttr:$value);
+  let results = (outs Mir_StructType:$output);
+
+  let assemblyFormat = "$value attr-dict `:` type($output)";
+
+  // Indicate that additional verification for this operation is necessary.
+  let hasVerifier = 1;
+  let hasFolder = 1;
+}
 
 #endif

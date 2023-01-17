@@ -2,5 +2,5 @@
 
 #include "Mir/MirOps.h"
 
-#define GET_OP_CLASSES
-#include "Mir/MirOps.cpp.inc"
+#define GET_TYPEDEF_CLASSES
+#include "Mir/MirTypes.cpp.inc"

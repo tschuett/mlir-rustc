@@ -43,3 +43,8 @@ void LowerAwaitPass::runOnOperation() {
 std::unique_ptr<mlir::Pass> createLowerAwaitPass() {
   return std::make_unique<LowerAwaitPass>();
 }
+
+
+// https://mlir.llvm.org/docs/Dialects/AsyncDialect/
+
+// ::mlir::async::FuncOp

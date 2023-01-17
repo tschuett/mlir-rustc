@@ -31,8 +31,8 @@ mlir_tablegen(MirAttr.cpp.inc -gen-attrdef-defs)
 set(LLVM_TARGET_DEFINITIONS MirOps.td)
 mlir_tablegen(MirOps.h.inc -gen-op-decls)
 mlir_tablegen(MirOps.cpp.inc -gen-op-defs)
-mlir_tablegen(MirOpsTypes.h.inc --gen-typedef-decls)
-mlir_tablegen(MirOpsTypes.cpp.inc --gen-typedef-defs)
+mlir_tablegen(MirTypes.h.inc --gen-typedef-decls)
+mlir_tablegen(MirTypes.cpp.inc --gen-typedef-defs)
 add_public_tablegen_target(MirOpsIncGen)
 
 

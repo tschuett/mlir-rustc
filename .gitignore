@@ -85,3 +85,6 @@ code/include/Mir/MirEnumAttr.cpp.inc
 code/include/Mir/MirEnumAttr.h.inc
 code/include/Mir/MirOpsTypes.cpp.inc
 code/include/Mir/MirOpsTypes.h.inc
+
+code/include/Mir/MirTypes.cpp.inc
+code/include/Mir/MirTypes.h.inc

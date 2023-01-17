@@ -9,4 +9,4 @@ namespace rust_compiler::mir {
 
 
 #define GET_TYPEDEF_CLASSES
-#include "MirOpsTypes.h.inc"
+#include "MirTypes.h.inc"
