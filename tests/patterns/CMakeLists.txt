@@ -4,6 +4,9 @@ add_executable(PatternTests
         PatternTests.cpp
         Pattern.cpp
         PatternNoTopAlt.cpp
+        TuplePattern.cpp
+        RestPattern.cpp
+        TuplePatternItems.cpp
 )
 
 llvm_map_components_to_libnames(llvm_libs Support)
