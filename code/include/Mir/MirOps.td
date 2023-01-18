@@ -60,6 +60,28 @@ window in `value`. NoMemoryEffect
 }
 
 //===----------------------------------------------------------------------===//
+// AddIOp
+//===----------------------------------------------------------------------===//
+
+def AddIOp : Mir_Op<"addi", [Pure]> {
+  let summary = "integer addition operation";
+  let description = [{
+    The shapes of the operands are expected to match.
+  }];
+
+  let arguments = (ins AnyInteger:$lhs, AnyInteger:$rhs);
+  let results = (outs AnyInteger);
+
+//  // Indicate that the operation has a custom parser and printer method.
+//  let hasCustomAssemblyFormat = 1;
+//
+//  // Allow building an AddiOp with from the two input operands.
+//  let builders = [
+//    OpBuilder<(ins "mlir::Value":$lhs, "mlir::Value":$rhs)>
+//  ];
+}
+
+//===----------------------------------------------------------------------===//
 // StructAccessOp
 //===----------------------------------------------------------------------===//
 

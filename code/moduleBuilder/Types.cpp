@@ -1,7 +1,9 @@
-#include "ModuleBuilder/ModuleBuilder.h"
+#include "AST/Types/Types.h"
 
 #include "AST/Types/PrimitiveTypes.h"
-#include "AST/Types/Types.h"
+#include "ModuleBuilder/ModuleBuilder.h"
+
+using namespace rust_compiler::ast::types;
 
 namespace rust_compiler {
 
@@ -68,10 +70,39 @@ mlir::Type ModuleBuilder::getType(std::shared_ptr<ast::types::Type> type) {
     }
     }
   }
+  case ast::types::TypeKind::SequenceType: {
+    llvm::outs() << "SequenceType"
+                 << "\n";
+    exit(EXIT_FAILURE);
+  }
+  case ast::types::TypeKind::UserDefinedTypes: {
+    llvm::outs() << "UserDefinedType"
+                 << "\n";
+    exit(EXIT_FAILURE);
+  }
+  case ast::types::TypeKind::FunctionTypes: {
+    llvm::outs() << "functionTypes"
+                 << "\n";
+    exit(EXIT_FAILURE);
+  }
+  case ast::types::TypeKind::PointerTypes: {
+    llvm::outs() << "PointerTypes"
+                 << "\n";
+    exit(EXIT_FAILURE);
+  }
+  case ast::types::TypeKind::TraitTypes: {
+    llvm::outs() << "TraitTypes"
+                 << "\n";
+    exit(EXIT_FAILURE);
+  }
+//  default: {
+//    llvm::outs() << "unknown type kind"
+//                 << "\n";
+//    exit(EXIT_FAILURE);
+//  }
   };
 }
 
 } // namespace rust_compiler
-
 
 // Usize and Isize depend on Target!

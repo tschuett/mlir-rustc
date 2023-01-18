@@ -31,7 +31,7 @@ class Type : public Node {
   TypeKind kind;
 
 public:
-  Type(Location loc, TypeKind kind) : Node(loc) {}
+  Type(Location loc, TypeKind kind) : Node(loc), kind(kind) {}
 
   TypeKind getKind() const { return kind; }
 

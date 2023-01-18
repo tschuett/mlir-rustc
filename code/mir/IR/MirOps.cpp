@@ -14,3 +14,8 @@
 
 #define GET_OP_CLASSES
 #include "Mir/MirOps.cpp.inc"
+
+namespace rust_compiler::Mir {
+
+
+}
