@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.25.0)
 
 project(rust_compiler)
 
-message(STATUS "Using LLVM 1 in: ${LLVM_DIR}")
+message(STATUS "Using LLVM in: ${LLVM_DIR}")
 
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_EXTENSIONS OFF)
@@ -37,7 +37,7 @@ include_directories(${MLIR_INCLUDE_DIRS})
 
 #set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "cmake")
 
-set(CMAKE_COMPILE_WARNING_AS_ERROR True)
+#set(CMAKE_COMPILE_WARNING_AS_ERROR True)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 

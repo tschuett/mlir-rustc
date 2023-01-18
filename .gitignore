@@ -89,3 +89,5 @@ code/include/Mir/MirOpsTypes.h.inc
 code/include/Mir/MirTypes.cpp.inc
 code/include/Mir/MirTypes.h.inc
 code/include/CodeGen/Passes.h.inc
+
+code/Optimizer/Combine.cpp.inc

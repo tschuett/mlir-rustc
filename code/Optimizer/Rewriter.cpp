@@ -11,6 +11,8 @@
 
 using namespace mlir;
 
+#include "Combine.cpp.inc"
+
 namespace rust_compiler::optimizer {
 #define GEN_PASS_DEF_REWRITEPASS
 #include "Optimizer/Passes.h.inc"
@@ -89,6 +91,8 @@ llvm::StringRef RewritePass::getDescription() const { return "test pass"; }
 LogicalResult RewritePass::initialize(MLIRContext *context) {
   RewritePatternSet rewritePatterns(context);
 
+  populateWithGenerated(rewritePatterns);
+  
   rewritePatterns.add<EliminateBorrowPattern>(PatternBenefit(1), context);
   rewritePatterns.add<EliminateMutBorrowPattern>(PatternBenefit(1), context);
 
