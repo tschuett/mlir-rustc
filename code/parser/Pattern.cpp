@@ -1,4 +1,5 @@
 #include "AST/Patterns/Pattern.h"
+
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
@@ -18,6 +19,16 @@ Parser::tryParsePattern(std::span<lexer::Token> tokens) {
   if (noTop) {
     Pattern pat = {tokens.front().getLocation()};
     pat.addPattern(*noTop);
+
+    return std::make_shared<ast::patterns::Pattern>(pat);
+  }
+
+  std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>> tuple =
+      tryParseTuplePattern(view);
+
+  if (tuple) {
+    Pattern pat = {tokens.front().getLocation()};
+    pat.addPattern(*tuple);
 
     return std::make_shared<ast::patterns::Pattern>(pat);
   }

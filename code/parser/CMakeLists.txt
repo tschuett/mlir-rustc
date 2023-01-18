@@ -49,6 +49,7 @@ add_library(parser
            Scrutinee.cpp
            RestPattern.cpp
            TuplePattern.cpp
+           TuplePatternItems.cpp
            )
 
 

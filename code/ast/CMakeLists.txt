@@ -38,6 +38,7 @@ add_library(ast
            IfLetExpression.cpp
            Pattern.cpp
            RestPattern.cpp
+           TuplePattern.cpp
            )
 
 

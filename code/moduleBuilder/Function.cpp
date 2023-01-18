@@ -50,8 +50,12 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
 
   // Declare all the function arguments in the symbol table.
   for (unsigned i = 0; i < entryBlock->getNumArguments(); ++i) {
-    if (failed(declare(protoArgs[i], entryBlock->getArgument(i))))
+    if (failed(declare(protoArgs[i], entryBlock->getArgument(i)))) {
       return nullptr;
+    } else {
+      llvm::outs() << "outside count: "
+                   << symbolTable.count(protoArgs[i].getName()) << "\n";
+    }
   }
 
   // symbolTable.insert(protoArgs[0].getName(), {entryBlock->getArgument(0),
@@ -82,18 +86,18 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
   // Implicitly return void if no return statement was emitted.
   // FIXME: we may fix the parser instead to always return the last expression
   // (this would possibly help the REPL case later)
-  mlir::func::ReturnOp returnOp;
-  if (!entryBlock->empty())
-    returnOp = dyn_cast<mlir::func::ReturnOp>(entryBlock->back());
-  if (!returnOp) {
-    builder.create<mlir::func::ReturnOp>(getLocation(f->getLocation()));
-  } else if (returnOp.getOperands().size() > 0) {
-    // Otherwise, if this return operation has an operand then add a result to
-    // the function.
-    function.setType(
-        builder.getFunctionType(function.getFunctionType().getInputs(),
-                                *returnOp.operand_type_begin()));
-  }
+  // mlir::func::ReturnOp returnOp;
+  // if (!entryBlock->empty())
+  //  returnOp = dyn_cast<mlir::func::ReturnOp>(entryBlock->back());
+  // if (!returnOp) {
+  //  builder.create<mlir::func::ReturnOp>(getLocation(f->getLocation()));
+  //} else if (returnOp.getOperands().size() > 0) {
+  //  // Otherwise, if this return operation has an operand then add a result to
+  //  // the function.
+  //  function.setType(
+  //      builder.getFunctionType(function.getFunctionType().getInputs(),
+  //                              *returnOp.operand_type_begin()));
+  //}
 
   llvm::outs() << "declared function HAPPY!"
                << "\n";

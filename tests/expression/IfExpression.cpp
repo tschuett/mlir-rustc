@@ -28,3 +28,43 @@ TEST(IfExpressionTest, CheckIfExpression) {
 
   EXPECT_TRUE(ifExpr.has_value());
 };
+
+TEST(IfExpressionTest, CheckIfExpression1) {
+
+  std::string text = "if 5 { 4 } else { 5}";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  printTokenState(ts.getAsView());
+
+  size_t expectedLendth = 9;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  Parser parser = {ts, ""};
+
+  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
+      parser.tryParseIfExpression(ts.getAsView());
+
+  EXPECT_TRUE(ifExpr.has_value());
+};
+
+TEST(IfExpressionTest, CheckIfExpression2) {
+
+  std::string text = "if 5 { 4 } else if true { 5 }";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  printTokenState(ts.getAsView());
+
+  size_t expectedLendth = 11;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  Parser parser = {ts, ""};
+
+  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
+      parser.tryParseIfExpression(ts.getAsView());
+
+  EXPECT_TRUE(ifExpr.has_value());
+};
