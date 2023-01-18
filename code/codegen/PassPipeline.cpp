@@ -2,6 +2,8 @@
 
 #include "Optimizer/Passes.h"
 
+#include <mlir/Conversion/AsyncToLLVM/AsyncToLLVM.h>
+#include <mlir/Dialect/Async/Passes.h>
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/Pass/Pass.h>
@@ -19,12 +21,19 @@ int processMLIR(mlir::MLIRContext &context,
   // Apply any generic pass manager command line options and run the pipeline.
   applyPassManagerCLOptions(pm);
 
+  // optimize
+  pm.addPass(optimizer::createAttributerPass());
+
+  // lower
   pm.addPass(optimizer::createRewriterPass());
   pm.addPass(mlir::createCanonicalizerPass());
   pm.addPass(mlir::createCSEPass());
   pm.addPass(optimizer::createLowerErrorPropagationPass());
   pm.addPass(optimizer::createLowerAwaitPass());
-  pm.addPass(optimizer::createAttributerPass());
+  pm.addPass(mlir::createAsyncFuncToAsyncRuntimePass());
+  pm.addPass(mlir::createAsyncToAsyncRuntimePass());
+  pm.addPass(mlir::createConvertAsyncToLLVMPass());
+  pm.addPass(createLowerUtilsToLLWVMPass());
 
   // Finish lowering the toy IR to the LLVM dialect.
   pm.addPass(createLowerToLLVMPass());

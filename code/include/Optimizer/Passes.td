@@ -39,3 +39,9 @@ def LowerErrorPropagationPass : Pass<"ErrorPropagation", "mlir::func::FuncOp"> {
 
   let constructor = "rust_compiler::optimizer::createLowerErrorPropagationPass()";
 }
+
+def LowerUtilsToLLVMPass : Pass<"UtilsToLLVM", "mlir::ModuleOp"> {
+  let summary = "...";
+
+  let constructor = "rust_compiler::optimizer::createLowerUtilsToLLWVMPass()";
+}
