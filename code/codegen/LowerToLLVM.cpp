@@ -1,3 +1,4 @@
+#include "CodeGen/Passes.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
 #include "mlir/IR/BuiltinOps.h"
 #include "mlir/Pass/Pass.h"
@@ -24,7 +25,7 @@ namespace rust_compiler {
 
 /// Create a pass for lowering operations the remaining `Toy` operations, as
 /// well as `Affine` and `Std`, to the LLVM dialect for codegen.
-std::unique_ptr<mlir::Pass> createLowerToLLVMPass() {
+std::unique_ptr<mlir::Pass> createLowerMirToLLVMPass() {
   return std::make_unique<MirToLLVMLoweringPass>();
 }
 
