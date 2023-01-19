@@ -2,10 +2,44 @@
 
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/DenseMapInfo.h>
+#include <llvm/ADT/StringRef.h>
+#include <llvm/Support/raw_ostream.h> // for debugging
 #include <optional>
 #include <string>
 
 namespace rust_compiler::adt {
+
+template <typename K, typename V, typename KInfo = llvm::DenseMapInfo<K>>
+class SmallMap {
+  llvm::DenseMap<K, V, KInfo> localMap;
+
+public:
+  //   SmallMap() {
+  //     llvm::outs() << "  SmallMap()"
+  //                  << "\n";
+  //   }
+
+  //   ~SmallMap() {
+  //     llvm::outs() << "  ~SmallMap()"
+  //                  << "\n";
+  //   }
+
+  [[nodiscard]] bool contains(const K &key) const {
+    return localMap.count(key) == 1;
+  }
+
+  [[nodiscard]] bool insert(const K &key, const V &value) {
+    auto res = localMap.insert({key, value});
+    return std::get<1>(res);
+  }
+
+  [[nodiscard]] std::optional<V> find(const K &Key) const {
+    auto it = localMap.find(Key);
+    if (it != localMap.end())
+      return it->second;
+    return std::nullopt;
+  }
+};
 
 template <typename K, typename V, typename KInfo> class ScopedHashTable;
 
@@ -14,14 +48,14 @@ class ScopedHashTableScope {
   /// HT - The hashtable that we are active for.
   ScopedHashTable<K, V, KInfo> &HT;
 
-  llvm::DenseMap<K, V, KInfo> localMap;
-
   /// PreviousScope - This is the scope that we are shadowing in HT.
   ScopedHashTableScope *previousScope = nullptr;
 
+  SmallMap<K, V> localMap;
+
 public:
   ScopedHashTableScope(ScopedHashTable<K, V, KInfo> &HT) : HT(HT) {
-    //assert(HT.currentScope != nullptr && "No active scope");
+    // assert(HT.currentScope != nullptr && "No active scope");
     previousScope = HT.currentScope;
     HT.currentScope = this;
   }
@@ -31,19 +65,23 @@ public:
     HT.currentScope = previousScope;
   }
 
-  bool contains(const K &key) const {
-    if (localMap.count(key) == 1)
+  [[nodiscard]] bool contains(const K &key) const {
+    if (localMap.contains(key)) {
       return true;
-    if (previousScope == nullptr)
+    }
+    if (previousScope == nullptr) {
       return false;
+    }
     return previousScope->contains(key);
   }
 
-  void insert(const K &key, const V &value) { localMap.insert({key, value}); }
+  [[nodiscard]] bool insert(const K &key, const V &value) {
+    return localMap.insert(key, value);
+  }
 
-  std::optional<V> find(const K &Key) const {
-    if (localMap.count(Key) == 1)
-      return localMap.lookup(Key);
+  [[nodiscard]] std::optional<V> find(const K &Key) const {
+    if (localMap.contains(Key))
+      return localMap.find(Key);
     if (previousScope == nullptr)
       return std::nullopt;
     return previousScope->find(Key);
@@ -53,8 +91,8 @@ public:
 template <typename K, typename V, typename KInfo = llvm::DenseMapInfo<K>>
 class ScopedHashTable {
 
-  /// ScopeTy - This is a helpful typedef that allows clients to get easy access
-  /// to the name of the scope for this hash table.
+  /// ScopeTy - This is a helpful typedef that allows clients to get easy
+  /// access to the name of the scope for this hash table.
   using ScopeTy = ScopedHashTableScope<K, V, KInfo>;
 
   ScopeTy *currentScope = nullptr;
@@ -64,17 +102,17 @@ class ScopedHashTable {
 public:
   ScopedHashTable() = default;
 
-  bool contains(const K &key) const {
+  [[nodiscard]] bool contains(const K &key) const {
     assert(currentScope != nullptr && "No active scope");
     return currentScope->contains(key);
   }
 
-  void insert(const K &key, const V &value) {
+  bool insert(const K &key, const V &value) {
     assert(currentScope != nullptr && "No active scope");
-    currentScope->insert(key, value);
+    return currentScope->insert(key, value);
   }
 
-  std::optional<V> find(const K &Key) const {
+  [[nodiscard]] std::optional<V> find(const K &Key) const {
     assert(currentScope != nullptr && "No active scope");
     return currentScope->find(Key);
   }
@@ -104,5 +142,17 @@ template <> struct DenseMapInfo<std::string, void> {
 };
 
 } // namespace llvm
+
+template <> struct std::hash<llvm::StringRef> {
+  std::size_t operator()(const llvm::StringRef &ref) const {
+    using std::hash;
+    using std::size_t;
+    using std::string;
+
+    std::string s = std::string(ref);
+
+    return std::hash<std::string>{}(s);
+  }
+};
 
 // FIXME: slow

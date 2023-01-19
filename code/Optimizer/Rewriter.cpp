@@ -92,7 +92,7 @@ LogicalResult RewritePass::initialize(MLIRContext *context) {
   RewritePatternSet rewritePatterns(context);
 
   populateWithGenerated(rewritePatterns);
-  
+
   rewritePatterns.add<EliminateBorrowPattern>(PatternBenefit(1), context);
   rewritePatterns.add<EliminateMutBorrowPattern>(PatternBenefit(1), context);
 

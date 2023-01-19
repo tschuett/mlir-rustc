@@ -10,7 +10,7 @@ std::optional<mlir::Value>
 ModuleBuilder::emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk) {
   llvm::outs() << "block count: " << symbolTable.contains("right") << "\n";
 
-  ScopedHashTableScope<llvm::StringRef,
+  ScopedHashTableScope<std::string,
                        std::pair<mlir::Value, ast::VariableDeclaration *>>
       varScope(symbolTable);
 

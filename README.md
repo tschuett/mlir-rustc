@@ -111,3 +111,14 @@
 * async
 * memref
 * controlflow
+
+
+
+```MLIR
+module {
+  func.func @add(%arg0: ui64) -> ui64 attributes {"function type" = "async", visibility = "pub"} {
+    %0 = "mir.addi"(%arg0, %arg0) : (ui64, ui64) -> ui64
+    return %0 : ui64
+  }
+}
+```

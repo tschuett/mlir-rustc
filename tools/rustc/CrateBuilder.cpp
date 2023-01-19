@@ -1,10 +1,12 @@
 #include "CrateBuilder.h"
 
+#include "CodeGen/PassPipeLine.h"
 #include "Lexer/Lexer.h"
 #include "ModuleBuilder/ModuleBuilder.h"
 #include "ModuleBuilder/Target.h"
 #include "Parser/Parser.h"
 #include "Sema/Sema.h"
+#include "CodeGen/DumpLLVMIR.h"
 
 #include <fstream>
 #include <llvm/MC/TargetRegistry.h>
@@ -90,6 +92,12 @@ void buildCrate(std::string_view path, std::string_view edition) {
   rust_compiler::ModuleBuilder mb = {"lib", &target, stream, context};
 
   mb.build(module);
+
+  mlir::ModuleOp moduleOp = mb.getModule();
+
+  moduleOp.dump();
+  //dumpLLVMIR(moduleOp);
+  //  processMLIR(context, moduleOp);
 }
 
 } // namespace rust_compiler::rustc

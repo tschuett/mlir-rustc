@@ -7,7 +7,7 @@ using namespace rust_compiler::adt;
 
 TEST(ScopedHashTableTest, CheckTrivial) {
 
-  ScopedHashTable<std::string, std::string> table;
+  [[maybe_unused]] ScopedHashTable<std::string, std::string> table;
 };
 
 TEST(ScopedHashTableTest, CheckTrivialScope) {
@@ -70,11 +70,12 @@ TEST(ScopedHashTableTest, CheckSimpleWithScope) {
 
     EXPECT_TRUE(table.contains("foo"));
     {
-      ScopedHashTableScope<std::string, std::string> scope{table};
+      ScopedHashTableScope<std::string, std::string> scope2{table};
       table.insert("foo2", "bar");
 
       EXPECT_TRUE(table.contains("foo2"));
       EXPECT_TRUE(table.contains("foo"));
     }
+    EXPECT_FALSE(table.contains("foo2"));
   }
 };

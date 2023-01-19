@@ -25,14 +25,11 @@ namespace rust_compiler {
 // }
 
 mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
-  adt::ScopedHashTableScope<llvm::StringRef,
+  adt::ScopedHashTableScope<std::string,
                             std::pair<mlir::Value, ast::VariableDeclaration *>>
       _FunScope(symbolTable);
 
   OptimizationRemarkEmitter ORE = {f, &serializer};
-
-  llvm::outs() << "build function signature"
-               << "\n";
 
   // Create an MLIR function for the given prototype.
   builder.setInsertionPointToEnd(theModule.getBody());
@@ -130,8 +127,6 @@ ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
 
   mlir::Type resultType = getType(sig.getReturnType());
 
-  llvm::outs() << "buildFunctionSignature: " << argTypes.size() << "\n";
-
   mlir::FunctionType funcType =
       builder.getFunctionType(argTypes, resultType /*std::nullopt results*/);
 
@@ -146,14 +141,8 @@ ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
   assert(f.getArgumentTypes().size() == 1);
   assert(f.getResultTypes().size() == 1);
 
-  llvm::outs() << "buildFunctionSignature: #blocks "
-               << f.getBody().getBlocks().size() << "\n";
-
   currentBlock = builder.createBlock(
       &f.getBody(), {}, TypeRange(f.getArgumentTypes()), argLocations);
-
-  llvm::outs() << "buildFunctionSignature: "
-               << f.getBody().getArgumentTypes().size() << "\n";
 
   return f;
 }

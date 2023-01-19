@@ -29,6 +29,7 @@
 #include <mlir/IR/BuiltinTypes.h>
 #include <mlir/IR/MLIRContext.h>
 #include <mlir/IR/Verifier.h>
+#include <string>
 #include <string_view>
 
 namespace rust_compiler {
@@ -42,8 +43,8 @@ class ModuleBuilder {
   llvm::remarks::YAMLRemarkSerializer serializer;
   Target *target;
 
-  adt::ScopedHashTable<llvm::StringRef,
-                        std::pair<mlir::Value, ast::VariableDeclaration *>>
+  adt::ScopedHashTable<std::string,
+                       std::pair<mlir::Value, ast::VariableDeclaration *>>
       symbolTable;
 
   /// A mapping for the functions that have been code generated to MLIR.
@@ -60,6 +61,8 @@ public:
   };
 
   void build(std::shared_ptr<ast::Module> m);
+
+  mlir::ModuleOp getModule() const { return theModule; };
 
 private:
   mlir::func::FuncOp emitFun(std::shared_ptr<ast::Function> f);
