@@ -91,3 +91,5 @@ code/include/Mir/MirTypes.h.inc
 code/include/CodeGen/Passes.h.inc
 
 code/Optimizer/Combine.cpp.inc
+
+tests/ADT/ADTTests

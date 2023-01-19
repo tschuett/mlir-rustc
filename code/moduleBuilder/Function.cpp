@@ -25,8 +25,8 @@ namespace rust_compiler {
 // }
 
 mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
-  ScopedHashTableScope<llvm::StringRef,
-                       std::pair<mlir::Value, ast::VariableDeclaration *>>
+  adt::ScopedHashTableScope<llvm::StringRef,
+                            std::pair<mlir::Value, ast::VariableDeclaration *>>
       _FunScope(symbolTable);
 
   OptimizationRemarkEmitter ORE = {f, &serializer};
@@ -54,7 +54,7 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
       return nullptr;
     } else {
       llvm::outs() << "outside count: "
-                   << symbolTable.count(protoArgs[i].getName()) << "\n";
+                   << symbolTable.contains(protoArgs[i].getName()) << "\n";
     }
   }
 
@@ -64,9 +64,9 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
   llvm::outs() << "declared function arguments"
                << "\n";
 
-  llvm::outs() << "count: " << symbolTable.count("right") << "\n";
+  llvm::outs() << "count: " << symbolTable.contains("right") << "\n";
 
-  assert(symbolTable.count("right") == 1);
+  assert(symbolTable.contains("right"));
 
   //  for (const auto nameValue : llvm::zip(protoArgs,
   //  entryBlock.getArguments())) {

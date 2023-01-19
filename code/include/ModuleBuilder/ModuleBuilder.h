@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ADT/ScopedHashTable.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/Expression.h"
@@ -18,7 +19,6 @@
 #include "ModuleBuilder/Target.h"
 #include "Target.h"
 
-#include <llvm/ADT/ScopedHashTable.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Target/TargetMachine.h>
@@ -42,7 +42,7 @@ class ModuleBuilder {
   llvm::remarks::YAMLRemarkSerializer serializer;
   Target *target;
 
-  llvm::ScopedHashTable<llvm::StringRef,
+  adt::ScopedHashTable<llvm::StringRef,
                         std::pair<mlir::Value, ast::VariableDeclaration *>>
       symbolTable;
 
