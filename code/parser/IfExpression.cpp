@@ -12,6 +12,9 @@ std::optional<std::shared_ptr<ast::Expression>>
 Parser::tryParseIfExpression(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
+  llvm::errs() << "tryParseIfExpression"
+               << "\n";
+
   if (view.front().isKeyWord() && view.front().getIdentifier() == "if") {
     view = view.subspan(1);
 
@@ -58,6 +61,10 @@ Parser::tryParseIfExpression(std::span<lexer::Token> tokens) {
       }
     }
   }
+
+  llvm::errs() << "tryParseIfExpression: nullopt"
+               << "\n";
+
   return std::nullopt;
 }
 

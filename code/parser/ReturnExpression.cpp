@@ -19,8 +19,8 @@ std::optional<std::shared_ptr<ast::Expression>>
 Parser::tryParseReturnExpression(std::span<Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
-  //  llvm::errs() << "tryParseReturnExpression"
-  //               << "\n";
+  llvm::errs() << "tryParseReturnExpression"
+               << "\n";
 
   // printTokenState(view);
 
@@ -41,18 +41,18 @@ Parser::tryParseReturnExpression(std::span<Token> tokens) {
     std::optional<std::shared_ptr<ast::Expression>> expr =
         tryParseExpression(view);
 
-    switch ((*expr)->getExpressionKind()) {
-    case ExpressionKind::ExpressionWithBlock: {
-      llvm::outs() << "tryParseReturnExpression ExpressionWithBlock"
-                   << "\n";
-      break;
-    }
-    case ExpressionKind::ExpressionWithoutBlock: {
-      llvm::outs() << "tryParseReturnExpression ExpressionWithoutBlock"
-                   << "\n";
-      break;
-    }
-    }
+    //    switch ((*expr)->getExpressionKind()) {
+    //    case ExpressionKind::ExpressionWithBlock: {
+    //      llvm::outs() << "tryParseReturnExpression ExpressionWithBlock"
+    //                   << "\n";
+    //      break;
+    //    }
+    //    case ExpressionKind::ExpressionWithoutBlock: {
+    //      llvm::outs() << "tryParseReturnExpression ExpressionWithoutBlock"
+    //                   << "\n";
+    //      break;
+    //    }
+    //    }
 
     //    llvm::errs() << "tryParseReturnExpression: " << expr.has_value() <<
     //    "\n";
@@ -80,6 +80,9 @@ Parser::tryParseReturnExpression(std::span<Token> tokens) {
       }
     }
   }
+
+  llvm::errs() << "tryParseReturnExpression: nullopt"
+               << "\n";
 
   return std::nullopt;
 }

@@ -93,3 +93,5 @@ code/include/CodeGen/Passes.h.inc
 code/Optimizer/Combine.cpp.inc
 
 tests/ADT/ADTTests
+examples/fun2/Cargo.lock
+examples/fun2/target/
