@@ -20,6 +20,8 @@ public:
 
   void setBlock(std::shared_ptr<ast::Expression> block);
 
+  std::shared_ptr<ast::Expression> getBlock() const;
+
   void setTrailing(std::shared_ptr<ast::Expression> block);
 
   std::shared_ptr<ast::Expression> getTrailing() const;

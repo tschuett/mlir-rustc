@@ -14,6 +14,10 @@ void IfExpression::setBlock(std::shared_ptr<ast::Expression> _block) {
   block = _block;
 }
 
+std::shared_ptr<ast::Expression> IfExpression::getBlock() const {
+  return block;
+}
+
 void IfExpression::setTrailing(std::shared_ptr<ast::Expression> _trailing) {
   trailing = _trailing;
 }

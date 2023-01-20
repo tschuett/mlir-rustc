@@ -7,13 +7,17 @@
 
 #include <mlir/IR/BuiltinAttributes.h>
 #include <mlir/IR/FunctionInterfaces.h>
+#include <mlir/IR/Matchers.h>
 #include <mlir/IR/OpImplementation.h>
+#include <mlir/IR/PatternMatch.h>
 #include <mlir/IR/ValueRange.h>
 #include <mlir/Interfaces/SideEffectInterfaces.h>
 #include <optional>
 
 #define GET_OP_CLASSES
 #include "Mir/MirOps.cpp.inc"
+
+using namespace mlir;
 
 namespace rust_compiler::Mir {
 
@@ -113,6 +117,36 @@ mlir::ParseResult VTEntryOp::parse(mlir::OpAsmParser &parser,
 
 void VTEntryOp::print(mlir::OpAsmPrinter &p) {
   p << ' ' << getMethodAttr() << ", " << getProcAttr();
+}
+
+//===----------------------------------------------------------------------===//
+// BranchOp
+//===----------------------------------------------------------------------===//
+
+SuccessorOperands BranchOp::getSuccessorOperands(unsigned index) {
+  assert(index == 0 && "invalid successor index");
+  return SuccessorOperands(getDestOperandsMutable());
+}
+
+Block *BranchOp::getSuccessorForOperands(ArrayRef<Attribute>) {
+  return getDest();
+}
+
+//===----------------------------------------------------------------------===//
+// CondBranchOp
+//===----------------------------------------------------------------------===//
+
+
+SuccessorOperands CondBranchOp::getSuccessorOperands(unsigned index) {
+  assert(index < getNumSuccessors() && "invalid successor index");
+  return SuccessorOperands(index == trueIndex ? getTrueDestOperandsMutable()
+                                              : getFalseDestOperandsMutable());
+}
+
+Block *CondBranchOp::getSuccessorForOperands(ArrayRef<Attribute> operands) {
+  if (IntegerAttr condAttr = operands.front().dyn_cast_or_null<IntegerAttr>())
+    return condAttr.getValue().isOneValue() ? getTrueDest() : getFalseDest();
+  return nullptr;
 }
 
 } // namespace rust_compiler::Mir
