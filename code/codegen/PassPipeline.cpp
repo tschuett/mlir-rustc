@@ -26,8 +26,9 @@ int processMLIR(mlir::MLIRContext &context,
 
   // optimize
   pm.addPass(createAttributer());
+  pm.addPass(createGVNPass());
 
-  pm.addPass(optimizer::createSummaryWriterPass()); //options
+  pm.addPass(createSummaryWriterPass(options));
 
   // lower
   pm.addPass(optimizer::createRewriterPass());
@@ -41,7 +42,7 @@ int processMLIR(mlir::MLIRContext &context,
   pm.addPass(createLowerUtilsToLLVMPass());
 
   // Finish lowering the Mir IR to the LLVM dialect.
-  //pm.addPass(createLowerToLLVMPass());
+  // pm.addPass(createLowerToLLVMPass());
 
   if (mlir::failed(pm.run(*module)))
     return 4;

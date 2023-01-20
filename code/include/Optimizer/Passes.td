@@ -38,6 +38,11 @@ def LowerUtilsToLLVMPass : Pass<"UtilsToLLVM", "mlir::ModuleOp"> {
 
 }
 
+def GVNPass : Pass<"GVN", "mlir::func::FuncOp"> {
+  let summary = "A Sparse Algorithm for Predicated Global Value Numbering from Karthik Gargi.";
+
+}
+
 def SummaryWriterPass : Pass<"SummaryWriter", "mlir::ModuleOp"> {
   let summary = "Write information summary file for ThinLTO";
 
@@ -50,3 +55,4 @@ def SummaryWriterPass : Pass<"SummaryWriter", "mlir::ModuleOp"> {
 
 
 // eleminate Mir: how?
+
