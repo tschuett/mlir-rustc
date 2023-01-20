@@ -7,8 +7,26 @@
 #include <mlir/IR/Location.h>
 
 using namespace rust_compiler::Mir;
+using namespace llvm;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler {
+
+mlir::Value ModuleBuilder::emitOperatorExpression(
+    std::shared_ptr<ast::OperatorExpression> opr) {
+
+  switch (opr->getKind()) {
+  case OperatorExpressionKind::ArithmeticOrLogicalExpression: {
+    return emitArithmeticOrLogicalExpression(
+        static_pointer_cast<ArithmeticOrLogicalExpression>(opr));
+  }
+  default: {
+    assert(false);
+  }
+  }
+
+  return nullptr;
+}
 
 mlir::Value ModuleBuilder::emitArithmeticOrLogicalExpression(
     std::shared_ptr<ast::ArithmeticOrLogicalExpression> expr) {
@@ -27,7 +45,7 @@ mlir::Value ModuleBuilder::emitArithmeticOrLogicalExpression(
   mlir::Location location = getLocation(loc);
 
   // FIXME
-  //auto type = getType(expr->getType());
+  // auto type = getType(expr->getType());
   mlir::Type type = builder.getIntegerType(64, false);
 
   switch (expr->getKind()) {

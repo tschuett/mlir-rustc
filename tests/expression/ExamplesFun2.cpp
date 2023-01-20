@@ -19,7 +19,7 @@ using namespace rust_compiler::ast;
 TEST(ExamplesFun2Test, CheckFun1) {
 
   std::string text =
-      "pub fn add(right: usize) -> usize {  return if true { 5 } else { 6 } }";
+      "pub fn add(right: usize) -> usize {  return if true { 5 } else { 6 } ;}";
 
   TokenStream ts = lex(text, "lib.rs");
 

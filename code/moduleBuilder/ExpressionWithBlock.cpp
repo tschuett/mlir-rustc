@@ -1,5 +1,6 @@
 #include "AST/BlockExpression.h"
 #include "AST/Expression.h"
+#include "AST/IfExpression.h"
 #include "ModuleBuilder/ModuleBuilder.h"
 
 #include <memory>
@@ -28,7 +29,7 @@ mlir::Value ModuleBuilder::emitExpressionWithBlock(
   case ExpressionWithBlockKind::UnsafeBlockExpression: {
     llvm::outs() << "emitExpressionWithBlock: unsafe"
                  << "\n";
-  exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
     break;
   }
   case ExpressionWithBlockKind::LoopExpression: {
@@ -39,11 +40,15 @@ mlir::Value ModuleBuilder::emitExpressionWithBlock(
   case ExpressionWithBlockKind::IfExpression: {
     llvm::outs() << "emitExpressionWithBlock: if"
                  << "\n";
+    std::shared_ptr<ast::IfExpression> ifExpr =
+        std::static_pointer_cast<ast::IfExpression>(expr);
+    return emitIfExpression(ifExpr);
     break;
   }
   case ExpressionWithBlockKind::IfLetExpression: {
     llvm::outs() << "emitExpressionWithBlock: iflet"
                  << "\n";
+
     break;
   }
   case ExpressionWithBlockKind::MatchExpression: {

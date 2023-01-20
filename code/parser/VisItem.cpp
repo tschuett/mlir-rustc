@@ -24,6 +24,9 @@ Parser::tryParseVisItem(std::span<Token> tokens, std::string_view modulePath) {
     view = view.subspan((*visibility).getTokens());
   }
 
+  if (view.size() < 4)
+    return std::nullopt;
+
   if (view.front().getKind() == TokenKind::Keyword &&
       view.front().getIdentifier() == "mod") {
     if (view[1].getKind() == TokenKind::Identifier) {
@@ -35,7 +38,7 @@ Parser::tryParseVisItem(std::span<Token> tokens, std::string_view modulePath) {
             mod.setVisibility(*visibility);
           }
 
-          tokens = tokens.subspan(mod.getTokens());
+          view = view.subspan(mod.getTokens());
           std::shared_ptr<VisItem> item =
               std::static_pointer_cast<VisItem>(std::make_shared<Module>(mod));
           return item;
@@ -48,7 +51,7 @@ Parser::tryParseVisItem(std::span<Token> tokens, std::string_view modulePath) {
             mod.setVisibility(*visibility);
           }
 
-          tokens = tokens.subspan(mod.getTokens());
+          view = view.subspan(mod.getTokens());
           std::shared_ptr<VisItem> item =
               std::static_pointer_cast<VisItem>(std::make_shared<Module>(mod));
           return item;
@@ -74,12 +77,14 @@ Parser::tryParseVisItem(std::span<Token> tokens, std::string_view modulePath) {
     if (fun) {
       if (visibility)
         fun->setVisibility(*visibility);
-      std::shared_ptr<VisItem> item =
-          std::static_pointer_cast<VisItem>(std::make_shared<ast::Function>(*fun));
+      std::shared_ptr<VisItem> item = std::static_pointer_cast<VisItem>(
+          std::make_shared<ast::Function>(*fun));
 
       return item;
     }
   }
+
+  assert(view.size() > 2);
 
   if (view.front().getKind() == TokenKind::Keyword &&
       (view.front().getIdentifier() == "async" or

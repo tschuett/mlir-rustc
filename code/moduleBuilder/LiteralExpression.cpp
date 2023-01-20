@@ -1,5 +1,6 @@
 #include "AST/LiteralExpression.h"
 
+#include "Mir/MirOps.h"
 #include "ModuleBuilder/ModuleBuilder.h"
 #include "mlir/Dialect/Arith/IR/Arith.h"
 
@@ -35,17 +36,25 @@ mlir::Value ModuleBuilder::emitLiteralExpression(
     std::string value = lit->getValue();
     uint64_t integer = stoi(value);
     std::shared_ptr<ast::types::Type> type = lit->getType();
-    return builder.create<mlir::arith::ConstantIntOp>(
-        getLocation(lit->getLocation()), integer, 64);
+    return builder.create<Mir::ConstantOp>(
+        getLocation(lit->getLocation()),
+        builder.getIntegerAttr(builder.getI64Type(), integer),
+        builder.getI64Type());
     break;
   }
   case LiteralExpressionKind::FloatLiteral: {
     break;
   }
   case LiteralExpressionKind::True: {
+    return builder.create<Mir::ConstantOp>(
+        getLocation(lit->getLocation()),
+        builder.getIntegerAttr(builder.getI1Type(), 1), builder.getI1Type());
     break;
   }
   case LiteralExpressionKind::False: {
+    return builder.create<Mir::ConstantOp>(
+        getLocation(lit->getLocation()),
+        builder.getIntegerAttr(builder.getI1Type(), 0), builder.getI1Type());
     break;
   }
   }

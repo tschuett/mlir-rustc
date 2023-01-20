@@ -1,7 +1,6 @@
 add_library(modulebuilder
            ModuleBuilder.cpp
            Statements.cpp
-           Expressions.cpp
            ExpressionWithBlock.cpp
            ExpressionWithoutBlock.cpp
            Target.cpp
@@ -14,6 +13,8 @@ add_library(modulebuilder
            PathExpression.cpp
            BlockExpression.cpp
            Declare.cpp
+           ReturnExpression.cpp
+           IfExpression.cpp
            )
 
 

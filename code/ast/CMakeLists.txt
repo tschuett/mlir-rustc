@@ -39,6 +39,7 @@ add_library(ast
            Pattern.cpp
            RestPattern.cpp
            TuplePattern.cpp
+           IfExpression.cpp
            )
 
 

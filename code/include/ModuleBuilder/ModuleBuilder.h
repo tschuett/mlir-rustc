@@ -5,6 +5,7 @@
 #include "AST/BlockExpression.h"
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/IfExpression.h"
 #include "AST/ItemDeclaration.h"
 #include "AST/LetStatement.h"
 #include "AST/LiteralExpression.h"
@@ -121,6 +122,9 @@ private:
   mlir::Value emitPathInExpression(std::shared_ptr<ast::PathInExpression> path);
   mlir::Value emitQualifiedPathInExpression(
       std::shared_ptr<ast::QualifiedPathInExpression> path);
+
+  mlir::Value emitIfExpression(std::shared_ptr<ast::IfExpression> ifExpr);
+
 };
 
 } // namespace rust_compiler

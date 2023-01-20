@@ -194,7 +194,7 @@ def VTableOp: Mir_Op<"vtable", [IsolatedFromAbove, Symbol, ImplicitMirTerminator
   }];
 }
 
-def VTEntryOp : Mir_Op<"dt_entry", [HasParent<"VTableOp">]> {
+def VTEntryOp : Mir_Op<"vt_entry", [HasParent<"VTableOp">]> {
   let summary = "map entry in a vtable";
 
   let description = [{
@@ -217,6 +217,52 @@ def VTEntryOp : Mir_Op<"dt_entry", [HasParent<"VTableOp">]> {
     static constexpr llvm::StringRef getMethodAttrNameStr() { return "method"; }
     static constexpr llvm::StringRef getProcAttrNameStr() { return "proc"; }
   }];
+}
+
+//===----------------------------------------------------------------------===//
+// ConstantOp
+//===----------------------------------------------------------------------===//
+
+def Mir_ConstantOp : Op<Mir_Dialect, "constant",
+    [ConstantLike, Pure, AllTypesMatch<["value", "result"]>]> {
+  let summary = "integer or floating point constant";
+  let description = [{
+    The `constant` operation produces an SSA value equal to some integer or
+    floating-point constant specified by an attribute. This is the way MLIR
+    forms simple integer and floating point constants.
+
+    Example:
+
+    ```
+    // Integer constant
+    %1 = Mir.constant 42 : i32
+
+    // Equivalent generic form
+    %1 = "Mir.constant"() {value = 42 : i32} : () -> i32
+    ```
+  }];
+
+  let arguments = (ins TypedAttrInterface:$value);
+  // TODO: Disallow Mir.constant to return anything other than a signless
+  // integer or float like. Downstream users of Arith should only be
+  // working with signless integers, floats, or vectors/tensors thereof.
+  // However, it is necessary to allow arith.constant to return vectors/tensors
+  // of strings and signed/unsigned integers (for now) as an artefact of
+  // splitting the Standard dialect.
+  let results = (outs /*SignlessIntegerOrFloatLike*/AnyType:$result);
+
+  let builders = [
+    OpBuilder<(ins "mlir::Attribute":$value, "mlir::Type":$type),
+    [{ build($_builder, $_state, type, value); }]>,
+  ];
+
+  let extraClassDeclaration = [{
+    /// Whether the constant op can be constructed with a particular value and
+    /// type.
+    static bool isBuildableWith(mlir::Attribute value, mlir::Type type);
+  }];
+
+  let assemblyFormat = "attr-dict $value";
 }
 
 #endif
