@@ -1,6 +1,11 @@
+#include "Mir/MirDialect.h"
+#include "Mir/MirOps.h"
 #include "Optimizer/Passes.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
+
+#include <llvm/Demangle/Demangle.h>
 #include <mlir/IR/BuiltinOps.h>
+#include <string>
 
 namespace rust_compiler::optimizer {
 #define GEN_PASS_DEF_SUMMARYWRITERPASS
@@ -9,29 +14,33 @@ namespace rust_compiler::optimizer {
 
 namespace {
 class SummaryWriterPass
-    : public rust_compiler::optimizer::impl::SummaryWriterPassBase<SummaryWriterPass> {
+    : public rust_compiler::optimizer::impl::SummaryWriterPassBase<
+          SummaryWriterPass> {
 public:
-  SummaryWriterPass() = default;
-  SummaryWriterPass(const SummaryWriterPass &pass);
+  //  SummaryWriterPass() = default;
+  // SummaryWriterPass(const SummaryWriterPass &pass);
 
-  llvm::StringRef getDescription() const override;
+  SummaryWriterPass(
+      const rust_compiler::optimizer::SummaryWriterPassOptions &options)
+      : SummaryWriterPassBase(options) {}
+
+  SummaryWriterPass() : SummaryWriterPassBase() {}
 
   void runOnOperation() override;
 };
 
 } // namespace
 
-SummaryWriterPass::SummaryWriterPass(const SummaryWriterPass &pass)
-    : rust_compiler::optimizer::impl::SummaryWriterPassBase<SummaryWriterPass>(pass) {}
-
-llvm::StringRef SummaryWriterPass::getDescription() const { return "test pass"; }
+using namespace rust_compiler::optimizer;
 
 void SummaryWriterPass::runOnOperation() {
+  // SummaryWriterPassOptions clOpts{summaryOutputFile.getValue()};
   mlir::ModuleOp module = getOperation();
-//  module.walk([&](mlir::func::FuncOp *f) {
-//  });
+  //  module.walk([&](mlir::func::FuncOp *f) {
+  //  });
+
+  std::string fileName = summaryOutputFile.getValue();
+  module.walk([&](rust_compiler::Mir::VTableOp v) {});
 }
 
-std::unique_ptr<mlir::Pass> createSummaryWriterPass() {
-  return std::make_unique<SummaryWriterPass>();
-}
+// https://rust-lang.github.io/rfcs/2603-rust-symbol-name-mangling-v0.html

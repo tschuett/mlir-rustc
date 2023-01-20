@@ -17,12 +17,17 @@ namespace rust_compiler {
 int processMLIR(mlir::MLIRContext &context,
                 mlir::OwningOpRef<mlir::ModuleOp> &module) {
 
+  SummaryWriterPassOptions options;
+  options.summaryOutputFile = "";
+
   mlir::PassManager pm(&context);
   // Apply any generic pass manager command line options and run the pipeline.
   applyPassManagerCLOptions(pm);
 
   // optimize
-  pm.addPass(optimizer::createAttributerPass());
+  pm.addPass(createAttributer());
+
+  pm.addPass(optimizer::createSummaryWriterPass()); //options
 
   // lower
   pm.addPass(optimizer::createRewriterPass());
@@ -33,10 +38,10 @@ int processMLIR(mlir::MLIRContext &context,
   pm.addPass(mlir::createAsyncFuncToAsyncRuntimePass());
   pm.addPass(mlir::createAsyncToAsyncRuntimePass());
   pm.addPass(mlir::createConvertAsyncToLLVMPass());
-  pm.addPass(createLowerUtilsToLLWVMPass());
+  pm.addPass(createLowerUtilsToLLVMPass());
 
-  // Finish lowering the toy IR to the LLVM dialect.
-  pm.addPass(createLowerToLLVMPass());
+  // Finish lowering the Mir IR to the LLVM dialect.
+  //pm.addPass(createLowerToLLVMPass());
 
   if (mlir::failed(pm.run(*module)))
     return 4;

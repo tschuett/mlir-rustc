@@ -46,7 +46,7 @@ TEST(ExamplesFun2Test, CheckFun2) {
   EXPECT_TRUE(fun.has_value());
 };
 
-TEST(ExamplesFun2Test, CheckFun2a) {
+TEST(ExamplesFun2Test, CheckFun3) {
 
   std::string text =
       "fn add(right: usize) -> usize { return if true { 5 } }";
@@ -61,7 +61,7 @@ TEST(ExamplesFun2Test, CheckFun2a) {
   EXPECT_TRUE(fun.has_value());
 };
 
-TEST(ExamplesFun2Test, CheckFun2ab) {
+TEST(ExamplesFun2Test, CheckFun4) {
 
   std::string text =
       "return if true { 5 }";
@@ -76,7 +76,7 @@ TEST(ExamplesFun2Test, CheckFun2ab) {
   EXPECT_TRUE(fun.has_value());
 };
 
-TEST(ExamplesFun2Test, CheckFun2ac) {
+TEST(ExamplesFun2Test, CheckFun5) {
 
   std::string text =
       "return if true { 5 } else { 6 }";
@@ -91,7 +91,7 @@ TEST(ExamplesFun2Test, CheckFun2ac) {
   EXPECT_TRUE(fun.has_value());
 };
 
-TEST(ExamplesFun2Test, CheckFun2b) {
+TEST(ExamplesFun2Test, CheckFun6) {
 
   std::string text =
       "fn add(right: usize) -> usize {  return 5; };";
@@ -106,7 +106,7 @@ TEST(ExamplesFun2Test, CheckFun2b) {
   EXPECT_TRUE(fun.has_value());
 };
 
-TEST(ExamplesFun2Test, CheckFun3) {
+TEST(ExamplesFun2Test, CheckFun7) {
 
   std::string text =
       "fn add(right: usize) -> usize { };";
@@ -121,7 +121,7 @@ TEST(ExamplesFun2Test, CheckFun3) {
   EXPECT_TRUE(fun.has_value());
 };
 
-TEST(ExamplesFun2Test, CheckFun4) {
+TEST(ExamplesFun2Test, CheckFun8) {
 
   std::string text = "return if true { 5 } else {6}";
 
@@ -135,7 +135,7 @@ TEST(ExamplesFun2Test, CheckFun4) {
   EXPECT_TRUE(fun.has_value());
 };
 
-TEST(ExamplesFun2Test, CheckFun5) {
+TEST(ExamplesFun2Test, CheckFun9) {
 
   std::string text = "if true { 5 } else {6}";
 
