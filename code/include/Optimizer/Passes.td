@@ -25,7 +25,9 @@ def RewritePass : Pass<"rewrite", "mlir::func::FuncOp"> {
 
 def LowerAwaitPass : Pass<"LowerAwait", "mlir::ModuleOp"> {
   let summary = "Rust await to async dialect";
-
+  let dependentDialects = [
+    "mlir::async::AsyncDialect",
+  ];
 }
 
 def LowerErrorPropagationPass : Pass<"ErrorPropagation", "mlir::func::FuncOp"> {
@@ -35,7 +37,9 @@ def LowerErrorPropagationPass : Pass<"ErrorPropagation", "mlir::func::FuncOp"> {
 
 def LowerUtilsToLLVMPass : Pass<"UtilsToLLVM", "mlir::ModuleOp"> {
   let summary = "lower: arith, cf, memref, and func to LLVM";
-
+  let dependentDialects = [
+    "LLVM::LLVMDialect",
+  ];
 }
 
 def GVNPass : Pass<"GVN", "mlir::func::FuncOp"> {

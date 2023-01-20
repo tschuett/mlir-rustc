@@ -14,7 +14,17 @@ void IfExpression::setTrailing(std::shared_ptr<ast::Expression> _trailing) {
   trailing = _trailing;
 }
 
-size_t IfExpression::getTokens() {}
+size_t IfExpression::getTokens() {
+  size_t count = 1;
+
+  count += condition->getTokens();
+  count += block->getTokens();
+
+  if (trailing)
+    count += trailing->getTokens();
+
+  return count;
+}
 
 std::shared_ptr<ast::types::Type> IfExpression::getType() {}
 

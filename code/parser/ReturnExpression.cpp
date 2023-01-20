@@ -22,7 +22,7 @@ Parser::tryParseReturnExpression(std::span<Token> tokens) {
   llvm::errs() << "tryParseReturnExpression"
                << "\n";
 
-  // printTokenState(view);
+  printTokenState(view);
 
   if (not view.front().isKeyWord())
     return std::nullopt;
@@ -35,8 +35,8 @@ Parser::tryParseReturnExpression(std::span<Token> tokens) {
       view.front().getKeyWordKind() == KeyWordKind::KW_RETURN) {
     view = view.subspan(1);
 
-    //    llvm::errs() << "tryParseReturnExpression: found return"
-    //                 << "\n";
+    llvm::errs() << "tryParseReturnExpression: found return"
+                 << "\n";
 
     std::optional<std::shared_ptr<ast::Expression>> expr =
         tryParseExpression(view);
