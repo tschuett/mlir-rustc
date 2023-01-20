@@ -69,7 +69,8 @@ enum class TokenKind {
   Caret,
   Shl,
   Shr,
-  DotDot
+  DotDot,
+  Lt
 };
 
 class Token {

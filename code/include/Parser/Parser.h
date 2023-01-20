@@ -12,13 +12,13 @@
 #include "AST/PathExprSegment.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/Patterns.h"
+#include "AST/Patterns/RestPattern.h"
 #include "AST/Patterns/TuplePattern.h"
 #include "AST/Scrutinee.h"
 #include "AST/UseDeclaration.h"
 #include "AST/UseTree.h"
 #include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
-#include "AST/Patterns/RestPattern.h"
 
 #include <span>
 #include <string>
@@ -208,6 +208,15 @@ public:
 
   std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   tryParseRestPattern(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::types::Type>>
+  tryParseQualifiedPathType(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::types::Type>>
+  tryParseQualifiedPathInType(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::types::Type>>
+  tryParseTypePath(std::span<lexer::Token> tokens);
 };
 
 } // namespace rust_compiler::parser

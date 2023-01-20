@@ -547,6 +547,11 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
                       TokenKind::Slash));
       code.remove_prefix(1);
       columnNumber += 1;
+    } else if (code.starts_with("<")) {
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::Lt));
+      code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("..")) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
                       TokenKind::DotDot));

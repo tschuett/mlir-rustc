@@ -141,6 +141,9 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::DotDot: {
     return std::string("..");
   }
+  case TokenKind::Lt: {
+    return std::string("<");
+  }
   }
 }
 
