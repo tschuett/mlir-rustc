@@ -45,3 +45,9 @@ def LowerUtilsToLLVMPass : Pass<"UtilsToLLVM", "mlir::ModuleOp"> {
 
   let constructor = "rust_compiler::optimizer::createLowerUtilsToLLWVMPass()";
 }
+
+def SummaryWriterPass : Pass<"SummaryWriter", "mlir::ModuleOp"> {
+  let summary = "...";
+
+  let constructor = "rust_compiler::optimizer::createSummaryWriterPass()";
+}

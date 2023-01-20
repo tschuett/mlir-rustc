@@ -5,6 +5,7 @@ add_library(optimizer
            LowerAwait.cpp
            LowerErrorPropagation.cpp
            LowerUtilsToLLVM.cpp
+           SummaryWriterPass.cpp
            )
 
 

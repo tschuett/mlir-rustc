@@ -138,4 +138,85 @@ def StructConstantOp : Mir_Op<"struct_constant", [ConstantLike, Pure]> {
   let hasFolder = 1;
 }
 
+//===----------------------------------------------------------------------===//
+// VTable
+//===----------------------------------------------------------------------===//
+
+def Mir_MirEndOp : Mir_Op<"end", [Terminator]> {
+  let summary = "the end instruction";
+
+  let description = [{
+    The end terminator is a special terminator used inside various MIR
+    operations that have regions.  End is thus the custom invisible terminator
+    for these operations.  It is implicit and need not appear in the textual
+    representation.
+  }];
+}
+
+def ImplicitMirTerminator : SingleBlockImplicitTerminator<"MirEndOp">;
+
+
+def VTableOp: Mir_Op<"vtable", [IsolatedFromAbove, Symbol, ImplicitMirTerminator]> {
+  let summary = "Vtable";
+
+  let description = [{
+   ```mlir
+      mir.vtable @_QDTMquuzTfoo {
+        mir.vt_entry method1, @_QFNMquuzTfooPmethod1AfooR
+        mir.vt_entry method2, @_QFNMquuzTfooPmethod2AfooII
+      }
+    ```
+  }];
+  let arguments = (ins
+    SymbolNameAttr:$sym_name,
+    OptionalAttr<StrAttr>:$parent
+  );
+
+  let hasCustomAssemblyFormat = 1;
+  let hasVerifier = 1;
+
+  let regions = (region AnyRegion:$region);
+
+  let skipDefaultBuilders = 1;
+  let builders = [
+    OpBuilder<(ins "llvm::StringRef":$name, "mlir::Type":$type,
+      "llvm::StringRef":$parent,
+      CArg<"llvm::ArrayRef<mlir::NamedAttribute>", "{}">:$attrs)>
+  ];
+
+  let extraClassDeclaration = [{
+    static constexpr llvm::StringRef getParentAttrNameStr() { return "parent"; }
+    static constexpr llvm::StringRef getExtendsKeyword() { return "extends"; }
+
+    mlir::Block &getBlock() {
+      return getRegion().front();
+    }
+  }];
+}
+
+def VTEntryOp : Mir_Op<"dt_entry", [HasParent<"VTableOp">]> {
+  let summary = "map entry in a vtable";
+
+  let description = [{
+    An entry in a vtable.  Allows a function symbol to be bound
+    to a specifier method identifier.  A dispatch operation uses the dynamic
+    type of a distinguished argument to determine an exact dispatch table
+    and uses the method identifier to select the type-bound procedure to
+    be called.
+
+    ```mlir
+      mir.vt_entry method_name, @uniquedProcedure
+    ```
+  }];
+
+  let arguments = (ins StrAttr:$method, SymbolRefAttr:$proc);
+
+  let hasCustomAssemblyFormat = 1;
+
+  let extraClassDeclaration = [{
+    static constexpr llvm::StringRef getMethodAttrNameStr() { return "method"; }
+    static constexpr llvm::StringRef getProcAttrNameStr() { return "proc"; }
+  }];
+}
+
 #endif

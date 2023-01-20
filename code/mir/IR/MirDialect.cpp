@@ -25,8 +25,8 @@ using namespace rust_compiler::Mir;
 
 #include "Mir/MirDialect.cpp.inc"
 
-#define GET_OP_CLASSES
-#include "Mir/MirOps.cpp.inc"
+//#define GET_OP_CLASSES
+//#include "Mir/MirOps.cpp.inc"
 
 struct MirInlinerInterface : public DialectInlinerInterface {
   using DialectInlinerInterface::DialectInlinerInterface;
