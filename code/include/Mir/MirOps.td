@@ -391,7 +391,7 @@ def BranchOp : Mir_Op<"br", [
   ]> {
   let summary = "branch operation";
   let description = [{
-    The `cf.br` operation represents a direct branch operation to a given
+    The `Mir.br` operation represents a direct branch operation to a given
     block. The operands of this operation are forwarded to the successor block,
     and the number and type of the operands must match the arguments of the
     target block.

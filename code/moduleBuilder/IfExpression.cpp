@@ -9,6 +9,7 @@
 #include <optional>
 #include <vector>
 
+using namespace mlir;
 using namespace rust_compiler::ast;
 
 namespace rust_compiler {
@@ -78,27 +79,54 @@ getTrailingBlock(std::shared_ptr<ast::IfExpression> ifExpr) {}
 
 mlir::Value
 ModuleBuilder::emitIfExpression(std::shared_ptr<ast::IfExpression> ifExpr) {
-  std::vector<mlir::Value> conditions;
-  std::vector<mlir::Block *> blocks;
+  //  std::vector<mlir::Value> conditions;
+  //  std::vector<mlir::Block *> blocks;
+  //
+  //  mlir::Block *currentBlock = builder.getBlock();
+  //
+  //  uint32_t ifBlocks = getIfBlocks(ifExpr);
+  //  bool trailingBlock = hasTrailingBlock(ifExpr);
+  //
+  //  std::vector<std::shared_ptr<ast::IfExpression>> ifs = getIfExprs(ifExpr);
+  //
+  //  for (auto &ifExprSharedPtr : ifs)
+  //    conditions.push_back(emitExpression(ifExprSharedPtr->getCondition()));
+  //
 
+  // FIXME
   mlir::Block *currentBlock = builder.getBlock();
+  SmallVector<Type> types;
+  SmallVector<mlir::Location> locs;
+  types.push_back(builder.getIntegerType(64, false));
+  locs.push_back(getLocation(ifExpr->getLocation()));
+  assert(types.size() == 1);
+  mlir::Block *phiBlock =
+      builder.createBlock(currentBlock, TypeRange(types), locs);
+  llvm::outs() << phiBlock->getNumArguments() << "\n";
+  assert(phiBlock->getNumArguments() == 1);
 
-  uint32_t ifBlocks = getIfBlocks(ifExpr);
-  bool trailingBlock = hasTrailingBlock(ifExpr);
+  mlir::Value condition = emitExpression(ifExpr->getCondition());
 
-  std::vector<std::shared_ptr<ast::IfExpression>> ifs = getIfExprs(ifExpr);
-
-  for (auto& ifExprSharedPtr: ifs)
-    conditions.push_back(emitExpression(ifExprSharedPtr->getCondition()));
-
+  OpBuilder::InsertPoint savedPoint = builder.saveInsertionPoint();
 
   mlir::Block *ifBlock = builder.createBlock(currentBlock);
   mlir::Value blockValue = emitExpression(ifExpr->getBlock());
+  builder.create<Mir::BranchOp>(getLocation(ifExpr->getLocation()), phiBlock,
+                                blockValue);
 
   mlir::Block *elseBlock = builder.createBlock(currentBlock);
   mlir::Value elseValue = emitExpression(ifExpr->getTrailing());
+  builder.create<Mir::BranchOp>(getLocation(ifExpr->getLocation()), phiBlock,
+                                elseValue);
 
-  // builder.create<Mir::CondBranchOp>(getLocation(ifExpr->getLocation()));
+  builder.restoreInsertionPoint(savedPoint);
+  builder.create<Mir::CondBranchOp>(getLocation(ifExpr->getLocation()),
+                                    condition, ifBlock, elseBlock);
+
+  assert(phiBlock->getNumArguments() == 1);
+  llvm::outs() << phiBlock->getNumArguments() << "\n";
+
+  return phiBlock->getArguments().front();
 
   assert(false);
 }
