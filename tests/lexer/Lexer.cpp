@@ -117,7 +117,7 @@ TEST(LexerTest, CheckIf1) {
 };
 
 TEST(LexerTest, CheckFive) {
-  std::string text = "5";
+  std::string text = "5 ";
 
   TokenStream ts = lex(text, "lib.rs");
 

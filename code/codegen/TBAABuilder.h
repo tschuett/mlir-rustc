@@ -11,6 +11,11 @@ public:
   TBAABuilder(TBAABuilder const &) = delete;
   TBAABuilder &operator=(TBAABuilder const &) = delete;
 
+  // Attach the llvm.tbaa attribute to the given memory accessing operation
+  // based on the provided base/access FIR types and the GEPOp.
+//  void attachTBAATag(mlir::Operation *op, mlir::Type baseFIRType,
+//                     mlir::Type accessFIRType, mlir::LLVM::GEPOp gep);
+
 private:
   // Return unique string name based on `basename`.
   std::string getNewTBAANodeName(llvm::StringRef basename);

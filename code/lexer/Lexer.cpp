@@ -4,7 +4,7 @@
 #include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
 
-#include <llvm/Support/raw_os_ostream.h>
+#include <llvm/Support/raw_ostream.h>
 #include <optional>
 
 namespace rust_compiler::lexer {
@@ -29,16 +29,24 @@ std::optional<std::string> tryLexDecLiteral(std::string_view code) {
   std::string_view view = code;
   std::string ws = "";
 
-  while (view.size() > 0) {
-    if (std::isdigit(view.front())) {
+  if (view.size() > 0) {
+    // single digit
+    if (std::isdigit(view.front()) && not std::isdigit(view[1])) {
       ws.push_back(view.front());
-      view.remove_prefix(1);
-    } else {
-      return std::nullopt;
+      return ws;
     }
-  }
 
-  return ws;
+    while (view.size() > 0) {
+      if (std::isdigit(view.front())) {
+        ws.push_back(view.front());
+        view.remove_prefix(1);
+      } else {
+        return std::nullopt;
+      }
+    }
+    return ws;
+  }
+  return std::nullopt;
 }
 
 std::string tryLexComment(std::string_view code) {
@@ -171,7 +179,7 @@ std::string tryLexWhiteSpace(std::string_view code) {
 
 std::optional<std::string> tryLexIdentifier(std::string_view code) {
   std::string_view view = code;
-  std::string id;
+  std::string id = "";
 
   if (isdigit(view.front()))
     return std::nullopt;
@@ -196,7 +204,9 @@ std::optional<std::string> tryLexIdentifier(std::string_view code) {
     }
   }
 
-  return id;
+  if (id.size() > 0)
+    return id;
+  return std::nullopt;
 }
 
 std::optional<std::string> tryLexString(std::string_view code) {
@@ -567,6 +577,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       if (code.size() == 0)
         return ts;
       printf("unknown token: x%sx\n", code.data());
+      llvm::outs() << "remaining chars:" << code.size() << "\n";
       exit(EXIT_FAILURE);
     }
   }
