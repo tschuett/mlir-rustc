@@ -95,19 +95,19 @@ ModuleBuilder::emitIfExpression(std::shared_ptr<ast::IfExpression> ifExpr) {
 
   // FIXME
   mlir::Block *currentBlock = builder.getBlock();
+  OpBuilder::InsertPoint currentPoint = builder.saveInsertionPoint();
+
   SmallVector<Type> types;
   SmallVector<mlir::Location> locs;
   types.push_back(builder.getIntegerType(64, false));
   locs.push_back(getLocation(ifExpr->getLocation()));
-  assert(types.size() == 1);
-  mlir::Block *phiBlock =
-      builder.createBlock(currentBlock, TypeRange(types), locs);
-  llvm::outs() << phiBlock->getNumArguments() << "\n";
-  assert(phiBlock->getNumArguments() == 1);
 
   mlir::Value condition = emitExpression(ifExpr->getCondition());
-
   OpBuilder::InsertPoint savedPoint = builder.saveInsertionPoint();
+
+  mlir::Block *phiBlock =
+      builder.createBlock(currentBlock, TypeRange(types), locs);
+  OpBuilder::InsertPoint phiPoint = builder.saveInsertionPoint();
 
   mlir::Block *ifBlock = builder.createBlock(currentBlock);
   mlir::Value blockValue = emitExpression(ifExpr->getBlock());
@@ -123,10 +123,15 @@ ModuleBuilder::emitIfExpression(std::shared_ptr<ast::IfExpression> ifExpr) {
   builder.create<Mir::CondBranchOp>(getLocation(ifExpr->getLocation()),
                                     condition, ifBlock, elseBlock);
 
+    builder.restoreInsertionPoint(phiPoint);
+
   assert(phiBlock->getNumArguments() == 1);
   llvm::outs() << phiBlock->getNumArguments() << "\n";
 
-  return phiBlock->getArguments().front();
+
+  assert(phiBlock->getNumArguments() == 1);
+
+  return phiBlock->getArgument(0);
 
   assert(false);
 }
