@@ -11,7 +11,7 @@ Parser::tryParseQualifiedPathInExpression(std::span<lexer::Token> tokens) {
   if (pathType) {
   }
 
-  assert(false);
+  //  assert(false);
   return std::nullopt;
 }
 

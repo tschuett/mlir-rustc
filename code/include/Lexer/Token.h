@@ -4,10 +4,14 @@
 #include "Location.h"
 
 #include <string>
+#include <variant>
 
 // https://doc.rust-lang.org/reference/tokens.html
 
 namespace rust_compiler::lexer {
+
+using uint128_t = unsigned __int128;
+using int128_t = __int128;
 
 enum class IntegerKind {
   I8,
@@ -27,7 +31,7 @@ enum class IntegerKind {
 enum class FloatKind { F32, F64 };
 
 enum class TokenKind {
-  DecIntegerLiteral,
+  DecLiteral,
   DoubleColon,
   Colon,
   ThinArrow,
@@ -80,6 +84,10 @@ class Token {
   IntegerKind ik;
   FloatKind fk;
   KeyWordKind kw;
+
+  std::variant<int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t,
+               uint64_t, int128_t, uint128_t, float, double, std::string>
+      content;
 
 public:
   Token(rust_compiler::Location loc, TokenKind tk) : loc(loc), kind(tk){};

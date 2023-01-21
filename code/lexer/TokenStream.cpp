@@ -11,9 +11,9 @@ void TokenStream::print(unsigned limit) {
 
   while (idx < limit and idx < tokens.size()) {
     if (tokens[idx].isIdentifier()) {
-      printf("%s ", tokens[idx].getIdentifier().c_str());
+      printf("ident: %s ", tokens[idx].getIdentifier().c_str());
     } else {
-      printf("%s ", Token2String(tokens[idx].getKind()).c_str());
+      printf("token: %s ", Token2String(tokens[idx].getKind()).c_str());
     }
     ++idx;
   }

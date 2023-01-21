@@ -4,6 +4,7 @@ add_library(codegen
            DumpLLVMIR.cpp
            LowerToLLVM.cpp
            LowerUtilsToLLVM.cpp
+           TBAABuilder.cpp
            )
 
 

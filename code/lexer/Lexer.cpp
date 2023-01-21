@@ -4,7 +4,6 @@
 #include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
 
-#include <cctype>
 #include <llvm/Support/raw_os_ostream.h>
 #include <optional>
 
@@ -26,14 +25,14 @@ static const std::pair<FloatKind, std::string> FK[] = {
     {FloatKind::F64, "f64"},
 };
 
-std::optional<std::string> tryLexDecIntegerLiteral(std::string_view code) {
+std::optional<std::string> tryLexDecLiteral(std::string_view code) {
   std::string_view view = code;
-  std::string ws;
+  std::string ws = "";
 
   while (view.size() > 0) {
     if (std::isdigit(view.front())) {
-      view.remove_prefix(1);
       ws.push_back(view.front());
+      view.remove_prefix(1);
     } else {
       return std::nullopt;
     }
@@ -173,6 +172,9 @@ std::string tryLexWhiteSpace(std::string_view code) {
 std::optional<std::string> tryLexIdentifier(std::string_view code) {
   std::string_view view = code;
   std::string id;
+
+  if (isdigit(view.front()))
+    return std::nullopt;
 
   while (view.size() > 0) {
     if (isalpha(view[0])) {
@@ -348,10 +350,10 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       continue;
     }
 
-    std::optional<std::string> decInt = tryLexDecIntegerLiteral(code);
+    std::optional<std::string> decInt = tryLexDecLiteral(code);
     if (decInt) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::DecIntegerLiteral, *decInt));
+                      TokenKind::DecLiteral, *decInt));
       code.remove_prefix(decInt->size());
       columnNumber += decInt->size();
       continue;
@@ -548,8 +550,8 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("<")) {
-      ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::Lt));
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Lt));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("..")) {
@@ -571,6 +573,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
   llvm::outs() << "lexer: done"
                << "\n";
 
+  ts.print(50);
   return ts;
 }
 

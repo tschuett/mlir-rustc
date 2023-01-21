@@ -1,6 +1,7 @@
 #include "Lexer/Lexer.h"
 
 #include "Lexer/KeyWords.h"
+#include "Lexer/Token.h"
 #include "gtest/gtest.h"
 
 using namespace rust_compiler::lexer;
@@ -37,7 +38,7 @@ TEST(LexerTest, CheckInteger) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecIntegerLiteral);
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecLiteral);
 };
 
 TEST(LexerTest, CheckDecInteger) {
@@ -49,7 +50,7 @@ TEST(LexerTest, CheckDecInteger) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecIntegerLiteral);
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecLiteral);
 };
 
 TEST(LexerTest, CheckDollarCrate) {
@@ -80,4 +81,51 @@ TEST(LexerTest, CheckKeyword) {
 
   EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::Keyword);
   EXPECT_EQ(ts.getAsView().front().getKeyWordKind(), KeyWordKind::KW_RETURN);
+};
+
+TEST(LexerTest, CheckIf) {
+  std::string text = "if true { 5 } else { 6 }";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  size_t expectedLendth = 9;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  EXPECT_EQ(ts.getAsView()[3].getKind(), TokenKind::DecLiteral);
+  EXPECT_EQ(ts.getAsView()[7].getKind(), TokenKind::DecLiteral);
+
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::Keyword);
+  EXPECT_EQ(ts.getAsView().front().getKeyWordKind(), KeyWordKind::KW_IF);
+};
+
+TEST(LexerTest, CheckIf1) {
+  std::string text = "if true { 5 }";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  ts.print(10);
+
+  size_t expectedLendth = 5;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  EXPECT_EQ(ts.getAsView()[3].getKind(), TokenKind::DecLiteral);
+
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::Keyword);
+  EXPECT_EQ(ts.getAsView().front().getKeyWordKind(), KeyWordKind::KW_IF);
+};
+
+TEST(LexerTest, CheckFive) {
+  std::string text = "5";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  ts.print(10);
+
+  size_t expectedLendth = 1;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecLiteral);
 };

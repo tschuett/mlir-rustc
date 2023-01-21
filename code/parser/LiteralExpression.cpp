@@ -17,7 +17,7 @@ Parser::tryParseLiteralExpression(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
   Location loc = view.front().getLocation();
-  if (view.front().getKind() == TokenKind::DecIntegerLiteral) {
+  if (view.front().getKind() == TokenKind::DecLiteral) {
     return std::static_pointer_cast<ast::Expression>(
         std::make_shared<LiteralExpression>(
             loc, LiteralExpressionKind::IntegerLiteral,
