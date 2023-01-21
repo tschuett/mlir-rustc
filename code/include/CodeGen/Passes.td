@@ -1,10 +1,19 @@
 include "mlir/Pass/PassBase.td"
-include "mlir/Rewrite/PassUtil.td"
 
 def MirToLLVMLowering : Pass<"Mir to LLVM", "mlir::func::FuncOp"> {
   let summary = "";
   let description = [{
   }];
-  let constructor = "rust_compiler::codegen::createLowerMirToLLVMPass()";
+  let dependentDialects = [
+    "LLVM::LLVMDialect",
+  ];
 }
+
+def LowerUtilsToLLVMPass : Pass<"UtilsToLLVM", "mlir::ModuleOp"> {
+  let summary = "lower: arith, cf, memref, and func to LLVM";
+  let dependentDialects = [
+    "LLVM::LLVMDialect",
+  ];
+}
+
 

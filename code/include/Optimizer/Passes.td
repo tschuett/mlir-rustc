@@ -35,13 +35,6 @@ def LowerErrorPropagationPass : Pass<"ErrorPropagation", "mlir::func::FuncOp"> {
 
 }
 
-def LowerUtilsToLLVMPass : Pass<"UtilsToLLVM", "mlir::ModuleOp"> {
-  let summary = "lower: arith, cf, memref, and func to LLVM";
-  let dependentDialects = [
-    "LLVM::LLVMDialect",
-  ];
-}
-
 def GVNPass : Pass<"GVN", "mlir::func::FuncOp"> {
   let summary = "A Sparse Algorithm for Predicated Global Value Numbering from Karthik Gargi.";
 

@@ -1,5 +1,5 @@
 #include "Mir/MirOps.h"
-#include "Optimizer/Passes.h"
+#include "CodeGen/Passes.h"
 
 #include <mlir/Conversion/ArithToLLVM/ArithToLLVM.h>
 #include <mlir/Conversion/ControlFlowToLLVM/ControlFlowToLLVM.h>
@@ -15,33 +15,20 @@
 
 using namespace mlir;
 
-namespace rust_compiler::optimizer {
+namespace rust_compiler {
 #define GEN_PASS_DEF_LOWERUTILSTOLLVMPASS
-#include "Optimizer/Passes.h.inc"
+#include "CodeGen/Passes.h.inc"
 } // namespace rust_compiler::optimizer
 
 namespace {
 class LowerUtilsToLLVMPass
-    : public rust_compiler::optimizer::impl::LowerUtilsToLLVMPassBase<
+    : public rust_compiler::impl::LowerUtilsToLLVMPassBase<
           LowerUtilsToLLVMPass> {
 public:
-  LowerUtilsToLLVMPass() = default;
-  LowerUtilsToLLVMPass(const LowerUtilsToLLVMPass &pass);
-
-  llvm::StringRef getDescription() const override;
-
   void runOnOperation() override;
 };
 
 } // namespace
-
-LowerUtilsToLLVMPass::LowerUtilsToLLVMPass(const LowerUtilsToLLVMPass &pass)
-    : rust_compiler::optimizer::impl::LowerUtilsToLLVMPassBase<
-          LowerUtilsToLLVMPass>(pass) {}
-
-llvm::StringRef LowerUtilsToLLVMPass::getDescription() const {
-  return "test pass";
-}
 
 void LowerUtilsToLLVMPass::runOnOperation() {
   mlir::ModuleOp module = getOperation();
@@ -58,6 +45,3 @@ void LowerUtilsToLLVMPass::runOnOperation() {
     signalPassFailure();
 }
 
-std::unique_ptr<mlir::Pass> createUtilsToLLVMPass() {
-  return std::make_unique<LowerUtilsToLLVMPass>();
-}

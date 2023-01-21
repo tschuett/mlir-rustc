@@ -5,10 +5,10 @@
 
 namespace rust_compiler::codegen {
 
+#define GEN_PASS_DECL_LOWERUTILSTOLLVMPASS
+#include "CodeGen/Passes.h.inc"
 #define GEN_PASS_DECL_MIRTOLLVMLOWERING
-#include "Optimizer/Passes.h.inc"
-
-std::unique_ptr<mlir::Pass> createLowerMirToLLVMPass();
+#include "CodeGen/Passes.h.inc"
 
 // declarative passes
 #define GEN_PASS_REGISTRATION

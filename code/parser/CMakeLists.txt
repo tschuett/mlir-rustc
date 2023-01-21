@@ -52,6 +52,7 @@ add_library(parser
            TuplePatternItems.cpp
            QualifiedPathType.cpp
            QualifiedPathInType.cpp
+           TypePath.cpp
            )
 
 

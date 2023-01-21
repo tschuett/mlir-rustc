@@ -1,6 +1,7 @@
 #include "PassPipeline.h"
 
 #include "Optimizer/Passes.h"
+#include "CodeGen/Passes.h"
 
 #include <mlir/Conversion/AsyncToLLVM/AsyncToLLVM.h>
 #include <mlir/Dialect/Async/Passes.h>
@@ -11,6 +12,7 @@
 #include <mlir/Transforms/Passes.h>
 
 using namespace rust_compiler::optimizer;
+using namespace rust_compiler::codegen;
 
 namespace rust_compiler {
 
@@ -42,7 +44,7 @@ int processMLIR(mlir::MLIRContext &context,
   pm.addPass(createLowerUtilsToLLVMPass());
 
   // Finish lowering the Mir IR to the LLVM dialect.
-  // pm.addPass(createLowerToLLVMPass());
+  pm.addPass(createMirToLLVMLowering());
 
   if (mlir::failed(pm.run(*module)))
     return 4;

@@ -4,7 +4,6 @@ add_library(optimizer
            Rewriter.cpp
            LowerAwait.cpp
            LowerErrorPropagation.cpp
-           LowerUtilsToLLVM.cpp
            SummaryWriterPass.cpp
            GVN.cpp
            )
