@@ -244,7 +244,7 @@ def Mir_ConstantOp : Op<Mir_Dialect, "constant",
 
   let arguments = (ins TypedAttrInterface:$value);
   // TODO: Disallow Mir.constant to return anything other than a signless
-  // integer or float like. Downstream users of Arith should only be
+  // integer or float like. Downstream users of Mir should only be
   // working with signless integers, floats, or vectors/tensors thereof.
   // However, it is necessary to allow arith.constant to return vectors/tensors
   // of strings and signed/unsigned integers (for now) as an artefact of
@@ -354,6 +354,7 @@ def CondBranchOp : Mir_Op<"cond_br",
 
     operand_range getTrueOperands() { return getTrueDestOperands(); }
     operand_range getFalseOperands() { return getFalseDestOperands(); }
+
 
     unsigned getNumFalseOperands() { return getFalseOperands().size(); }
 

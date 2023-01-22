@@ -51,7 +51,8 @@ class ModuleBuilder {
   /// A mapping for the functions that have been code generated to MLIR.
   llvm::StringMap<mlir::func::FuncOp> functionMap;
 
-  mlir::Block *currentBlock = nullptr;
+  mlir::Region *functionRegion = nullptr;
+  mlir::Block *entryBlock = nullptr;
 
 public:
   ModuleBuilder(std::string_view moduleName, Target *target,
@@ -124,7 +125,6 @@ private:
       std::shared_ptr<ast::QualifiedPathInExpression> path);
 
   mlir::Value emitIfExpression(std::shared_ptr<ast::IfExpression> ifExpr);
-
 };
 
 } // namespace rust_compiler

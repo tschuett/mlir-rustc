@@ -6,6 +6,7 @@ add_library(optimizer
            LowerErrorPropagation.cpp
            SummaryWriterPass.cpp
            GVN.cpp
+           DeadCodeElimination.cpp
            )
 
 

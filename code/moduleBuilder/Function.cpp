@@ -41,7 +41,6 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
 
   // Let's start the body of the function now!
   // mlir::Block &entryBlock = function.front();
-  mlir::Block *entryBlock = currentBlock;
   std::vector<FunctionParam> protoArgs =
       f->getSignature().getParameters().getParams();
 
@@ -141,8 +140,12 @@ ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
   assert(f.getArgumentTypes().size() == 1);
   assert(f.getResultTypes().size() == 1);
 
-  currentBlock = builder.createBlock(
+  entryBlock = builder.createBlock(
       &f.getBody(), {}, TypeRange(f.getArgumentTypes()), argLocations);
+
+  functionRegion = &f.getBody();
+
+  assert(functionRegion != nullptr);
 
   return f;
 }

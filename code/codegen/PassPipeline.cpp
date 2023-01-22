@@ -29,11 +29,12 @@ int processMLIR(mlir::MLIRContext &context,
   // optimize
   pm.addPass(createAttributer());
   pm.addPass(createGVNPass());
+  pm.addPass(optimizer::createRewriterPass());
+  pm.addPass(optimizer::createDeadCodeEliminationPass());
 
   pm.addPass(createSummaryWriterPass(options));
 
   // lower
-  pm.addPass(optimizer::createRewriterPass());
   pm.addPass(mlir::createCanonicalizerPass());
   pm.addPass(mlir::createCSEPass());
   pm.addPass(optimizer::createLowerErrorPropagationPass());

@@ -1,9 +1,9 @@
 #include "Mir/MirDialect.h"
 #include "Mir/MirOps.h"
 #include "Optimizer/Passes.h"
-#include "mlir/Dialect/Func/IR/FuncOps.h"
 
 #include <llvm/Demangle/Demangle.h>
+#include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/BuiltinOps.h>
 #include <string>
 

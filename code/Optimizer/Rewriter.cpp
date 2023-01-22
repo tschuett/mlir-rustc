@@ -2,6 +2,9 @@
 #include "Mir/MirInterfaces.h"
 #include "Mir/MirOps.h"
 #include "Optimizer/Passes.h"
+#include "mlir/IR/BuiltinAttributes.h"
+#include "mlir/Support/LLVM.h"
+#include "mlir/Support/LogicalResult.h"
 
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/BuiltinOps.h>
@@ -23,9 +26,9 @@ class EliminateBorrowPattern : public RewritePattern {
 public:
   /// This overload constructs a pattern that only matches operations with the
   /// root name of `MyOp`.
-  EliminateBorrowPattern(PatternBenefit benefit, MLIRContext *context)
+  EliminateBorrowPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
       : RewritePattern(rust_compiler::Mir::BorrowOp::getOperationName(),
-                       benefit, context) {}
+                       _benefit, context) {}
 
   /// In this section, the `match` and `rewrite` implementation is specified
   /// using the separate hooks.
@@ -35,12 +38,22 @@ public:
 
 class EliminateMutBorrowPattern : public RewritePattern {
 public:
-  EliminateMutBorrowPattern(PatternBenefit benefit, MLIRContext *context)
+  EliminateMutBorrowPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
       : RewritePattern(rust_compiler::Mir::MutBorrowOp::getOperationName(),
-                       benefit, context) {}
+                       _benefit, context) {}
 
   LogicalResult match(Operation *op) const override;
   void rewrite(Operation *op, PatternRewriter &rewriter) const override;
+};
+
+class CondBranchToBranchPattern : public RewritePattern {
+public:
+  CondBranchToBranchPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
+      : RewritePattern(rust_compiler::Mir::MutBorrowOp::getOperationName(),
+                       _benefit, context) {}
+
+  LogicalResult matchAndRewrite(Operation *op,
+                                PatternRewriter &rewriter) const override;
 };
 
 class RewritePass
@@ -60,6 +73,8 @@ private:
 };
 
 } // namespace
+
+using namespace rust_compiler::Mir;
 
 LogicalResult EliminateBorrowPattern::match(Operation *op) const {
   if (mlir::isa<rust_compiler::Mir::BorrowOp>(op))
@@ -83,6 +98,31 @@ void EliminateMutBorrowPattern::rewrite(Operation *op,
   rewriter.eraseOp(op);
 }
 
+LogicalResult
+CondBranchToBranchPattern::matchAndRewrite(Operation *op,
+                                           PatternRewriter &rewriter) const {
+  if (CondBranchOp cond =
+          mlir::dyn_cast<rust_compiler::Mir::CondBranchOp>(op)) {
+    mlir::TypedValue<::mlir::IntegerType> condition = cond.getCondition();
+    if (rust_compiler::Mir::ConstantOp constOp =
+            mlir::dyn_cast<rust_compiler::Mir::ConstantOp>(
+                condition.getDefiningOp())) {
+      mlir::TypedAttr val = constOp.getValue();
+      if (IntegerAttr intAttr = mlir::dyn_cast<IntegerAttr>(val)) {
+        uint64_t constant = intAttr.getUInt();
+        if (constant == 0) {
+          //     rewriter.create<rust_compiler::Mir::BranchOp>(
+          //         op->getLoc(), cond.getFalseDest(),
+          //         cond.getFalseOperands());
+          //     // FIXME
+        } else if (constant == 1) {
+        }
+      }
+    }
+  }
+  return failure();
+}
+
 RewritePass::RewritePass(const RewritePass &pass)
     : rust_compiler::optimizer::impl::RewritePassBase<RewritePass>(pass) {}
 
@@ -95,6 +135,7 @@ LogicalResult RewritePass::initialize(MLIRContext *context) {
 
   rewritePatterns.add<EliminateBorrowPattern>(PatternBenefit(1), context);
   rewritePatterns.add<EliminateMutBorrowPattern>(PatternBenefit(1), context);
+  rewritePatterns.add<CondBranchToBranchPattern>(PatternBenefit(1), context);
 
   frozenPatterns = FrozenRewritePatternSet(std::move(rewritePatterns));
 

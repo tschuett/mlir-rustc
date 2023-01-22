@@ -26,6 +26,9 @@ namespace rust_compiler::optimizer {
 #define GEN_PASS_DECL_GVNPASS
 #include "Optimizer/Passes.h.inc"
 
+#define GEN_PASS_DECL_DEADCODEELIMINATIONPASS
+#include "Optimizer/Passes.h.inc"
+
 std::unique_ptr<mlir::Pass> createRewriterPass();
 
 // declarative passes

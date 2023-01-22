@@ -1,7 +1,7 @@
 #include "Analysis/Attributer/Attributer.h"
 
 #include "Optimizer/Passes.h"
-#include "mlir/Dialect/Func/IR/FuncOps.h"
+#include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/BuiltinOps.h>
 
 namespace rust_compiler::optimizer {

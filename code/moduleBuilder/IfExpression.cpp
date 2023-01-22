@@ -106,15 +106,15 @@ ModuleBuilder::emitIfExpression(std::shared_ptr<ast::IfExpression> ifExpr) {
   OpBuilder::InsertPoint savedPoint = builder.saveInsertionPoint();
 
   mlir::Block *phiBlock =
-      builder.createBlock(currentBlock, TypeRange(types), locs);
+    builder.createBlock(functionRegion, {}, TypeRange(types), locs);
   OpBuilder::InsertPoint phiPoint = builder.saveInsertionPoint();
 
-  mlir::Block *ifBlock = builder.createBlock(currentBlock);
+  mlir::Block *ifBlock = builder.createBlock(functionRegion);
   mlir::Value blockValue = emitExpression(ifExpr->getBlock());
   builder.create<Mir::BranchOp>(getLocation(ifExpr->getLocation()), phiBlock,
                                 blockValue);
 
-  mlir::Block *elseBlock = builder.createBlock(currentBlock);
+  mlir::Block *elseBlock = builder.createBlock(functionRegion);
   mlir::Value elseValue = emitExpression(ifExpr->getTrailing());
   builder.create<Mir::BranchOp>(getLocation(ifExpr->getLocation()), phiBlock,
                                 elseValue);
