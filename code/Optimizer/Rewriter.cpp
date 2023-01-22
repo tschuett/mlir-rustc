@@ -101,6 +101,8 @@ void EliminateMutBorrowPattern::rewrite(Operation *op,
 LogicalResult
 CondBranchToBranchPattern::matchAndRewrite(Operation *op,
                                            PatternRewriter &rewriter) const {
+  llvm::outs() << "tryCondBranchToBranchPattern"
+               << "\n";
   if (CondBranchOp cond =
           mlir::dyn_cast<rust_compiler::Mir::CondBranchOp>(op)) {
     mlir::TypedValue<::mlir::IntegerType> condition = cond.getCondition();
@@ -111,11 +113,16 @@ CondBranchToBranchPattern::matchAndRewrite(Operation *op,
       if (IntegerAttr intAttr = mlir::dyn_cast<IntegerAttr>(val)) {
         uint64_t constant = intAttr.getUInt();
         if (constant == 0) {
-          //     rewriter.create<rust_compiler::Mir::BranchOp>(
-          //         op->getLoc(), cond.getFalseDest(),
-          //         cond.getFalseOperands());
+          rewriter.eraseOp(constOp);
+          rewriter.replaceOpWithNewOp<rust_compiler::Mir::BranchOp>(
+              op, cond.getFalseDest(), cond.getFalseOperands());
+          return success();
           //     // FIXME
         } else if (constant == 1) {
+          rewriter.eraseOp(constOp);
+          rewriter.replaceOpWithNewOp<rust_compiler::Mir::BranchOp>(
+              op, cond.getTrueDest(), cond.getTrueOperands());
+          return success();
         }
       }
     }
@@ -145,9 +152,12 @@ LogicalResult RewritePass::initialize(MLIRContext *context) {
 void RewritePass::runOnOperation() {
   mlir::func::FuncOp fun = getOperation();
 
+  llvm::outs() << "run RewritePass"
+               << "\n";
+
   LogicalResult result = applyPatternsAndFoldGreedily(fun, frozenPatterns);
 
-  if (result.succeeded()) {
+  if (result.succeeded()) { // [maybe_unused]
   }
 }
 
