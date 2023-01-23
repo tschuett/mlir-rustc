@@ -66,3 +66,23 @@ TEST(LetStatementTest, CheckLetStatement3) {
     EXPECT_EQ((*loop)->getTokens(), expected);
   }
 };
+
+TEST(LetStatementTest, CheckLetStatement4) {
+
+  std::string text = "let mut i: i64 = 5;";
+
+  size_t expected = 8;
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts, ""};
+
+  std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
+      parser.tryParseLetStatement(ts.getAsView());
+
+  EXPECT_TRUE(loop.has_value());
+
+  if (loop) {
+    EXPECT_EQ((*loop)->getTokens(), expected);
+  }
+};

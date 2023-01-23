@@ -42,6 +42,7 @@ add_library(ast
            IfExpression.cpp
            LetStatement.cpp
            LetStatementParam.cpp
+           PredicateLoopExpression.cpp
            )
 
 

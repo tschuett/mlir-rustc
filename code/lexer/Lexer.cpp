@@ -35,6 +35,11 @@ std::optional<std::string> tryLexDecLiteral(std::string_view code) {
       ws.push_back(view.front());
       return ws;
     }
+    if (std::isdigit(view.front()) && std::isdigit(view[1]) && not std::isdigit(view[2])) {
+      ws.push_back(view.front());
+      ws.push_back(view[1]);
+      return ws;
+    }
 
     while (view.size() > 0) {
       if (std::isdigit(view.front())) {
@@ -578,6 +583,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
         return ts;
       printf("unknown token: x%sx\n", code.data());
       llvm::outs() << "remaining chars:" << code.size() << "\n";
+      ts.print(50);
       exit(EXIT_FAILURE);
     }
   }

@@ -129,3 +129,59 @@ TEST(LexerTest, CheckFive) {
 
   EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecLiteral);
 };
+
+TEST(LexerTest, CheckTen) {
+  std::string text = "10";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  ts.print(10);
+
+  size_t expectedLendth = 1;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecLiteral);
+};
+
+TEST(LexerTest, CheckHundred) {
+  std::string text = "100";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  ts.print(10);
+
+  size_t expectedLendth = 1;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecLiteral);
+};
+
+TEST(LexerTest, CheckThousand) {
+  std::string text = "1000";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  ts.print(10);
+
+  size_t expectedLendth = 1;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecLiteral);
+};
+
+TEST(LexerTest, CheckLoop) {
+  std::string text = "while i < 10 {i = i + 1; }";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  ts.print(10);
+
+  size_t expectedLendth = 12;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::Keyword);
+};

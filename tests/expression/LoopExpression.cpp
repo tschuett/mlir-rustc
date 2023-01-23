@@ -8,7 +8,7 @@ using namespace rust_compiler::ast;
 
 TEST(LoopExpressionTest, CheckLoopExpr1) {
 
-  std::string text = "while i < 10 {i = i + 1; }";
+  std::string text = "while i < 10 {i = i + 1}";
 
   TokenStream ts = lex(text, "lib.rs");
 
