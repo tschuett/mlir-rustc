@@ -29,6 +29,9 @@ namespace rust_compiler::optimizer {
 #define GEN_PASS_DECL_DEADCODEELIMINATIONPASS
 #include "Optimizer/Passes.h.inc"
 
+#define GEN_PASS_DECL_SCCPPASS
+#include "Optimizer/Passes.h.inc"
+
 // declarative passes
 #define GEN_PASS_REGISTRATION
 #include "Optimizer/Passes.h.inc"

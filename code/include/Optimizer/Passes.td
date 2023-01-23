@@ -51,7 +51,10 @@ def SummaryWriterPass : Pass<"SummaryWriter", "mlir::ModuleOp"> {
                         "Summary Output File">];
 }
 
-
+def SCCPPass : Pass<"SCCP", "mlir::func::FuncOp"> {
+  let summary = "Constant propagation with conditional branches";
+  let description = [{Wegman, Mark N and Zadeck, F Kenneth}];
+}
 
 
 // eleminate Mir: how?
