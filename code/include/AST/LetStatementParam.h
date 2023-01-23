@@ -1,10 +1,7 @@
 #pragma once
 
-#include "AST/AST.h"
-#include "AST/FunctionParamPattern.h"
-#include "AST/LetStatement.h"
-#include "AST/Patterns/IdentifierPattern.h"
 #include "AST/VariableDeclaration.h"
+#include "AST/Types/Types.h"
 
 #include <memory>
 #include <optional>

@@ -142,6 +142,16 @@ module {
 ```
 
 
+```MLIR
+"builtin.module"() ({
+  "func.func"() ({
+  ^bb0(%arg0: ui64, %arg1: ui64):
+    %0 = "memref.alloc"() {operand_segment_sizes = array<i32: 0, 0>} : () -> memref<1xi64>
+    "func.return"(%0) : (memref<1xi64>) -> ()
+  }) {function_type = (ui64, ui64) -> ui64, sym_name = "add"} : () -> ()
+}) : () -> ()
+```
+
 https://reviews.llvm.org/D142244
 
 https://reviews.llvm.org/D141820

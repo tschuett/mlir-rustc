@@ -39,7 +39,7 @@ std::shared_ptr<ast::patterns::PatternNoTopAlt> LetStatement::getPattern() {
   return pat;
 }
 
-std::vector<VariableDeclaration> LetStatement::getVarDecls() {
+std::span<LetStatementParam> LetStatement::getVarDecls() {
   if (not filledVars) {
     std::vector<std::string> lits = pat->getLiterals();
     for (std::string &li : lits) {

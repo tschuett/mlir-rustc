@@ -41,6 +41,7 @@ add_library(ast
            TuplePattern.cpp
            IfExpression.cpp
            LetStatement.cpp
+           LetStatementParam.cpp
            )
 
 

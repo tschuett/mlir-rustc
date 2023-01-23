@@ -1,12 +1,15 @@
 #pragma once
 
 #include "AST/Expression.h"
+#include "AST/LetStatementParam.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Statement.h"
 #include "AST/Types/Types.h"
-#include "AST/VariableDeclaration.h"
+#include "AST/LetStatementParam.h"
 
 #include <mlir/IR/Location.h>
+
+#include <span>
 
 namespace rust_compiler::ast {
 
@@ -16,7 +19,7 @@ class LetStatement : public Statement {
   std::shared_ptr<ast::types::Type> type;
   std::shared_ptr<ast::Expression> expr;
 
-  std::vector<VariableDeclaration> var;
+  std::vector<LetStatementParam> var;
   bool filledVars = false;
 
 public:
@@ -26,7 +29,7 @@ public:
   void setType(std::shared_ptr<ast::types::Type> type);
   void setExpression(std::shared_ptr<ast::Expression> expr);
 
-  std::vector<VariableDeclaration> getVarDecls();
+  std::span<LetStatementParam> getVarDecls();
 
   size_t getTokens() override;
 
