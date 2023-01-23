@@ -15,6 +15,13 @@ Parser::tryParseOperatorExpression(std::span<lexer::Token> tokens) {
     return *arith;
   }
 
+  std::optional<std::shared_ptr<ast::Expression>> compi =
+      tryParseComparisonExpression(view);
+
+  if (compi) {
+    return *compi;
+  }
+
   return std::nullopt;
 }
 

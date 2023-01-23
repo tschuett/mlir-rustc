@@ -15,7 +15,7 @@ mlir::Value ModuleBuilder::emitLoopExpression(
     break;
   }
   case LoopExpressionKind::PredicateLoopExpression: {
-        std::shared_ptr<PredicateLoopExpression> loop =
+    std::shared_ptr<PredicateLoopExpression> loop =
         std::static_pointer_cast<PredicateLoopExpression>(loopExpr);
 
     return emitPredicateLoopExpression(loop);

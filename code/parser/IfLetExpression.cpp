@@ -23,7 +23,7 @@ Parser::tryParseIfLetExpression(std::span<lexer::Token> tokens) {
       if (pattern) {
         view = view.subspan((*pattern)->getTokens());
 
-        if (view.front().getKind() == lexer::TokenKind::Equals) {
+        if (view.front().getKind() == lexer::TokenKind::Eq) {
           view = view.subspan(1);
 
           std::optional<std::shared_ptr<ast::Scrutinee>> scrutinee =

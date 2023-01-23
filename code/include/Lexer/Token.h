@@ -37,8 +37,8 @@ enum class TokenKind {
   ThinArrow,
   LessThan,
   // DoubleGreaterThan,
-  GreaterThan,
-  Equals,
+  //GreaterThan,
+  Eq,
   Dot,
   QMark,
   Hash,
@@ -74,7 +74,11 @@ enum class TokenKind {
   Shl,
   Shr,
   DotDot,
-  Lt
+  Lt,
+  EqEq,
+  Ne,
+  Gt, Ge, Le
+
 };
 
 class Token {

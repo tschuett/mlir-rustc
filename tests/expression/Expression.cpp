@@ -47,3 +47,17 @@ TEST(ExpressionTest, CheckNegationExpr2) {
 
   EXPECT_TRUE(neg.has_value());
 };
+
+TEST(ExpressionTest, CheckExprSmaller) {
+
+  std::string text = "i < 10";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts, ""};
+
+  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> neg =
+      parser.tryParseExpression(ts.getAsView());
+
+  EXPECT_TRUE(neg.has_value());
+};

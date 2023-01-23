@@ -43,7 +43,7 @@ Parser::tryParseLetStatement(std::span<lexer::Token> tokens) {
         }
       }
       // expression
-      if (view.front().getKind() == lexer::TokenKind::Equals) {
+      if (view.front().getKind() == lexer::TokenKind::Eq) {
         view = view.subspan(1);
         std::optional<std::shared_ptr<ast::Expression>> expr =
             tryParseExpression(view);

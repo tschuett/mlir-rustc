@@ -36,10 +36,13 @@ std::string Token2String(TokenKind kind) {
 //  case TokenKind::DoubleGreaterThan: {
 //    return std::string(">>");
 //  }
-  case TokenKind::GreaterThan: {
+  case TokenKind::Gt: {
     return std::string(">");
   }
-  case TokenKind::Equals: {
+  case TokenKind::EqEq: {
+    return std::string("==");
+  }
+  case TokenKind::Eq: {
     return std::string("=");
   }
   case TokenKind::Dot: {

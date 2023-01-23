@@ -224,6 +224,9 @@ public:
 
   std::optional<std::shared_ptr<ast::Statement>>
       tryParseLetStatement(std::span<lexer::Token>);
+
+  std::optional<std::shared_ptr<ast::Expression>>
+      tryParseComparisonExpression(std::span<lexer::Token>);
 };
 
 } // namespace rust_compiler::parser
