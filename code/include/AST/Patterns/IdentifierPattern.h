@@ -21,6 +21,8 @@ public:
   size_t getTokens() override;
 
   std::string getIdentifier();
+
+  std::vector<std::string> getLiterals() override;
 };
 
 } // namespace rust_compiler::ast::patterns

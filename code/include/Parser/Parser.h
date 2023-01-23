@@ -15,6 +15,7 @@
 #include "AST/Patterns/RestPattern.h"
 #include "AST/Patterns/TuplePattern.h"
 #include "AST/Scrutinee.h"
+#include "AST/Statement.h"
 #include "AST/UseDeclaration.h"
 #include "AST/UseTree.h"
 #include "Lexer/Token.h"
@@ -72,7 +73,7 @@ public:
   std::optional<std::shared_ptr<ast::Statement>>
       tryParseStatement(std::span<lexer::Token>);
 
-  std::optional<std::shared_ptr<ast::Expression>>
+  std::optional<std::shared_ptr<ast::Statement>>
   tryParseExpressionStatement(std::span<lexer::Token> tokens);
 
   std::optional<std::shared_ptr<ast::Expression>>

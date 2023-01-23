@@ -16,6 +16,8 @@ public:
       : Node(loc), kind(kind) {}
 
   PatternNoTopAltKind getKind() const { return kind; }
+
+  virtual std::vector<std::string> getLiterals() = 0;
 };
 
 } // namespace rust_compiler::ast::patterns

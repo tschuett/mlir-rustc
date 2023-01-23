@@ -138,8 +138,8 @@ ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
 
   mlir::func::FuncOp f = builder.create<mlir::func::FuncOp>(
       location, sig.getName(), funcType, attrs);
-  assert(f.getArgumentTypes().size() == 1);
-  assert(f.getResultTypes().size() == 1);
+  //assert(f.getArgumentTypes().size() == 1);
+  //assert(f.getResultTypes().size() == 1);
 
   entryBlock =
     builder.createBlock(&f.getBody(), f.getBody().end(),

@@ -1,3 +1,5 @@
+#include "AST/ExpressionStatement.h"
+#include "AST/Statement.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
@@ -5,7 +7,7 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
-std::optional<std::shared_ptr<ast::Expression>>
+std::optional<std::shared_ptr<ast::Statement>>
 Parser::tryParseExpressionStatement(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
@@ -17,7 +19,7 @@ Parser::tryParseExpressionStatement(std::span<lexer::Token> tokens) {
 
     if (view.front().getKind() == lexer::TokenKind::Semi) {
       (*woBlock)->setHasTrailingSemi();
-      return *woBlock;
+      return std::make_shared<ExpressionStatement>(tokens.front().getLocation(), *woBlock);
     } else {
       return std::nullopt;
     }
@@ -34,7 +36,7 @@ Parser::tryParseExpressionStatement(std::span<lexer::Token> tokens) {
       (*withBlock)->setHasTrailingSemi();
     }
 
-    return *withBlock;
+    return std::make_shared<ExpressionStatement>(tokens.front().getLocation(), *withBlock);
   }
 
   return std::nullopt;

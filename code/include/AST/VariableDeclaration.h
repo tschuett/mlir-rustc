@@ -1,11 +1,12 @@
 #pragma once
 
 #include "AST/AST.h"
+#include "AST/LetStatement.h"
 #include "AST/Types/Types.h"
 
 namespace rust_compiler::ast {
 
-enum class VariableDeclarationKind { FunctionParameter };
+enum class VariableDeclarationKind { FunctionParameter, LetStatement };
 
 class VariableDeclaration : public Node {
   VariableDeclarationKind kind;
@@ -16,7 +17,7 @@ public:
 
   VariableDeclarationKind getKind() const { return kind; }
 
-  //size_t getTokens() override;
+  // size_t getTokens() override;
 
   virtual std::string getName() = 0;
 };

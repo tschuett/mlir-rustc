@@ -15,6 +15,7 @@
 #include "AST/QualifiedPathInExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Statement.h"
+#include "AST/LetStatement.h"
 #include "AST/VariableDeclaration.h"
 #include "Mir/MirDialect.h"
 #include "ModuleBuilder/Target.h"
@@ -125,6 +126,8 @@ private:
       std::shared_ptr<ast::QualifiedPathInExpression> path);
 
   mlir::Value emitIfExpression(std::shared_ptr<ast::IfExpression> ifExpr);
+
+  mlir::Value emitLetStatement(std::shared_ptr<ast::LetStatement> letExpr);
 };
 
 } // namespace rust_compiler

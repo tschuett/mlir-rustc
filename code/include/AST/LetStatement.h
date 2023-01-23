@@ -1,10 +1,10 @@
 #pragma once
 
 #include "AST/Expression.h"
+#include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Statement.h"
 #include "AST/Types/Types.h"
 #include "AST/VariableDeclaration.h"
-#include "AST/Patterns/PatternNoTopAlt.h"
 
 #include <mlir/IR/Location.h>
 
@@ -23,7 +23,12 @@ public:
   void setType(std::shared_ptr<ast::types::Type> type);
   void setExpression(std::shared_ptr<ast::Expression> expr);
 
+  std::vector<VariableDeclaration> getVarDecls();
+
   size_t getTokens() override;
+
+private:
+  std::shared_ptr<ast::patterns::PatternNoTopAlt> getPattern();
 };
 
 } // namespace rust_compiler::ast

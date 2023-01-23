@@ -13,12 +13,18 @@ TEST(LetStatementTest, CheckLetStatement1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  size_t expected = 3;
+
   Parser parser = {ts, ""};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
       parser.tryParseLetStatement(ts.getAsView());
 
   EXPECT_TRUE(loop.has_value());
+
+  if (loop) {
+    EXPECT_EQ((*loop)->getTokens(), expected);
+  }
 };
 
 TEST(LetStatementTest, CheckLetStatement2) {
@@ -27,17 +33,25 @@ TEST(LetStatementTest, CheckLetStatement2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  size_t expected = 5;
+
   Parser parser = {ts, ""};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
       parser.tryParseLetStatement(ts.getAsView());
 
   EXPECT_TRUE(loop.has_value());
+
+  if (loop) {
+    EXPECT_EQ((*loop)->getTokens(), expected);
+  }
 };
 
 TEST(LetStatementTest, CheckLetStatement3) {
 
   std::string text = "let i: i64 = 5;";
+
+  size_t expected = 7;
 
   TokenStream ts = lex(text, "lib.rs");
 
@@ -47,4 +61,8 @@ TEST(LetStatementTest, CheckLetStatement3) {
       parser.tryParseLetStatement(ts.getAsView());
 
   EXPECT_TRUE(loop.has_value());
+
+  if (loop) {
+    EXPECT_EQ((*loop)->getTokens(), expected);
+  }
 };

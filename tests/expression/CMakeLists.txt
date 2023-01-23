@@ -17,6 +17,7 @@ add_executable(ExpressionTests
         Types.cpp
         ExamplesFun1.cpp
         ExamplesFun2.cpp
+        ExamplesFun3.cpp
         BorrowExpression.cpp
         IfExpression.cpp
         IfLetExpression.cpp

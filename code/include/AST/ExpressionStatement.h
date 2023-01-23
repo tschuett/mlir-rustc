@@ -10,7 +10,7 @@ class ExpressionStatement : public Statement {
 
 public:
   ExpressionStatement(Location loc, std::shared_ptr<Expression> expr)
-    : Statement(loc, StatementKind::ExpressionStatement), expr(expr) {}
+      : Statement(loc, StatementKind::ExpressionStatement), expr(expr) {}
 
   size_t getTokens() override;
 };

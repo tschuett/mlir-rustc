@@ -1,6 +1,8 @@
 #include "AST/BlockExpression.h"
 #include "AST/Expression.h"
 #include "AST/IfExpression.h"
+#include "AST/IfLetExpression.h"
+#include "AST/LetStatement.h"
 #include "ModuleBuilder/ModuleBuilder.h"
 
 #include <memory>
