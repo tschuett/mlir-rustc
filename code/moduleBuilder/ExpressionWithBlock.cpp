@@ -3,6 +3,7 @@
 #include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
 #include "AST/LetStatement.h"
+#include "AST/LoopExpression.h"
 #include "ModuleBuilder/ModuleBuilder.h"
 
 #include <memory>
@@ -35,8 +36,14 @@ mlir::Value ModuleBuilder::emitExpressionWithBlock(
     break;
   }
   case ExpressionWithBlockKind::LoopExpression: {
+
     llvm::outs() << "emitExpressionWithBlock: loop"
                  << "\n";
+    std::shared_ptr<ast::LoopExpression> loop =
+        std::static_pointer_cast<ast::LoopExpression>(expr);
+
+    return emitLoopExpression(loop);
+
     break;
   }
   case ExpressionWithBlockKind::IfExpression: {

@@ -16,6 +16,8 @@ add_library(modulebuilder
            ReturnExpression.cpp
            IfExpression.cpp
            LetStatement.cpp
+           LoopExpression.cpp
+           PredicateLoopExpression.cpp
            )
 
 

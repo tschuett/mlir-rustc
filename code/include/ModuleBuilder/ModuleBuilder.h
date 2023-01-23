@@ -12,6 +12,7 @@
 #include "AST/Module.h"
 #include "AST/PathExpression.h"
 #include "AST/PathInExpression.h"
+#include "AST/PredicateLoopExpression.h"
 #include "AST/QualifiedPathInExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Statement.h"
@@ -128,6 +129,10 @@ private:
   mlir::Value emitIfExpression(std::shared_ptr<ast::IfExpression> ifExpr);
 
   mlir::Value emitLetStatement(std::shared_ptr<ast::LetStatement> letExpr);
+  mlir::Value emitLoopExpression(std::shared_ptr<ast::LoopExpression> loopExpr);
+
+  mlir::Value  emitPredicateLoopExpression(std::shared_ptr<ast::PredicateLoopExpression>);
+
 };
 
 } // namespace rust_compiler

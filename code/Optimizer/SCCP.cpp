@@ -1,7 +1,6 @@
 #include "Mir/MirOps.h"
 #include "Optimizer/Passes.h"
 
-#include <mlir/Dialect/Async/IR/Async.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/IR/Dominance.h>
