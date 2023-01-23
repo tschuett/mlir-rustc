@@ -1,5 +1,5 @@
-#include "Mir/MirOps.h"
 #include "CodeGen/Passes.h"
+#include "Mir/MirOps.h"
 
 #include <mlir/Conversion/ArithToLLVM/ArithToLLVM.h>
 #include <mlir/Conversion/ControlFlowToLLVM/ControlFlowToLLVM.h>
@@ -15,14 +15,14 @@
 
 using namespace mlir;
 
-namespace rust_compiler {
+namespace rust_compiler::codegen {
 #define GEN_PASS_DEF_LOWERUTILSTOLLVMPASS
 #include "CodeGen/Passes.h.inc"
-} // namespace rust_compiler::optimizer
+} // namespace rust_compiler::codegen
 
 namespace {
 class LowerUtilsToLLVMPass
-    : public rust_compiler::impl::LowerUtilsToLLVMPassBase<
+  : public rust_compiler::codegen::impl::LowerUtilsToLLVMPassBase<
           LowerUtilsToLLVMPass> {
 public:
   void runOnOperation() override;
@@ -44,4 +44,3 @@ void LowerUtilsToLLVMPass::runOnOperation() {
   if (failed(applyPartialConversion(module, target, std::move(patterns))))
     signalPassFailure();
 }
-

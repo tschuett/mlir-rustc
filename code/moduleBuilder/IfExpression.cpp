@@ -93,7 +93,11 @@ ModuleBuilder::emitIfExpression(std::shared_ptr<ast::IfExpression> ifExpr) {
   //    conditions.push_back(emitExpression(ifExprSharedPtr->getCondition()));
   //
 
-  // FIXME
+//      return builder.create<Mir::ConstantOp>(
+//        getLocation(ifExpr->getLocation()),
+//        builder.getIntegerAttr(builder.getI64Type(), 1), builder.getI64Type());
+//
+//  // FIXME
   mlir::Block *currentBlock = builder.getBlock();
   OpBuilder::InsertPoint currentPoint = builder.saveInsertionPoint();
 

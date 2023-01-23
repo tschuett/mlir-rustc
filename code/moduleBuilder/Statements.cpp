@@ -36,9 +36,6 @@ std::optional<mlir::Value> ModuleBuilder::emitStatement(
   }
 }
 
-void ModuleBuilder::buildLetStatement(
-    std::shared_ptr<ast::LetStatement> letStmt) {}
-
 void ModuleBuilder::buildExpressionStatement(
     std::shared_ptr<ast::ExpressionStatement> expr) {}
 

@@ -40,7 +40,6 @@ mlir::Value ModuleBuilder::emitLiteralExpression(
         getLocation(lit->getLocation()),
         builder.getIntegerAttr(builder.getI64Type(), integer),
         builder.getI64Type());
-    break;
   }
   case LiteralExpressionKind::FloatLiteral: {
     break;
@@ -49,13 +48,11 @@ mlir::Value ModuleBuilder::emitLiteralExpression(
     return builder.create<Mir::ConstantOp>(
         getLocation(lit->getLocation()),
         builder.getIntegerAttr(builder.getI1Type(), 1), builder.getI1Type());
-    break;
   }
   case LiteralExpressionKind::False: {
     return builder.create<Mir::ConstantOp>(
         getLocation(lit->getLocation()),
         builder.getIntegerAttr(builder.getI1Type(), 0), builder.getI1Type());
-    break;
   }
   }
 

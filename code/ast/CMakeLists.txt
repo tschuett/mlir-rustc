@@ -40,6 +40,7 @@ add_library(ast
            RestPattern.cpp
            TuplePattern.cpp
            IfExpression.cpp
+           LetStatement.cpp
            )
 
 

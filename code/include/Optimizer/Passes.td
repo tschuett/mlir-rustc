@@ -19,8 +19,7 @@ def RewritePass : Pass<"rewrite", "mlir::func::FuncOp"> {
   let summary = "rewrite Mir to ...";
 
   // Inherit the common pattern rewrite options from `RewritePassUtils`.
-  let options = RewritePassUtils.options;
-  let constructor = "rust_compiler::optimizer::createRewriterPass()";
+//  let options = RewritePassUtils.options;
 }
 
 def LowerAwaitPass : Pass<"LowerAwait", "mlir::ModuleOp"> {

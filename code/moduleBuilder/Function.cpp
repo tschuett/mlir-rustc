@@ -40,13 +40,13 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
     return nullptr;
 
   // Let's start the body of the function now!
-  // mlir::Block &entryBlock = function.front();
+  mlir::Block &entryBlock = function.front();
   std::vector<FunctionParam> protoArgs =
       f->getSignature().getParameters().getParams();
 
   // Declare all the function arguments in the symbol table.
-  for (unsigned i = 0; i < entryBlock->getNumArguments(); ++i) {
-    if (failed(declare(protoArgs[i], entryBlock->getArgument(i)))) {
+  for (unsigned i = 0; i < entryBlock.getNumArguments(); ++i) {
+    if (failed(declare(protoArgs[i], entryBlock.getArgument(i)))) {
       return nullptr;
     } else {
       llvm::outs() << "outside count: "
@@ -73,7 +73,7 @@ mlir::func::FuncOp ModuleBuilder::emitFun(std::shared_ptr<ast::Function> f) {
   // Set the insertion point in the builder to the beginning of the function
   // body, it will be used throughout the codegen to create operations in this
   // function.
-  builder.setInsertionPointToStart(entryBlock);
+  builder.setInsertionPointToStart(&entryBlock);
 
   // Emit the body of the function.
   emitBlockExpression(f->getBody());
@@ -130,18 +130,46 @@ ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
       builder.getFunctionType(argTypes, resultType /*std::nullopt results*/);
 
   llvm::SmallVector<mlir::NamedAttribute> attrs;
-  attrs.push_back(
-      builder.getNamedAttr("visibility", builder.getStringAttr("pub")));
-  attrs.push_back(
-      builder.getNamedAttr("function type", builder.getStringAttr("async")));
+  //  attrs.push_back(
+  //      builder.getNamedAttr("visibility", builder.getStringAttr("pub")));
+  //  attrs.push_back(
+  //      builder.getNamedAttr("function type",
+  //      builder.getStringAttr("async")));
 
   mlir::func::FuncOp f = builder.create<mlir::func::FuncOp>(
       location, sig.getName(), funcType, attrs);
   assert(f.getArgumentTypes().size() == 1);
   assert(f.getResultTypes().size() == 1);
 
-  entryBlock = builder.createBlock(
-      &f.getBody(), {}, TypeRange(f.getArgumentTypes()), argLocations);
+  entryBlock =
+    builder.createBlock(&f.getBody(), f.getBody().end(),
+                          TypeRange(f.getArgumentTypes()), argLocations);
+  //
+  //  entryBlock =
+  //    builder.createBlock(f.getBody().front(),
+  //                          TypeRange(f.getArgumentTypes()), argLocations);
+
+  // entryBlock = builder.createBlock( // FIXME: BAD
+  //     &f.getBody(), {}, TypeRange(f.getArgumentTypes()), argLocations);
+  //
+  //  region variant
+
+  //  entryBlock = // FIXME: bad
+  //    builder.createBlock(&f.getBody(), f.getBody().end(),
+  //                          TypeRange(f.getArgumentTypes()), argLocations);
+  //
+  // block variant
+
+  //  entryBlock = builder.createBlock(
+  //      &f.getBody().back(), TypeRange(f.getArgumentTypes()), argLocations);
+  //
+
+  //    entryBlock = builder.createBlock( // FIXME : bad
+  //        &f.getBody(), {}, TypeRange(f.getArgumentTypes()), argLocations);
+  //
+
+  //    entryBlock = builder.createBlock( // FIXME: bad
+  //        &f.getBody().back(), TypeRange(f.getArgumentTypes()), argLocations);
 
   functionRegion = &f.getBody();
 
@@ -151,3 +179,18 @@ ModuleBuilder::buildFunctionSignature(ast::FunctionSignature sig,
 }
 
 } // namespace rust_compiler
+
+/// Add new block with 'argTypes' arguments and set the insertion point to the
+/// end of it. The block is inserted at the provided insertion point of
+/// 'parent'. `locs` contains the locations of the inserted arguments, and
+/// should match the size of `argTypes`.
+//  Block *createBlock(Region *parent, Region::iterator insertPt = {},
+//                     TypeRange argTypes = std::nullopt,
+//                     ArrayRef<Location> locs = std::nullopt);
+
+/// Add new block with 'argTypes' arguments and set the insertion point to the
+/// end of it. The block is placed before 'insertBefore'. `locs` contains the
+/// locations of the inserted arguments, and should match the size of
+/// `argTypes`.
+//  Block *createBlock(Block *insertBefore, TypeRange argTypes = std::nullopt,
+//                     ArrayRef<Location> locs = std::nullopt);

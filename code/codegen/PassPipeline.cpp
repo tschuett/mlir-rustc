@@ -1,7 +1,7 @@
 #include "PassPipeline.h"
 
-#include "Optimizer/Passes.h"
 #include "CodeGen/Passes.h"
+#include "Optimizer/Passes.h"
 
 #include <mlir/Conversion/AsyncToLLVM/AsyncToLLVM.h>
 #include <mlir/Dialect/Async/Passes.h>
@@ -28,9 +28,9 @@ int processMLIR(mlir::MLIRContext &context,
 
   // optimize
   pm.addPass(createAttributer());
-  pm.addPass(createGVNPass());
-  pm.addPass(optimizer::createRewriterPass());
-  pm.addPass(optimizer::createDeadCodeEliminationPass());
+  //pm.addPass(createGVNPass());
+  //pm.addPass(createRewritePass());
+  //pm.addPass(createDeadCodeEliminationPass());
 
   pm.addPass(createSummaryWriterPass(options));
 
@@ -53,6 +53,5 @@ int processMLIR(mlir::MLIRContext &context,
 }
 
 } // namespace rust_compiler
-
 
 // A Sparse Algorithm for Predicated Global Value Numbering from Karthik Gargi.

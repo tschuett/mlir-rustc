@@ -1,4 +1,5 @@
 #include "ModuleBuilder/ModuleBuilder.h"
+#include "mlir/Dialect/Func/IR/FuncOps.h"
 
 #include <llvm/Support/raw_ostream.h>
 

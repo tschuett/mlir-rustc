@@ -3,6 +3,7 @@
 #include "Analysis/Attributer/AbstractElement.h"
 #include "Analysis/Attributer/DependencyGraph.h"
 #include "Analysis/Attributer/IRPosition.h"
+#include <mlir/IR/Operation.h>
 
 #include <mlir/IR/BuiltinOps.h>
 

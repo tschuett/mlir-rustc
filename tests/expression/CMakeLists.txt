@@ -20,6 +20,8 @@ add_executable(ExpressionTests
         BorrowExpression.cpp
         IfExpression.cpp
         IfLetExpression.cpp
+        LoopExpression.cpp
+        LetStatement.cpp
 )
 
 llvm_map_components_to_libnames(llvm_libs Support)

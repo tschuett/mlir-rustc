@@ -16,11 +16,10 @@ class Statement : public Node {
   StatementKind kind;
 
 public:
-  explicit Statement(Location location)
-      : Node(location) {}
+  explicit Statement(Location location, StatementKind kind)
+      : Node(location), kind(kind) {}
 
   StatementKind getKind() const { return kind; }
-
 };
 
 } // namespace rust_compiler::ast

@@ -59,9 +59,6 @@ public:
 class RewritePass
     : public rust_compiler::optimizer::impl::RewritePassBase<RewritePass> {
 public:
-  RewritePass() = default;
-  RewritePass(const RewritePass &pass);
-
   llvm::StringRef getDescription() const override;
 
   LogicalResult initialize(MLIRContext *context) override;
@@ -130,9 +127,6 @@ CondBranchToBranchPattern::matchAndRewrite(Operation *op,
   return failure();
 }
 
-RewritePass::RewritePass(const RewritePass &pass)
-    : rust_compiler::optimizer::impl::RewritePassBase<RewritePass>(pass) {}
-
 llvm::StringRef RewritePass::getDescription() const { return "test pass"; }
 
 LogicalResult RewritePass::initialize(MLIRContext *context) {
@@ -159,10 +153,6 @@ void RewritePass::runOnOperation() {
 
   if (result.succeeded()) { // [maybe_unused]
   }
-}
-
-std::unique_ptr<mlir::Pass> createRewritePass() {
-  return std::make_unique<RewritePass>();
 }
 
 // https://reviews.llvm.org/D140415

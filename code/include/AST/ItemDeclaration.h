@@ -11,7 +11,7 @@ class ItemDeclaration : public Statement {
   std::shared_ptr<Item> item;
 
 public:
-  ItemDeclaration(Location loc) : Statement(loc) {}
+  ItemDeclaration(Location loc) : Statement(loc, StatementKind::ItemDeclaration) {}
 };
 
 } // namespace rust_compiler::ast

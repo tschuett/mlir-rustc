@@ -217,6 +217,12 @@ public:
 
   std::optional<std::shared_ptr<ast::types::Type>>
   tryParseTypePath(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::Expression>>
+  tryParsePredicateLoopExpression(std::span<lexer::Token> tokens);
+
+  std::optional<std::shared_ptr<ast::Statement>>
+      tryParseLetStatement(std::span<lexer::Token>);
 };
 
 } // namespace rust_compiler::parser

@@ -15,7 +15,7 @@ namespace rust_compiler::analysis::attributor {
 // llvm/Transforms/IPO/Attributor.h).
 
 class IRPosition {
-  enum class Kind { ReturnedValue, Function };
+  enum class Kind { ReturnedValue, Function, Block };
 
 public:
   static const IRPosition EmptyKey;

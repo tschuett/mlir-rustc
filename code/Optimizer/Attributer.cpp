@@ -13,22 +13,12 @@ namespace {
 class AttributerPass
     : public rust_compiler::optimizer::impl::AttributerBase<AttributerPass> {
 public:
-  AttributerPass() = default;
-  AttributerPass(const AttributerPass &pass);
-
-  llvm::StringRef getDescription() const override;
-
   void runOnOperation() override;
 };
 
 } // namespace
 
 using namespace rust_compiler::analysis::attributor;
-
-AttributerPass::AttributerPass(const AttributerPass &pass)
-    : rust_compiler::optimizer::impl::AttributerBase<AttributerPass>(pass) {}
-
-llvm::StringRef AttributerPass::getDescription() const { return "test pass"; }
 
 void AttributerPass::runOnOperation() {
   mlir::ModuleOp module = getOperation();

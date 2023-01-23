@@ -53,6 +53,8 @@ add_library(parser
            QualifiedPathType.cpp
            QualifiedPathInType.cpp
            TypePath.cpp
+           PredicateLoopExpression.cpp
+           LetStatement.cpp
            )
 
 

@@ -15,6 +15,7 @@ add_library(modulebuilder
            Declare.cpp
            ReturnExpression.cpp
            IfExpression.cpp
+           LetStatement.cpp
            )
 
 

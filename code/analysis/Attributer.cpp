@@ -1,8 +1,10 @@
 #include "Analysis/Attributer/Attributer.h"
 
 #include "Analysis/Attributer/AAIsDead.h"
-#include "mlir/Dialect/Func/IR/FuncOps.h"
-#include "mlir/IR/Operation.h"
+
+#include <mlir/Dialect/Func/IR/FuncOps.h>
+#include <mlir/IR/BuiltinOps.h>
+#include <mlir/IR/Operation.h>
 
 namespace rust_compiler::analysis::attributor {
 
@@ -20,5 +22,15 @@ void Attributor::setup() {
     //    }
   });
 }
+
+Attributor::Attributor(mlir::ModuleOp module) {}
+
+const IRPosition IRPosition::EmptyKey(Kind::Block,
+                                      llvm::DenseMapInfo<void *>::getEmptyKey(),
+                                      0);
+
+const IRPosition
+    IRPosition::TombstoneKey(Kind::Block,
+                             llvm::DenseMapInfo<void *>::getTombstoneKey(), 0);
 
 } // namespace rust_compiler::analysis::attributor
