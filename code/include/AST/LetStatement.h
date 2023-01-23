@@ -16,6 +16,9 @@ class LetStatement : public Statement {
   std::shared_ptr<ast::types::Type> type;
   std::shared_ptr<ast::Expression> expr;
 
+  std::vector<VariableDeclaration> var;
+  bool filledVars = false;
+
 public:
   LetStatement(Location loc) : Statement(loc, StatementKind::LetStatement){};
 

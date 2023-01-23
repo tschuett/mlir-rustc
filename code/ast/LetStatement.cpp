@@ -1,5 +1,6 @@
 #include "AST/LetStatement.h"
 
+#include "AST/LetStatementParam.h"
 #include "AST/VariableDeclaration.h"
 
 namespace rust_compiler::ast {
@@ -39,11 +40,16 @@ std::shared_ptr<ast::patterns::PatternNoTopAlt> LetStatement::getPattern() {
 }
 
 std::vector<VariableDeclaration> LetStatement::getVarDecls() {
-  std::vector<VariableDeclaration> var;
-
-  std::vector<std::string> lits = pat->getLiterals();
-  for (std::string& li: lits) {
+  if (not filledVars) {
+    std::vector<std::string> lits = pat->getLiterals();
+    for (std::string &li : lits) {
+      LetStatementParam param = {location};
+      param.setName(li);
+      // param.setType();
+      var.push_back(param);
+    }
   }
+  return var;
 }
 
 } // namespace rust_compiler::ast
