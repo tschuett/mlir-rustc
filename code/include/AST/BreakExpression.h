@@ -7,14 +7,17 @@
 
 namespace rust_compiler::ast {
 
-class BreakExpression : public Node {
+class BreakExpression : public ExpressionWithoutBlock {
   std::shared_ptr<Expression> expr;
 
 public:
-  BreakExpression(Location loc) : Node(loc){};
+  BreakExpression(Location loc)
+      : ExpressionWithoutBlock(loc,
+                               ExpressionWithoutBlockKind::BreakExpression){};
+
+  bool containsBreakExpression() override;
 };
 
 } // namespace rust_compiler::ast
-
 
 // FIXME LIFETIME_OR_LABEL

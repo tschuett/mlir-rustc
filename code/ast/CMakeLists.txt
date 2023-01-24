@@ -46,6 +46,7 @@ add_library(ast
            AssignmentExpression.cpp
            ComparisonExpression.cpp
            InfiniteLoopExpression.cpp
+           BreakExpression.cpp
            )
 
 

@@ -5,6 +5,8 @@
 
 namespace rust_compiler::ast {
 
+bool LetStatement::containsBreakExpression() { return false; }
+
 size_t LetStatement::getTokens() {
   size_t count = 0;
 
