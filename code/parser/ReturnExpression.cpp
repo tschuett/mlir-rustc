@@ -20,8 +20,6 @@ Parser::tryParseReturnExpression(std::span<Token> tokens) {
   llvm::errs() << "tryParseReturnExpression"
                << "\n";
 
-  printTokenState(view);
-
   if (not view.front().isKeyWord())
     return std::nullopt;
 

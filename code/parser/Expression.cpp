@@ -13,7 +13,6 @@ Parser::tryParseExpression(std::span<lexer::Token> tokens) {
 
   llvm::errs() << "tryParseExpression"
                << "\n";
-  printToken(tokens.front());
 
   std::optional<std::shared_ptr<ast::Expression>> woBlock =
       tryParseExpressionWithoutBlock(view);

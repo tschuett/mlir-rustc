@@ -1,6 +1,5 @@
-#include "Statements.h"
-
 #include "AST/Statements.h"
+
 #include "Parser/Parser.h"
 
 #include <llvm/Support/raw_ostream.h>
@@ -15,8 +14,8 @@ Parser::tryParseStatements(std::span<lexer::Token> tokens) {
   Statements stmts = {tokens.front().getLocation()};
   std::span<lexer::Token> view = tokens;
 
-//  llvm::errs() << "tryParseStatements: "
-//               << "\n";
+  llvm::errs() << "tryParseStatements: "
+               << "\n";
 
   if (view.front().getKind() == TokenKind::Semi) {
     stmts.setOnlySemi();
@@ -27,13 +26,17 @@ Parser::tryParseStatements(std::span<lexer::Token> tokens) {
       tryParseExpressionWithoutBlock(view);
 
   if (woBlock) {
-//    llvm::errs() << "tryParseStatements: found woBlock TRAILING"
-//                 << "\n";
+    llvm::errs() << "tryParseStatements: found woBlock TRAILING"
+                 << "\n";
     stmts.setTrailing(*woBlock);
     return std::make_shared<ast::Statements>(stmts);
   }
+  llvm::errs() << "tryParseStatement: while loop"
+               << "\n";
 
   while (view.size() > 1) {
+    llvm::errs() << "tryParseStatement: "
+                 << "\n";
     std::optional<std::shared_ptr<ast::Statement>> stmt =
         tryParseStatement(view);
     if (stmt) {
@@ -50,9 +53,6 @@ Parser::tryParseStatements(std::span<lexer::Token> tokens) {
   }
 
   return std::make_shared<ast::Statements>(stmts);
-
-  // FIXME
-  return std::nullopt;
 }
 
 } // namespace rust_compiler::parser

@@ -1,5 +1,3 @@
-#include "ExpressionWithoutBlock.h"
-
 #include "AST/Expression.h"
 #include "LiteralExpression.h"
 #include "Parser/Parser.h"
@@ -13,8 +11,8 @@ std::optional<std::shared_ptr<ast::Expression>>
 Parser::tryParseExpressionWithoutBlock(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
-//  llvm::errs() << "tryParseExpressionWithoutBlock"
-//               << "\n";
+  llvm::errs() << "tryParseExpressionWithoutBlock"
+               << "\n";
 
   std::optional<std::shared_ptr<ast::Expression>> ret =
       tryParseReturnExpression(view);
@@ -29,6 +27,7 @@ Parser::tryParseExpressionWithoutBlock(std::span<lexer::Token> tokens) {
     return *lit;
   }
 
+  // FIXME
   std::optional<std::shared_ptr<ast::Expression>> op =
       tryParseOperatorExpression(view);
   if (op) {

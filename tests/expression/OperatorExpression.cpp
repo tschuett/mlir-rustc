@@ -1,7 +1,6 @@
 #include "AST/OperatorExpression.h"
 
 #include "Lexer/Lexer.h"
-#include "OperatorExpression.h"
 #include "Parser/Parser.h"
 #include "gtest/gtest.h"
 

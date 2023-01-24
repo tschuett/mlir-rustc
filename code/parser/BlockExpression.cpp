@@ -17,8 +17,8 @@ Parser::tryParseBlockExpression(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
   BlockExpression block = {tokens.front().getLocation()};
 
-//  llvm::errs() << "tryParseBlockExpression"
-//               << "\n";
+  llvm::errs() << "tryParseBlockExpression"
+               << "\n";
 
   if (view.front().getKind() != TokenKind::BraceOpen)
     return std::nullopt;

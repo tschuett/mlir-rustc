@@ -8,6 +8,7 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
 
@@ -21,6 +22,9 @@ Parser::tryParseLetStatement(std::span<lexer::Token> tokens) {
 
   // OuterAttributes
   // Else Block
+
+  llvm::errs() << "tryParseLetStatement"
+               << "\n";
 
   LetStatement let = {tokens.front().getLocation()};
 
