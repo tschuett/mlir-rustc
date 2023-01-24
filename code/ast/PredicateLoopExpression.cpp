@@ -19,6 +19,14 @@ size_t PredicateLoopExpression::getTokens() {
   return 1 + count;
 }
 
+std::shared_ptr<ast::Expression> PredicateLoopExpression::getCondition() const {
+  return condition;
+}
+
+std::shared_ptr<ast::BlockExpression> PredicateLoopExpression::getBody() const {
+  return block;
+}
+
 std::shared_ptr<ast::types::Type> PredicateLoopExpression::getType() {
   assert(false);
 }
