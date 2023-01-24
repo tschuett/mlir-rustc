@@ -1,4 +1,4 @@
-#include "OperatorExpression.h"
+#include "AST/OperatorExpression.h"
 
 #include "Parser/Parser.h"
 
@@ -20,6 +20,13 @@ Parser::tryParseOperatorExpression(std::span<lexer::Token> tokens) {
 
   if (compi) {
     return *compi;
+  }
+
+  std::optional<std::shared_ptr<ast::Expression>> assi =
+      tryParseAssignmentExpression(view);
+
+  if (assi) {
+    return *assi;
   }
 
   return std::nullopt;

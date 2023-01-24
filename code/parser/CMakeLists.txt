@@ -56,6 +56,7 @@ add_library(parser
            PredicateLoopExpression.cpp
            LetStatement.cpp
            ComparisonExpression.cpp
+           AssignmentExpression.cpp
            )
 
 

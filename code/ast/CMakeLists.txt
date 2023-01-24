@@ -43,6 +43,7 @@ add_library(ast
            LetStatement.cpp
            LetStatementParam.cpp
            PredicateLoopExpression.cpp
+           AssignmentExpression.cpp
            )
 
 
