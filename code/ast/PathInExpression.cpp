@@ -6,6 +6,8 @@
 
 namespace rust_compiler::ast {
 
+bool PathInExpression::containsBreakExpression() { return false; }
+
 size_t PathInExpression::getTokens() {
   size_t count = 0;
 

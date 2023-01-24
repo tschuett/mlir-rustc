@@ -21,7 +21,7 @@ public:
 
   StatementKind getKind() const { return kind; }
 
-  bool containsBreakExpression();
+  virtual bool containsBreakExpression() = 0;
 };
 
 } // namespace rust_compiler::ast

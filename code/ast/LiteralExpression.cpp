@@ -8,6 +8,8 @@ using namespace rust_compiler::ast::types;
 
 namespace rust_compiler::ast {
 
+bool LiteralExpression::containsBreakExpression() { return false; }
+
 size_t LiteralExpression::getTokens() {
 
   if (kind == LiteralExpressionKind::IntegerLiteral)
