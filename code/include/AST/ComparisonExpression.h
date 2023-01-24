@@ -16,7 +16,7 @@ enum class ComparisonExpressionKind {
   LessThanOrEqualTo
 };
 
-class ComparisonExpression : public OperatorExpression {
+class ComparisonExpression final : public OperatorExpression {
   ComparisonExpressionKind kind;
   std::shared_ptr<Expression> left;
   std::shared_ptr<Expression> right;
@@ -34,6 +34,8 @@ public:
   std::shared_ptr<Expression> getRHS() const { return right; };
 
   std::shared_ptr<Expression> getLHS() const { return left; };
+
+  bool containsBreakExpression() override;
 
   size_t getTokens() override;
 

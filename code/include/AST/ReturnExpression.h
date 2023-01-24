@@ -4,7 +4,7 @@
 
 namespace rust_compiler::ast {
 
-class ReturnExpression : public ExpressionWithoutBlock {
+class ReturnExpression final : public ExpressionWithoutBlock {
   std::shared_ptr<ast::Expression> expr;
 
 public:
@@ -18,6 +18,8 @@ public:
                                ExpressionWithoutBlockKind::ReturnExpression) {}
 
   std::shared_ptr<ast::Expression> getExpression();
+
+    bool containsBreakExpression() override;
 
   size_t getTokens() override;
 

@@ -20,7 +20,7 @@ enum class LiteralExpressionKind {
   False
 };
 
-class LiteralExpression : public ExpressionWithoutBlock {
+class LiteralExpression final : public ExpressionWithoutBlock {
   LiteralExpressionKind kind;
   std::string value;
 
@@ -34,6 +34,8 @@ public:
   LiteralExpressionKind getLiteralKind() const { return kind; }
 
   size_t getTokens() override;
+
+  bool containsBreakExpression() override;
 
   std::shared_ptr<ast::types::Type> getType() override;
 

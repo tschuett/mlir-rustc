@@ -1,17 +1,18 @@
 #pragma once
 
 #include "AST/Expression.h"
+#include "AST/Patterns/Pattern.h"
 #include "AST/Scrutinee.h"
 #include "Location.h"
-#include "AST/Patterns/Pattern.h"
 
 namespace rust_compiler::ast {
 
-class IfLetExpression : public ExpressionWithBlock {
+class IfLetExpression final : public ExpressionWithBlock {
   std::shared_ptr<Scrutinee> scrutinee;
   std::shared_ptr<ast::patterns::Pattern> pattern;
   std::shared_ptr<ast::Expression> block;
   std::shared_ptr<ast::Expression> trailing;
+
 public:
   IfLetExpression(Location loc)
       : ExpressionWithBlock(loc, ExpressionWithBlockKind::IfLetExpression) {}
@@ -23,6 +24,8 @@ public:
   void setBlock(std::shared_ptr<ast::Expression> block);
 
   void setTrailing(std::shared_ptr<ast::Expression> block);
+
+  bool containsBreakExpression() override;
 
   size_t getTokens() override;
 

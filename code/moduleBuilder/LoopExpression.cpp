@@ -12,7 +12,10 @@ mlir::Value ModuleBuilder::emitLoopExpression(
 
   switch (loopExpr->getLoopExpressionKind()) {
   case LoopExpressionKind::InfiniteLoopExpression: {
-    break;
+    std::shared_ptr<InfiniteLoopExpression> loop =
+        std::static_pointer_cast<InfiniteLoopExpression>(loopExpr);
+
+    return emitInfiniteLoopExpression(loop);
   }
   case LoopExpressionKind::PredicateLoopExpression: {
     std::shared_ptr<PredicateLoopExpression> loop =

@@ -7,7 +7,7 @@
 
 namespace rust_compiler::ast {
 
-class PredicateLoopExpression : public LoopExpression {
+class PredicateLoopExpression final : public LoopExpression {
   std::shared_ptr<ast::Expression> condition;
   std::shared_ptr<ast::BlockExpression> block;
 
@@ -20,6 +20,8 @@ public:
 
   std::shared_ptr<ast::Expression> getCondition() const;
   std::shared_ptr<ast::BlockExpression> getBody() const;
+
+      bool containsBreakExpression() override;
 
   size_t getTokens() override;
   std::shared_ptr<ast::types::Type> getType() override;

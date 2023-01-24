@@ -4,7 +4,7 @@
 
 namespace rust_compiler::ast {
 
-class AssignmentExpression : public OperatorExpression {
+class AssignmentExpression final : public OperatorExpression {
   std::shared_ptr<Expression> left;
   std::shared_ptr<Expression> right;
 
@@ -14,6 +14,8 @@ public:
 
   void setLeft(std::shared_ptr<Expression> left);
   void setRight(std::shared_ptr<Expression> right);
+
+    bool containsBreakExpression() override;
 
   std::shared_ptr<ast::types::Type> getType() override;
   size_t getTokens() override;

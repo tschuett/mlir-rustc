@@ -45,6 +45,7 @@ add_library(ast
            PredicateLoopExpression.cpp
            AssignmentExpression.cpp
            ComparisonExpression.cpp
+           InfiniteLoopExpression.cpp
            )
 
 

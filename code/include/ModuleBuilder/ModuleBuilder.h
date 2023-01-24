@@ -9,6 +9,7 @@
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/IfExpression.h"
+#include "AST/InfiniteLoopExpression.h"
 #include "AST/ItemDeclaration.h"
 #include "AST/LetStatement.h"
 #include "AST/LiteralExpression.h"
@@ -145,6 +146,9 @@ private:
       emitAssignmentExpression(std::shared_ptr<ast::AssignmentExpression>);
 
   mlir::Value emitNegationExpression(std::shared_ptr<ast::NegationExpression>);
+
+  mlir::Value
+      emitInfiniteLoopExpression(std::shared_ptr<ast::InfiniteLoopExpression>);
 };
 
 } // namespace rust_compiler

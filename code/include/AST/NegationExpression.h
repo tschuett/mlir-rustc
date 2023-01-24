@@ -7,7 +7,7 @@
 
 namespace rust_compiler::ast {
 
-class NegationExpression : public OperatorExpression {
+class NegationExpression final : public OperatorExpression {
   bool notToken = false;
   bool minusToken = false;
   std::shared_ptr<Expression> right;
@@ -19,6 +19,8 @@ public:
   void setRight(std::shared_ptr<Expression>);
   void setMinus();
   void setNot();
+
+  bool containsBreakExpression() override;
 
   size_t getTokens() override;
   std::shared_ptr<ast::types::Type> getType() override;

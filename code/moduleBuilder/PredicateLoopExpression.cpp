@@ -20,8 +20,8 @@ mlir::Value ModuleBuilder::emitPredicateLoopExpression(
   builder.create<cf::BranchOp>(getLocation(loop->getBody()->getLocation()),
                                entryBlock);
   builder.restoreInsertionPoint(condBranchIP);
-  builder.create<cf::CondBranchOp>(
-      getLocation(loop->getCondition()->getLocation()), cond, bodyBlock, saveIP);
+//  builder.create<cf::CondBranchOp>(
+//      getLocation(loop->getCondition()->getLocation()), cond, bodyBlock, saveIP);
   builder.restoreInsertionPoint(saveIP);
 
   assert(false);

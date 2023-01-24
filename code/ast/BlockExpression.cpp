@@ -10,6 +10,10 @@ void BlockExpression::setStatements(std::shared_ptr<Statements> _stmts) {
   stmts = _stmts;
 }
 
+bool BlockExpression::containsBreakExpression() {
+  return stmts->containsBreakExpression();
+}
+
 size_t BlockExpression::getTokens() {
   size_t count = 0;
 

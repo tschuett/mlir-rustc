@@ -5,7 +5,7 @@
 
 namespace rust_compiler::ast {
 
-class PathInExpression : public PathExpression {
+class PathInExpression final : public PathExpression {
   std::vector<PathExprSegment> segs;
   uint32_t doubleColons = 0;
 
@@ -17,6 +17,8 @@ public:
   void addDoubleColon() { ++doubleColons; };
 
   size_t getTokens() override;
+
+  bool containsBreakExpression() override;
 
   std::shared_ptr<ast::types::Type> getType() override;
 

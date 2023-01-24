@@ -4,7 +4,7 @@
 
 namespace rust_compiler::ast {
 
-class BorrowExpression : public OperatorExpression {
+class BorrowExpression final : public OperatorExpression {
   bool isMut = false;
   std::shared_ptr<Expression> expr;
 
@@ -17,6 +17,8 @@ public:
 
   std::shared_ptr<Expression> getExpression() const;
   bool isMutable() const;
+
+    bool containsBreakExpression() override;
 
   size_t getTokens() override;
   std::shared_ptr<ast::types::Type> getType() override;

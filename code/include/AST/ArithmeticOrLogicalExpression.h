@@ -20,7 +20,7 @@ enum class ArithmeticOrLogicalExpressionKind {
   RightShift
 };
 
-class ArithmeticOrLogicalExpression : public OperatorExpression {
+class ArithmeticOrLogicalExpression final : public OperatorExpression {
   ArithmeticOrLogicalExpressionKind kind;
   std::shared_ptr<Expression> left;
   std::shared_ptr<Expression> right;
@@ -39,6 +39,8 @@ public:
   std::shared_ptr<Expression> getRHS() const { return right; };
 
   std::shared_ptr<Expression> getLHS() const { return left; };
+
+  bool containsBreakExpression() override;
 
   size_t getTokens() override {
     return left->getTokens() + 1 + right->getTokens();

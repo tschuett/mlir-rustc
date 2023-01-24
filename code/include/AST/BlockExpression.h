@@ -21,6 +21,7 @@ public:
   void setStatements(std::shared_ptr<Statements> stmts);
 
   std::shared_ptr<Statements> getExpressions();
+  bool containsBreakExpression()  override;
 
   size_t getTokens() override;
 

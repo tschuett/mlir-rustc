@@ -18,6 +18,14 @@ std::shared_ptr<ast::Expression> IfExpression::getBlock() const {
   return block;
 }
 
+bool IfExpression::containsBreakExpression() {
+  if (block->containsBreakExpression())
+    return true;
+  if (trailing->containsBreakExpression())
+    return true;
+  return false;
+}
+
 void IfExpression::setTrailing(std::shared_ptr<ast::Expression> _trailing) {
   trailing = _trailing;
 }

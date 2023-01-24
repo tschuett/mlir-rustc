@@ -14,6 +14,14 @@ size_t AssignmentExpression::getTokens() {
   return left->getTokens() + 1 + right->getTokens();
 }
 
+bool AssignmentExpression::containsBreakExpression() {
+  if (left->containsBreakExpression())
+    return true;
+  if (right->containsBreakExpression())
+    return true;
+  return false;
+}
+
 std::shared_ptr<ast::types::Type> AssignmentExpression::getType() {
   assert(false);
 }

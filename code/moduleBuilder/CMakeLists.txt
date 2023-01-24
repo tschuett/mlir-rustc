@@ -18,6 +18,7 @@ add_library(modulebuilder
            LetStatement.cpp
            LoopExpression.cpp
            PredicateLoopExpression.cpp
+           InfiniteLoopExpression.cpp
            )
 
 

@@ -20,6 +20,8 @@ public:
       : Node(location), kind(kind) {}
 
   StatementKind getKind() const { return kind; }
+
+  bool containsBreakExpression();
 };
 
 } // namespace rust_compiler::ast
