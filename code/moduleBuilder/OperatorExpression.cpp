@@ -1,4 +1,5 @@
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/AssignmentExpression.h"
 #include "Mir/MirDialect.h"
 #include "Mir/MirOps.h"
 #include "ModuleBuilder/ModuleBuilder.h"
@@ -16,9 +17,23 @@ mlir::Value ModuleBuilder::emitOperatorExpression(
     std::shared_ptr<ast::OperatorExpression> opr) {
 
   switch (opr->getKind()) {
+  case OperatorExpressionKind::BorrowExpression: {
+    return emitBorrowExpression(static_pointer_cast<BorrowExpression>(opr));
+  }
+  case OperatorExpressionKind::ComparisonExpression: {
+    return emitComparisonExpression(
+        static_pointer_cast<ComparisonExpression>(opr));
+  }
+  case OperatorExpressionKind::NegationExpression: {
+    return emitNegationExpression(static_pointer_cast<NegationExpression>(opr));
+  }
   case OperatorExpressionKind::ArithmeticOrLogicalExpression: {
     return emitArithmeticOrLogicalExpression(
         static_pointer_cast<ArithmeticOrLogicalExpression>(opr));
+  }
+  case OperatorExpressionKind::AssignmentExpression: {
+    return emitAssignmentExpression(
+        static_pointer_cast<AssignmentExpression>(opr));
   }
   default: {
     assert(false);
@@ -26,6 +41,39 @@ mlir::Value ModuleBuilder::emitOperatorExpression(
   }
 
   return nullptr;
+}
+
+mlir::Value ModuleBuilder::emitBorrowExpression(
+    std::shared_ptr<ast::BorrowExpression> borrow) {
+  mlir::Value rhs = emitExpression(borrow->getExpression());
+  if (borrow->isMutable()) {
+    return builder.create<Mir::MutBorrowOp>(
+        getLocation(borrow->getLocation()),
+        mlir::TypeRange(builder.getI64Type()), rhs);
+  } else {
+    return builder.create<Mir::BorrowOp>(getLocation(borrow->getLocation()),
+                                         mlir::TypeRange(builder.getI64Type()),
+                                         rhs);
+  }
+  // FIXME: types
+}
+
+mlir::Value ModuleBuilder::emitComparisonExpression(
+    std::shared_ptr<ast::ComparisonExpression> compare) {
+  mlir::Value rhs = emitExpression(compare->getRHS());
+  mlir::Value lhs = emitExpression(compare->getLHS());
+
+  assert(false);
+}
+
+mlir::Value ModuleBuilder::emitAssignmentExpression(
+    std::shared_ptr<ast::AssignmentExpression>) {
+  assert(false);
+}
+
+mlir::Value ModuleBuilder::emitNegationExpression(
+    std::shared_ptr<ast::NegationExpression>) {
+  assert(false);
 }
 
 mlir::Value ModuleBuilder::emitArithmeticOrLogicalExpression(

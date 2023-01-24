@@ -24,6 +24,8 @@ window in `value`.
   }];
 
   let arguments = (ins AnyType:$rhs);
+
+  let results = (outs AnyType:$output);
 }
 
 def MutBorrowOp : Mir_Op<"mutborrow", [Pure, BorrowOpInterface]> {
@@ -35,6 +37,8 @@ window in `value`. NoMemoryEffect
   }];
 
   let arguments = (ins AnyType:$rhs);
+
+  let results = (outs AnyType:$output);
 }
 
 def AwaitOp : Mir_Op<"await", []> {
@@ -46,6 +50,7 @@ window in `value`. NoMemoryEffect
   }];
 
   let arguments = (ins AnyType:$lhs);
+
 }
 
 def ErrorPropagationOp : Mir_Op<"question_mark", []> {

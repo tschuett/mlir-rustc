@@ -2,7 +2,10 @@
 
 #include "ADT/ScopedHashTable.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/AssignmentExpression.h"
 #include "AST/BlockExpression.h"
+#include "AST/BorrowExpression.h"
+#include "AST/ComparisonExpression.h"
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/IfExpression.h"
@@ -10,13 +13,13 @@
 #include "AST/LetStatement.h"
 #include "AST/LiteralExpression.h"
 #include "AST/Module.h"
+#include "AST/NegationExpression.h"
 #include "AST/PathExpression.h"
 #include "AST/PathInExpression.h"
 #include "AST/PredicateLoopExpression.h"
 #include "AST/QualifiedPathInExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Statement.h"
-#include "AST/LetStatement.h"
 #include "AST/VariableDeclaration.h"
 #include "Mir/MirDialect.h"
 #include "ModuleBuilder/Target.h"
@@ -131,8 +134,17 @@ private:
   mlir::Value emitLetStatement(std::shared_ptr<ast::LetStatement> letExpr);
   mlir::Value emitLoopExpression(std::shared_ptr<ast::LoopExpression> loopExpr);
 
-  mlir::Value  emitPredicateLoopExpression(std::shared_ptr<ast::PredicateLoopExpression>);
+  mlir::Value emitPredicateLoopExpression(
+      std::shared_ptr<ast::PredicateLoopExpression>);
 
+  mlir::Value emitBorrowExpression(std::shared_ptr<ast::BorrowExpression>);
+  mlir::Value
+      emitComparisonExpression(std::shared_ptr<ast::ComparisonExpression>);
+
+  mlir::Value
+      emitAssignmentExpression(std::shared_ptr<ast::AssignmentExpression>);
+
+  mlir::Value emitNegationExpression(std::shared_ptr<ast::NegationExpression>);
 };
 
 } // namespace rust_compiler

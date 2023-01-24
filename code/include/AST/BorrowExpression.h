@@ -15,6 +15,9 @@ public:
   void setExpression(std::shared_ptr<Expression> expr);
   void setMut();
 
+  std::shared_ptr<Expression> getExpression() const;
+  bool isMutable() const;
+
   size_t getTokens() override;
   std::shared_ptr<ast::types::Type> getType() override;
 };

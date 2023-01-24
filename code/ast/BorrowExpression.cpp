@@ -20,4 +20,10 @@ std::shared_ptr<ast::types::Type> BorrowExpression::getType() {
   return expr->getType();
 }
 
+std::shared_ptr<Expression> BorrowExpression::getExpression() const {
+  return expr;
+}
+
+bool BorrowExpression::isMutable() const { return isMut; }
+
 } // namespace rust_compiler::ast
