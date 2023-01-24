@@ -36,8 +36,6 @@ std::optional<std::shared_ptr<ast::Expression>>
 Parser::tryParseComparisonExpression(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
-  assert(false);
-
   std::optional<std::shared_ptr<ast::Expression>> left =
       tryParseExpression(view);
 

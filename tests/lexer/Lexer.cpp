@@ -185,3 +185,31 @@ TEST(LexerTest, CheckLoop) {
 
   EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::Keyword);
 };
+
+TEST(LexerTest, CheckAnd) {
+  std::string text = "&";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  ts.print(10);
+
+  size_t expectedLendth = 1;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::And);
+};
+
+TEST(LexerTest, CheckAndAnd) {
+  std::string text = "&& && ";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  ts.print(10);
+
+  size_t expectedLendth = 2;
+
+  EXPECT_EQ(ts.getLength(), expectedLendth);
+
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::AndAnd);
+};

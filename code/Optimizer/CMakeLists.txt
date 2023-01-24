@@ -7,6 +7,7 @@ add_library(optimizer
            SummaryWriterPass.cpp
            GVN.cpp
            DeadCodeElimination.cpp
+           ComputeKnownBits.cpp
            )
 
 

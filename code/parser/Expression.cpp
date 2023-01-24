@@ -1,5 +1,3 @@
-#include "Expression.h"
-
 #include "Parser/Parser.h"
 
 #include <llvm/Support/raw_ostream.h>
@@ -13,8 +11,9 @@ std::optional<std::shared_ptr<ast::Expression>>
 Parser::tryParseExpression(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
-  llvm::errs() << "tryParseExpression: " << Token2String(view.front().getKind())
+  llvm::errs() << "tryParseExpression"
                << "\n";
+  printToken(tokens.front());
 
   std::optional<std::shared_ptr<ast::Expression>> woBlock =
       tryParseExpressionWithoutBlock(view);

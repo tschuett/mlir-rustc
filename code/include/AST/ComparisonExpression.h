@@ -35,9 +35,7 @@ public:
 
   std::shared_ptr<Expression> getLHS() const { return left; };
 
-  size_t getTokens() override {
-    return left->getTokens() + 1 + right->getTokens();
-  }
+  size_t getTokens() override;
 
   std::shared_ptr<ast::types::Type> getType() override;
 };

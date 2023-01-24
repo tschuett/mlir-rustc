@@ -57,6 +57,7 @@ add_library(parser
            LetStatement.cpp
            ComparisonExpression.cpp
            AssignmentExpression.cpp
+           PrintToken.cpp
            )
 
 

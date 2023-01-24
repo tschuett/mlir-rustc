@@ -18,7 +18,7 @@ TEST(LetStatementTest, CheckLetStatement1) {
   Parser parser = {ts, ""};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
-      parser.tryParseLetStatement(ts.getAsView());
+      parser.tryParseStatement(ts.getAsView());
 
   EXPECT_TRUE(loop.has_value());
 
@@ -38,7 +38,7 @@ TEST(LetStatementTest, CheckLetStatement2) {
   Parser parser = {ts, ""};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
-      parser.tryParseLetStatement(ts.getAsView());
+      parser.tryParseStatement(ts.getAsView());
 
   EXPECT_TRUE(loop.has_value());
 
@@ -58,7 +58,7 @@ TEST(LetStatementTest, CheckLetStatement3) {
   Parser parser = {ts, ""};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
-      parser.tryParseLetStatement(ts.getAsView());
+      parser.tryParseStatement(ts.getAsView());
 
   EXPECT_TRUE(loop.has_value());
 
@@ -78,7 +78,7 @@ TEST(LetStatementTest, CheckLetStatement4) {
   Parser parser = {ts, ""};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
-      parser.tryParseLetStatement(ts.getAsView());
+      parser.tryParseStatement(ts.getAsView());
 
   EXPECT_TRUE(loop.has_value());
 

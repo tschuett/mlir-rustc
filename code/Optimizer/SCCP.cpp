@@ -1,4 +1,5 @@
 #include "Mir/MirOps.h"
+#include "Optimizer/ComputeKnownBits.h"
 #include "Optimizer/Passes.h"
 
 #include <mlir/Dialect/Func/IR/FuncOps.h>
@@ -13,8 +14,7 @@ namespace rust_compiler::optimizer {
 
 namespace {
 class SCCPPass
-    : public rust_compiler::optimizer::impl::SCCPPassBase<
-          SCCPPassPass> {
+    : public rust_compiler::optimizer::impl::SCCPPassBase<SCCPPassPass> {
 public:
   void runOnOperation() override;
 };
