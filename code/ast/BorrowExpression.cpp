@@ -2,6 +2,8 @@
 
 namespace rust_compiler::ast {
 
+bool BorrowExpression::containsBreakExpression() { return false; }
+
 size_t BorrowExpression::getTokens() {
 
   if (isMut)

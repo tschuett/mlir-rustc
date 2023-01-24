@@ -19,8 +19,15 @@ void IfLetExpression::setTrailing(std::shared_ptr<ast::Expression> _trailing) {
   trailing = _trailing;
 }
 
-size_t IfLetExpression::getTokens() {}
+bool IfLetExpression::containsBreakExpression() {
+  if (block->containsBreakExpression())
+    return true;
+  if (trailing)
+    return trailing->containsBreakExpression();
+}
 
-std::shared_ptr<ast::types::Type> IfLetExpression::getType() {}
+size_t IfLetExpression::getTokens() { assert(false); }
+
+std::shared_ptr<ast::types::Type> IfLetExpression::getType() { assert(false); }
 
 } // namespace rust_compiler::ast

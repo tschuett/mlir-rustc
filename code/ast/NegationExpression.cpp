@@ -4,6 +4,8 @@
 
 namespace rust_compiler::ast {
 
+bool NegationExpression::containsBreakExpression() { return false; }
+
 size_t NegationExpression::getTokens() {
   size_t count = 0;
 

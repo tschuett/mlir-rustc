@@ -5,6 +5,8 @@
 
 namespace rust_compiler::ast {
 
+bool ReturnExpression::containsBreakExpression() { return false; }
+
 size_t ReturnExpression::getTokens() {
   size_t count = 1;
 
@@ -32,6 +34,9 @@ std::shared_ptr<ast::types::Type> ReturnExpression::getType() {
 
 } // namespace rust_compiler::ast
 
-
-
-//For scientific articles surprise is great. You managed to do that? Wow. For performance, it is opposite. You don't want to surprise MPI. MPI: You want to me do what? This is the story of persistent collectives. An MPI_Start does not surprise MPI anymore. MPI: I knew that was coming. Maybe you can achieve the same for RMA. Register Ops at window generation. Then you can spend the rest of the day with MPI_RMA_Start. MPI: I knew that this was coming.
+// For scientific articles surprise is great. You managed to do that? Wow. For
+// performance, it is opposite. You don't want to surprise MPI. MPI: You want to
+// me do what? This is the story of persistent collectives. An MPI_Start does
+// not surprise MPI anymore. MPI: I knew that was coming. Maybe you can achieve
+// the same for RMA. Register Ops at window generation. Then you can spend the
+// rest of the day with MPI_RMA_Start. MPI: I knew that this was coming.

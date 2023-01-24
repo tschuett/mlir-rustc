@@ -2,6 +2,10 @@
 
 namespace rust_compiler::ast {
 
+bool PredicateLoopExpression::containsBreakExpression() {
+  return block->containsBreakExpression();
+}
+
 void PredicateLoopExpression::setCondition(
     std::shared_ptr<ast::Expression> _cond) {
   condition = _cond;
