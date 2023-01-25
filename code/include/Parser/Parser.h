@@ -231,7 +231,10 @@ public:
   std::optional<std::shared_ptr<ast::Expression>>
       tryParseAssignmentExpression(std::span<lexer::Token>);
 
-  void printToken(lexer::Token&);
+  std::optional<std::shared_ptr<ast::Expression>>
+      tryParseAwaitExpression(std::span<lexer::Token>);
+
+  void printToken(lexer::Token &);
 };
 
 } // namespace rust_compiler::parser

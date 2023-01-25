@@ -58,14 +58,6 @@ mlir::Value ModuleBuilder::emitBorrowExpression(
   // FIXME: types
 }
 
-mlir::Value ModuleBuilder::emitComparisonExpression(
-    std::shared_ptr<ast::ComparisonExpression> compare) {
-  mlir::Value rhs = emitExpression(compare->getRHS());
-  mlir::Value lhs = emitExpression(compare->getLHS());
-
-  assert(false);
-}
-
 mlir::Value ModuleBuilder::emitAssignmentExpression(
     std::shared_ptr<ast::AssignmentExpression>) {
   assert(false);

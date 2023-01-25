@@ -58,6 +58,7 @@ add_library(parser
            ComparisonExpression.cpp
            AssignmentExpression.cpp
            PrintToken.cpp
+           AwaitExpression.cpp
            )
 
 

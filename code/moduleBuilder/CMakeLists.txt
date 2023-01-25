@@ -20,6 +20,7 @@ add_library(modulebuilder
            PredicateLoopExpression.cpp
            InfiniteLoopExpression.cpp
            AwaitExpression.cpp
+           ComparisonExpression.cpp
            )
 
 
