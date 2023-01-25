@@ -38,6 +38,7 @@
 #include <mlir/IR/Verifier.h>
 #include <string>
 #include <string_view>
+#include <stack>
 
 namespace rust_compiler {
 
@@ -49,6 +50,7 @@ class ModuleBuilder {
   mlir::ModuleOp theModule;
   llvm::remarks::YAMLRemarkSerializer serializer;
   Target *target;
+  std::stack<mlir::Block*> breakPoints;
 
   adt::ScopedHashTable<std::string,
                        std::pair<mlir::Value, ast::VariableDeclaration *>>
