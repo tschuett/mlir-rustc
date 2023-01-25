@@ -19,7 +19,7 @@ std::optional<mlir::Value> ModuleBuilder::emitStatement(
     return std::nullopt;
   }
   case ast::StatementKind::LetStatement: {
-    buildLetStatement(
+    emitLetStatement(
         static_pointer_cast<rust_compiler::ast::LetStatement>(stmt));
     return std::nullopt;
   }

@@ -1,7 +1,6 @@
 #include "AST/LetStatementParam.h"
 #include "Mir/MirOps.h"
 #include "ModuleBuilder/ModuleBuilder.h"
-#include "mlir/IR/BuiltinTypes.h"
 
 #include <mlir/Dialect/MemRef/IR/MemRef.h>
 #include <mlir/IR/BuiltinTypes.h>
@@ -11,7 +10,7 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler {
 
-void ModuleBuilder::buildLetStatement(
+void ModuleBuilder::emitLetStatement(
     std::shared_ptr<ast::LetStatement> letStmt) {
   for (LetStatementParam &lit : letStmt->getVarDecls()) {
 
@@ -21,6 +20,9 @@ void ModuleBuilder::buildLetStatement(
         getLocation(letStmt->getLocation()), mem);
 
     symbolTable.insert(lit.getName(), {alloca, &lit});
+
+    builder.create<Mir::VarDeclarationOp>(getLocation(letStmt->getLocation()),
+                                          builder.getI64Type(), alloca);
   }
 }
 

@@ -66,6 +66,23 @@ window in `value`. NoMemoryEffect
 }
 
 //===----------------------------------------------------------------------===//
+// VarDeclaration
+//===----------------------------------------------------------------------===//
+
+def VarDeclarationOp : Mir_Op<"vardeclare", []> {
+  let summary = "Auxilliary  information for variable declarations.";
+
+  let description = [{
+  Based on the fir.declare concept. It takes as input an alloc and provides
+  additional information.
+  }];
+
+  let arguments = (ins AnyType:$lhs);
+
+  let results = (outs AnyType:$output);
+}
+
+//===----------------------------------------------------------------------===//
 // AddIOp
 //===----------------------------------------------------------------------===//
 

@@ -84,7 +84,7 @@ private:
 
   std::optional<mlir::Value>
   emitStatement(std::shared_ptr<ast::Statement> stmt);
-  void buildLetStatement(std::shared_ptr<ast::LetStatement> letStmt);
+  void emitLetStatement(std::shared_ptr<ast::LetStatement> letStmt);
 
   std::optional<mlir::Value>
   emitStatements(std::shared_ptr<ast::Statements> stmts);
@@ -135,7 +135,6 @@ private:
 
   mlir::Value emitIfExpression(std::shared_ptr<ast::IfExpression> ifExpr);
 
-  mlir::Value emitLetStatement(std::shared_ptr<ast::LetStatement> letExpr);
   mlir::Value emitLoopExpression(std::shared_ptr<ast::LoopExpression> loopExpr);
 
   mlir::Value emitPredicateLoopExpression(
