@@ -28,6 +28,10 @@ mlir::Value ModuleBuilder::emitExpressionWithoutBlock(
     return emitOperatorExpression(
         std::static_pointer_cast<ast::OperatorExpression>(expr));
   }
+  case ast::ExpressionWithoutBlockKind::AwaitExpression: {
+    return emitAwaitExpression(
+        std::static_pointer_cast<ast::AwaitExpression>(expr));
+  }
   case ast::ExpressionWithoutBlockKind::PathExpression: {
     return emitPathExpression(
         std::static_pointer_cast<ast::PathExpression>(expr));

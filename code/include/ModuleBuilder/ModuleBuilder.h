@@ -25,6 +25,7 @@
 #include "Mir/MirDialect.h"
 #include "ModuleBuilder/Target.h"
 #include "Target.h"
+#include "AST/AwaitExpression.h"
 
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
 #include <llvm/Support/raw_ostream.h>
@@ -151,6 +152,8 @@ private:
 
   mlir::Value
       emitInfiniteLoopExpression(std::shared_ptr<ast::InfiniteLoopExpression>);
+  mlir::Value
+      emitAwaitExpression(std::shared_ptr<ast::AwaitExpression>);
 };
 
 } // namespace rust_compiler

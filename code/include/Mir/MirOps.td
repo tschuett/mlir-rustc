@@ -51,6 +51,7 @@ window in `value`. NoMemoryEffect
 
   let arguments = (ins AnyType:$lhs);
 
+  let results = (outs AnyType:$output);
 }
 
 def ErrorPropagationOp : Mir_Op<"question_mark", []> {
