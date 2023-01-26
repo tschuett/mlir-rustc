@@ -22,7 +22,8 @@ void ModuleBuilder::emitLetStatement(
     symbolTable.insert(lit.getName(), {alloca, &lit});
 
     builder.create<Mir::VarDeclarationOp>(getLocation(letStmt->getLocation()),
-                                          builder.getI64Type(), alloca);
+                                          builder.getI64Type(), alloca,
+                                          builder.getStringAttr(lit.getName()));
   }
 }
 

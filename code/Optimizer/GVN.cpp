@@ -22,7 +22,7 @@ public:
 } // namespace
 
 void GVNPass::runOnOperation() {
-  mlir::func::FuncOp module = getOperation();
+  //  mlir::func::FuncOp module = getOperation();
   //module.walk([&](mlir::func::FuncOp f) {
   // isAsync() -> rewrite
    // if (isa<rust_compiler::Mir::AwaitOp>(op)) {

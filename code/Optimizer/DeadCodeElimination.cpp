@@ -23,7 +23,7 @@ public:
 } // namespace
 
 void DeadCodeEliminationPass::runOnOperation() {
-  mlir::func::FuncOp f = getOperation();
+  //  mlir::func::FuncOp f = getOperation();
   // module.walk([&](mlir::func::FuncOp f) {
   //  isAsync() -> rewrite
   //  if (isa<rust_compiler::Mir::AwaitOp>(op)) {
