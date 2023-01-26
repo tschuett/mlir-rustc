@@ -1,0 +1,48 @@
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{das}[2013/01/13 DAS Package]
+
+\RequirePackage{xstring}
+\RequirePackage{catchfile}
+
+\newcommand{\notes}[1]{}
+
+\newcommand{\ddraft}{}
+
+%% 'draft option
+\DeclareOption{draft}{
+%--- Comments ON
+\renewcommand{\notes}[1]{\noindent{\color{red}\textbf{\footnotesize #1}}}
+%--- Comments OFF
+
+\overfullrule=2mm
+
+\renewcommand{\ddraft}{\textbf{Note: this is an early draft. It's known to be incomplet and
+  incorrekt, and it has lots of b\kern-1.2pta\kern1ptd\hspace{1.5em}for\kern-3ptmat\kern0.6ptti\raise0.15ex\hbox{n}g.}}
+
+}
+
+\ProcessOptions\relax
+
+\newcommand{\fs}[1]{{\notes{\color{blue}{[FS: #1]}}}}
+\newcommand{\ts}[1]{{\notes{\color{cyan}{[TS: #1]}}}}
+\newcommand{\js}[1]{{\notes{\color{orange!75!black}[JS: #1]}}}
+
+% apple git ...
+%% \CatchFileDef{\HEAD}{../.git/refs/heads/master}{}
+%% \newcommand{\gitrevision}{%
+%%   SVN~\StrLeft{\HEAD}{7}r%
+%% }
+
+\newcommand{\figref}[1]{\figurename~\ref{#1}}
+\newcommand{\algoref}[1]{Algorithm~\ref{#1}}
+\newcommand{\tabref}[1]{Table~\ref{#1}}
+\newcommand{\secref}[1]{Sect.~\ref{#1}}
+\newcommand{\lemmaref}[1]{Lemma~\ref{#1}}
+\newcommand{\corollaryref}[1]{Corollary~\ref{#1}}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{hyp}{Hypothesis}
+
+\endinput

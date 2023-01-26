@@ -1,0 +1,370 @@
+% -*- coding: utf-8; ispell-local-dictionary: "en_US" -*-
+%\documentclass[sigconf,screen=true]{acmart}
+\documentclass[manuscript]{acmart}
+
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    \normalfont B\kern-0.5em{\scshape i\kern-0.25em b}\kern-0.8em\TeX}}}
+
+\acmConference[Woodstock '18]{Woodstock '18: ACM Symposium on Neural
+  Gaze Detection}{June 03--05, 2018}{Woodstock, NY}
+\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection,
+  June 03--05, 2018, Woodstock, NY}
+\acmPrice{15.00}
+\acmISBN{978-1-4503-XXXX-X/18/06}
+
+\usepackage{standalone}
+
+\usepackage[draft]{das}
+
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{comment}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{upgreek}
+%\usepackage[linesnumbered,ruled,noline]{algorithm2e}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{stfloats}
+\usepackage{subfigure}
+\usepackage[detect-none]{siunitx}
+\usepackage{relsize}
+\usepackage{multirow}
+\usepackage{url}
+\usepackage{tikz}
+\usetikzlibrary{automata}
+\usetikzlibrary{matrix}
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes.geometric}
+\usetikzlibrary{shapes.misc}
+\usetikzlibrary{shapes.arrows}
+\usetikzlibrary{shapes}     %?
+\usetikzlibrary{fit}                    % fitting shapes to coordinates
+\usetikzlibrary{backgrounds}    % drawing the background after the foreground
+\usetikzlibrary{chains}
+\usetikzlibrary{decorations.pathreplacing}
+\usepackage[normalem]{ulem}
+
+\usepackage{mathtools}
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}%
+
+\usepackage{setspace}
+%\usepackage{courier}
+\usepackage{xcolor}
+%\usepackage{lmodern}
+
+%% use nicer emptyset symbol
+%\usepackage{amssymb} % because of MacTeX-2020
+\let\emptyset\relax
+\let\emptyset\varnothing
+
+\usepackage{listings}
+\usepackage{fancyvrb}
+\usepackage{booktabs}
+
+%\usepackage{draftwatermark}
+%\SetWatermarkText{Draft}
+%\SetWatermarkScale{1.5}
+
+\definecolor{rltred}{rgb}{0.75,0,0}
+\definecolor{dblue}{RGB}{31,73, 125}
+\definecolor{mblue}{RGB}{79,129, 189}
+
+\lstdefinelanguage{Swift52}{%
+1  morekeywords={associatedtype,class,deinit,enum,extension,fileprivate,%
+    func,import,init,inout,internal,let,open,operator,private,protocol,%
+    public,static,struct,subscript,typealias,var,break,case,continue,%
+    default,defer,do,else,fallthrough,for,guard,if,in,repeat,return,%
+    switch,where,while,as,Any,catch,false,is,nil,rethrows,super,self,%
+    Self,throw,throws,true,try,_,associativity,convenience,dynamic,%
+    didSet,final,get,infix,indirect,lazy,mutating,none,%
+    nonmutating,optional,override,postfix,precedence,prefix,Protocol,%
+    required,set,Type,unowned,weak,willSet},%
+  sensitive,%
+  morecomment=[s]{/*}{*/},%
+  morecomment=[s]{/**}{*/},%
+  morecomment=[l]//,%
+  morecomment=[l]///,%
+  morestring=[b]",%
+  morestring=[b]""",%
+  moredelim=*[directive]\#,%
+  moredirectives={available,colorLiteral,column,else,elseif,endif,file,%
+    fileLiteral,function,if,imageLiteral,line,selector,sourceLocation}%
+ }[keywords,comments,strings,directives]%
+
+\lstset{
+  language=C, % SWift52
+  basicstyle=\scriptsize\ttfamily,
+%  backgroundcolor=\color{mblue!10!white},
+  keywordstyle=\color{dblue},
+  % underlined bold black keywords
+  identifierstyle=, % nothing happens
+  commentstyle=\color{red!60!black}, % white comments
+  stringstyle=\sffamily, % typewriter type for strings
+  showstringspaces=false,
+  xleftmargin=3pt,
+  xrightmargin=3pt,
+  escapeinside={(*@}{@*)},
+  fancyvrb=true,
+%  frame=single,
+%  frameround=tttt,
+%  framexleftmargin=0pt,
+  framextopmargin=0pt,
+  framexbottommargin=0pt,
+%  framexrightmargin=5pt,
+%  rulecolor=\color{mblue!70!white},
+%%  language=Swift,
+  basewidth={0.55em,0.45em},
+%  fillcolor=\color{red},
+%  rulesepcolor=\color{black}
+%  rulesep=1cm,
+  literate={ä}{{\"a}}1
+           {ö}{{\"o}}1
+           {ü}{{\"u}}1
+           {Ä}{{\"A}}1
+           {Ö}{{\"O}}1
+           {Ü}{{\"U}}1
+           {ß}{{\"s}}1
+}
+\lstset{rangebeginprefix=\/\/\ citecodesnippet-begin\ }
+\lstset{rangeendprefix=\/\/\ citecodesnippet-end\ }
+\lstset{includerangemarker=false}
+\lstset{emph={bool,foreach,invariant,continue,nullptr,uint72_t},emphstyle=\color{dblue}}
+
+\newcommand{\codesnippet}[4][language=C]{
+{%% File: \url{#4}
+\lstset{numbers=left}
+\lstinputlisting[
+  title=\filetitle{#2},
+  linerange=#3-#3,
+  #1
+]
+{#4}
+}
+}
+
+\newcommand{\code}[1]{\lstinline[mathescape=true,basicstyle=\ttfamily]!#1!}
+\newcommand{\msg}[1]{\lstinline[mathescape=true,basicstyle=\rmfamily\itshape]!#1!}
+\newcommand{\CC}{C\nolinebreak\hspace{-.05em}\raisebox{.4ex}{\tiny\bf +}\nolinebreak\hspace{-.10em}\raisebox{.4ex}{\tiny\bf +}}
+
+% GLOSSARY
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n} %% for \mathcal{P} correct symbol for failure detector
+
+% hmpf
+\hyphenation{time-stamps}
+\hyphenation{time-stamp}
+
+\begin{document}%
+
+\title{MLIR Rustc}%% working title
+
+%\author{Thorsten Sch{\"u}tt}
+%\affiliation{%
+%  \institution{No Affiliation}
+%  \city{Berlin}
+%  \country{Germany}
+%}
+
+\begin{abstract}
+% 4 Sentences:
+% State the problem
+% Say why it's an interesting problem
+% Say what your solution achieves
+% Say what follows from your solution
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+<concept>
+<concept_id>10002951.10002952.10002971</concept_id>
+<concept_desc>Information systems~Data structures</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10010520.10010575.10010580</concept_id>
+<concept_desc>Computer systems organization~Processors and memory architectures</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10010583.10010600.10010607.10010610</concept_id>
+<concept_desc>Hardware~Non-volatile memory</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10011007.10010940.10010992.10010993.10010996</concept_id>
+<concept_desc>Software and its engineering~Consistency</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Information systems~Data structures}
+\ccsdesc[500]{Computer systems organization~Processors and memory architectures}
+%\ccsdesc[500]{Hardware~Non-volatile memory}
+\ccsdesc[500]{Software and its engineering~Consistency}
+
+\keywords{MPI, GPUs, Collectives}
+
+\maketitle
+
+% Use the following at camera-ready time to suppress page numbers.
+% Comment it out when you first submit the paper for review.
+% \thispagestyle{empty}
+
+%\noindent\ddraft
+
+% \tableofcontents
+
+\section{Introduction}
+%% Write the list of contributions first (as bulleted list)
+%% The list of contributions drives the entire paper:
+%% the paper substantiates the claims you have made
+%% Reader thinks ``gosh, if they can really deliver this,
+%% that's be exciting; I'd better read on''
+%%
+%% - We give the syntax and semantics of a language
+%%   that supports concurrent processes (Section 3).
+%%   Its innovative features are...
+%% - We prove that the type system is sound, and
+%%   that type checking is decidable (Section 4)
+%% - We have built a GUI toolkit in WizWoz, and
+%%   used it to implement a text editor (Section 5).
+%%   The result is half the length of the Java version.
+%%
+%% Instead of ``The rest of this paper is structured...'', use forward
+%% references from the narrative in the introduction.
+
+\section{Problem Statement}
+
+
+\section{System Model\label{sec.systemmodel}}
+
+We consider an asynchronous, shared memory system with $N$ processes
+that communicate via access to typed objects using atomic read, write, and
+compare-and-swap operations. Processes can run at arbitrary speed.
+
+We refuse to consider byzantine errors.
+
+We consider byzantine errors in Appendix 1.
+
+\section{Background}
+
+In the following, we discuss some preliminaries.
+
+
+\section{Experimental Setup}
+
+
+
+Due to the high core counts of our machines, we limited the CPU
+frequency.
+
+
+%% begin: \ts{DO NOT EDIT!}
+For each measurement, we report the median among 1,000 samples. The 99
+percent confidence interval (CI) is always within the 1.5 percent of
+the reported medians. Extremely short runs show slightly larger
+percentages.
+%% end: \ts{DO NOT EDIT!}
+
+
+
+\section{Evaluation\label{sec.evaluation} --- TO BE DONE}
+
+
+\section{Related Work\label{sec.relatedwork} --- TO BE DONE}
+
+\cite{click1995combining}
+
+\cite{wegman1991constant}
+
+\cite{lattner2020mlir}
+
+\cite{lattner2021mlir}
+
+\cite{cooper2011engineering}
+
+\cite{matsakis2014rust}
+
+\cite{rustcdev}
+
+\cite{hlfir}
+
+\cite{hindley1969principal}
+
+\cite{milner1978theory}
+
+\cite{damas1984type}
+
+\cite{damas1982principal}
+
+\section{Conclusion}
+
+
+\section{Reproducibility\label{sec.reproducibility}}
+
+Reproducibility~\cite{peng2011reproducible, bworld,
+  donoho2008reproducible} is one of the main pillars of research. Our
+goal is to support other parties to reproduce all the figures in this
+paper. We will publish our code, benchmark scripts, analytics scripts,
+gnuplot files, and sufficient documentation on GitHub under the Apache
+License 2.0.
+
+The reviewers will find the data HERE.
+
+
+\ts{data sets?}
+
+\ts{add link to repro guide? not anonymous?}
+
+\footnote{\url{https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-citation-files}}
+
+\footnote{\url{https://docs.aws.amazon.com/AmazonS3/latest/dev/EnableWebsiteHosting.html}}
+
+\ts{with source code}
+
+\begin{acks}
+\end{acks}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{main}
+
+\appendix
+
+
+\section{Graphic Detail}
+
+albeit
+
+obviate
+
+alleviate
+
+accommodate
+
+removes the need to
+
+predominantly
+
+circumvents the need for
+
+eliminates the need to
+
+annihilate
+
+prevalent
+
+indicate
+
+undesirable
+
+amortize
+
+prevalent
+
+
+reference Benchmarking@AWS
+
+\end{document}
+
