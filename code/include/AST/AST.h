@@ -3,6 +3,7 @@
 #include "Location.h"
 
 #include <cstddef>
+#include <vector>
 
 namespace rust_compiler::ast {
 

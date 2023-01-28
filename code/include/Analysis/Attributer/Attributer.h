@@ -3,12 +3,15 @@
 #include "Analysis/Attributer/AbstractElement.h"
 #include "Analysis/Attributer/DependencyGraph.h"
 #include "Analysis/Attributer/IRPosition.h"
-#include <mlir/IR/Operation.h>
 
+#include <mlir/IR/AsmState.h>
 #include <mlir/IR/BuiltinOps.h>
+#include <mlir/IR/Operation.h>
 
 namespace rust_compiler::analysis::attributor {
 
+// Fixed point iteration solver ("monotone framework").
+// http://symbolaris.com/course/Compilers11/27-monframework.pdf
 class Attributor {
   mlir::ModuleOp module;
 
@@ -29,11 +32,6 @@ class Attributor {
     CLEANUP,
   } Phase = AttributorPhase::SEEDING;
 
-  enum class DepClass {
-    REQUIRED, ///< The target cannot be valid if the source is not.
-    OPTIONAL, ///< The target may be valid if the source is not.
-    NONE,     ///< Do not track a dependence between source and target.
-  };
   ///}
 
   /// Return the attribute of \p AAType for \p IRP if existing and valid. This
@@ -69,17 +67,6 @@ class Attributor {
 public:
   Attributor(mlir::ModuleOp module);
 
-  /// This method should be used in conjunction with the `getAAFor` method and
-  /// with the DepClass enum passed to the method set to None. This can
-  /// be beneficial to avoid false dependences but it requires the users of
-  /// `getAAFor` to explicitly record true dependences through this method.
-  /// The \p DepClass flag indicates if the dependence is striclty necessary.
-  /// That means for required dependences, if \p FromAA changes to an invalid
-  /// state, \p ToAA can be moved to a pessimistic fixpoint because it required
-  /// information from \p FromAA but none are available anymore.
-  void recordDependence(const AbstractElement &FromAA,
-                        const AbstractElement &ToAA, DepClass DepClass);
-
   template <typename AAType>
   const AAType &getOrCreateAAFor(IRPosition IRP,
                                  const AbstractElement *QueryingAA,
@@ -91,12 +78,27 @@ public:
         updateAA(*AAPtr);
       return *AAPtr;
     }
-  }
 
-  template <typename AAType>
-  const AAType &getOrCreateAAFor(const IRPosition &IRP) {
-    return getOrCreateAAFor<AAType>(IRP, /* QueryingAA */ nullptr,
-                                    DepClass::NONE);
+    // No matching attribute found, create one.
+    // Use the static create method.
+    auto &AA = AAType::createForPosition(IRP, *this);
+
+    // Always register a new attribute to make sure we clean up the allocated
+    // memory properly.
+    registerAA(AA);
+
+    // If we are currenty seeding attributes, enforce seeding rules.
+    if (Phase == AttributorPhase::SEEDING && !shouldSeedAttribute(AA)) {
+      AA.getState().indicatePessimisticFixpoint();
+      return AA;
+    }
+
+    AA.initialize(*this);
+
+    if (QueryingAA && AA.getState().isValidState())
+      recordDependence(AA, const_cast<AbstractElement &>(*QueryingAA),
+                       DepClass);
+    return AA;
   }
 
   void setup();
@@ -107,6 +109,19 @@ private:
   /// Run `::update` on \p AA and track the dependences queried while doing so.
   /// Also adjust the state if we know further updates are not necessary.
   ChangeStatus updateAA(AbstractElement &AA);
+
+  /// This method should be used in conjunction with the `getAAFor` method and
+  /// with the DepClass enum passed to the method set to None. This can
+  /// be beneficial to avoid false dependences but it requires the users of
+  /// `getAAFor` to explicitly record true dependences through this method.
+  /// The \p DepClass flag indicates if the dependence is striclty necessary.
+  /// That means for required dependences, if \p FromAA changes to an invalid
+  /// state, \p ToAA can be moved to a pessimistic fixpoint because it required
+  /// information from \p FromAA but none are available anymore.
+  void recordDependence(const AbstractElement &FromAA,
+                        const AbstractElement &ToAA, DepClass DepClass);
+
+  DepdendencyGraph depGraph;
 };
 
 } // namespace rust_compiler::analysis::attributor

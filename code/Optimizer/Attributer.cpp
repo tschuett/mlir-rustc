@@ -1,8 +1,11 @@
 #include "Analysis/Attributer/Attributer.h"
 
 #include "Optimizer/Passes.h"
+
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/BuiltinOps.h>
+
+using namespace mlir;
 
 namespace rust_compiler::optimizer {
 #define GEN_PASS_DEF_ATTRIBUTER
@@ -21,12 +24,17 @@ public:
 using namespace rust_compiler::analysis::attributor;
 
 void AttributerPass::runOnOperation() {
-  mlir::ModuleOp module = getOperation();
-//  module.walk([&](mlir::func::FuncOp *f) {
-//  });
+  ModuleOp module = getOperation();
 
   Attributor attr = {module};
-}
 
+  attr.setup();
+
+  attr.run();
+
+  // mlir::ModuleOp module = getOperation();
+  //  module.walk([&](mlir::func::FuncOp *f) {
+  //  });
+}
 
 // https://reviews.llvm.org/D140415

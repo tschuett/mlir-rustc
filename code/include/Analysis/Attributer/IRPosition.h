@@ -47,7 +47,7 @@ private:
       : kind(kind), ptr(ptr), ordinal(ordinal) {}
 
   Kind kind;
-  void *ptr;
+  void *ptr; // Value or Operator
 
   [[maybe_unused]] unsigned ordinal; // used only with ReturnedValue
 };

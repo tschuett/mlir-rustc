@@ -4,12 +4,13 @@
 #include "AST/SimplePathSegment.h"
 
 #include <cstddef>
-#include <vector>
+
+#include <llvm/ADT/SmallVector.h>
 
 namespace rust_compiler::ast {
 
 class SimplePath : public Node {
-  std::vector<SimplePathSegment> segments;
+  llvm::SmallVector<SimplePathSegment> segments;
   bool withDoubleColon = false;
 
 public:
@@ -23,3 +24,4 @@ public:
 };
 
 } // namespace rust_compiler::ast
+

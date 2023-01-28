@@ -2,25 +2,6 @@
 #add_mlir_doc(Mir Mir Dialects/ -gen-dialect-doc)
 
 
-#set(LLVM_TARGET_DEFINITIONS Mir.td)
-#
-#mlir_tablegen(MirOps.h.inc -gen-op-decls)
-#mlir_tablegen(MirOps.cpp.inc -gen-op-defs)
-#mlir_tablegen(MirDialect.h.inc -gen-dialect-decls)
-#mlir_tablegen(MirDialect.cpp.inc -gen-dialect-defs)
-#
-#add_public_tablegen_target(MirOpsIncGen)
-
-#mlir_tablegen(MirOps.h.inc -gen-op-decls)
-#mlir_tablegen(MirOps.cpp.inc -gen-op-defs)
-
-
-## Most dialects should use add_mlir_interfaces().
-#set(LLVM_TARGET_DEFINITIONS MirInterfaces.td)
-#mlir_tablegen(MirInterfaces.h.inc -gen-op-interface-decls)
-#mlir_tablegen(MirInterfaces.cpp.inc -gen-op-interface-defs)
-#add_public_tablegen_target(MirInterfacesIncGen)
-
 
 set(LLVM_TARGET_DEFINITIONS MirAttr.td)
 mlir_tablegen(MirEnumAttr.h.inc -gen-enum-decls)

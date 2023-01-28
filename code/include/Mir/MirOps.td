@@ -77,7 +77,10 @@ def VarDeclarationOp : Mir_Op<"vardeclare", []> {
   additional information.
   }];
 
-  let arguments = (ins AnyType:$lhs);
+  let arguments = (ins
+    AnyType:$memref,
+    Builtin_StringAttr:$uniq_name
+  );
 
   let results = (outs AnyType:$output);
 }
