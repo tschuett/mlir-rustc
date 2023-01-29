@@ -54,17 +54,6 @@ window in `value`. NoMemoryEffect
   let results = (outs AnyType:$output);
 }
 
-def ErrorPropagationOp : Mir_Op<"question_mark", []> {
-  let summary = "a Rust ? op.";
-
-  let description = [{
-Each entry in `output` is the mean of the corresponding size `ksize`
-window in `value`. NoMemoryEffect
-  }];
-
-  let arguments = (ins AnyType:$lhs);
-}
-
 //===----------------------------------------------------------------------===//
 // VarDeclaration
 //===----------------------------------------------------------------------===//
