@@ -11,5 +11,5 @@
 TII->getName(MI->getOpcode());
 ```
 
-MOV32ri64
-CMP32ri8
+* MOV32ri64
+* CMP32ri8

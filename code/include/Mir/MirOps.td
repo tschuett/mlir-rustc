@@ -499,4 +499,38 @@ def SelectOp : Mir_Op<"select", [Pure,
 
 }
 
+//===----------------------------------------------------------------------===//
+// ClosureOp
+//===----------------------------------------------------------------------===//
+
+def ClosureOp : Mir_Op<"closure", []> {
+
+  let arguments = (ins BoolLike:$condition,
+                       AnyType:$true_value,
+                       AnyType:$false_value);
+
+   let builders = [
+    OpBuilder<(ins CArg<"ArrayRef<NamedAttribute>", "{}">:$attributes)>
+  ];
+
+  let regions = (region AnyRegion:$region);
+}
+
+//===----------------------------------------------------------------------===//
+// ClosureMoveOp
+//===----------------------------------------------------------------------===//
+
+def ClosureMoveOp : Mir_Op<"closure_move", []> {
+
+  let arguments = (ins BoolLike:$condition,
+                       AnyType:$true_value,
+                       AnyType:$false_value);
+
+   let builders = [
+    OpBuilder<(ins CArg<"ArrayRef<NamedAttribute>", "{}">:$attributes)>
+  ];
+
+  let regions = (region AnyRegion:$region);
+}
+
 #endif
