@@ -510,7 +510,7 @@ def ClosureOp : Mir_Op<"closure", []> {
                        AnyType:$false_value);
 
    let builders = [
-    OpBuilder<(ins CArg<"ArrayRef<NamedAttribute>", "{}">:$attributes)>
+    OpBuilder<(ins CArg<"llvm::ArrayRef<mlir::NamedAttribute>", "{}">:$attributes)>
   ];
 
   let regions = (region AnyRegion:$region);
@@ -527,7 +527,7 @@ def ClosureMoveOp : Mir_Op<"closure_move", []> {
                        AnyType:$false_value);
 
    let builders = [
-    OpBuilder<(ins CArg<"ArrayRef<NamedAttribute>", "{}">:$attributes)>
+    OpBuilder<(ins CArg<"llvm::ArrayRef<mlir::NamedAttribute>", "{}">:$attributes)>
   ];
 
   let regions = (region AnyRegion:$region);

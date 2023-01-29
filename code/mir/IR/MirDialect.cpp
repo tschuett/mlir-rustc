@@ -5,9 +5,11 @@
 #include "Mir/MirInterfaces.h"
 #include "Mir/MirOps.h"
 #include "Mir/MirTypes.h"
+#include "mlir/IR/Region.h"
 
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/WithColor.h>
+#include <mlir/IR/BlockAndValueMapping.h>
 #include <mlir/IR/Builders.h>
 #include <mlir/IR/BuiltinTypes.h>
 #include <mlir/IR/Dialect.h>
@@ -25,8 +27,8 @@ using namespace rust_compiler::Mir;
 
 #include "Mir/MirDialect.cpp.inc"
 
-//#define GET_OP_CLASSES
-//#include "Mir/MirOps.cpp.inc"
+// #define GET_OP_CLASSES
+// #include "Mir/MirOps.cpp.inc"
 
 struct MirInlinerInterface : public DialectInlinerInterface {
   using DialectInlinerInterface::DialectInlinerInterface;
@@ -60,8 +62,8 @@ struct MirInlinerInterface : public DialectInlinerInterface {
   /// contains any remapped values from within the 'src' region. This can be
   /// used to examine what values will replace entry arguments into the 'src'
   /// region for example.
-  bool isLegalToInline(Operation *op, Region *dest, bool wouldBeCloned,
-                       BlockAndValueMapping &valueMapping) const override {
+  bool isLegalToInline(mlir::Region *reg, Region *dest, bool wouldBeCloned,
+                       mlir::IRMapping &irMapping) const override {
     return false;
   }
 
