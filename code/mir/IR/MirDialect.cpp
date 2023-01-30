@@ -33,6 +33,8 @@ using namespace rust_compiler::Mir;
 struct MirInlinerInterface : public DialectInlinerInterface {
   using DialectInlinerInterface::DialectInlinerInterface;
 
+  virtual ~MirInlinerInterface() = default;
+
   /// Returns true if the given operation 'callable', that implements the
   /// 'CallableOpInterface', can be inlined into the position given call
   /// operation 'call', that is registered to the current dialect and implements

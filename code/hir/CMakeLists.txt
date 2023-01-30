@@ -1,5 +1,9 @@
 add_library(hir
-           Crate.cpp
+           HirDialect.cpp
+           HirOps.cpp
+           HirTypes.cpp
+           HirAttr.cpp
+           HirInterfaces.cpp
            )
 
 
