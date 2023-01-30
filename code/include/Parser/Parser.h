@@ -26,6 +26,10 @@
 #include <string_view>
 #include <vector>
 
+namespace rust_compiler::ast {
+class Statements;
+}
+
 namespace rust_compiler::parser {
 
 class Parser {

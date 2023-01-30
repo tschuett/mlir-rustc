@@ -1,6 +1,7 @@
 #include "AST/Patterns/Patterns.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
+#include "AST/BlockExpression.h"
 
 #include <memory>
 
@@ -30,7 +31,7 @@ Parser::tryParseIfLetExpression(std::span<lexer::Token> tokens) {
               tryParseScrutinee(view);
           if (scrutinee) {
             view = view.subspan((*scrutinee)->getTokens());
-            std::optional<std::shared_ptr<ast::Expression>> block =
+            std::optional<std::shared_ptr<ast::BlockExpression>> block =
                 tryParseBlockExpression(view);
             if (block) {
               view = view.subspan((*block)->getTokens());

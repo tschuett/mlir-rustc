@@ -1,14 +1,14 @@
 #pragma once
 
 #include "AST/AST.h"
-#include "AST/OuterAttribute.h"
-#include "AST/OuterAttributes.h"
-#include "AST/VisItem.h"
 #include "Location.h"
 
 #include <memory>
 
 namespace rust_compiler::ast {
+
+class OuterAttributes;
+class VisItem;
 
 class Item : public Node {
   std::shared_ptr<OuterAttributes> outerAttributes;

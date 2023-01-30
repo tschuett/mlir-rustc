@@ -4,6 +4,10 @@ add_library(sema
            Item.cpp
            VisItem.cpp
            OuterAttributes.cpp
+           Function.cpp
+           TypeChecking.cpp
+           Mappings.cpp
+           BlockExpression.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)

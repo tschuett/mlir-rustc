@@ -1,4 +1,5 @@
 #include "AST/IfExpression.h"
+#include "AST/BlockExpression.h"
 
 #include "Parser/Parser.h"
 
@@ -22,7 +23,7 @@ Parser::tryParseIfExpression(std::span<lexer::Token> tokens) {
         tryParseExpression(view);
     if (condition) {
       view = view.subspan((*condition)->getTokens());
-      std::optional<std::shared_ptr<ast::Expression>> block =
+      std::optional<std::shared_ptr<ast::BlockExpression>> block =
           tryParseBlockExpression(view);
       if (block) {
         view = view.subspan((*block)->getTokens());

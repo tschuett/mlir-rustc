@@ -1,3 +1,4 @@
+#include "AST/BlockExpression.h"
 #include "AST/Expression.h"
 #include "Parser/Parser.h"
 

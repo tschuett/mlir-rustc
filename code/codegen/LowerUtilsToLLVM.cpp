@@ -37,7 +37,7 @@ void LowerUtilsToLLVMPass::runOnOperation() {
   LLVMTypeConverter converter(&getContext());
   arith::populateArithToLLVMConversionPatterns(converter, patterns);
   cf::populateControlFlowToLLVMConversionPatterns(converter, patterns);
-  populateMemRefToLLVMConversionPatterns(converter, patterns);
+  populateFinalizeMemRefToLLVMConversionPatterns(converter, patterns);
   populateFuncToLLVMConversionPatterns(converter, patterns);
 
   LLVMConversionTarget target(getContext());

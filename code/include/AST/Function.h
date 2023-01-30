@@ -1,13 +1,12 @@
 #pragma once
 
-#include "AST/BlockExpression.h"
 #include "AST/FunctionQualifiers.h"
 #include "AST/FunctionSignature.h"
 #include "AST/VisItem.h"
 
 namespace rust_compiler::ast {
 
-// class FunctionReturnType {};
+class BlockExpression;
 
 class Function : public VisItem {
   std::shared_ptr<BlockExpression> body;
@@ -15,11 +14,14 @@ class Function : public VisItem {
   FunctionQualifiers qualifiers;
 
 public:
-  Function(Location loc) : VisItem(loc, VisItemKind::Function), signature(loc), qualifiers(loc) {}
+  Function(Location loc)
+      : VisItem(loc, VisItemKind::Function), signature(loc), qualifiers(loc) {}
 
-  FunctionSignature getSignature() const;
+  const FunctionSignature &getSignature() const;
   Location getLocation() const;
   FunctionQualifiers getFunctionQualifiers() const;
+
+  bool hasBody() const;
 
   std::shared_ptr<BlockExpression> getBody();
 

@@ -1,4 +1,6 @@
 #include "AST/Item.h"
+#include "AST/OuterAttributes.h"
+#include "AST/VisItem.h"
 
 #include <cassert>
 
