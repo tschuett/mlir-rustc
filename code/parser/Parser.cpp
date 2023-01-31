@@ -11,18 +11,15 @@
 #include <memory>
 #include <optional>
 
-namespace rust_compiler::parser {
-
 using namespace rust_compiler::ast;
 using namespace rust_compiler::lexer;
+namespace rust_compiler::parser {
 
-//  TokenStream &ts,
-//                                            std::string_view modulePath
 std::shared_ptr<ast::Module> Parser::parse() {
 
   std::span<Token> tokens = ts.getAsView();
 
-  Module module = {tokens.front().getLocation(), ModuleKind::Outer, modulePath};
+  Module module = {tokens.front().getLocation(), ModuleKind::Outer, path};
 
   // ts.print(60);
 
@@ -32,8 +29,7 @@ std::shared_ptr<ast::Module> Parser::parse() {
 
     // printTokenState(tokens);
 
-    std::optional<std::shared_ptr<ast::Item>> item =
-        tryParseItem(tokens, modulePath);
+    std::optional<std::shared_ptr<ast::Item>> item = tryParseItem(tokens, path);
     if (item) {
       llvm::errs() << "found tokens: " << (*item)->getTokens() << "\n";
       tokens = tokens.subspan((*item)->getTokens());

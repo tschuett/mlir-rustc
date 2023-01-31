@@ -6,6 +6,10 @@
 using namespace rust_compiler::ast;
 using namespace rust_compiler::sema;
 
+namespace rust_compiler::ast {
+  class ReturnExpression;
+}
+
 class BlockExpressionVisitor {
   Sema *sema;
   BlockExpression *block;
@@ -33,8 +37,13 @@ void Sema::analyzeFunction(std::shared_ptr<ast::Function> fun) {
 
   if (fun->hasBody()) {
     const FunctionSignature &sig = fun->getSignature();
-    if (sig.has
-    fun->getSignature()->getReturnType() typechecking.eqType();
+    if (sig.hasReturnType()) {
+      //typechecking.eqType();
+
+      analyzeBlockExpression(fun->getBody());
+    }
+    fun->getSignature().getReturnType();
+    //typechecking.eqType();
   }
 }
 

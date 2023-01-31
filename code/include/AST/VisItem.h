@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AST/AST.h"
+#include "AST/Item.h"
 #include "AST/Visiblity.h"
 #include "Location.h"
 
@@ -24,13 +24,14 @@ enum class VisItemKind {
   ExternBlock
 };
 
-class VisItem : public Node {
+class VisItem : public Item {
   VisItemKind kind;
   std::optional<Visibility> vis;
 
 public:
-  explicit VisItem(rust_compiler::Location location, VisItemKind kind)
-      : Node(location), kind(kind) {}
+  explicit VisItem(const CanonicalPath &path, rust_compiler::Location location,
+                   VisItemKind kind)
+      : Item(path, location), kind(kind) {}
 
   VisItemKind getKind() const { return kind; }
 

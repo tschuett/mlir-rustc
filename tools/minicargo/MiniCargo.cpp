@@ -15,6 +15,7 @@
 
 const std::string PATH = "/Users/schuett/Work/aws_ec2_analyzer/Cargo.toml";
 
+using namespace llvm;
 using namespace rust_compiler;
 using namespace rust_compiler::toml;
 using namespace rust_compiler::minicargo;
@@ -48,6 +49,7 @@ const llvm::opt::OptTable::Info InfoTable[] = {
 class MiniCargoOptTable : public llvm::opt::OptTable {
 public:
   MiniCargoOptTable() : OptTable(InfoTable) { setGroupedShortOptions(true); }
+  ArrayRef<StringLiteral> getPrefixesUnion() const override {}
 };
 
 } // namespace

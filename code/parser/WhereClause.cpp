@@ -1,5 +1,7 @@
 #include "Parser/Parser.h"
 
+#include "AST/WhereClause.h"
+
 namespace rust_compiler::parser {
 
 std::optional<ast::WhereClause>

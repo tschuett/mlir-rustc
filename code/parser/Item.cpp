@@ -13,7 +13,7 @@ using namespace rust_compiler::ast;
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::Item>>
-Parser::tryParseItem(std::span<Token> tokens, std::string_view modulePath) {
+Parser::tryParseItem(std::span<Token> tokens, const ast::CanonicalPath &path) {
 
   std::span<Token> view = tokens;
 

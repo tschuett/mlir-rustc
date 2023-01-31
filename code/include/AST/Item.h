@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/AST.h"
+#include "AST/CanonicalPath.h"
 #include "Location.h"
 
 #include <memory>
@@ -14,8 +15,11 @@ class Item : public Node {
   std::shared_ptr<OuterAttributes> outerAttributes;
   std::shared_ptr<VisItem> visItem;
 
+  CanonicalPath path;
+
 public:
-  explicit Item(rust_compiler::Location location) : Node(location) {}
+  explicit Item(const CanonicalPath &path, rust_compiler::Location location)
+      : Node(location), path(path) {}
 
   void setOuterAttributes(std::shared_ptr<OuterAttributes> outer);
   void setVisItem(std::shared_ptr<VisItem> visItem);

@@ -21,6 +21,7 @@ public:
   TypeChecking(Sema *sema) : sema(sema) {}
 
   void eqExpr(AstId, AstId);
+  void eqType(AstId, AstId);
   void sub();
 };
 

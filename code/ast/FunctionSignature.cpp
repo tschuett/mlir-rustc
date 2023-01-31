@@ -1,4 +1,6 @@
 #include "AST/FunctionSignature.h"
+#include "AST/GenericParams.h"
+ #include "AST/WhereClause.h"
 
 namespace rust_compiler::ast {
 

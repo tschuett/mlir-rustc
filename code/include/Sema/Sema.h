@@ -7,9 +7,9 @@
 #include "AST/LetStatement.h"
 #include "AST/Statements.h"
 #include "AST/Types/Types.h"
-#include "Sema/TypeChecking.h"
 #include "Sema/Common.h"
 #include "Sema/Mappings.h"
+#include "Sema/TypeChecking.h"
 
 #include <map>
 #include <memory>
@@ -20,10 +20,10 @@ class VisItem;
 class Item;
 class OuterAttributes;
 class Expression;
+class MacroInvocationSemi;
 } // namespace rust_compiler::ast
 
 namespace rust_compiler::sema {
-
 
 class Sema {
 public:
@@ -37,10 +37,13 @@ private:
   void analyzeFunction(std::shared_ptr<ast::Function> fun);
   void analyzeBlockExpression(std::shared_ptr<ast::BlockExpression> block);
   void analyzeStatements(std::shared_ptr<ast::Statements> stmts);
-  void analyzeItemDeclaration(std::shared_ptr<ast::Item> item);
   void analyzeLetStatement(std::shared_ptr<ast::LetStatement> let);
-  void analyzeExpressionStatement(std::shared_ptr<ast::ExpressionStatement> expr);
-  void analyzeMacroInvocation(std::shared_ptr<ast::MacroInvocation> macro);
+  void
+  analyzeExpressionStatement(std::shared_ptr<ast::ExpressionStatement> expr);
+  void
+  analyzeMacroInvocationSemi(std::shared_ptr<ast::MacroInvocationSemi> macro);
+
+  void analyzeItemDeclaration(std::shared_ptr<ast::Node> item);
 
   TypeChecking typechecking = {this};
   Mappings mappings = {this};

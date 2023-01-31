@@ -15,14 +15,6 @@ size_t Module::getTokens() {
     // FIXME
     return size + 5 + vis.getTokens();
   }
-  case ModuleKind::Outer: {
-    size_t size = 0;
-    for (auto &i : items) {
-      size += i->getTokens();
-    }
-    // FIXME
-    return size;
-  }
   }
 }
 

@@ -3,11 +3,9 @@
 #include "AST/AST.h"
 #include "AST/FunctionParameters.h"
 #include "AST/FunctionQualifiers.h"
-#include "AST/GenericParams.h"
 #include "AST/Types/Types.h"
-#include "AST/WhereClause.h"
-#include "Location.h"
 #include "AST/Visiblity.h"
+#include "Location.h"
 
 #include <memory>
 #include <optional>
@@ -15,6 +13,9 @@
 #include <vector>
 
 namespace rust_compiler::ast {
+
+class WhereClause;
+class GenericParams;
 
 class FunctionSignature : public Node {
   // std::vector<Argument> args;
@@ -42,6 +43,8 @@ public:
   FunctionParameters getParameters() const { return parm; }
 
   void setReturnType(std::shared_ptr<ast::types::Type> returnType);
+
+  bool hasReturnType() const;
 
   std::shared_ptr<ast::types::Type> getReturnType() const { return returnType; }
 

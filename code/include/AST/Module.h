@@ -8,24 +8,23 @@
 
 #include <span>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace rust_compiler::ast {
 
-enum class ModuleKind { Module, ModuleTree, Outer };
+enum class ModuleKind { Module, ModuleTree };
 
 class Module : public VisItem {
   Visibility vis;
   ModuleKind kind;
-  std::string path;
   std::vector<std::shared_ptr<Item>> items;
   // std::vector<std::shared_ptr<Function>> funs;
 
 public:
-  Module(rust_compiler::Location loc, ModuleKind kind, std::string_view path)
-      : VisItem(loc, VisItemKind::Module), vis(loc, VisibilityKind::Private),
-        kind(kind), path(path){};
+  Module(const CanonicalPath &path, rust_compiler::Location loc,
+         ModuleKind kind)
+      : VisItem(path, loc, VisItemKind::Module),
+        vis(loc, VisibilityKind::Private), kind(kind){};
 
   ModuleKind getModuleKind() const { return kind; }
   void setVisibility(Visibility vis);

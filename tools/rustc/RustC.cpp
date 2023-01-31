@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 
+using namespace llvm;
 using namespace rust_compiler;
 using namespace rust_compiler::toml;
 
@@ -41,16 +42,17 @@ const llvm::opt::OptTable::Info InfoTable[] = {
 #undef OPTION
 };
 
-class MiniCargoOptTable : public llvm::opt::OptTable {
+class RustCOptTable : public llvm::opt::OptTable {
 public:
-  MiniCargoOptTable() : OptTable(InfoTable) { setGroupedShortOptions(true); }
+  RustCOptTable() : OptTable(InfoTable) { setGroupedShortOptions(true); }
+  ArrayRef<StringLiteral> getPrefixesUnion() const override {}
 };
 
 } // namespace
 
 int main(int argc, char **argv) {
   llvm::InitLLVM x(argc, argv);
-  MiniCargoOptTable tbl;
+  RustCOptTable tbl;
   llvm::StringRef ToolName = argv[0];
   llvm::BumpPtrAllocator A;
   llvm::StringSaver Saver{A};

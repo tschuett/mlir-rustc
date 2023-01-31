@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/CanonicalPath.h"
 #include "AST/ClippyAttribute.h"
 #include "AST/GenericArgs.h"
 #include "AST/IfExpression.h"
@@ -15,9 +16,7 @@
 #include "AST/Patterns/RestPattern.h"
 #include "AST/Patterns/TuplePattern.h"
 #include "AST/Scrutinee.h"
-#include "AST/Statement.h"
 #include "AST/UseDeclaration.h"
-#include "AST/UseTree.h"
 #include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
 
@@ -28,24 +27,26 @@
 
 namespace rust_compiler::ast {
 class Statements;
-}
+class Statement;
+class UseTree;
+} // namespace rust_compiler::ast
 
 namespace rust_compiler::parser {
 
 class Parser {
   lexer::TokenStream ts;
-  std::string modulePath;
+  ast::CanonicalPath path;
 
 public:
-  Parser(lexer::TokenStream &ts, std::string_view modulePath)
-      : ts(ts), modulePath(modulePath){};
+  Parser(lexer::TokenStream &ts, const ast::CanonicalPath &path)
+      : ts(ts), path(path){};
 
   std::shared_ptr<ast::Module> parse();
 
   // private:
 
   std::optional<std::shared_ptr<ast::Item>>
-  tryParseItem(std::span<lexer::Token> tokens, std::string_view modulePath);
+  tryParseItem(std::span<lexer::Token> tokens, const ast::CanonicalPath& path);
 
   std::optional<ast::Module> tryParseModule(std::span<lexer::Token> tokens,
                                             std::string_view modulePath);
