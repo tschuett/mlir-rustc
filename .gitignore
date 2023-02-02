@@ -95,3 +95,15 @@ code/Optimizer/Combine.cpp.inc
 tests/ADT/ADTTests
 examples/fun2/Cargo.lock
 examples/fun2/target/
+
+
+code/include/Hir/HirAttr.cpp.inc
+code/include/Hir/HirAttr.h.inc
+code/include/Hir/HirDialect.cpp.inc
+code/include/Hir/HirDialect.h.inc
+code/include/Hir/HirEnumAttr.cpp.inc
+code/include/Hir/HirEnumAttr.h.inc
+code/include/Hir/HirOps.cpp.inc
+code/include/Hir/HirOps.h.inc
+code/include/Hir/HirTypes.cpp.inc
+code/include/Hir/HirTypes.h.inc

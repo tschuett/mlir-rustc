@@ -9,6 +9,8 @@ mlir_tablegen(HirOps.h.inc -gen-op-decls)
 mlir_tablegen(HirOps.cpp.inc -gen-op-defs)
 mlir_tablegen(HirTypes.h.inc --gen-typedef-decls)
 mlir_tablegen(HirTypes.cpp.inc --gen-typedef-defs)
+mlir_tablegen(HirDialect.h.inc -gen-dialect-decls --dialect=hir)
+mlir_tablegen(HirDialect.cpp.inc -gen-dialect-defs --dialect=hir)
 add_public_tablegen_target(HirOpsIncGen)
 
 

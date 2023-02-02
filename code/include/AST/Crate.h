@@ -30,6 +30,8 @@ public:
   void merge(std::shared_ptr<ast::Module> module, adt::CanonicalPath path);
 
   std::span<std::unique_ptr<Item>> getItems() const;
+
+  std::string_view getCrateName() const;
 };
 
 } // namespace rust_compiler::ast

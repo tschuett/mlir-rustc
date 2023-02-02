@@ -14,6 +14,8 @@ mlir_tablegen(MirOps.h.inc -gen-op-decls)
 mlir_tablegen(MirOps.cpp.inc -gen-op-defs)
 mlir_tablegen(MirTypes.h.inc --gen-typedef-decls)
 mlir_tablegen(MirTypes.cpp.inc --gen-typedef-defs)
+mlir_tablegen(MirDialect.h.inc -gen-dialect-decls --dialect=mir)
+mlir_tablegen(MirDialect.cpp.inc -gen-dialect-defs --dialect=mir)
 add_public_tablegen_target(MirOpsIncGen)
 
 

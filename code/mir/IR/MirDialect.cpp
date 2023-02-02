@@ -5,7 +5,6 @@
 #include "Mir/MirInterfaces.h"
 #include "Mir/MirOps.h"
 #include "Mir/MirTypes.h"
-#include "mlir/IR/Region.h"
 
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/WithColor.h>
@@ -15,6 +14,7 @@
 #include <mlir/IR/Dialect.h>
 #include <mlir/IR/DialectImplementation.h>
 #include <mlir/IR/OpImplementation.h>
+#include <mlir/IR/Region.h>
 #include <mlir/IR/Types.h>
 #include <mlir/Transforms/InliningUtils.h>
 #include <optional>
