@@ -85,6 +85,9 @@ public:
 
 private:
   void emitItem(std::unique_ptr<ast::Item>&);
+  void emitVisItem(std::shared_ptr<ast::VisItem>);
+  void emitFunction(std::shared_ptr<ast::Function>);
+  void emitModule(std::shared_ptr<ast::Module>);
 };
 
 void build(rust_compiler::ast::Crate &crate);

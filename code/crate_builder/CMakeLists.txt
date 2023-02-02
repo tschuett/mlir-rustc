@@ -1,6 +1,8 @@
 add_library(crate_builder
            CrateBuilder.cpp
            Item.cpp
+           Function.cpp
+           Module.cpp
            )
 
 

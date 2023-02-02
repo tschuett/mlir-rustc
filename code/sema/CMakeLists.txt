@@ -10,6 +10,9 @@ add_library(sema
            BlockExpression.cpp
            ExhaustivenessCheck.cpp
            AttributeAnalyzer.cpp
+           LetStatement.cpp
+           ExpressionStatement.cpp
+           MacroInvocation.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)

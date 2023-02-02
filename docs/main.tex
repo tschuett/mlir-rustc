@@ -237,8 +237,8 @@
 
 
 Regehr~\cite{https://doi.org/10.48550/arxiv.1809.02161} mostly focused
-on optimizations. Instead, we discuss how to exploit different levels
-of abstraction to optimize code relying on
+on future directions on optimizations. Instead, we discuss how to
+exploit different levels of abstractions to optimize code relying on
 ~MLIR~\cite{lattner2021mlir}. At higher abstraction, there will be
 structured control flow and language specific constructs:
 \begin{lstlisting}{language=Rust}
@@ -251,7 +251,8 @@ At the bottom of the stack, there will be $\phi$s.
 
 Ranger~\cite{ranger} is a project in GCC that determines value ranges
 of variables. \code{n} will have the values $1$ to $10$. \code{sum}
-starts at $0$ and goes up to $55$.
+starts at $0$ and goes up to $55$. In fact \code{1..11} and the
+iterator loop are constant expressions.
 
 We make the following main contributions:\ts{revisit}
 \begin{itemize}[topsep=0pt,itemsep=0pt,parsep=0pt]

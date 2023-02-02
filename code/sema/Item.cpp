@@ -12,4 +12,8 @@ void Sema::walkItem(std::shared_ptr<ast::Item> item) {
   walkVisItem(item->getVisItem());
 }
 
+void Sema::analyzeItemDeclaration(std::shared_ptr<ast::Node> item) {
+  assert(false);
+}
+
 } // namespace rust_compiler::sema
