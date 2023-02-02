@@ -2,7 +2,6 @@
 
 #include "ADT/ScopedCanonicalPath.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
-#include "AST/ClippyAttribute.h"
 #include "AST/GenericArgs.h"
 #include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
@@ -138,9 +137,6 @@ public:
 
   std::optional<ast::InnerAttribute>
   tryParseInnerAttribute(std::span<lexer::Token> tokens);
-
-  std::optional<ast::ClippyAttribute>
-  tryParseClippyAttribute(std::span<lexer::Token> tokens);
 
   std::optional<std::shared_ptr<ast::types::Type>>
   tryParsePrimitiveType(std::span<lexer::Token> tokens);

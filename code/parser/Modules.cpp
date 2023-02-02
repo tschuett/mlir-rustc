@@ -1,6 +1,5 @@
 #include "ADT/ScopedCanonicalPath.h"
 #include "AST/Module.h"
-#include "Item.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 #include "Util.h"

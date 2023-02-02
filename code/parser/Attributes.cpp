@@ -1,7 +1,5 @@
-#include "Attributes.h"
-
-#include "AST/ClippyAttribute.h"
 #include "AST/InnerAttribute.h"
+#include "AST/OuterAttribute.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 #include "Util.h"
@@ -11,9 +9,11 @@
 #include <sstream>
 #include <vector>
 
+using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
+
 namespace rust_compiler::parser {
 
-using namespace rust_compiler::lexer;
 
 static std::optional<std::pair<std::string, unsigned>>
 tryParseLint(std::span<Token> tokens) {
@@ -100,47 +100,6 @@ Parser::tryParseInnerAttribute(std::span<Token> tokens) {
     return tryParseDenyAttribute(tokens);
   }
 
-  return std::nullopt;
-}
-
-std::optional<ClippyAttribute>
-Parser::tryParseClippyAttribute(std::span<Token> tokens) {
-  std::span<Token> view = tokens;
-
-  if (view.front().getKind() == TokenKind::Hash) {
-    if (view[1].getKind() == TokenKind::Not) {
-      if (view[2].getKind() == TokenKind::SquareOpen) {
-        if (view[3].getKind() == TokenKind::Identifier) {
-          if (view[3].getIdentifier() == "warn" or
-              view[3].getIdentifier() == "allow" or
-              view[3].getIdentifier() == "deny") {
-            if (view[4].getKind() == TokenKind::ParenOpen) {
-              view = view.subspan(5);
-              std::vector<std::string> lints;
-              unsigned lintTokens = 0;
-              while (view.size() > 1) {
-                std::optional<std::pair<std::string, unsigned>> lint =
-                    tryParseLint(view);
-                if (lint) {
-                  lints.push_back(std::get<0>(*lint));
-                  view = view.subspan(std::get<1>(*lint));
-                  lintTokens += std::get<1>(*lint);
-                  if (view.front().getKind() == TokenKind::Comma) {
-                    view = view.subspan(1);
-                  }
-                } else {
-                  printf("found clippy\n");
-                  // printStringSpan(lints);
-                  return ClippyAttribute(view[0].getLocation(), lints,
-                                         lintTokens);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
   return std::nullopt;
 }
 

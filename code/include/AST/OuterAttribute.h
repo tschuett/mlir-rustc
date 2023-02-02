@@ -1,21 +1,21 @@
 #pragma once
 
 #include "AST/AST.h"
+#include "AST/AttrInput.h"
+#include "AST/SimplePath.h"
+
+#include <optional>
 
 namespace rust_compiler::ast {
 
-enum class OuterAttributeKind {
-  ClippyAttribute,
-};
-
 class OuterAttribute : public Node {
-  OuterAttributeKind kind;
+  SimplePath path;
+  std::optional<AttrInput> attrInput;
 
 public:
-  OuterAttribute(Location loc, OuterAttributeKind kind)
-      : Node(loc), kind(kind) {}
+  OuterAttribute(Location loc) : Node(loc), path(loc) {}
 
-  OuterAttributeKind getOuterAttributeKind() { return kind; }
+  SimplePath getPath() const;
 
   size_t getTokens() override;
 };

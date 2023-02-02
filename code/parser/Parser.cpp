@@ -1,6 +1,5 @@
 #include "Parser/Parser.h"
 
-#include "AST/ClippyAttribute.h"
 #include "AST/Crate.h"
 #include "AST/Module.h"
 #include "AST/OuterAttribute.h"

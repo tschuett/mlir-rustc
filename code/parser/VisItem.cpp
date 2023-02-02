@@ -1,15 +1,14 @@
 #include "AST/VisItem.h"
 
-#include "AST/ClippyAttribute.h"
 #include "AST/Function.h"
 #include "AST/UseDeclaration.h"
 #include "AST/Visiblity.h"
-#include "Attributes.h"
 #include "Parser/Parser.h"
 
 #include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 

@@ -1,8 +1,6 @@
-#include "AST/ClippyAttribute.h"
 #include "AST/Function.h"
 #include "AST/UseDeclaration.h"
 #include "AST/Visiblity.h"
-#include "Attributes.h"
 #include "Parser/Parser.h"
 
 #include <llvm/Support/raw_ostream.h>

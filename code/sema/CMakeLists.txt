@@ -9,6 +9,7 @@ add_library(sema
            Mappings.cpp
            BlockExpression.cpp
            ExhaustivenessCheck.cpp
+           AttributeAnalyzer.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)

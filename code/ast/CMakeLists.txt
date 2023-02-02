@@ -3,7 +3,6 @@ add_library(ast
            Module.cpp
            InnerAttribute.cpp
            UseDeclaration.cpp
-           ClippyAttribute.cpp
            FunctionSignature.cpp
            Function.cpp
            BlockExpression.cpp
