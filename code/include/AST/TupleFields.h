@@ -1,18 +1,18 @@
 #pragma once
 
 #include "AST/AST.h"
-#include "AST/EnumItem.h"
+#include "AST/TupleField.h"
 
-#include <vector>
+#include <optional>
 
 namespace rust_compiler::ast {
 
-class EnumItems : public Node {
+class TupleFields : public Node {
   bool trailingComma;
-  std::vector<EnumItem> items;
+  std::vector<TupleField> fields;
 
 public:
-  EnumItems(Location loc) : Node(loc) {}
+  TupleFields(Location loc) : Node(loc) {}
 
   size_t getTokens() override;
 };

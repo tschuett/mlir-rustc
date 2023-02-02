@@ -1,0 +1,20 @@
+#pragma once
+
+#include "AST/GenericParams.h"
+#include "AST/StructFields.h"
+#include "AST/WhereClause.h"
+#include "AST/Struct.h"
+#include <optional>
+
+namespace rust_compiler::ast {
+
+class StructStruct : public Struct {
+  std::string identifier;
+  std::optional<GenericParams> genericParams;
+  std::optional<WhereClause> whereClause;
+  std::optional<StructFields> structFields;
+public:
+  StructStruct(Location loc) : Struct(loc, StructKind::StructStruct) {}
+};
+
+} // namespace rust_compiler::ast

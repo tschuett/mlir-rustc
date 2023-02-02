@@ -13,3 +13,12 @@ TII->getName(MI->getOpcode());
 
 * MOV32ri64
 * CMP32ri8
+
+
+
+* https://matklad.github.io/2023/01/25/next-rust-compiler.html
+
+* Scopes for CanonicalPath
+
+
+# flang/Optimizer/Builder/FIRBuilder.h

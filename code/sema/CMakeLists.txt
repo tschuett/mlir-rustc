@@ -8,6 +8,7 @@ add_library(sema
            TypeChecking.cpp
            Mappings.cpp
            BlockExpression.cpp
+           ExhaustivenessCheck.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)

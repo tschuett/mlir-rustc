@@ -1,22 +1,19 @@
-#ifndef HMirOps
-#define HMirOps
+#ifndef HirOps
+#define HirOps
 
-
-include "mlir/Dialect/Arith/IR/ArithBase.td"
-include "mlir/Dialect/Arith/IR/ArithOpsInterfaces.td"
-include "HMirDialect.td"
-include "HMirTypes.td"
-include "HMirAttr.td"
-include "mlir/IR/BuiltinAttributes.td"
-include "HMirInterfaces.td"
 include "mlir/Interfaces/ControlFlowInterfaces.td"
+include "mlir/IR/BuiltinAttributes.td"
+include "HirDialect.td"
+include "HirTypes.td"
+include "HirAttr.td"
+include "HirInterfaces.td"
 
 // Ops
-class HMir_Op<string mnemonic, list<Trait> traits = []> :
-    Op<HMir_Dialect, mnemonic, traits>;
+class Hir_Op<string mnemonic, list<Trait> traits = []> :
+    Op<Hir_Dialect, mnemonic, traits>;
 
 
-def ErrorPropagationOp : HMir_Op<"question_mark", []> {
+def ErrorPropagationOp : Hir_Op<"question_mark", []> {
   let summary = "a Rust ? op.";
 
   let description = [{
@@ -28,8 +25,7 @@ def ErrorPropagationOp : HMir_Op<"question_mark", []> {
   let regions = (region AnyRegion:$region);
 }
 
-
-def WhileLoopOp : HMir_Op<"while",
+def WhileLoopOp : Hir_Op<"while",
   [DeclareOpInterfaceMethods<LoopLikeOpInterface>]> {
   let summary = "a Rust while op.";
 
@@ -42,7 +38,7 @@ def WhileLoopOp : HMir_Op<"while",
   let regions = (region AnyRegion:$region);
 }
 
-def IfOp : HMir_Op<"if", [NoRegionArguments]> {
+def IfOp : Hir_Op<"if", [NoRegionArguments]> {
   let summary = "a Rust if op.";
 
   let description = [{
@@ -57,10 +53,6 @@ def IfOp : HMir_Op<"if", [NoRegionArguments]> {
     SizedRegion<1>:$thenRegion,
     AnyRegion:$elseRegion
   );
-
 }
-
-
-
 
 #endif

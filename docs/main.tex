@@ -235,6 +235,18 @@
 %% Instead of ``The rest of this paper is structured...'', use forward
 %% references from the narrative in the introduction.
 
+
+We make the following main contributions:\ts{revisit}
+\begin{itemize}[topsep=0pt,itemsep=0pt,parsep=0pt]
+\item We designed an highly-optimizing Rust compiler, see
+  \secref{sec.compiler}.
+\item The AST facilitates tooling, see \secref{sec.tooling}.
+\item Our evaluation shows that our extension makes OpenMP more
+  scalable, see \secref{sec.evaluation}.
+\item You will find links to all system descriptions and all source, data,
+  scripts, and gnuplot files in \secref{sec.reproducibility}.
+\end{itemize}
+
 \section{Problem Statement}
 
 
@@ -284,6 +296,22 @@ percentages.
 \end{itemize}
 
 
+\section{IR Design for programming languages\label{sec.irdesign} --- TO BE DONE}
+
+The top level IR is the AST (abstract syntax tree.
+
+\begin{itemize}
+\item AST-like IR. It models the AST closely, i.e., structured control flow, ...
+\item ?
+\end{itemize}
+
+What is the right level of abstraction for borrow checking?
+What levels of abstraction are needed to generate super efficient code?
+Self-contained IR or mix with other MLIR dialects?
+
+\subsection{Programming Models}
+OpenMP, SYCL~\cite{mlirsycl}, OpenACC, CUDA, ..+
+
 \section{Evaluation\label{sec.evaluation} --- TO BE DONE}
 
 
@@ -330,6 +358,22 @@ percentages.
 \cite{johnson2017thinlto}
 
 \cite{mrustc}
+
+\cite{hlfirdiff}
+
+\cite{maranget2007warnings}
+
+\cite{gccrs}
+
+\cite{mlirsycl}
+
+\section{Future Work}
+
+\begin{itemize}
+\item LTO at MLIR
+\item PGO at MLIR
+\item What kind of optimizations ought to happen at MLIR or LLVM?
+\end{itemize}
 
 \section{Conclusion}
 

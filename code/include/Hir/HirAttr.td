@@ -1,12 +1,12 @@
-#ifndef HMirAttr
-#define HMirAttr
+#ifndef HirAttr
+#define HirAttr
 
-include "HMirDialect.td"
+include "HirDialect.td"
 include "mlir/IR/AttrTypeBase.td"
 include "mlir/IR/EnumAttr.td"
 
-class HMirDialect_Attr<string name, string attrMnemonic, list<Trait> traits = []>
-    : AttrDef<HMir_Dialect, name, traits> {
+class HirDialect_Attr<string name, string attrMnemonic, list<Trait> traits = []>
+    : AttrDef<Hir_Dialect, name, traits> {
   let mnemonic = attrMnemonic;
 }
 

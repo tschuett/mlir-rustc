@@ -5,8 +5,7 @@ using namespace rust_compiler::lexer;
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::OuterAttributes>>
-Parser::tryParseOuterAttributes(std::span<lexer::Token> tokens,
-                                std::string_view modulePath) {
+Parser::tryParseOuterAttributes(std::span<lexer::Token> tokens) {
 
   // FIXME
   return std::nullopt;

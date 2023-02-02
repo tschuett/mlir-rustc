@@ -1,5 +1,5 @@
-#ifndef HMirDialect
-#define HMirDialect
+#ifndef HirDialect
+#define HirDialect
 
 include "mlir/IR/SymbolInterfaces.td"
 include "mlir/Interfaces/CallInterfaces.td"
@@ -9,13 +9,13 @@ include "mlir/Interfaces/LoopLikeInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
 
-def HMir_Dialect : Dialect {
-  let name = "hmir";
-  let cppNamespace = "::rust_compiler::HMir";
+def Hir_Dialect : Dialect {
+  let name = "hir";
+  let cppNamespace = "::rust_compiler::hir";
   let description = [{
-    Top-level dialect for HMir.
+    Top-level dialect for Hir.
 
-    This dialect tries to represent the HMIR dialect of not rustc.
+    This dialect tries to represent the HIR dialect of not rustc.
 
   }];
 

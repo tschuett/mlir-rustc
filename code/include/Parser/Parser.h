@@ -1,7 +1,7 @@
 #pragma once
 
+#include "ADT/ScopedCanonicalPath.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
-#include "AST/CanonicalPath.h"
 #include "AST/ClippyAttribute.h"
 #include "AST/GenericArgs.h"
 #include "AST/IfExpression.h"
@@ -20,39 +20,44 @@
 #include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
 
+#include <mlir/Support/LogicalResult.h>
 #include <span>
 #include <string>
 #include <string_view>
 #include <vector>
 
+namespace rust_compiler::ast::use_tree {
+class PathList;
+class UseTree;
+} // namespace rust_compiler::ast::use_tree
+
 namespace rust_compiler::ast {
 class Statements;
 class Statement;
-class UseTree;
+class Crate;
 } // namespace rust_compiler::ast
 
 namespace rust_compiler::parser {
 
 class Parser {
   lexer::TokenStream ts;
-  ast::CanonicalPath path;
+  adt::ScopedCanonicalPath path;
 
 public:
-  Parser(lexer::TokenStream &ts, const ast::CanonicalPath &path)
+  Parser(lexer::TokenStream &ts, const adt::CanonicalPath &path)
       : ts(ts), path(path){};
 
-  std::shared_ptr<ast::Module> parse();
+  mlir::LogicalResult parseFile(std::shared_ptr<ast::Module> &);
 
   // private:
 
   std::optional<std::shared_ptr<ast::Item>>
-  tryParseItem(std::span<lexer::Token> tokens, const ast::CanonicalPath& path);
+  tryParseItem(std::span<lexer::Token> tokens);
 
-  std::optional<ast::Module> tryParseModule(std::span<lexer::Token> tokens,
-                                            std::string_view modulePath);
+  std::optional<ast::Module> tryParseModule(std::span<lexer::Token> tokens);
 
   std::optional<ast::Module> tryParseModuleTree(std::span<lexer::Token> tokens,
-                                                std::string_view modulePath);
+                                                std::string_view moduleName);
 
   std::optional<ast::Visibility>
   tryParseVisibility(std::span<lexer::Token> tokens);
@@ -60,8 +65,7 @@ public:
   std::optional<ast::SimplePath>
   tryParseSimplePath(std::span<lexer::Token> tokens);
 
-  std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens,
-                                                std::string_view modulePath);
+  std::optional<ast::Function> tryParseFunction(std::span<lexer::Token> tokens);
 
   std::optional<ast::FunctionQualifiers>
   tryParseFunctionQualifiers(std::span<lexer::Token> tokens);
@@ -129,7 +133,7 @@ public:
   std::optional<std::shared_ptr<ast::types::Type>>
   tryParseType(std::span<lexer::Token> tokens);
 
-  std::optional<ast::OuterAttribute>
+  std::optional<std::shared_ptr<ast::OuterAttribute>>
   tryParseOuterAttribute(std::span<lexer::Token> tokens);
 
   std::optional<ast::InnerAttribute>
@@ -147,16 +151,11 @@ public:
   std::optional<std::shared_ptr<ast::Expression>>
   tryParseBorrowExpression(std::span<lexer::Token> tokens);
 
-  std::optional<std::shared_ptr<ast::OuterAttribute>>
-  tryParseOuterAttribute(std::span<lexer::Token> tokens,
-                         std::string_view modulePath);
-
   std::optional<std::shared_ptr<ast::OuterAttributes>>
-  tryParseOuterAttributes(std::span<lexer::Token> tokens,
-                          std::string_view modulePath);
+  tryParseOuterAttributes(std::span<lexer::Token> tokens);
 
   std::optional<std::shared_ptr<ast::VisItem>>
-  tryParseVisItem(std::span<lexer::Token> tokens, std::string_view modulePath);
+  tryParseVisItem(std::span<lexer::Token> tokens);
 
   std::optional<std::shared_ptr<ast::Expression>>
   tryParseIfExpression(std::span<lexer::Token> tokens);

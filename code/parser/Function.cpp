@@ -7,7 +7,6 @@
 #include "Generics.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
-
 #include "Util.h"
 
 #include <llvm/Support/raw_os_ostream.h>
@@ -147,11 +146,8 @@ Parser::tryParseFunctionSignature(std::span<lexer::Token> tokens) {
 }
 
 std::optional<ast::Function>
-Parser::tryParseFunction(std::span<lexer::Token> tokens,
-                         std::string_view modulePath) {
+Parser::tryParseFunction(std::span<lexer::Token> tokens) {
   std::span<Token> view = tokens;
-
-  Function f = {view.front().getLocation()};
 
   //  llvm::errs() << "tryParseFunction: start"
   //               << "\n";
@@ -160,31 +156,27 @@ Parser::tryParseFunction(std::span<lexer::Token> tokens,
   std::optional<FunctionSignature> sig = tryParseFunctionSignature(view);
 
   if (sig) {
+    Function f = {path.getCurrentPath().append(sig->getName()),
+                  view.front().getLocation()};
     f.setSignature(*sig);
     view = view.subspan((*sig).getTokens());
-    //    llvm::errs() << "tryParseFunction: found signature"
-    //                 << "\n";
+    if (view.front().getKind() == TokenKind::Semi) {
+      return f;
+    }
+    std::optional<std::shared_ptr<BlockExpression>> block =
+        tryParseBlockExpression(view);
+    if (block) {
+      f.setBody(*block);
+      return f;
+    }
+    return std::nullopt;
   } else {
     return std::nullopt;
-  }
-
-  if (view.front().getKind() == TokenKind::Semi) {
-    return f;
-  }
-
-  std::optional<std::shared_ptr<BlockExpression>> block =
-      tryParseBlockExpression(view);
-  if (block) {
-    //  llvm::errs() << "tryParseFunction: found body"
-    //               << "\n";
-    f.setBody(*block);
-    return f;
   }
 
   // llvm::errs() << "tryParseFunction: found function"
   //              << "\n";
 
-  return f;
   return std::nullopt;
 }
 

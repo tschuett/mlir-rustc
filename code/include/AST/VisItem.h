@@ -25,13 +25,14 @@ enum class VisItemKind {
 };
 
 class VisItem : public Item {
+  adt::CanonicalPath path;
   VisItemKind kind;
   std::optional<Visibility> vis;
 
 public:
-  explicit VisItem(const CanonicalPath &path, rust_compiler::Location location,
-                   VisItemKind kind)
-      : Item(path, location), kind(kind) {}
+  explicit VisItem(const adt::CanonicalPath &path,
+                   rust_compiler::Location location, VisItemKind kind)
+      : Item(location), path(path), kind(kind) {}
 
   VisItemKind getKind() const { return kind; }
 

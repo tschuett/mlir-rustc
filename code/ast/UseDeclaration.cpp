@@ -1,5 +1,7 @@
 #include "AST/UseDeclaration.h"
 
+#include "AST/UseTree.h"
+
 namespace rust_compiler::ast {
 
 size_t UseDeclaration::getTokens() {

@@ -3,9 +3,9 @@
 #include "AST/ClippyAttribute.h"
 #include "AST/InnerAttribute.h"
 #include "Lexer/Token.h"
+#include "Parser/Parser.h"
 #include "Util.h"
 #include "mlir/IR/Location.h"
-#include "Parser/Parser.h"
 
 #include <optional>
 #include <sstream>
@@ -38,7 +38,8 @@ tryParseLint(std::span<Token> tokens) {
   return std::nullopt;
 }
 
-std::optional<OuterAttribute> Parser::tryParseOuterAttribute(std::span<Token> tokens) {
+std::optional<std::shared_ptr<OuterAttribute>>
+Parser::tryParseOuterAttribute(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   if (not(view[0].getKind() == TokenKind::Hash and
@@ -83,7 +84,8 @@ tryParseDenyAttribute(std::span<Token> tokens) {
   return std::nullopt;
 }
 
-std::optional<InnerAttribute> Parser::tryParseInnerAttribute(std::span<Token> tokens) {
+std::optional<InnerAttribute>
+Parser::tryParseInnerAttribute(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   if (not(view[0].getKind() == TokenKind::Hash and
@@ -128,7 +130,7 @@ Parser::tryParseClippyAttribute(std::span<Token> tokens) {
                   }
                 } else {
                   printf("found clippy\n");
-                  //printStringSpan(lints);
+                  // printStringSpan(lints);
                   return ClippyAttribute(view[0].getLocation(), lints,
                                          lintTokens);
                 }
@@ -142,4 +144,4 @@ Parser::tryParseClippyAttribute(std::span<Token> tokens) {
   return std::nullopt;
 }
 
-} // namespace rust_compiler
+} // namespace rust_compiler::parser

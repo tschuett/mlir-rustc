@@ -21,7 +21,7 @@ class Module : public VisItem {
   // std::vector<std::shared_ptr<Function>> funs;
 
 public:
-  Module(const CanonicalPath &path, rust_compiler::Location loc,
+  Module(const adt::CanonicalPath &path, rust_compiler::Location loc,
          ModuleKind kind)
       : VisItem(path, loc, VisItemKind::Module),
         vis(loc, VisibilityKind::Private), kind(kind){};

@@ -13,7 +13,7 @@ using namespace rust_compiler::ast;
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::Item>>
-Parser::tryParseItem(std::span<Token> tokens, const ast::CanonicalPath &path) {
+Parser::tryParseItem(std::span<Token> tokens) {
 
   std::span<Token> view = tokens;
 
@@ -21,13 +21,13 @@ Parser::tryParseItem(std::span<Token> tokens, const ast::CanonicalPath &path) {
   //               << "\n";
 
   std::optional<std::shared_ptr<ast::OuterAttributes>> outer =
-      tryParseOuterAttributes(view, modulePath);
+      tryParseOuterAttributes(view);
 
   if (outer) {
     view = view.subspan((*outer)->getTokens());
 
     std::optional<std::shared_ptr<ast::VisItem>> visItem =
-        tryParseVisItem(view, modulePath);
+        tryParseVisItem(view);
 
     if (visItem) {
 
@@ -38,7 +38,7 @@ Parser::tryParseItem(std::span<Token> tokens, const ast::CanonicalPath &path) {
     }
   } else {
     std::optional<std::shared_ptr<ast::VisItem>> visItem =
-        tryParseVisItem(view, modulePath);
+        tryParseVisItem(view);
 
     if (visItem) {
 

@@ -14,7 +14,7 @@ using namespace rust_compiler::lexer;
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::VisItem>>
-Parser::tryParseVisItem(std::span<Token> tokens, std::string_view modulePath) {
+Parser::tryParseVisItem(std::span<Token> tokens) {
   std::span<Token> view = tokens;
 
   std::optional<ast::Visibility> visibility = tryParseVisibility(view);
@@ -31,7 +31,7 @@ Parser::tryParseVisItem(std::span<Token> tokens, std::string_view modulePath) {
       view.front().getIdentifier() == "mod") {
     if (view[1].getKind() == TokenKind::Identifier) {
       if (view[2].getKind() == TokenKind::Semi) {
-        std::optional<Module> module = tryParseModule(view, modulePath);
+        std::optional<Module> module = tryParseModule(view);
         if (module) {
           Module mod = *module;
           if (visibility) {
@@ -44,7 +44,7 @@ Parser::tryParseVisItem(std::span<Token> tokens, std::string_view modulePath) {
           return item;
         }
       } else if (view[2].getKind() == TokenKind::BraceOpen) {
-        std::optional<Module> module = tryParseModuleTree(view, modulePath);
+        std::optional<Module> module = tryParseModuleTree(view, view[1].getIdentifier());
         if (module) {
           Module mod = *module;
           if (visibility) {
@@ -73,7 +73,7 @@ Parser::tryParseVisItem(std::span<Token> tokens, std::string_view modulePath) {
 
   if (view.front().getKind() == TokenKind::Keyword &&
       view.front().getIdentifier() == "fn") {
-    std::optional<ast::Function> fun = tryParseFunction(view, modulePath);
+    std::optional<ast::Function> fun = tryParseFunction(view);
     if (fun) {
       if (visibility)
         fun->setVisibility(*visibility);
@@ -91,7 +91,7 @@ Parser::tryParseVisItem(std::span<Token> tokens, std::string_view modulePath) {
        view.front().getIdentifier() == "const")) {
     if (view[1].getKind() == TokenKind::Keyword &&
         view[1].getIdentifier() == "fn") {
-      std::optional<ast::Function> fun = tryParseFunction(view, modulePath);
+      std::optional<ast::Function> fun = tryParseFunction(view);
       if (fun) {
         std::shared_ptr<VisItem> item = std::static_pointer_cast<VisItem>(
             std::make_shared<ast::Function>(*fun));

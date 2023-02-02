@@ -1,8 +1,9 @@
+#include "ADT/ScopedCanonicalPath.h"
 #include "AST/Module.h"
 #include "Item.h"
 #include "Lexer/Token.h"
-#include "Util.h"
 #include "Parser/Parser.h"
+#include "Util.h"
 
 #include <optional>
 #include <sstream>
@@ -10,15 +11,16 @@
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 namespace rust_compiler::parser {
 
 std::optional<ast::Module>
 Parser::tryParseModuleTree(std::span<Token> tokens,
-                           std::string_view modulePath) {
+                           std::string_view moduleName) {
 
-  Module module = {tokens.front().getLocation(), ModuleKind::ModuleTree,
-                   modulePath};
+  Module module = {path.getCurrentPath().append(moduleName),
+                   tokens.front().getLocation(), ModuleKind::ModuleTree};
 
   std::span<Token> view = tokens;
 
@@ -44,6 +46,8 @@ Parser::tryParseModuleTree(std::span<Token> tokens,
 
   // everything is fine
 
+  ScopedCanonicalPathScope scope = {&path, moduleName};
+
   view = view.subspan(3);
 
   size_t last = view.size();
@@ -58,8 +62,7 @@ Parser::tryParseModuleTree(std::span<Token> tokens,
       return module;
     }
 
-    std::optional<std::shared_ptr<ast::Item>> item =
-        tryParseItem(view, modulePath);
+    std::optional<std::shared_ptr<ast::Item>> item = tryParseItem(view);
 
     if (item) {
       view = view.subspan((*item)->getTokens());
@@ -75,8 +78,7 @@ Parser::tryParseModuleTree(std::span<Token> tokens,
   return std::nullopt;
 }
 
-std::optional<ast::Module> Parser::tryParseModule(std::span<Token> tokens,
-                                                  std::string_view modulePath) {
+std::optional<ast::Module> Parser::tryParseModule(std::span<Token> tokens) {
 
   std::span<Token> view = tokens;
 
@@ -84,10 +86,8 @@ std::optional<ast::Module> Parser::tryParseModule(std::span<Token> tokens,
       view.front().getIdentifier() == "mod") {
     if (view[1].getKind() == TokenKind::Identifier) {
       if (view[2].getKind() == TokenKind::Semi) {
-        std::stringstream s;
-        s << modulePath << std::string("::") << view[1].getIdentifier();
-        // printf("found module: %s\n", s.str().c_str());
-        return Module(view.front().getLocation(), ModuleKind::Module, s.str());
+        return Module(path.getCurrentPath().append(view[1].getIdentifier()),
+                      view.front().getLocation(), ModuleKind::Module);
       }
     }
   }
@@ -96,7 +96,7 @@ std::optional<ast::Module> Parser::tryParseModule(std::span<Token> tokens,
       view.front().getIdentifier() == "mod") {
     if (view[1].getKind() == TokenKind::Identifier) {
       if (view[2].getKind() == TokenKind::BraceOpen) {
-        return tryParseModuleTree(tokens, modulePath);
+        return tryParseModuleTree(tokens, view[1].getIdentifier());
       }
     }
   }

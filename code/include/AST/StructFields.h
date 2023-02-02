@@ -1,18 +1,18 @@
 #pragma once
 
 #include "AST/AST.h"
-#include "AST/EnumItem.h"
+#include "AST/StructField.h"
 
-#include <vector>
+#include <optional>
 
 namespace rust_compiler::ast {
 
-class EnumItems : public Node {
+class StructFields : public Node {
   bool trailingComma;
-  std::vector<EnumItem> items;
+  std::vector<StructField> fields;
 
 public:
-  EnumItems(Location loc) : Node(loc) {}
+  StructFields(Location loc) : Node(loc) {}
 
   size_t getTokens() override;
 };

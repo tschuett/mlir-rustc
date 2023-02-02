@@ -3,7 +3,7 @@
 #include "AST/UseTree.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
-#include "SimplePath.h"
+//#include "SimplePath.h"
 
 #include "Util.h"
 
@@ -192,7 +192,7 @@ Parser::tryParseUseTree(std::span<Token> tokens) {
 std::optional<UseDeclaration>
 Parser::tryParseUseDeclaration(std::span<Token> tokens) {
   std::span<Token> view = tokens;
-  UseDeclaration useDeclaration = {view.front().getLocation()};
+  UseDeclaration useDeclaration = {path.getCurrentPath(), view.front().getLocation()};
 
   if (tokens.front().isUseToken()) {
     view = view.subspan(1);

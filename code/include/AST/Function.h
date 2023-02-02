@@ -14,7 +14,7 @@ class Function : public VisItem {
   FunctionQualifiers qualifiers;
 
 public:
-  Function(const CanonicalPath &path, Location loc)
+  Function(const adt::CanonicalPath &path, Location loc)
       : VisItem(path, loc, VisItemKind::Function), signature(loc),
         qualifiers(loc) {}
 

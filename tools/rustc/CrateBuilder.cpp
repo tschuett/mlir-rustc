@@ -1,5 +1,7 @@
 #include "CrateBuilder.h"
 
+#include "ADT/CanonicalPath.h"
+#include "AST/Module.h"
 #include "CodeGen/DumpLLVMIR.h"
 #include "CodeGen/PassPipeLine.h"
 #include "Lexer/Lexer.h"
@@ -66,12 +68,19 @@ void buildCrate(std::string_view path, std::string_view edition) {
                   (*outputBuffer)->getBufferEnd());
 
   lexer::TokenStream ts = lexer::lex(str, "lib.rs");
-  Parser parser = {ts, "crate"};
-  std::shared_ptr<ast::Module> module = parser.parse();
+  Parser parser = {ts, adt::CanonicalPath("toy1")};
+  std::shared_ptr<ast::Module> module = std::make_shared<ast::Module>(
+      adt::CanonicalPath("toy1"), ts.getAsView().front().getLocation(),
+      ast::ModuleKind::Module);
+  (void)parser.parseFile(module);
 
   llvm::outs() << "finished parsing: " << module->getItems().size() << "\n";
 
-  sema::analyzeSemantics(module);
+  std::shared_ptr<ast::Crate> crate = std::make_shared<ast::Crate>("toy1");
+
+  crate->merge(module, adt::CanonicalPath("toy1"));
+
+  sema::analyzeSemantics(crate);
 
   std::string fn = "lib.yaml";
 

@@ -16,8 +16,7 @@ using namespace rust_compiler::ast;
 namespace rust_compiler::parser {
 
 std::optional<std::shared_ptr<ast::OuterAttribute>>
-Parser::tryParseOuterAttribute(std::span<Token> tokens,
-                               std::string_view modulePath) {
+Parser::tryParseOuterAttribute(std::span<Token> tokens) {
 
   std::span<Token> view = tokens;
 

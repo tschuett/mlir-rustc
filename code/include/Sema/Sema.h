@@ -21,6 +21,7 @@ class Item;
 class OuterAttributes;
 class Expression;
 class MacroInvocationSemi;
+class MatchGuard;
 } // namespace rust_compiler::ast
 
 namespace rust_compiler::sema {
@@ -44,6 +45,8 @@ private:
   analyzeMacroInvocationSemi(std::shared_ptr<ast::MacroInvocationSemi> macro);
 
   void analyzeItemDeclaration(std::shared_ptr<ast::Node> item);
+
+  void checkExhaustiveness(std::shared_ptr<ast::MatchGuard>);
 
   TypeChecking typechecking = {this};
   Mappings mappings = {this};

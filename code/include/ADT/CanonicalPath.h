@@ -3,7 +3,11 @@
 #include <string>
 #include <vector>
 
-namespace rust_compiler::ast {
+namespace rust_compiler::adt {
+  class ScopedCanonicalPath;
+}
+
+namespace rust_compiler::adt {
 
 class CanonicalPath {
   std::vector<std::string> segments;
@@ -40,6 +44,9 @@ public:
   }
 
   bool isEmpty() const { return segments.size() == 0; }
+
+private:
+  friend ScopedCanonicalPath;
 };
 
-} // namespace rust_compiler::ast
+} // namespace rust_compiler::adt

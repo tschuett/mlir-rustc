@@ -48,6 +48,10 @@ add_library(ast
            InfiniteLoopExpression.cpp
            BreakExpression.cpp
            AwaitExpression.cpp
+           Enumeration.cpp
+           Struct.cpp
+           StructStruct.cpp
+           TupleStruct.cpp
            )
 
 

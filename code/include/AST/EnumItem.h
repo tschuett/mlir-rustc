@@ -2,6 +2,9 @@
 
 #include "AST/AST.h"
 #include "AST/OuterAttribute.h"
+#include "EnumItemTuple.h"
+#include "EnumItemStruct.h"
+#include "EnumItemDiscriminant.h"
 
 #include <vector>
 #include <variant>
@@ -11,7 +14,7 @@ namespace rust_compiler::ast {
 
 class EnumItem : public Node {
   std::vector<OuterAttribute> outerAttributes;
-  // Visibility
+  // std::optional<Visibility>
   std::string identifier;
   std::optional<
       std::variant<EnumItemTuple, EnumItemStruct, EnumItemDisciminant>>
@@ -19,6 +22,8 @@ class EnumItem : public Node {
 
 public:
   EnumItem(Location loc) : Node(loc) {}
+
+  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast
