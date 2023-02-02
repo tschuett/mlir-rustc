@@ -80,7 +80,7 @@
     Self,throw,throws,true,try,_,associativity,convenience,dynamic,%
     didSet,final,get,infix,indirect,lazy,mutating,none,%
     nonmutating,optional,override,postfix,precedence,prefix,Protocol,%
-    required,set,Type,unowned,weak,willSet},%
+    required,set,Type,unowned,weak,willSet,let,mut},%
   sensitive,%
   morecomment=[s]{/*}{*/},%
   morecomment=[s]{/**}{*/},%
@@ -236,6 +236,18 @@
 %% references from the narrative in the introduction.
 
 
+Regehr~\cite{https://doi.org/10.48550/arxiv.1809.02161} mostly focused
+on optimizations. Instead, we discuss how to exploit different levels
+of abstraction to optimize code relying on
+~MLIR~\cite{lattner2021mlir}. At higher abstraction, there will be
+structured control flow and language specific constructs:
+\begin{lstlisting}{language=C}
+for (unsigned i = 0; i < j; ++i) {
+  // side effect
+}
+\end{lstlisting}
+At the bottom of the stack, there will be $\phi$s.
+
 We make the following main contributions:\ts{revisit}
 \begin{itemize}[topsep=0pt,itemsep=0pt,parsep=0pt]
 \item We designed an highly-optimizing Rust compiler, see
@@ -367,12 +379,15 @@ OpenMP, SYCL~\cite{mlirsycl}, OpenACC, CUDA, ..+
 
 \cite{mlirsycl}
 
+\cite{https://doi.org/10.48550/arxiv.1809.02161}
+
 \section{Future Work}
 
 \begin{itemize}
 \item LTO at MLIR
 \item PGO at MLIR
 \item What kind of optimizations ought to happen at MLIR or LLVM?
+\item Closed vs. open world?
 \end{itemize}
 
 \section{Conclusion}
