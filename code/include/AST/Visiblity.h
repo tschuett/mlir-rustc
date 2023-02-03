@@ -12,7 +12,6 @@ enum class VisibilityKind {
   PublicSelf,
   PublicSuper,
   PublicIn
-
 };
 
 class Visibility : public Node {

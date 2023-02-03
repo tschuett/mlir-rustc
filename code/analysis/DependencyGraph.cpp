@@ -2,10 +2,17 @@
 
 namespace rust_compiler::analysis::attributor {
 
-void DepdendencyGraph::addEdge(const DependencyGraphNode *FromAA,
-                               const DependencyGraphNode *ToAA,
-                               DepClass DepClass) {
-  const_cast<DependencyGraphNode *>(ToAA)->addDependency(FromAA, DepClass);
+void DepdendencyGraph::addDependency(const DependencyGraphNode *FromAA,
+                                     const DependencyGraphNode *ToAA,
+                                     DepClass DepClass) {
+  auto it = dependendencies.find(FromAA);
+  if (it != dependendencies.end()) {
+    it->second.insert(ToAA);
+  } else {
+    std::set<const DependencyGraphNode *> empty;
+    empty.insert(ToAA);
+    auto pair = dependendencies.insert({FromAA, empty});
+  }
 }
 
 } // namespace rust_compiler::analysis::attributor

@@ -235,6 +235,9 @@
 %% Instead of ``The rest of this paper is structured...'', use forward
 %% references from the narrative in the introduction.
 
+LLVM~\cite{lattner2004llvm} is a great compiler for scalar
+optimizations.
+
 
 Regehr~\cite{https://doi.org/10.48550/arxiv.1809.02161} mostly focused
 on future directions on optimizations. Instead, we discuss how to
@@ -247,12 +250,11 @@ for n in 1..11 {
     sum += n;
 }
 \end{lstlisting}
-At the bottom of the stack, there will be $\phi$s.
-
-Ranger~\cite{ranger} is a project in GCC that determines value ranges
-of variables. \code{n} will have the values $1$ to $10$. \code{sum}
-starts at $0$ and goes up to $55$. In fact \code{1..11} and the
-iterator loop are constant expressions.
+At the bottom of the stack, there will be branches and
+$\phi$s. Ranger~\cite{ranger} is a project in GCC that determines
+value ranges of variables. \code{n} will have the values $1$ to
+$10$. \code{sum} starts at $0$ and goes up to $55$. In fact
+\code{1..11} and the iterator loop are constant expressions.
 
 We make the following main contributions:\ts{revisit}
 \begin{itemize}[topsep=0pt,itemsep=0pt,parsep=0pt]
@@ -285,8 +287,6 @@ In the following, we discuss some preliminaries.
 
 \section{Experimental Setup}
 
-
-
 Due to the high core counts of our machines, we limited the CPU
 frequency.
 
@@ -308,11 +308,14 @@ percentages.
 
 \subsection{Flow}
 
+Secret sauce
+
 \begin{itemize}
 \item Borrow checking
 \item non-lexical lifetimes
 \end{itemize}
 
+What is the right level of abstraction for borrow checking?
 
 \section{IR Design for programming languages\label{sec.irdesign} --- TO BE DONE}
 
@@ -323,8 +326,7 @@ The top level IR is the AST (abstract syntax tree.
 \item ?
 \end{itemize}
 
-What is the right level of abstraction for borrow checking?
-What levels of abstraction are needed to generate super efficient code?
+What and how many levels of abstraction are needed to generate super efficient code?
 Self-contained IR or mix with other MLIR dialects?
 
 \subsection{Programming Models}
@@ -388,6 +390,16 @@ OpenMP, SYCL~\cite{mlirsycl}, OpenACC, CUDA, ..+
 \cite{https://doi.org/10.48550/arxiv.1809.02161}
 
 \cite{ranger}
+
+MemorySSA~\cite{novillo2007memory}
+
+interprocedural memory SSA~\cite{sui2018parallel}
+
+interprocedural memory SSA and more~\cite{sui2016svf}
+
+MemorySSA~\cite{chow1996effective}
+
+LLVM~\cite{lattner2004llvm}
 
 \section{Future Work}
 

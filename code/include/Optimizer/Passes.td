@@ -11,7 +11,7 @@ def Test : Pass<"test", "mlir::func::FuncOp"> {
 }
 
 def Attributer : Pass<"attributer", "mlir::ModuleOp"> {
-  let summary = "Attributer lite";
+  let summary = "Attributer";
   let description = [{Try to derive some attributes on Mir.}];
 }
 

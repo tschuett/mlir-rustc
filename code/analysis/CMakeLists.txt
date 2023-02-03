@@ -4,6 +4,7 @@ add_library(analysis
            Attributer.cpp
            DependencyGraph.cpp
            DependencyGraphNode.cpp
+           AANoop.cpp
            )
 
 target_include_directories(analysis PRIVATE  ../include)

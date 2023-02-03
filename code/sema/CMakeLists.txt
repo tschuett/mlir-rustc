@@ -13,6 +13,7 @@ add_library(sema
            LetStatement.cpp
            ExpressionStatement.cpp
            MacroInvocation.cpp
+           Reachability.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)

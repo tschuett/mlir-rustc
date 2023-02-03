@@ -15,6 +15,7 @@ class Item : public Node {
   std::shared_ptr<OuterAttributes> outerAttributes;
   std::shared_ptr<VisItem> visItem;
 
+  // MacroItem
 
 public:
   explicit Item(rust_compiler::Location location)

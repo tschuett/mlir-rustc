@@ -4,6 +4,7 @@
 #include "AST/Function.h"
 #include "AST/Module.h"
 #include "AST/VisItem.h"
+
 #include <memory>
 
 using namespace rust_compiler::ast;
@@ -13,6 +14,13 @@ namespace rust_compiler::sema {
 void analyzeSemantics(std::shared_ptr<ast::Crate> &ast) {
 
   Sema sema;
+
+  // type checking
+  // path resolution
+  // visiblity checks -> turns into linkage
+  // match resp pattern exhaustive check
+  // constant folding
+  // drops
 
   sema.analyze(ast);
 }

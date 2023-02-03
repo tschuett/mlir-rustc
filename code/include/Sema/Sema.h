@@ -48,6 +48,8 @@ private:
 
   void checkExhaustiveness(std::shared_ptr<ast::MatchGuard>);
 
+  bool isReachable(std::shared_ptr<ast::VisItem>, std::shared_ptr<ast::VisItem>);
+
   TypeChecking typechecking = {this};
   Mappings mappings = {this};
 };

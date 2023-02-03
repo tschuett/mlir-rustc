@@ -65,7 +65,7 @@ class Attributor {
   }
 
 public:
-  Attributor(mlir::ModuleOp module);
+  Attributor(mlir::ModuleOp module) : module(module) {}
 
   template <typename AAType>
   const AAType &getOrCreateAAFor(IRPosition IRP,
@@ -103,7 +103,13 @@ public:
 
   void setup();
 
-  void run();
+  mlir::LogicalResult run() {
+    phase = Phase::UPDATE;
+    auto result = runTillFixpoint();
+    phase = Phase::DONE;
+
+    return result;
+  }
 
 private:
   /// Run `::update` on \p AA and track the dependences queried while doing so.
@@ -120,6 +126,20 @@ private:
   /// information from \p FromAA but none are available anymore.
   void recordDependence(const AbstractElement &FromAA,
                         const AbstractElement &ToAA, DepClass DepClass);
+
+  mlir::LogicalResult runTillFixpoint();
+
+  ChangeStatus updateElement(AbstractElement &element);
+
+  // A flag that indicates which stage of the process we are in.
+  enum class Phase {
+    // Initial elements are being registered to seed the graph.
+    SEEDING,
+    // Fixed point iteration is running.
+    UPDATE,
+    // Iteration has completed; does not indicate whether it coverged.
+    DONE,
+  } phase = Phase::SEEDING;
 
   DepdendencyGraph depGraph;
 };

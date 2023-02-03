@@ -55,6 +55,7 @@
 * https://mlir.llvm.org/docs/Dialects/AsyncDialect/
 * https://discourse.llvm.org/t/rfc-new-dialect-for-modelling-asynchronous-execution-at-a-higher-level/1345/11
 * https://discourse.llvm.org/t/value-range-analysis-of-source-code-variables/62853/5
+* https://discourse.llvm.org/t/upstreaming-from-our-mlir-python-compiler-project/64931
 
 ## Rust
 

@@ -51,6 +51,7 @@ add_library(ast
            Struct.cpp
            StructStruct.cpp
            TupleStruct.cpp
+           Crate.cpp
            )
 
 

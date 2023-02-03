@@ -34,6 +34,7 @@ void CrateBuilder::emitVisItem(std::shared_ptr<VisItem> visItem) {
     break;
   }
   case VisItemKind::Struct: {
+    // FIXME
     break;
   }
   case VisItemKind::Enumeration: {
@@ -52,6 +53,7 @@ void CrateBuilder::emitVisItem(std::shared_ptr<VisItem> visItem) {
     break;
   }
   case VisItemKind::Implementation: {
+    // FIXME
     break;
   }
   case VisItemKind::ExternBlock: {

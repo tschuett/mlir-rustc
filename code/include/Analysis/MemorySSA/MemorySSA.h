@@ -6,6 +6,7 @@
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/Pass/AnalysisManager.h>
 #include <vector>
+#include <mlir/Dialect/Func/IR/FuncOps.h>
 
 namespace rust_compiler::analysis {
 
@@ -26,8 +27,7 @@ public:
 
 private:
   bool isFunction(mlir::Operation &op);
-  void findFunctionOps();
-  void analyzeFunction(mlir::Operation *funcOp);
+  void analyzeFunction(mlir::func::FuncOp *funcOp);
 
   std::optional<mlir::AliasResult> mayAlias(mlir::Operation *a,
                                             mlir::Operation *b);

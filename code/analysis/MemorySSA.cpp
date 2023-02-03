@@ -1,7 +1,9 @@
 #include "Analysis/MemorySSA/MemorySSA.h"
 
 #include "Analysis/MemorySSA/MemorySSAWalker.h"
+#include "mlir/IR/Operation.h"
 
+#include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/Dialect/MemRef/IR/MemRef.h>
 #include <mlir/IR/FunctionInterfaces.h>
 #include <mlir/Interfaces/ControlFlowInterfaces.h>
@@ -11,7 +13,6 @@
 
 namespace rust_compiler::analysis {
 
-
 /// a and b must be memrefs
 std::optional<mlir::AliasResult> MemorySSA::mayAlias(mlir::Operation *a,
                                                      mlir::Operation *b) {
@@ -19,8 +20,7 @@ std::optional<mlir::AliasResult> MemorySSA::mayAlias(mlir::Operation *a,
   mlir::Value valueB;
   if (auto load = mlir::dyn_cast<mlir::memref::LoadOp>(a)) {
     valueA = load.getMemRef();
-  }
-  else if (auto store = mlir::dyn_cast<mlir::memref::StoreOp>(a))
+  } else if (auto store = mlir::dyn_cast<mlir::memref::StoreOp>(a))
     valueA = store.getMemRef();
   else
     return std::nullopt;
@@ -44,43 +44,44 @@ bool MemorySSA::isFunction(mlir::Operation &op) {
   return false;
 }
 
-static auto hasMemEffect(mlir::Operation &op) {
-  struct Result {
-    bool read = false;
-    bool write = false;
-  };
+//static auto getMemoryEffect(mlir::Operation &op) {
+//  struct Result {
+//    bool read = false;
+//    bool write = false;
+//  };
+//
+//  Result ret;
+//  if (auto effects = mlir::dyn_cast<mlir::MemoryEffectOpInterface>(op)) {
+//    if (effects.hasEffect<mlir::MemoryEffects::Write>())
+//      ret.write = true;
+//
+//    if (effects.hasEffect<mlir::MemoryEffects::Read>())
+//      ret.read = true;
+//  } else if (op.hasTrait<mlir::OpTrait::HasRecursiveMemoryEffects>()) {
+//    ret.write = true;
+//  }
+//
+//  return ret;
+//}
 
-  Result ret;
+static bool hasMemoryEffects(mlir::Operation &op) {
   if (auto effects = mlir::dyn_cast<mlir::MemoryEffectOpInterface>(op)) {
     if (effects.hasEffect<mlir::MemoryEffects::Write>())
-      ret.write = true;
+      return true;
 
     if (effects.hasEffect<mlir::MemoryEffects::Read>())
-      ret.read = true;
+      return true;
   } else if (op.hasTrait<mlir::OpTrait::HasRecursiveMemoryEffects>()) {
-    ret.write = true;
+    return true;
   }
 
-  return ret;
+  return false;
 }
 
-void MemorySSA::analyzeFunction(mlir::Operation *funcOp) {
-  if (auto fun = mlir::dyn_cast<mlir::FunctionOpInterface>(funcOp)) {
-    for (auto &bblock : fun.getBlocks()) {
-      for (auto &op : bblock.getOperations()) {
-        /*auto mem =*/hasMemEffect(op);
-      }
-    }
-  }
-}
-
-void MemorySSA::findFunctionOps() {
-  mlir::Region &body = module.getBodyRegion();
-
-  for (auto &bblock : body.getBlocks()) {
+void MemorySSA::analyzeFunction(mlir::func::FuncOp *funcOp) {
+  for (auto &bblock : funcOp->getBody()) {
     for (auto &op : bblock.getOperations()) {
-      if (isFunction(op)) {
-        // functionOps.push_back(op);
+      if (hasMemoryEffects(op)) {
       }
     }
   }
@@ -90,11 +91,15 @@ MemorySSAWalker *MemorySSA::buildMemorySSA() {
   if (Walker)
     return Walker;
 
-  findFunctionOps();
+  module.walk([&](mlir::func::FuncOp op) {
+    analyzeFunction(&op);
+  });
 
-  for (mlir::Operation *funcOp : functionOps) {
-    analyzeFunction(funcOp);
-  }
+  // findFunctionOps();
+
+  //  for (mlir::Operation *funcOp : functionOps) {
+  //    analyzeFunction(funcOp);
+  //  }
 
   Walker = new MemorySSAWalker(this);
 
@@ -102,3 +107,7 @@ MemorySSAWalker *MemorySSA::buildMemorySSA() {
 }
 
 } // namespace rust_compiler::analysis
+
+// https://github.com/intel/mlir-extensions/blob/2a6d65137105e869c70fd1d86ba3bb784f70f6df/mlir/lib/analysis/memory_ssa.cpp
+
+// LoopLikeOpInterface
