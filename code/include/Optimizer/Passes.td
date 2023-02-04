@@ -40,7 +40,11 @@ def GVNPass : Pass<"GVN", "mlir::func::FuncOp"> {
 }
 
 def DeadCodeEliminationPass : Pass<"dead code elimination", "mlir::func::FuncOp"> {
-  let summary = "Deletes dead blocks..";
+  let summary = "Deletes dead code..";
+}
+
+def DeadStoreEliminationPass : Pass<"dead store elimination", "mlir::ModuleOp"> {
+  let summary = "Deletes dead stores..";
 }
 
 def SummaryWriterPass : Pass<"SummaryWriter", "mlir::ModuleOp"> {

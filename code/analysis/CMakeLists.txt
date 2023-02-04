@@ -5,6 +5,7 @@ add_library(analysis
            DependencyGraph.cpp
            DependencyGraphNode.cpp
            AANoop.cpp
+           MemorySSANodes.cpp
            )
 
 target_include_directories(analysis PRIVATE  ../include)

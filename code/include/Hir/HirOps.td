@@ -26,7 +26,7 @@ def ErrorPropagationOp : Hir_Op<"question_mark", []> {
 }
 
 def WhileLoopOp : Hir_Op<"while",
-  [DeclareOpInterfaceMethods<LoopLikeOpInterface>]> {
+  []> {
   let summary = "a Rust while op.";
 
   let description = [{
@@ -36,6 +36,28 @@ def WhileLoopOp : Hir_Op<"while",
   let arguments = (ins AnyType:$rhs);
 
   let regions = (region AnyRegion:$region);
+}
+
+def InfiniteLoopOp : Hir_Op<"loop",
+  []> {
+  let summary = "a Rust loop op.";
+
+  let description = [{
+  Rust InfiniteLoopExpressionn
+  }];
+
+  let regions = (region AnyRegion:$region);
+}
+
+def BreakOp : Hir_Op<"break",
+  []> {
+  let summary = "a Rust break op.";
+
+  let description = [{
+  Rust break expression
+  }];
+
+  let arguments = (ins AnyType:$rhs);
 }
 
 def IfOp : Hir_Op<"if", [NoRegionArguments]> {
