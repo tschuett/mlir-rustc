@@ -1,6 +1,7 @@
 #include "AST/FunctionSignature.h"
+
 #include "AST/GenericParams.h"
- #include "AST/WhereClause.h"
+#include "AST/WhereClause.h"
 
 namespace rust_compiler::ast {
 
@@ -20,6 +21,8 @@ void FunctionSignature::setReturnType(
     std::shared_ptr<ast::types::Type> _returnType) {
   returnType = _returnType;
 }
+
+  bool FunctionSignature::hasReturnType() const { return (bool)returnType; }
 
 void FunctionSignature::setWhereClause(std::shared_ptr<WhereClause> _where) {
   where = _where;

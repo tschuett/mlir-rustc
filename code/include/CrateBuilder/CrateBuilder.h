@@ -1,8 +1,10 @@
 #pragma once
 
 #include "ADT/ScopedHashTable.h"
+#include "AST/BlockExpression.h"
 #include "AST/Crate.h"
 #include "AST/VariableDeclaration.h"
+#include "AST/ExpressionStatement.h"
 #include "CrateBuilder/Target.h"
 #include "Hir/HirDialect.h"
 
@@ -67,7 +69,7 @@ public:
 
     Target target = {tm.get()};
 
-    //builder = {&context};
+    // builder = {&context};
 
     context.getOrLoadDialect<hir::HirDialect>();
     context.getOrLoadDialect<mlir::func::FuncDialect>();
@@ -84,10 +86,15 @@ public:
   mlir::ModuleOp getModule() const { return theModule; };
 
 private:
-  void emitItem(std::unique_ptr<ast::Item>&);
+  void emitItem(std::shared_ptr<ast::Item> &);
   void emitVisItem(std::shared_ptr<ast::VisItem>);
   void emitFunction(std::shared_ptr<ast::Function>);
   void emitModule(std::shared_ptr<ast::Module>);
+  mlir::Value emitBlockExpression(std::shared_ptr<ast::BlockExpression>);
+  mlir::Value emitStatements(std::shared_ptr<ast::Statements>);
+  mlir::Value emitExpressionWithoutBlock(std::shared_ptr<ast::Expression> expr);
+  void emitStatement(std::shared_ptr<ast::Statement>);
+  void emitExpressionStatement(std::shared_ptr<ast::ExpressionStatement> stmt);
 };
 
 void build(rust_compiler::ast::Crate &crate);

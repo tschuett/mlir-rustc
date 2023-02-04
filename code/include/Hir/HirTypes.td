@@ -12,5 +12,4 @@ class Hir_Type<string name, string typeMnemonic, list<Trait> traits = [],
   let mnemonic = typeMnemonic;
 }
 
-
 #endif

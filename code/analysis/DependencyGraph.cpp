@@ -15,4 +15,12 @@ void DepdendencyGraph::addDependency(const DependencyGraphNode *FromAA,
   }
 }
 
+void DepdendencyGraph::resetNewNodes() { newNodes.clear(); }
+
+llvm::SetVector<DependencyGraphNode *, std::vector<DependencyGraphNode *>,
+                llvm::DenseSet<DependencyGraphNode *>>
+DepdendencyGraph::getNewNodes() {
+  return newNodes;
+}
+
 } // namespace rust_compiler::analysis::attributor

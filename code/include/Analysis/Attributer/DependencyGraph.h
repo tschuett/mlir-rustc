@@ -36,9 +36,9 @@ private:
   // FIXME highly inefficient
   std::map<const DependencyGraphNode *, std::set<const DependencyGraphNode *>>
       dependendencies;
-  llvm::SetVector<const DependencyGraphNode *,
-                  std::vector<const DependencyGraphNode *>,
-                  llvm::DenseSet<const DependencyGraphNode *>>
+  llvm::SetVector<DependencyGraphNode *,
+                  std::vector<DependencyGraphNode *>,
+                  llvm::DenseSet<DependencyGraphNode *>>
       newNodes;
 };
 

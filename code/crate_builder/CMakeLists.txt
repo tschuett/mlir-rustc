@@ -3,6 +3,11 @@ add_library(crate_builder
            Item.cpp
            Function.cpp
            Module.cpp
+           BlockExpression.cpp
+           Statements.cpp
+           ExpressionWithoutBlock.cpp
+           Statement.cpp
+           ExpressionStatement.cpp
            )
 
 

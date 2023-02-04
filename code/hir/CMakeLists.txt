@@ -16,7 +16,7 @@ target_link_libraries(hir ${llvm_libs})
 
 
 
-add_dependencies(hir HirOpsIncGen)
+add_dependencies(hir HirOpsIncGen HirOpsIncIFaceGen)
 
 
 target_precompile_headers(hir PRIVATE )

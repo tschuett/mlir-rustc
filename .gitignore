@@ -107,3 +107,14 @@ code/include/Hir/HirOps.cpp.inc
 code/include/Hir/HirOps.h.inc
 code/include/Hir/HirTypes.cpp.inc
 code/include/Hir/HirTypes.h.inc
+
+
+docs/comment.cut
+docs/main.aux
+docs/main.bbl
+docs/main.blg
+docs/main.fdb_latexmk
+docs/main.fls
+docs/main.log
+docs/main.pdf
+docs/pdflatex18740.fls

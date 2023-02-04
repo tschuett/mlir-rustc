@@ -77,5 +77,86 @@ def IfOp : Hir_Op<"if", [NoRegionArguments]> {
   );
 }
 
+def ArrayOp : Hir_Op<"array",
+  []> {
+  let summary = "a ArrayExpression op.";
+
+  let description = [{
+  Rust ArrayExpression
+  }];
+
+  let arguments = (ins Variadic<AnyType>:$els);
+
+  let results = (outs AnyType);
+}
+
+def AwaitOp : Hir_Op<"await",
+  []> {
+  let summary = "a AwaitExpression op.";
+
+  let description = [{
+  Rust AwaitExpression
+  }];
+
+  let arguments = (ins AnyType:$future);
+
+  let results = (outs AnyType);
+}
+
+def BlockOp : Hir_Op<"block",
+  []> {
+  let summary = "a AwaitExpression op.";
+
+  let description = [{
+  Rust AwaitExpression
+  }];
+
+  //let arguments = (ins AnyType:$future);
+
+  let regions = (region AnyRegion:$region);
+
+  let results = (outs AnyType);
+}
+
+def UnsafeBlockOp : Hir_Op<"unsafe block",
+  []> {
+  let summary = "a UnsafeExpression op.";
+
+  let description = [{
+  Rust UnsafeExpression
+  }];
+
+  //let arguments = (ins AnyType:$future);
+
+  let regions = (region AnyRegion:$region);
+
+  let results = (outs AnyType);
+}
+
+def BorrowOp : Hir_Op<"borrow", [Pure, BorrowOpInterface]> {
+  let summary = "Performs a borrow on the  input.";
+
+  let description = [{
+Each entry in `output` is the mean of the corresponding size `ksize`
+window in `value`.
+  }];
+
+  let arguments = (ins AnyType:$rhs);
+
+  let results = (outs AnyType:$output);
+}
+
+def MutBorrowOp : Hir_Op<"mutborrow", [Pure, BorrowOpInterface]> {
+  let summary = "Performs a mutable borrow on the  input.";
+
+  let description = [{
+Each entry in `output` is the mean of the corresponding size `ksize`
+window in `value`. NoMemoryEffect
+  }];
+
+  let arguments = (ins AnyType:$rhs);
+
+  let results = (outs AnyType:$output);
+}
 
 #endif

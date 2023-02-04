@@ -3,6 +3,7 @@
 #include "ADT/CanonicalPath.h"
 #include "AST/InnerAttribute.h"
 #include "AST/Item.h"
+#include "AST/Module.h"
 
 #include <memory>
 #include <span>
@@ -12,15 +13,13 @@
 
 namespace rust_compiler::ast {
 
-class Module;
-
 // A crate AST object - holds all the data for a single compilation unit
 class Crate {
   std::vector<std::shared_ptr<InnerAttribute>> inner_attrs;
   // dodgy spacing required here
   /* TODO: is it better to have a vector of items here or a module (implicit
    * top-level one)? */
-  std::vector<std::unique_ptr<Item>> items;
+  std::vector<std::shared_ptr<Item>> items;
 
   std::string crateName;
 
@@ -29,7 +28,7 @@ public:
 
   void merge(std::shared_ptr<ast::Module> module, adt::CanonicalPath path);
 
-  std::span<std::unique_ptr<Item>> getItems() const;
+  std::span<std::shared_ptr<Item>> getItems() const;
 
   std::string_view getCrateName() const;
 };

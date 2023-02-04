@@ -83,7 +83,6 @@ class UseTreeRebind;
 class UseTreeList;
 class UseTreeGlob;
 class ExternCrate;
-class Module;
 class Method;
 class TypeBoundWhereClauseItem;
 class LifetimeWhereClauseItem;

@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <mlir/Interfaces/LoopLikeInterface.h>
 
+#include "Hir/HirInterfaces.h"
 
 /// Include the auto-generated header file containing the declarations of the
 /// Hir operations.

@@ -5,6 +5,11 @@
 
 namespace rust_compiler::ast {
 
+enum class ExpressionStatementKind {
+  ExpressionWithoutBlock,
+  ExpressionWithBlock,
+};
+
 class ExpressionStatement : public Statement {
   std::shared_ptr<Expression> expr;
 
@@ -13,6 +18,8 @@ public:
       : Statement(loc, StatementKind::ExpressionStatement), expr(expr) {}
 
   bool containsBreakExpression() override;
+
+  ExpressionStatementKind getKind() const;
 
   size_t getTokens() override;
 };

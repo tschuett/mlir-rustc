@@ -8,7 +8,7 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::crate_builder {
 
-void CrateBuilder::emitItem(std::unique_ptr<Item> &item) {
+void CrateBuilder::emitItem(std::shared_ptr<Item> &item) {
 
   emitVisItem(item->getVisItem());
 }

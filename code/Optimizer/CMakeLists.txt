@@ -8,6 +8,7 @@ add_library(optimizer
            GVN.cpp
            DeadCodeElimination.cpp
            ComputeKnownBits.cpp
+           DeadStoreElimination.cpp
            )
 
 
