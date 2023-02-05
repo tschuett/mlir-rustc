@@ -23,16 +23,6 @@ namespace rust_compiler::optimizer {
 } // namespace rust_compiler::optimizer
 
 namespace {
-class CmpIOpPattern : public RewritePattern {
-public:
-  CmpIOpPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
-      : RewritePattern(::mlir::arith::CmpIOp::getOperationName(), _benefit,
-                       context) {}
-
-  LogicalResult matchAndRewrite(Operation *op,
-                                PatternRewriter &rewriter) const override;
-};
-
 class AddiOpPattern : public RewritePattern {
 public:
   AddiOpPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
@@ -47,6 +37,46 @@ class SubiOpPattern : public RewritePattern {
 public:
   SubiOpPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
       : RewritePattern(::mlir::arith::SubIOp::getOperationName(), _benefit,
+                       context) {}
+
+  LogicalResult matchAndRewrite(Operation *op,
+                                PatternRewriter &rewriter) const override;
+};
+
+class CmpIOpPattern : public RewritePattern {
+public:
+  CmpIOpPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
+      : RewritePattern(::mlir::arith::CmpIOp::getOperationName(), _benefit,
+                       context) {}
+
+  LogicalResult matchAndRewrite(Operation *op,
+                                PatternRewriter &rewriter) const override;
+};
+
+class AndIOpPattern : public RewritePattern {
+public:
+  AndIOpPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
+      : RewritePattern(::mlir::arith::AndIOp::getOperationName(), _benefit,
+                       context) {}
+
+  LogicalResult matchAndRewrite(Operation *op,
+                                PatternRewriter &rewriter) const override;
+};
+
+class OrIOpPattern : public RewritePattern {
+public:
+  OrIOpPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
+      : RewritePattern(::mlir::arith::AndIOp::getOperationName(), _benefit,
+                       context) {}
+
+  LogicalResult matchAndRewrite(Operation *op,
+                                PatternRewriter &rewriter) const override;
+};
+
+class XorIOpPattern : public RewritePattern {
+public:
+  XorIOpPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
+      : RewritePattern(::mlir::arith::XOrIOp::getOperationName(), _benefit,
                        context) {}
 
   LogicalResult matchAndRewrite(Operation *op,
@@ -124,8 +154,8 @@ LogicalResult SubiOpPattern::matchAndRewrite(Operation *op,
   return failure();
 }
 
-LogicalResult CmpIOpPattern::matchAndRewrite(Operation *op,
-                                             PatternRewriter &rewriter) const {
+LogicalResult CmpIOpPattern ::matchAndRewrite(Operation *op,
+                                              PatternRewriter &rewriter) const {
   if (auto cmpi = mlir::dyn_cast<::mlir::arith::CmpIOp>(op)) {
     mlir::arith::CmpIPredicate pred = cmpi.getPredicate();
     if (auto conLOp = mlir::dyn_cast<mlir::arith::ConstantOp>(
@@ -269,6 +299,81 @@ LogicalResult CmpIOpPattern::matchAndRewrite(Operation *op,
   return failure();
 }
 
+LogicalResult AndIOpPattern::matchAndRewrite(Operation *op,
+                                             PatternRewriter &rewriter) const {
+  if (auto andi = mlir::dyn_cast<::mlir::arith::AndIOp>(op)) {
+    if (auto conLOp = mlir::dyn_cast<mlir::arith::ConstantOp>(
+            andi.getLhs().getDefiningOp())) {
+      if (auto conROp = mlir::dyn_cast<mlir::arith::ConstantOp>(
+              andi.getRhs().getDefiningOp())) {
+        if (auto srcRAttr = conROp.getValue().cast<IntegerAttr>()) {
+          if (auto srcLAttr = conLOp.getValue().cast<IntegerAttr>()) {
+            llvm::APInt result = srcLAttr.getValue();
+            result &= srcRAttr.getValue();
+            mlir::arith::ConstantOp op2 =
+                rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(andi.getLhs().getType(), result));
+            op->replaceAllUsesWith(op2);
+            return success();
+          }
+        }
+      }
+    }
+  }
+  return failure();
+}
+
+LogicalResult OrIOpPattern::matchAndRewrite(Operation *op,
+                                            PatternRewriter &rewriter) const {
+  if (auto ori = mlir::dyn_cast<::mlir::arith::OrIOp>(op)) {
+    if (auto conLOp = mlir::dyn_cast<mlir::arith::ConstantOp>(
+            ori.getLhs().getDefiningOp())) {
+      if (auto conROp = mlir::dyn_cast<mlir::arith::ConstantOp>(
+              ori.getRhs().getDefiningOp())) {
+        if (auto srcRAttr = conROp.getValue().cast<IntegerAttr>()) {
+          if (auto srcLAttr = conLOp.getValue().cast<IntegerAttr>()) {
+            llvm::APInt result = srcLAttr.getValue();
+            result |= srcRAttr.getValue();
+            mlir::arith::ConstantOp op2 =
+                rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(ori.getLhs().getType(), result));
+            op->replaceAllUsesWith(op2);
+            return success();
+          }
+        }
+      }
+    }
+  }
+  return failure();
+}
+
+LogicalResult XorIOpPattern::matchAndRewrite(Operation *op,
+                                             PatternRewriter &rewriter) const {
+  if (auto xori = mlir::dyn_cast<::mlir::arith::XOrIOp>(op)) {
+    if (auto conLOp = mlir::dyn_cast<mlir::arith::ConstantOp>(
+            xori.getLhs().getDefiningOp())) {
+      if (auto conROp = mlir::dyn_cast<mlir::arith::ConstantOp>(
+              xori.getRhs().getDefiningOp())) {
+        if (auto srcRAttr = conROp.getValue().cast<IntegerAttr>()) {
+          if (auto srcLAttr = conLOp.getValue().cast<IntegerAttr>()) {
+            llvm::APInt result = srcLAttr.getValue();
+            result ^= srcRAttr.getValue();
+            mlir::arith::ConstantOp op2 =
+                rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(xori.getLhs().getType(), result));
+            op->replaceAllUsesWith(op2);
+            return success();
+          }
+        }
+      }
+    }
+  }
+  return failure();
+}
+
 llvm::StringRef CombinerPass::getDescription() const { return "combiner pass"; }
 
 LogicalResult CombinerPass::initialize(MLIRContext *context) {
@@ -278,6 +383,10 @@ LogicalResult CombinerPass::initialize(MLIRContext *context) {
 
   rewritePatterns.add<AddiOpPattern>(PatternBenefit(1), context);
   rewritePatterns.add<SubiOpPattern>(PatternBenefit(1), context);
+  rewritePatterns.add<CmpIOpPattern>(PatternBenefit(1), context);
+  rewritePatterns.add<AndIOpPattern>(PatternBenefit(1), context);
+  rewritePatterns.add<OrIOpPattern>(PatternBenefit(1), context);
+  rewritePatterns.add<XorIOpPattern>(PatternBenefit(1), context);
 
   frozenPatterns = FrozenRewritePatternSet(std::move(rewritePatterns));
 
