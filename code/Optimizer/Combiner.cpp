@@ -23,6 +23,16 @@ namespace rust_compiler::optimizer {
 } // namespace rust_compiler::optimizer
 
 namespace {
+class CmpIOpPattern : public RewritePattern {
+public:
+  CmpIOpPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
+      : RewritePattern(::mlir::arith::CmpIOp::getOperationName(), _benefit,
+                       context) {}
+
+  LogicalResult matchAndRewrite(Operation *op,
+                                PatternRewriter &rewriter) const override;
+};
+
 class AddiOpPattern : public RewritePattern {
 public:
   AddiOpPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
@@ -106,6 +116,80 @@ LogicalResult SubiOpPattern::matchAndRewrite(Operation *op,
                     rewriter.getIntegerAttr(subi.getLhs().getType(), result));
             op->replaceAllUsesWith(op2);
             return success();
+          }
+        }
+      }
+    }
+  }
+  return failure();
+}
+
+LogicalResult CmpIOpPattern::matchAndRewrite(Operation *op,
+                                             PatternRewriter &rewriter) const {
+  if (auto cmpi = mlir::dyn_cast<::mlir::arith::CmpIOp>(op)) {
+    mlir::arith::CmpIPredicate pred = cmpi.getPredicate();
+    if (auto conLOp = mlir::dyn_cast<mlir::arith::ConstantOp>(
+            cmpi.getLhs().getDefiningOp())) {
+      if (auto conROp = mlir::dyn_cast<mlir::arith::ConstantOp>(
+              cmpi.getRhs().getDefiningOp())) {
+        if (auto srcRAttr = conROp.getValue().cast<IntegerAttr>()) {
+          if (auto srcLAttr = conLOp.getValue().cast<IntegerAttr>()) {
+
+            // FIXME
+            llvm::APInt rhs = srcRAttr.getValue();
+            llvm::APInt lhs = srcLAttr.getValue();
+
+            mlir::arith::ConstantOp result;
+            switch (pred) {
+            case mlir::arith::CmpIPredicate::eq: {
+              if (lhs == rhs)
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 1));
+              else
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 0));
+              op->replaceAllUsesWith(result);
+              break;
+            }
+            case mlir::arith::CmpIPredicate::ne: {
+              if (lhs != rhs)
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 1));
+              else
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 0));
+              op->replaceAllUsesWith(result);
+              break;
+            }
+            case mlir::arith::CmpIPredicate::slt: {
+              break;
+            }
+            case mlir::arith::CmpIPredicate::sgt: {
+              break;
+            }
+            case mlir::arith::CmpIPredicate::sge: {
+              break;
+            }
+            case mlir::arith::CmpIPredicate::sle: {
+              break;
+            }
+            case mlir::arith::CmpIPredicate::ult: {
+              break;
+            }
+            case mlir::arith::CmpIPredicate::ule: {
+              break;
+            }
+            case mlir::arith::CmpIPredicate::ugt: {
+              break;
+            }
+            case mlir::arith::CmpIPredicate::uge: {
+              break;
+            }
+            }
           }
         }
       }

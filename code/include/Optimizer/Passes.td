@@ -20,6 +20,10 @@ def CombinerPass : Pass<"combine", "mlir::func::FuncOp"> {
 
   // Inherit the common pattern rewrite options from `RewritePassUtils`.
   let options = RewritePassUtils.options;
+
+  let dependentDialects = [
+    "mlir::arith::ArithDialect",
+  ];
 }
 
 def RewritePass : Pass<"rewrite", "mlir::func::FuncOp"> {
