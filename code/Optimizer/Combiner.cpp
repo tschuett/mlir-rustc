@@ -1,8 +1,8 @@
-#include "Optimizer/Passes.h"
-
 #include "Hir/HirInterfaces.h"
 #include "Hir/HirOps.h"
+#include "Optimizer/Passes.h"
 
+#include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/BuiltinAttributes.h>
 #include <mlir/IR/BuiltinOps.h>
@@ -23,11 +23,21 @@ namespace rust_compiler::optimizer {
 } // namespace rust_compiler::optimizer
 
 namespace {
-class CondBranchToBranchPattern : public RewritePattern {
+class AddiOpPattern : public RewritePattern {
 public:
-  CondBranchToBranchPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
-      : RewritePattern(rust_compiler::hir::MutBorrowOp::getOperationName(),
-                       _benefit, context) {}
+  AddiOpPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
+      : RewritePattern(::mlir::arith::AddIOp::getOperationName(), _benefit,
+                       context) {}
+
+  LogicalResult matchAndRewrite(Operation *op,
+                                PatternRewriter &rewriter) const override;
+};
+
+class SubiOpPattern : public RewritePattern {
+public:
+  SubiOpPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
+      : RewritePattern(::mlir::arith::SubIOp::getOperationName(), _benefit,
+                       context) {}
 
   LogicalResult matchAndRewrite(Operation *op,
                                 PatternRewriter &rewriter) const override;
@@ -56,14 +66,51 @@ private:
 
 using namespace rust_compiler::hir;
 
-LogicalResult
-CondBranchToBranchPattern::matchAndRewrite(Operation *op,
-                                           PatternRewriter &rewriter) const {
-  llvm::outs() << "tryCondBranchToBranchPattern"
-               << "\n";
-//  if (CondBranchOp cond =
-//          mlir::dyn_cast<rust_compiler::Hir::CondBranchOp>(op)) {
-//  }
+LogicalResult AddiOpPattern::matchAndRewrite(Operation *op,
+                                             PatternRewriter &rewriter) const {
+  if (auto addi = mlir::dyn_cast<::mlir::arith::AddIOp>(op)) {
+    if (auto conLOp = mlir::dyn_cast<mlir::arith::ConstantOp>(
+            addi.getLhs().getDefiningOp())) {
+      if (auto conROp = mlir::dyn_cast<mlir::arith::ConstantOp>(
+              addi.getRhs().getDefiningOp())) {
+        if (auto srcRAttr = conROp.getValue().cast<IntegerAttr>()) {
+          if (auto srcLAttr = conLOp.getValue().cast<IntegerAttr>()) {
+            llvm::APInt result = srcRAttr.getValue() + srcLAttr.getValue();
+            mlir::arith::ConstantOp op2 =
+                rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(addi.getLhs().getType(), result));
+            op->replaceAllUsesWith(op2);
+            return success();
+          }
+        }
+      }
+    }
+  }
+  return failure();
+}
+
+LogicalResult SubiOpPattern::matchAndRewrite(Operation *op,
+                                             PatternRewriter &rewriter) const {
+  if (auto subi = mlir::dyn_cast<::mlir::arith::SubIOp>(op)) {
+    if (auto conLOp = mlir::dyn_cast<mlir::arith::ConstantOp>(
+            subi.getLhs().getDefiningOp())) {
+      if (auto conROp = mlir::dyn_cast<mlir::arith::ConstantOp>(
+              subi.getRhs().getDefiningOp())) {
+        if (auto srcRAttr = conROp.getValue().cast<IntegerAttr>()) {
+          if (auto srcLAttr = conLOp.getValue().cast<IntegerAttr>()) {
+            llvm::APInt result = srcLAttr.getValue() - srcRAttr.getValue();
+            mlir::arith::ConstantOp op2 =
+                rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(subi.getLhs().getType(), result));
+            op->replaceAllUsesWith(op2);
+            return success();
+          }
+        }
+      }
+    }
+  }
   return failure();
 }
 
@@ -74,7 +121,8 @@ LogicalResult CombinerPass::initialize(MLIRContext *context) {
 
   populateWithGenerated(rewritePatterns);
 
-  rewritePatterns.add<CondBranchToBranchPattern>(PatternBenefit(1), context);
+  rewritePatterns.add<AddiOpPattern>(PatternBenefit(1), context);
+  rewritePatterns.add<SubiOpPattern>(PatternBenefit(1), context);
 
   frozenPatterns = FrozenRewritePatternSet(std::move(rewritePatterns));
 

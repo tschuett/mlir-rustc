@@ -118,3 +118,6 @@ docs/main.fls
 docs/main.log
 docs/main.pdf
 docs/pdflatex18740.fls
+
+code/include/Hir/HirOpsInterfaces.cpp.inc
+code/include/Hir/HirOpsInterfaces.h.inc
