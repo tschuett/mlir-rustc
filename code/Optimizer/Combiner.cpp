@@ -135,7 +135,6 @@ LogicalResult CmpIOpPattern::matchAndRewrite(Operation *op,
         if (auto srcRAttr = conROp.getValue().cast<IntegerAttr>()) {
           if (auto srcLAttr = conLOp.getValue().cast<IntegerAttr>()) {
 
-            // FIXME
             llvm::APInt rhs = srcRAttr.getValue();
             llvm::APInt lhs = srcLAttr.getValue();
 
@@ -151,7 +150,7 @@ LogicalResult CmpIOpPattern::matchAndRewrite(Operation *op,
                     op->getLoc(),
                     rewriter.getIntegerAttr(rewriter.getI1Type(), 0));
               op->replaceAllUsesWith(result);
-              break;
+              return success();
             }
             case mlir::arith::CmpIPredicate::ne: {
               if (lhs != rhs)
@@ -163,31 +162,103 @@ LogicalResult CmpIOpPattern::matchAndRewrite(Operation *op,
                     op->getLoc(),
                     rewriter.getIntegerAttr(rewriter.getI1Type(), 0));
               op->replaceAllUsesWith(result);
-              break;
+              return success();
             }
             case mlir::arith::CmpIPredicate::slt: {
-              break;
+              if (lhs.slt(rhs))
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 1));
+              else
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 0));
+              op->replaceAllUsesWith(result);
+              return success();
             }
             case mlir::arith::CmpIPredicate::sgt: {
-              break;
+              if (lhs.sgt(rhs))
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 1));
+              else
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 0));
+              op->replaceAllUsesWith(result);
+              return success();
             }
             case mlir::arith::CmpIPredicate::sge: {
-              break;
+              if (lhs.sge(rhs))
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 1));
+              else
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 0));
+              op->replaceAllUsesWith(result);
+              return success();
             }
             case mlir::arith::CmpIPredicate::sle: {
-              break;
+              if (lhs.sle(rhs))
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 1));
+              else
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 0));
+              op->replaceAllUsesWith(result);
+              return success();
             }
             case mlir::arith::CmpIPredicate::ult: {
-              break;
+              if (lhs.ult(rhs))
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 1));
+              else
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 0));
+              op->replaceAllUsesWith(result);
+              return success();
             }
             case mlir::arith::CmpIPredicate::ule: {
-              break;
+              if (lhs.ule(rhs))
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 1));
+              else
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 0));
+              op->replaceAllUsesWith(result);
+              return success();
             }
             case mlir::arith::CmpIPredicate::ugt: {
-              break;
+              if (lhs.ugt(rhs))
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 1));
+              else
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 0));
+              op->replaceAllUsesWith(result);
+              return success();
             }
             case mlir::arith::CmpIPredicate::uge: {
-              break;
+              if (lhs.uge(rhs))
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 1));
+              else
+                result = rewriter.create<mlir::arith::ConstantOp>(
+                    op->getLoc(),
+                    rewriter.getIntegerAttr(rewriter.getI1Type(), 0));
+              op->replaceAllUsesWith(result);
+              return success();
             }
             }
           }

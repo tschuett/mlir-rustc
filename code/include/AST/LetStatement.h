@@ -33,8 +33,9 @@ public:
 
   size_t getTokens() override;
 
-private:
   std::shared_ptr<ast::patterns::PatternNoTopAlt> getPattern();
+
+private:
 };
 
 } // namespace rust_compiler::ast
