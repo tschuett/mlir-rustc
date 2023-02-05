@@ -322,8 +322,8 @@ What is the right level of abstraction for borrow checking?
 The top level IR is the AST (abstract syntax tree.
 
 \begin{itemize}
-\item AST-like IR. It models the AST closely, i.e., structured control flow, ...
-\item ?
+\item Hir: AST-like IR. It models the AST closely, i.e., structured control flow, ...
+\item Mir: similar but with alloca
 \end{itemize}
 
 What and how many levels of abstraction are needed to generate super efficient code?

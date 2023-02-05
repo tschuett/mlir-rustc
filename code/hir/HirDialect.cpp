@@ -1,10 +1,13 @@
 #include "Hir/HirDialect.h"
 
-#include "Hir/HirOps.h"
 #include "Hir/HirInterfaces.h"
+#include "Hir/HirOps.h"
+#include "Hir/HirStruct.h"
+#include "Hir/HirEnum.h"
 
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/WithColor.h>
+#include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/IR/BlockAndValueMapping.h>
 #include <mlir/IR/Builders.h>
 #include <mlir/IR/BuiltinTypes.h>
@@ -28,7 +31,7 @@ void HirDialect::initialize() {
 #include "Hir/HirOps.cpp.inc"
       >();
   //  addInterfaces<MirInlinerInterface>();
-  // addTypes<StructType>();
+  addTypes<StructType, EnumType>();
 }
 
 } // namespace rust_compiler::hir

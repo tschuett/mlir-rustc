@@ -4,6 +4,8 @@ add_library(hir
            HirTypes.cpp
            HirAttr.cpp
            HirInterfaces.cpp
+           HirStruct.cpp
+           HirEnum.cpp
            )
 
 

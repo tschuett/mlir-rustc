@@ -27,6 +27,11 @@ def Hir_Dialect : Dialect {
     static constexpr llvm::StringRef getTypeNameAttrName() { return "TypeName"; }
   }];
 
+  let dependentDialects = [
+    // Arith dialect provides Ops
+    "arith::ArithDialect"
+  ];
+
   let useFoldAPI = kEmitFoldAdaptorFolder;
 }
 

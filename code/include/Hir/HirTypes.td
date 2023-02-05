@@ -12,4 +12,13 @@ class Hir_Type<string name, string typeMnemonic, list<Trait> traits = [],
   let mnemonic = typeMnemonic;
 }
 
+def Hir_StructType :
+    DialectType<Hir_Dialect, CPred<"$_self.isa<StructType>()">,
+                "Hir struct type">;
+
+def Hir_EnumType :
+    DialectType<Hir_Dialect, CPred<"$_self.isa<EnumType>()">,
+                "Hir enum type">;
+
+
 #endif

@@ -15,11 +15,18 @@ def Attributer : Pass<"attributer", "mlir::ModuleOp"> {
   let description = [{Try to derive some attributes on Mir.}];
 }
 
+def CombinerPass : Pass<"combine", "mlir::func::FuncOp"> {
+  let summary = "combine ...";
+
+  // Inherit the common pattern rewrite options from `RewritePassUtils`.
+  let options = RewritePassUtils.options;
+}
+
 def RewritePass : Pass<"rewrite", "mlir::func::FuncOp"> {
   let summary = "rewrite Mir to ...";
 
   // Inherit the common pattern rewrite options from `RewritePassUtils`.
-//  let options = RewritePassUtils.options;
+  let options = RewritePassUtils.options;
 }
 
 def LowerAwaitPass : Pass<"LowerAwait", "mlir::ModuleOp"> {

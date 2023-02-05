@@ -6,7 +6,8 @@ include "mlir/IR/BuiltinAttributes.td"
 include "HirDialect.td"
 include "HirTypes.td"
 include "HirAttr.td"
-include "HirInterfaces.td"
+include "HirOpsBase.td"
+include "HirOpsInterfaces.td"
 
 // Ops
 class Hir_Op<string mnemonic, list<Trait> traits = []> :
@@ -133,6 +134,10 @@ def UnsafeBlockOp : Hir_Op<"unsafe block",
   let results = (outs AnyType);
 }
 
+//===----------------------------------------------------------------------===//
+// &
+//===----------------------------------------------------------------------===//
+
 def BorrowOp : Hir_Op<"borrow", [Pure, BorrowOpInterface]> {
   let summary = "Performs a borrow on the  input.";
 
@@ -146,6 +151,10 @@ window in `value`.
   let results = (outs AnyType:$output);
 }
 
+//===----------------------------------------------------------------------===//
+// &mut
+//===----------------------------------------------------------------------===//
+
 def MutBorrowOp : Hir_Op<"mutborrow", [Pure, BorrowOpInterface]> {
   let summary = "Performs a mutable borrow on the  input.";
 
@@ -157,6 +166,149 @@ window in `value`. NoMemoryEffect
   let arguments = (ins AnyType:$rhs);
 
   let results = (outs AnyType:$output);
+}
+
+//===----------------------------------------------------------------------===//
+// VarDeclaration
+//===----------------------------------------------------------------------===//
+
+// AttrSizedOperandSegments
+
+def Hir_DeclareOp : Hir_Op<"declare", []> {
+  let description = [{
+                 declare a variable and produce an
+                 SSA value that can be used as a
+                 variable in Hir operations
+  }];
+
+  let arguments = (ins
+    Builtin_StringAttr:$uniq_name
+  );
+
+  let results = (outs AnyType);
+}
+
+//===----------------------------------------------------------------------===//
+// VarDeclaration helper
+//===----------------------------------------------------------------------===//
+
+def VarDeclarationOp : Hir_Op<"vardeclare", []> {
+  let summary = "Auxilliary  information for variable declarations.";
+
+  let description = [{
+  Based on the hir.declare concept. It takes as input an alloc and provides
+  additional information.
+  }];
+
+  let arguments = (ins
+    AnyType:$vardecl,
+    Builtin_StringAttr:$uniq_name
+  );
+
+  let results = (outs AnyType:$output);
+}
+
+//===----------------------------------------------------------------------===//
+// VTable
+//===----------------------------------------------------------------------===//
+
+def Mir_MirEndOp : Hir_Op<"end", [Terminator]> {
+  let summary = "the end instruction";
+
+  let description = [{
+    The end terminator is a special terminator used inside various MIR
+    operations that have regions.  End is thus the custom invisible terminator
+    for these operations.  It is implicit and need not appear in the textual
+    representation.
+  }];
+}
+
+def ImplicitMirTerminator : SingleBlockImplicitTerminator<"MirEndOp">;
+
+
+def VTableOp: Hir_Op<"vtable", [IsolatedFromAbove, Symbol, ImplicitMirTerminator]> {
+  let summary = "Vtable";
+
+  let description = [{
+   ```mlir
+      mir.vtable @_QDTMquuzTfoo {
+        mir.vt_entry method1, @_QFNMquuzTfooPmethod1AfooR
+        mir.vt_entry method2, @_QFNMquuzTfooPmethod2AfooII
+      }
+    ```
+  }];
+  let arguments = (ins
+    SymbolNameAttr:$sym_name,
+    OptionalAttr<StrAttr>:$parent
+  );
+
+  let hasCustomAssemblyFormat = 1;
+  let hasVerifier = 1;
+
+  let regions = (region AnyRegion:$region);
+
+  let skipDefaultBuilders = 1;
+  let builders = [
+    OpBuilder<(ins "llvm::StringRef":$name, "mlir::Type":$type,
+      "llvm::StringRef":$parent,
+      CArg<"llvm::ArrayRef<mlir::NamedAttribute>", "{}">:$attrs)>
+  ];
+
+  let extraClassDeclaration = [{
+    static constexpr llvm::StringRef getParentAttrNameStr() { return "parent"; }
+    static constexpr llvm::StringRef getExtendsKeyword() { return "extends"; }
+
+    mlir::Block &getBlock() {
+      return getRegion().front();
+    }
+  }];
+}
+
+def VTEntryOp : Hir_Op<"vt_entry", [HasParent<"VTableOp">]> {
+  let summary = "map entry in a vtable";
+
+  let description = [{
+    An entry in a vtable.  Allows a function symbol to be bound
+    to a specifier method identifier.  A dispatch operation uses the dynamic
+    type of a distinguished argument to determine an exact dispatch table
+    and uses the method identifier to select the type-bound procedure to
+    be called.
+
+    ```mlir
+      mir.vt_entry method_name, @uniquedProcedure
+    ```
+  }];
+
+  let arguments = (ins StrAttr:$method, SymbolRefAttr:$proc);
+
+  let hasCustomAssemblyFormat = 1;
+
+  let extraClassDeclaration = [{
+    static constexpr llvm::StringRef getMethodAttrNameStr() { return "method"; }
+    static constexpr llvm::StringRef getProcAttrNameStr() { return "proc"; }
+  }];
+}
+
+//===----------------------------------------------------------------------===//
+// AssignOp
+//===----------------------------------------------------------------------===//
+
+def Hir_AssignOp : Hir_Op<"assign", [MemoryEffects<[MemWrite]>]> {
+  let summary = "Assign an expression or variable value to a Rust variable";
+
+  let description = [{
+    Assign rhs to lhs following Rust assignments rules.
+  }];
+
+//  let arguments = (ins AnyFortranEntity:$rhs,
+//                   Arg<AnyFortranVariable, "", [MemWrite]>:$lhs);
+//
+  let arguments = (ins AnyType:$rhs,
+                   Arg<AnyType, "", [MemWrite]>:$lhs);
+
+  let assemblyFormat = [{
+    $rhs `to` $lhs attr-dict `:` type(operands)
+  }];
 }
 
 #endif

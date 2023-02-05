@@ -13,6 +13,7 @@
 #include <mlir/Transforms/GreedyPatternRewriteDriver.h>
 
 using namespace mlir;
+using namespace rust_compiler::optimizer;
 
 #include "Combine.cpp.inc"
 
@@ -59,6 +60,11 @@ public:
 class RewritePass
     : public rust_compiler::optimizer::impl::RewritePassBase<RewritePass> {
 public:
+  RewritePass() = default;
+
+  RewritePass(const RewritePassOptions &options)
+      : RewritePassBase(options), options(options) {}
+
   llvm::StringRef getDescription() const override;
 
   LogicalResult initialize(MLIRContext *context) override;
@@ -66,6 +72,7 @@ public:
   void runOnOperation() override;
 
 private:
+  RewritePassOptions options;
   FrozenRewritePatternSet frozenPatterns;
 };
 
