@@ -1,19 +1,17 @@
 #pragma once
 
 #include "AST/AST.h"
-#include "AST/AttrInput.h"
-#include "AST/SimplePath.h"
+#include "AST/Attr.h"
 
 #include <optional>
 
 namespace rust_compiler::ast {
 
 class OuterAttribute : public Node {
-  SimplePath path;
-  std::optional<AttrInput> attrInput;
+  Attr attr;
 
 public:
-  OuterAttribute(Location loc) : Node(loc), path(loc) {}
+  OuterAttribute(Location loc) : Node(loc), attr(loc) {}
 
   SimplePath getPath() const;
 

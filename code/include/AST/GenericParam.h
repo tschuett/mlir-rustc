@@ -4,8 +4,7 @@
 
 namespace rust_compiler::ast {
 
-class AsClause : public Node {
-
+class GenericParam : public Node {
 public:
   size_t getTokens() override;
 };

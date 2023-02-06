@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/Expression.h"
+#include "AST/ArrayElements.h"
 
 #include <vector>
 

@@ -21,7 +21,8 @@ enum class VisItemKind {
   StaticItem,
   Trait,
   Implementation,
-  ExternBlock
+  ExternBlock,
+  AssociatedItem
 };
 
 class VisItem : public Item {

@@ -1,8 +1,7 @@
 #pragma once
 
 #include "AST/AST.h"
-#include "AST/AttrInput.h"
-#include "AST/SimplePath.h"
+#include "AST/Attr.h"
 #include "Location.h"
 
 #include <optional>
@@ -10,12 +9,11 @@
 namespace rust_compiler::ast {
 
 class InnerAttribute : public Node {
-  SimplePath path;
-  std::optional<AttrInput> attrInput;
+  Attr attr;
 
 public:
   InnerAttribute(rust_compiler::Location location)
-      : Node(location), path(location) {}
+      : Node(location), attr(location) {}
 
   SimplePath getPath() const;
 

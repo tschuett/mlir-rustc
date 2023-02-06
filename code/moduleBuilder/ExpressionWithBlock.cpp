@@ -65,11 +65,6 @@ mlir::Value ModuleBuilder::emitExpressionWithBlock(
                  << "\n";
     break;
   }
-  case ExpressionWithBlockKind::Unknown: {
-    llvm::outs() << "emitExpressionWithBlock: unknown UPS!!!!"
-                 << "\n";
-    break;
-  }
   }
   llvm::outs() << "emitExpressionWithBlock: failed"
                << "\n";

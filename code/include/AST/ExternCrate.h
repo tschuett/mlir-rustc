@@ -15,7 +15,9 @@ class ExternCrate : public VisItem {
 
 public:
   ExternCrate(const adt::CanonicalPath &path, Location loc)
-      : VisItem(path, loc, VisItemKind::ExternCrate) {}
+    : VisItem(path, loc, VisItemKind::ExternCrate), crateRef(loc) {}
+
+   size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast
