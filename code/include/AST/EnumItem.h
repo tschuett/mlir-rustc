@@ -17,7 +17,7 @@ class EnumItem : public Node {
   // std::optional<Visibility>
   std::string identifier;
   std::optional<
-      std::variant<EnumItemTuple, EnumItemStruct, EnumItemDisciminant>>
+      std::variant<EnumItemTuple, EnumItemStruct, EnumItemDiscriminant>>
       item;
 
 public:

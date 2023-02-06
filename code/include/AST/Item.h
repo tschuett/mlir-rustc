@@ -2,16 +2,16 @@
 
 #include "ADT/CanonicalPath.h"
 #include "AST/AST.h"
+#include "AST/OuterAttributes.h"
 #include "Location.h"
 
 #include <memory>
 
 namespace rust_compiler::ast {
 
-enum class ItemKind { VisItem, MacroItem };
-
-class OuterAttributes;
 class VisItem;
+  
+enum class ItemKind { VisItem, MacroItem };
 
 class Item : public Node {
   std::shared_ptr<OuterAttributes> outerAttributes;

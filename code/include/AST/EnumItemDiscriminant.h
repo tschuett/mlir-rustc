@@ -5,10 +5,10 @@
 
 namespace rust_compiler::ast {
 
-class EnumItemDisciminant : public Node {
+class EnumItemDiscriminant : public Node {
   std::shared_ptr<Expression> expr;
 public:
-  EnumItemDisciminant(Location loc) : Node(loc) {}
+  EnumItemDiscriminant(Location loc) : Node(loc) {}
 
   size_t getTokens() override;
 };

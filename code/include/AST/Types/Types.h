@@ -35,7 +35,7 @@ public:
 
   TypeKind getKind() const { return kind; }
 
-  size_t getTokens() override { return 1; };
+  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast::types

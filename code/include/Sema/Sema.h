@@ -6,6 +6,7 @@
 #include "AST/ExpressionStatement.h"
 #include "AST/LetStatement.h"
 #include "AST/Statements.h"
+#include "AST/CallExpression.h"
 #include "AST/Types/Types.h"
 #include "Sema/Common.h"
 #include "Sema/Mappings.h"
@@ -39,6 +40,7 @@ private:
   void analyzeBlockExpression(std::shared_ptr<ast::BlockExpression> block);
   void analyzeStatements(std::shared_ptr<ast::Statements> stmts);
   void analyzeLetStatement(std::shared_ptr<ast::LetStatement> let);
+  void analyzeCallExpression(std::shared_ptr<ast::CallExpression> let);
   void
   analyzeExpressionStatement(std::shared_ptr<ast::ExpressionStatement> expr);
   void
@@ -50,7 +52,7 @@ private:
 
   bool isReachable(std::shared_ptr<ast::VisItem>, std::shared_ptr<ast::VisItem>);
 
-  TypeChecking typechecking = {this};
+  TypeChecking typeChecking = {this};
   Mappings mappings = {this};
 };
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "AST/Decls.h"
 #include "AST/DelimTokenTree.h"
 #include "AST/Expression.h"
 

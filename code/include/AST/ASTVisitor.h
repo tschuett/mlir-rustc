@@ -1,46 +1,90 @@
 #pragma once
 
 #include "AST/Abi.h"
+#include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/ArrayExpression.h"
 #include "AST/AsClause.h"
+#include "AST/AssignmentExpression.h"
+#include "AST/AssociatedItem.h"
+#include "AST/AsyncBlockExpression.h"
 #include "AST/Attr.h"
 #include "AST/AttrInput.h"
+#include "AST/BlockExpression.h"
+#include "AST/BorrowExpression.h"
+#include "AST/BreakExpression.h"
+#include "AST/CallExpression.h"
+#include "AST/ClosureExpression.h"
+#include "AST/ComparisonExpression.h"
+#include "AST/CompoundAssignmentExpression.h"
+#include "AST/ConstParam.h"
+#include "AST/ConstantItem.h"
+#include "AST/ContinueExpression.h"
 #include "AST/Crate.h"
 #include "AST/CrateRef.h"
-#include "AST/Decls.h"
+#include "AST/DereferenceExpression.h"
 #include "AST/Enumeration.h"
+#include "AST/ErrorPropagationExpression.h"
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/ExternBlock.h"
 #include "AST/ExternCrate.h"
+#include "AST/ExternalItem.h"
+#include "AST/FieldExpression.h"
 #include "AST/Function.h"
 #include "AST/FunctionParam.h"
 #include "AST/FunctionParamPattern.h"
 #include "AST/FunctionParameters.h"
 #include "AST/FunctionQualifiers.h"
 #include "AST/FunctionReturnType.h"
+#include "AST/GenericParam.h"
 #include "AST/GenericParams.h"
 #include "AST/GroupedExpression.h"
+#include "AST/IfExpression.h"
+#include "AST/IfLetExpression.h"
 #include "AST/Implementation.h"
 #include "AST/IndexEpression.h"
+#include "AST/InfiniteLoopExpression.h"
+#include "AST/InherentImpl.h"
 #include "AST/InnerAttribute.h"
+#include "AST/IteratorLoopExpression.h"
+#include "AST/LabelBlockExpression.h"
+#include "AST/LazyBooleanExpression.h"
 #include "AST/LetStatement.h"
+#include "AST/LifetimeParam.h"
 #include "AST/LiteralExpression.h"
+#include "AST/LoopExpression.h"
+#include "AST/MacroInvocationSemi.h"
 #include "AST/MacroItem.h"
+#include "AST/MatchExpression.h"
+#include "AST/MethodCallExpression.h"
 #include "AST/Module.h"
+#include "AST/NegationExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/OuterAttribute.h"
 #include "AST/PathExpression.h"
+#include "AST/PredicateLoopExpression.h"
+#include "AST/PredicatePatternLoopExpression.h"
+#include "AST/RangeExpression.h"
+#include "AST/ReturnExpression.h"
 #include "AST/SelfParam.h"
 #include "AST/ShorthandSelf.h"
+#include "AST/StaticItem.h"
 #include "AST/Struct.h"
+#include "AST/StructExpression.h"
+#include "AST/Trait.h"
+#include "AST/TraitImpl.h"
+#include "AST/TupleExpression.h"
+#include "AST/TupleIndexingExpression.h"
+#include "AST/TypeAlias.h"
+#include "AST/TypeCastExpression.h"
+#include "AST/TypeParam.h"
 #include "AST/TypedSelf.h"
+#include "AST/UnderScoreExpression.h"
+#include "AST/Union.h"
+#include "AST/UnsafeBlockExpression.h"
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
-#include "AST/GenericParam.h"
-#include "AST/ConstParam.h"
-#include "AST/ExternalItem.h"
-#include "AST/MacroInvocationSemi.h"
-#include "AST/AssociatedItem.h"
+#include "AST/MacroInvocation.h"
 
 namespace rust_compiler::ast {
 
@@ -134,9 +178,54 @@ public:
   virtual void visit(GroupedExpression &groupedExpression) = 0;
   virtual void visit(ArrayExpression &arrayExpression) = 0;
   virtual void visit(IndexExpression &indexExpression) = 0;
+  virtual void visit(TupleExpression &indexExpression) = 0;
+  virtual void visit(TupleIndexingExpression &indexExpression) = 0;
+  virtual void visit(StructExpression &indexExpression) = 0;
+  virtual void visit(CallExpression &indexExpression) = 0;
+  virtual void visit(MethodCallExpression &indexExpression) = 0;
+  virtual void visit(FieldExpression &indexExpression) = 0;
+  virtual void visit(ClosureExpression &indexExpression) = 0;
+  virtual void visit(AsyncBlockExpression &indexExpression) = 0;
+  virtual void visit(ContinueExpression &indexExpression) = 0;
+  virtual void visit(BreakExpression &indexExpression) = 0;
+  virtual void visit(RangeExpression &indexExpression) = 0;
+  virtual void visit(ReturnExpression &indexExpression) = 0;
+  virtual void visit(UnderScoreExpression &indexExpression) = 0;
+  virtual void visit(MacroInvocation &indexExpression) = 0;
+
+  // Expressions with Block
+  virtual void visit(BlockExpression &blockExpression) = 0;
+  virtual void visit(UnsafeBlockExpression &unsafeBlockExpression) = 0;
+  virtual void visit(IfExpression &ifExpression) = 0;
+  virtual void visit(IfLetExpression &ifLetExpression) = 0;
+  virtual void visit(MatchExpression &matchExpression) = 0;
 
   // Operator Expressions
-  // virtual void visit(OperatorExpression &operatorExpression) = 0;
+  virtual void visit(BorrowExpression &borrowExpression) = 0;
+  virtual void visit(DereferenceExpression &borrowExpression) = 0;
+  virtual void visit(ErrorPropagationExpression &borrowExpression) = 0;
+  virtual void visit(NegationExpression &borrowExpression) = 0;
+  virtual void visit(ArithmeticOrLogicalExpression &borrowExpression) = 0;
+  virtual void visit(ComparisonExpression &borrowExpression) = 0;
+  virtual void visit(LazyBooleanExpression &borrowExpression) = 0;
+  virtual void visit(TypeCastExpression &borrowExpression) = 0;
+  virtual void visit(AssignmentExpression &borrowExpression) = 0;
+  virtual void visit(CompoundAssignmentExpression &borrowExpression) = 0;
+
+  // LoopExpression
+  virtual void visit(InfiniteLoopExpression &loopExpression) = 0;
+  virtual void visit(PredicateLoopExpression &loopExpression) = 0;
+  virtual void visit(PredicatePatternLoopExpression &loopExpression) = 0;
+  virtual void visit(IteratorLoopExpression &loopExpression) = 0;
+  virtual void visit(LabelBlockExpression &loopExpression) = 0;
+
+  // Match Expressions
+  virtual void visit(Scrutinee &loopExpression) = 0;
+  virtual void visit(MatchArms &loopExpression) = 0;
+  virtual void visit(MatchArm &loopExpression) = 0;
+  virtual void visit(MatchArmGuard &loopExpression) = 0;
+
+  // Path expression
 };
 
 } // namespace rust_compiler::ast

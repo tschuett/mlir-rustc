@@ -1,6 +1,5 @@
 #pragma once
 
-#include "AST/Decls.h"
 #include "AST/VisItem.h"
 
 namespace rust_compiler::ast {
