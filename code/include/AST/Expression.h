@@ -67,14 +67,13 @@ private:
   ExpressionWithoutBlockKind withoutKind;
 };
 
-enum class ExpressionWithBlockKind : uint32_t {
-  Unknown = 0,
-  BlockExpression = 1,
-  UnsafeBlockExpression = 2,
-  LoopExpression = 3,
-  IfExpression = 4,
-  IfLetExpression = 5,
-  MatchExpression = 6
+enum class ExpressionWithBlockKind {
+  BlockExpression,
+  UnsafeBlockExpression,
+  LoopExpression,
+  IfExpression,
+  IfLetExpression,
+  MatchExpression
 };
 
 class ExpressionWithBlock : public Expression {
@@ -88,7 +87,7 @@ public:
   ExpressionWithBlockKind getWithBlockKind() const { return withKind; }
 
 private:
-  ExpressionWithBlockKind withKind = ExpressionWithBlockKind::Unknown;
+  ExpressionWithBlockKind withKind;
 };
 
 } // namespace rust_compiler::ast

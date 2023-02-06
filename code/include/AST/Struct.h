@@ -1,17 +1,18 @@
 #pragma once
 
 #include "AST/Decls.h"
-#include "AST/Item.h"
+#include "AST/VisItem.h"
 
 namespace rust_compiler::ast {
 
 enum StructKind { StructStruct, TupleStruct };
 
-class Struct : public Item {
+class Struct : public VisItem {
   StructKind kind;
 
 public:
-  Struct(Location loc, StructKind kind) : Item(loc), kind(kind) {}
+  Struct(const adt::CanonicalPath &path, Location loc, StructKind kind)
+      : VisItem(path, loc, VisItemKind::Struct), kind(kind) {}
 };
 
 } // namespace rust_compiler::ast

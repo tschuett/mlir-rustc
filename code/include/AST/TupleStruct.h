@@ -1,9 +1,9 @@
 #pragma once
 
 #include "AST/GenericParams.h"
-#include "AST/WhereClause.h"
-#include "AST/TupleFields.h"
 #include "AST/Struct.h"
+#include "AST/TupleFields.h"
+#include "AST/WhereClause.h"
 
 #include <optional>
 #include <string>
@@ -17,7 +17,8 @@ class TupleStruct : public Struct {
   std::optional<WhereClause> whereClause;
 
 public:
-  TupleStruct(Location loc) : Struct(loc, StructKind::TupleStruct) {}
+  TupleStruct(const adt::CanonicalPath &path, Location loc)
+      : Struct(path, loc, StructKind::TupleStruct) {}
 };
 
 } // namespace rust_compiler::ast

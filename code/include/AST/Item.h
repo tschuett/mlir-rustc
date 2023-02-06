@@ -1,12 +1,14 @@
 #pragma once
 
-#include "AST/AST.h"
 #include "ADT/CanonicalPath.h"
+#include "AST/AST.h"
 #include "Location.h"
 
 #include <memory>
 
 namespace rust_compiler::ast {
+
+enum class ItemKind { VisItem, MacroItem };
 
 class OuterAttributes;
 class VisItem;
@@ -15,11 +17,11 @@ class Item : public Node {
   std::shared_ptr<OuterAttributes> outerAttributes;
   std::shared_ptr<VisItem> visItem;
 
-  // MacroItem
+  ItemKind kind;
 
 public:
-  explicit Item(rust_compiler::Location location)
-      : Node(location) {}
+  explicit Item(rust_compiler::Location location, ItemKind kind)
+      : Node(location), kind(kind) {}
 
   void setOuterAttributes(std::shared_ptr<OuterAttributes> outer);
   void setVisItem(std::shared_ptr<VisItem> visItem);

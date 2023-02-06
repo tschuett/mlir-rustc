@@ -13,6 +13,8 @@ class CallParams : public Node {
 
 public:
   CallParams(Location loc) : Node(loc) {}
+
+  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

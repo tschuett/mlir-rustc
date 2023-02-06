@@ -32,7 +32,7 @@ class VisItem : public Item {
 public:
   explicit VisItem(const adt::CanonicalPath &path,
                    rust_compiler::Location location, VisItemKind kind)
-      : Item(location), path(path), kind(kind) {}
+      : Item(location, ItemKind::VisItem), path(path), kind(kind) {}
 
   VisItemKind getKind() const { return kind; }
 
