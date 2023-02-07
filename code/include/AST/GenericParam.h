@@ -1,18 +1,18 @@
 #pragma once
 
 #include "AST/AST.h"
-#include "AST/LifetimeParam.h"
 #include "AST/OuterAttribute.h"
-#include "AST/TypeParam.h"
-#include "AST/ConstParam.h"
 
 namespace rust_compiler::ast {
 
+enum class GenericParamKind { LifetimeParam, TypeParam, ConstParam };
+
 class GenericParam : public Node {
   std::vector<OuterAttribute> outerAttribute;
-  std::variant<LifetimeParam, TypeParam, ConstParam> param;
+  GenericParamKind kind;
+
 public:
-  GenericParam(Location loc) : Node(loc) {}
+  GenericParam(Location loc, GenericParamKind kind) : Node(loc), kind(kind) {}
 
   size_t getTokens() override;
 };

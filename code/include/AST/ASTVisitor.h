@@ -53,6 +53,7 @@
 #include "AST/LifetimeParam.h"
 #include "AST/LiteralExpression.h"
 #include "AST/LoopExpression.h"
+#include "AST/MacroInvocation.h"
 #include "AST/MacroInvocationSemi.h"
 #include "AST/MacroItem.h"
 #include "AST/MatchExpression.h"
@@ -84,7 +85,6 @@
 #include "AST/UnsafeBlockExpression.h"
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
-#include "AST/MacroInvocation.h"
 
 namespace rust_compiler::ast {
 
