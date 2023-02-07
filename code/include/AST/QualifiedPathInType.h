@@ -5,10 +5,12 @@
 
 namespace rust_compiler::ast {
 
-class QualifiedInPathType final : public Expression {
+class QualifiedInPathType final : public Node {
 
 public:
-  QualifiedInPathType(Location loc) ; Expression(loc, ) {}
+  QualifiedInPathType(Location loc) : Node(loc) {}
+
+   size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

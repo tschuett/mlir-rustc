@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AST/AST.h"
-#include "AST/Types/PathIdentSegment.h"
+#include "AST/PathIdentSegment.h"
 #include "AST/GenericArgs.h"
 #include "AST/Types/TypePathFn.h"
 
@@ -17,6 +17,8 @@ class TypePathSegment final : public Node {
 
 public:
   TypePathSegment(Location loc) : Node(loc) {}
+
+   size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast::types

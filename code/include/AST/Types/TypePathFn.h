@@ -17,6 +17,8 @@ class TypePathFn final : public Node {
 
 public:
   TypePathFn(Location loc) : Node(loc) {}
+
+  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast::types

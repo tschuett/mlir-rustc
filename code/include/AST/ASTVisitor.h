@@ -36,6 +36,9 @@
 #include "AST/FunctionParameters.h"
 #include "AST/FunctionQualifiers.h"
 #include "AST/FunctionReturnType.h"
+#include "AST/GenericArg.h"
+#include "AST/GenericArgsBinding.h"
+#include "AST/GenericArgsConst.h"
 #include "AST/GenericParam.h"
 #include "AST/GenericParams.h"
 #include "AST/GroupedExpression.h"
@@ -63,8 +66,12 @@
 #include "AST/OperatorExpression.h"
 #include "AST/OuterAttribute.h"
 #include "AST/PathExpression.h"
+#include "AST/PathInExpression.h"
 #include "AST/PredicateLoopExpression.h"
 #include "AST/PredicatePatternLoopExpression.h"
+#include "AST/QualifiedPathInExpression.h"
+#include "AST/QualifiedPathInType.h"
+#include "AST/QualifiedPathType.h"
 #include "AST/RangeExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/SelfParam.h"
@@ -80,6 +87,9 @@
 #include "AST/TypeCastExpression.h"
 #include "AST/TypeParam.h"
 #include "AST/TypedSelf.h"
+#include "AST/Types/TypePath.h"
+#include "AST/Types/TypePathFn.h"
+#include "AST/Types/TypePathSegment.h"
 #include "AST/UnderScoreExpression.h"
 #include "AST/Union.h"
 #include "AST/UnsafeBlockExpression.h"
@@ -226,6 +236,23 @@ public:
   virtual void visit(MatchArmGuard &loopExpression) = 0;
 
   // Path expression
+  virtual void visit(PathInExpression &loopExpression) = 0;
+  virtual void visit(PathExprSegment &loopExpression) = 0;
+  virtual void visit(PathIdentSegment &loopExpression) = 0;
+  virtual void visit(GenericArgs &loopExpression) = 0;
+  virtual void visit(GenericArg &loopExpression) = 0;
+  virtual void visit(GenericArgsConst &loopExpression) = 0;
+  virtual void visit(GenericArgsBinding &loopExpression) = 0;
+  virtual void visit(QualifiedPathInExpression &loopExpression) = 0;
+  virtual void visit(types::QualifiedPathType &loopExpression) = 0;
+
+  virtual void visit(types::TypePath &loopExpression) = 0;
+  virtual void visit(types::TypePathSegment &loopExpression) = 0;
+  virtual void visit(types::TypePathFn &loopExpression) = 0;
+  virtual void visit(types::TypePathFnInputs &loopExpression) = 0;
+
+  // Array expression
+  virtual void visit(ArrayElements &loopExpression) = 0;
 };
 
 } // namespace rust_compiler::ast
