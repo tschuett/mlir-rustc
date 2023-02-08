@@ -14,9 +14,8 @@ size_t LetStatement::getTokens() {
 
   count += pat->getTokens();
 
-  if (type) {
+  if (type)
     count += 1 + type->getTokens();
-  }
 
   if (expr)
     count += 1 + expr->getTokens();
@@ -29,7 +28,7 @@ void LetStatement::setPattern(
   pat = _pat;
 }
 
-void LetStatement::setType(std::shared_ptr<ast::types::Type> _type) {
+void LetStatement::setType(std::shared_ptr<ast::types::TypeExpression> _type) {
   type = _type;
 }
 

@@ -24,6 +24,8 @@ void analyzeSemantics(std::shared_ptr<ast::Crate> &crate) {
   // constant folding
   // drops
 
+  // Trait reolution
+
   sema.analyze(crate);
 }
 

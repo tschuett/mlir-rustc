@@ -3,6 +3,7 @@
 #include "AST/AST.h"
 #include "AST/FunctionParamPattern.h"
 #include "AST/Patterns/IdentifierPattern.h"
+#include "AST/Types/TypeExpression.h"
 #include "AST/VariableDeclaration.h"
 
 #include <memory>
@@ -11,7 +12,7 @@
 namespace rust_compiler::ast {
 
 class FunctionParam : public VariableDeclaration {
-  std::shared_ptr<ast::types::Type> type;
+  std::shared_ptr<ast::types::TypeExpression> type;
   std::shared_ptr<ast::patterns::IdentifierPattern> name;
 
 public:
@@ -20,9 +21,9 @@ public:
 
   void setName(std::shared_ptr<ast::patterns::IdentifierPattern> name);
 
-  void setType(std::shared_ptr<ast::types::Type> type);
+  void setType(std::shared_ptr<ast::types::TypeExpression> type);
 
-  std::shared_ptr<ast::types::Type> getType() const { return type; }
+  std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
 
   size_t getTokens() override;
 

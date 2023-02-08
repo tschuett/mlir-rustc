@@ -10,7 +10,7 @@
 namespace rust_compiler::ast {
 
 class VisItem;
-  
+
 enum class ItemKind { VisItem, MacroItem };
 
 class Item : public Node {

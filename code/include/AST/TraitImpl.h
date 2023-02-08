@@ -4,6 +4,7 @@
 #include "AST/GenericParams.h"
 #include "AST/Implementation.h"
 #include "AST/InnerAttribute.h"
+#include "AST/Types/TypeExpression.h"
 #include "AST/Types/Types.h"
 #include "AST/WhereClause.h"
 
@@ -13,7 +14,7 @@ namespace rust_compiler::ast {
 
 class TraitImpl : public Implementation {
   std::optional<GenericParams> genericParams;
-  std::shared_ptr<types::Type> type;
+  std::shared_ptr<types::TypeExpression> type;
   std::optional<WhereClause> whereClause;
 
   std::vector<InnerAttribute> innerAttributes;
@@ -21,7 +22,7 @@ class TraitImpl : public Implementation {
 
 public:
   TraitImpl(const adt::CanonicalPath &path, ImplementationKind kind,
-               Location loc)
+            Location loc)
       : Implementation(path, ImplementationKind::TraitImpl, loc) {}
 };
 

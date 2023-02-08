@@ -5,7 +5,7 @@
 #include "Location.h"
 #include "AST/WhereClause.h"
 #include "AST/GenericParams.h"
-#include "AST/Types/Types.h"
+#include "AST/Types/TypeExpression.h"
 
 #include <optional>
 #include <string>
@@ -16,7 +16,7 @@ class StaticItem : public VisItem {
   bool mut;
   std::string identifier;
 
-  std::optional<std::shared_ptr<types::Type>> type;
+  std::optional<std::shared_ptr<types::TypeExpression>> type;
   std::optional<std::shared_ptr<Expression>> init;
 
 public:

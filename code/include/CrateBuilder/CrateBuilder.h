@@ -92,9 +92,12 @@ private:
   void emitModule(std::shared_ptr<ast::Module>);
   mlir::Value emitBlockExpression(std::shared_ptr<ast::BlockExpression>);
   mlir::Value emitStatements(std::shared_ptr<ast::Statements>);
+  mlir::Value emitExpression(std::shared_ptr<ast::Expression> expr);
   mlir::Value emitExpressionWithoutBlock(std::shared_ptr<ast::Expression> expr);
+  mlir::Value emitExpressionWithBlock(std::shared_ptr<ast::Expression> expr);
   void emitStatement(std::shared_ptr<ast::Statement>);
   void emitExpressionStatement(std::shared_ptr<ast::ExpressionStatement> stmt);
+  mlir::Value emitLoopExpression(std::shared_ptr<ast::LoopExpression> expr);
 };
 
 void build(rust_compiler::ast::Crate &crate);

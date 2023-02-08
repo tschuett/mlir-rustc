@@ -15,6 +15,8 @@ public:
       : OperatorExpression(loc, OperatorExpressionKind::DereferenceExpression) {
   }
 
+  std::shared_ptr<Expression> getRHS() const { return right;};
+
   size_t getTokens() override;
 
   bool containsBreakExpression() override;

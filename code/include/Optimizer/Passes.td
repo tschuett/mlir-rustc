@@ -15,17 +15,6 @@ def Attributer : Pass<"attributer", "mlir::ModuleOp"> {
   let description = [{Try to derive some attributes on Mir.}];
 }
 
-def CombinerPass : Pass<"combine", "mlir::func::FuncOp"> {
-  let summary = "combine ...";
-
-  // Inherit the common pattern rewrite options from `RewritePassUtils`.
-  let options = RewritePassUtils.options;
-
-  let dependentDialects = [
-    "mlir::arith::ArithDialect",
-  ];
-}
-
 def RewritePass : Pass<"rewrite", "mlir::func::FuncOp"> {
   let summary = "rewrite Mir to ...";
 
@@ -66,7 +55,7 @@ def SummaryWriterPass : Pass<"SummaryWriter", "mlir::ModuleOp"> {
                         "Summary Output File">];
 }
 
-def SCCPPass : Pass<"SCCP", "mlir::func::FuncOp"> {
+def SCCPPass : Pass<"SCCP", "mlir::ModuleOp"> {
   let summary = "Constant propagation with conditional branches";
   let description = [{Wegman, Mark N and Zadeck, F Kenneth}];
 }

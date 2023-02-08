@@ -235,6 +235,11 @@
 %% Instead of ``The rest of this paper is structured...'', use forward
 %% references from the narrative in the introduction.
 
+Flang is the first production-ready open source compiler built on the
+MLIR project. There is not yet much knowledge in designing compilers
+for programming languages on top of MLIR. The community has its focus
+on ML.
+
 LLVM~\cite{lattner2004llvm} is a great compiler for scalar
 optimizations.
 
@@ -320,11 +325,12 @@ What is the right level of abstraction for borrow checking?
 
 \section{IR Design for programming languages\label{sec.irdesign} --- TO BE DONE}
 
-The top level IR is the AST (abstract syntax tree.
+The top level IR is the AST (abstract syntax tree).
 
 \begin{itemize}
 \item Hir: AST-like IR. It models the AST closely, i.e., structured control flow, ...
 \item Mir: similar but with alloca
+\item Lir: branches
 \end{itemize}
 
 What and how many levels of abstraction are needed to generate super efficient code?
@@ -347,7 +353,7 @@ OpenMP, SYCL~\cite{mlirsycl}, OpenACC, CUDA, ..+
 
 \cite{click1995combining}
 
-\cite{wegman1991constant}
+SCCP~\cite{wegman1991constant}
 
 \cite{lattner2020mlir}
 
@@ -410,6 +416,10 @@ MemorySSA~\cite{chow1996effective}
 LLVM~\cite{lattner2004llvm}
 
 Escape analysis~\cite{choi1999escape}
+
+SSA~\cite{cytron1991efficiently, braun2013simple}
+
+Value Range Analysis~\cite{birch2004value}
 
 \section{Future Work}
 

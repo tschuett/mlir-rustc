@@ -4,6 +4,7 @@
 #include "AST/LetStatementParam.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Statement.h"
+#include "AST/Types/TypeExpression.h"
 #include "AST/Types/Types.h"
 
 #include <mlir/IR/Location.h>
@@ -14,7 +15,7 @@ namespace rust_compiler::ast {
 class LetStatement final : public Statement {
   // VariableDeclaration var;
   std::shared_ptr<ast::patterns::PatternNoTopAlt> pat;
-  std::shared_ptr<ast::types::Type> type;
+  std::optional<std::shared_ptr<ast::types::TypeExpression>> type;
   std::shared_ptr<ast::Expression> expr;
 
   std::vector<LetStatementParam> var;
@@ -24,7 +25,7 @@ public:
   LetStatement(Location loc) : Statement(loc, StatementKind::LetStatement){};
 
   void setPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat);
-  void setType(std::shared_ptr<ast::types::Type> type);
+  void setType(std::shared_ptr<ast::types::TypeExpression> type);
   void setExpression(std::shared_ptr<ast::Expression> expr);
 
   std::span<LetStatementParam> getVarDecls();

@@ -2,11 +2,11 @@
 
 #include "AST/BlockExpression.h"
 #include "AST/Crate.h"
-#include "AST/Decls.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/LetStatement.h"
 #include "AST/Statements.h"
 #include "AST/CallExpression.h"
+#include "AST/MethodCallExpression.h"
 #include "AST/Types/Types.h"
 #include "Sema/Common.h"
 #include "Sema/Mappings.h"
@@ -41,6 +41,7 @@ private:
   void analyzeStatements(std::shared_ptr<ast::Statements> stmts);
   void analyzeLetStatement(std::shared_ptr<ast::LetStatement> let);
   void analyzeCallExpression(std::shared_ptr<ast::CallExpression> let);
+  void analyzeMethodCallExpression(std::shared_ptr<ast::MethodCallExpression> let);
   void
   analyzeExpressionStatement(std::shared_ptr<ast::ExpressionStatement> expr);
   void

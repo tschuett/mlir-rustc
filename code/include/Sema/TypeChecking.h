@@ -1,5 +1,8 @@
 #pragma once
 
+#include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/InfiniteLoopExpression.h"
+#include "AST/LiteralExpression.h"
 #include "Sema/Common.h"
 
 #include <memory>
@@ -26,6 +29,13 @@ public:
   void eqExpr(AstId, AstId);
   void eqType(AstId, AstId);
   void sub();
+
+private:
+  void checkInfiniteLoopExpression(
+      std::shared_ptr<ast::InfiniteLoopExpression> loop);
+  void checkArithmeticOrLogicalExpression(
+      std::shared_ptr<ast::ArithmeticOrLogicalExpression> arith);
+  void checkLiteralExpression(std::shared_ptr<ast::LiteralExpression> lit);
 };
 
 } // namespace rust_compiler::sema

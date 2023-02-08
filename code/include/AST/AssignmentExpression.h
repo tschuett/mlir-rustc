@@ -15,7 +15,11 @@ public:
   void setLeft(std::shared_ptr<Expression> left);
   void setRight(std::shared_ptr<Expression> right);
 
-    bool containsBreakExpression() override;
+  std::shared_ptr<Expression> getRHS() const { return right; };
+
+  std::shared_ptr<Expression> getLHS() const { return left; };
+
+  bool containsBreakExpression() override;
 
   std::shared_ptr<ast::types::Type> getType() override;
   size_t getTokens() override;

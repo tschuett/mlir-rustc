@@ -14,6 +14,12 @@ add_library(sema
            ExpressionStatement.cpp
            MacroInvocation.cpp
            Reachability.cpp
+           CallExpression.cpp
+           MethodCallExpression.cpp
+           InfiniteLoopExpression.cpp
+           OperatorExpression.cpp
+           BlockExpressionVisitor.cpp
+           LiteralExpression.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)

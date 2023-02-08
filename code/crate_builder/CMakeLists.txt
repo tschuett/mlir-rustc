@@ -6,8 +6,11 @@ add_library(crate_builder
            BlockExpression.cpp
            Statements.cpp
            ExpressionWithoutBlock.cpp
+           ExpressionWithBlock.cpp
            Statement.cpp
            ExpressionStatement.cpp
+           LoopExpression.cpp
+           Expression.cpp
            )
 
 

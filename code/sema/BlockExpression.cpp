@@ -1,4 +1,3 @@
-#include "AST/Decls.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/LetStatement.h"
 #include "AST/Statement.h"
@@ -25,11 +24,11 @@ void Sema::analyzeStatements(std::shared_ptr<ast::Statements> stmts) {
           std::static_pointer_cast<ast::ExpressionStatement>(stmt));
       return;
     }
-    case ast::StatementKind::MacroInvocationSemi: {
-      analyzeMacroInvocationSemi(
-          std::static_pointer_cast<ast::MacroInvocationSemi>(stmt));
-      return;
-    }
+//    case ast::StatementKind::MacroInvocationSemi: {
+//      analyzeMacroInvocationSemi(
+//          std::static_pointer_cast<ast::MacroInvocationSemi>(stmt));
+//      return;
+//    }
     }
   }
 }

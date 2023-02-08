@@ -1,5 +1,8 @@
+#include "AST/AwaitExpression.h"
 #include "AST/Expression.h"
 #include "CrateBuilder/CrateBuilder.h"
+
+#include "Hir/HirOps.h"
 
 #include <memory>
 
@@ -26,6 +29,10 @@ mlir::Value CrateBuilder::emitExpressionWithoutBlock(
     break;
   }
   case ast::ExpressionWithoutBlockKind::AwaitExpression: {
+    std::shared_ptr<ast::AwaitExpression> await =
+        std::static_pointer_cast<ast::AwaitExpression>(withOut);
+    mlir::Value body = emitExpression(await->getBody());
+    return builder.create<Hir::AwaitOp>(wait-getLocation());
     break;
   }
   case ast::ExpressionWithoutBlockKind::IndexExpression: {

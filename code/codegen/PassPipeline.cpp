@@ -27,10 +27,15 @@ int processMLIR(mlir::MLIRContext &context,
   applyPassManagerCLOptions(pm);
 
   // optimize
+  pm.addPass(mlir::createCanonicalizerPass());
+  pm.addPass(mlir::createCSEPass());
+  //pm.addPass(optimizer::createCombinerPass());
+  pm.addPass(mlir::createSCCPPass());
+
   pm.addPass(createAttributer());
-  //pm.addPass(createGVNPass());
-  //pm.addPass(createRewritePass());
-  //pm.addPass(createDeadCodeEliminationPass());
+  // pm.addPass(createGVNPass());
+  // pm.addPass(createRewritePass());
+  // pm.addPass(createDeadCodeEliminationPass());
 
   pm.addPass(createSummaryWriterPass(options));
 

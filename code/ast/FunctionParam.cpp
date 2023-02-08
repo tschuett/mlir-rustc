@@ -1,6 +1,7 @@
 #include "AST/FunctionParam.h"
 
 #include "AST/Patterns/IdentifierPattern.h"
+#include "AST/Types/TypeExpression.h"
 
 #include <cassert>
 
@@ -11,7 +12,7 @@ void FunctionParam::setName(
   name = _name;
 }
 
-void FunctionParam::setType(std::shared_ptr<ast::types::Type> _type) {
+void FunctionParam::setType(std::shared_ptr<ast::types::TypeExpression> _type) {
   type = _type;
 }
 

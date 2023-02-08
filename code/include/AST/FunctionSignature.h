@@ -3,7 +3,7 @@
 #include "AST/AST.h"
 #include "AST/FunctionParameters.h"
 #include "AST/FunctionQualifiers.h"
-#include "AST/Types/Types.h"
+#include "AST/Types/TypeExpression.h"
 #include "AST/Visiblity.h"
 #include "Location.h"
 
@@ -20,7 +20,7 @@ class GenericParams;
 class FunctionSignature : public Node {
   // std::vector<Argument> args;
   std::string name;
-  std::shared_ptr<ast::types::Type> returnType;
+  std::shared_ptr<ast::types::TypeExpression> returnType;
   FunctionQualifiers qual;
   FunctionParameters parm;
   std::shared_ptr<WhereClause> where;
@@ -42,11 +42,11 @@ public:
 
   FunctionParameters getParameters() const { return parm; }
 
-  void setReturnType(std::shared_ptr<ast::types::Type> returnType);
+  void setReturnType(std::shared_ptr<ast::types::TypeExpression> returnType);
 
   bool hasReturnType() const;
 
-  std::shared_ptr<ast::types::Type> getReturnType() const { return returnType; }
+  std::shared_ptr<ast::types::TypeExpression> getReturnType() const { return returnType; }
 
   void setWhereClause(std::shared_ptr<WhereClause> where);
 

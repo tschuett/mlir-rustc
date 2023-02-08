@@ -1,12 +1,12 @@
 #pragma once
 
 #include "AST/AST.h"
-#include "AST/PathIdentSegment.h"
 #include "AST/GenericArgs.h"
+#include "AST/PathIdentSegment.h"
 #include "AST/Types/TypePathFn.h"
 
-#include <vector>
 #include <optional>
+#include <vector>
 
 namespace rust_compiler::ast::types {
 
@@ -16,9 +16,9 @@ class TypePathSegment final : public Node {
   std::optional<std::variant<GenericArgs, TypePathFn>> tail;
 
 public:
-  TypePathSegment(Location loc) : Node(loc) {}
+  TypePathSegment(Location loc) : Node(loc), pathIdentSegment(loc) {}
 
-   size_t getTokens() override;
+  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast::types

@@ -1,4 +1,5 @@
 #include "AST/Function.h"
+#include "AST/Item.h"
 #include "AST/UseDeclaration.h"
 #include "AST/Visiblity.h"
 #include "Parser/Parser.h"
@@ -29,7 +30,7 @@ Parser::tryParseItem(std::span<Token> tokens) {
 
     if (visItem) {
 
-      Item item{tokens.front().getLocation()};
+      Item item{tokens.front().getLocation(), ItemKind::VisItem};
       item.setOuterAttributes(*outer);
       item.setVisItem(*visItem);
       return std::make_shared<ast::Item>(item);
@@ -40,7 +41,7 @@ Parser::tryParseItem(std::span<Token> tokens) {
 
     if (visItem) {
 
-      Item item{tokens.front().getLocation()};
+      Item item{tokens.front().getLocation(), ItemKind::VisItem};
       item.setVisItem(*visItem);
       return std::make_shared<ast::Item>(item);
     }
@@ -50,3 +51,6 @@ Parser::tryParseItem(std::span<Token> tokens) {
 }
 
 } // namespace rust_compiler::parser
+
+
+// FIXME MacroItem

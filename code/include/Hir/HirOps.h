@@ -1,5 +1,9 @@
 #pragma once
 
+#include "Hir/HirOpsInterfaces.h"
+
+#include "Hir/HirStruct.h"
+
 #include <mlir/IR/FunctionInterfaces.h>
 #include <mlir/IR/OpImplementation.h>
 #include <mlir/IR/Operation.h>
@@ -7,11 +11,11 @@
 #include <mlir/IR/ValueRange.h>
 #include <mlir/Interfaces/CallInterfaces.h>
 #include <mlir/Interfaces/ControlFlowInterfaces.h>
-#include <mlir/Interfaces/SideEffectInterfaces.h>
-#include <type_traits>
 #include <mlir/Interfaces/LoopLikeInterface.h>
-
-#include "Hir/HirOpsInterfaces.h"
+#include <mlir/Interfaces/SideEffectInterfaces.h>
+#include <mlir/Rewrite/FrozenRewritePatternSet.h>
+#include <mlir/Transforms/GreedyPatternRewriteDriver.h>
+#include <type_traits>
 
 /// Include the auto-generated header file containing the declarations of the
 /// Hir operations.

@@ -178,12 +178,12 @@ public:
   tryParseQualifiedPathInExpression(std::span<lexer::Token> tokens);
 
   std::optional<ast::PathExprSegment>
-  tryPathExprSegment(std::span<lexer::Token> tokens);
+  tryParsePathExprSegment(std::span<lexer::Token> tokens);
 
   std::optional<std::shared_ptr<ast::patterns::PatternWithoutRange>>
   tryParseIdentifierPattern(std::span<lexer::Token> tokens);
 
-  std::optional<std::string>
+  std::optional<PathIdentSegment>
   tryParsePathIdentSegment(std::span<lexer::Token> tokens);
 
   std::optional<ast::GenericArgs>

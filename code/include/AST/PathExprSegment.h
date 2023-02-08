@@ -2,6 +2,7 @@
 
 #include "AST/AST.h"
 #include "AST/GenericArgs.h"
+#include "AST/PathIdentSegment.h"
 
 #include <optional>
 #include <string>
@@ -11,18 +12,20 @@
 namespace rust_compiler::ast {
 
 class PathExprSegment : public Node {
-  std::string ident;
+  PathIdentSegment ident;
   std::optional<GenericArgs> generics;
 
 public:
-  PathExprSegment(Location loc) : Node(loc) {}
+  PathExprSegment(Location loc) : Node(loc), ident(loc) {}
 
   size_t getTokens() override;
 
-  void addIdentSegment(std::string_view _ident) { ident = _ident; }
+  void addIdentSegment(const PathIdentSegment& _ident) { ident = _ident; }
   void addGenerics(GenericArgs generic) { generics = generic; }
 
-  std::string getIdent() const { return ident; }
+  bool hasGenerics() const { return not generics.has_value(); }
+
+  PathIdentSegment getIdent() const { return ident; }
 };
 
 } // namespace rust_compiler::ast

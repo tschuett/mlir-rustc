@@ -17,6 +17,9 @@ public:
       : ExpressionWithoutBlock(
             loc, ExpressionWithoutBlockKind::MethodCallExpression),
         method(loc) {}
+
+
+  PathExprSegment getPath() const;
 };
 
 } // namespace rust_compiler::ast

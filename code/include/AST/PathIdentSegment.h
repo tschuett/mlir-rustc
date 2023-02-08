@@ -1,10 +1,29 @@
 #pragma once
 
+#include "AST/AST.h"
+
 namespace rust_compiler::ast {
 
-class PathIdentSegment {};
+enum class PathIdentSegmentKind {
+  Identifier,
+  super,
+  self,
+  Self,
+  crate,
+  dollarCrate
+};
+
+class PathIdentSegment : public Node {
+  PathIdentSegmentKind kind;
+
+public:
+  PathIdentSegment(Location loc) : Node(loc) {}
+
+  PathIdentSegmentKind getKind() const { return kind; }
+
+   size_t getTokens() override;
+};
 
 } // namespace rust_compiler::ast
-
 
 // FIXME
