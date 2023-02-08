@@ -28,7 +28,7 @@ public:
       : PatternNoTopAlt(loc, PatternNoTopAltKind::PatternWithoutRange),
         kind(kind){};
 
-  PatternWithoutRangeKind getWithoutRangeKind() const;
+  PatternWithoutRangeKind getWithoutRangeKind() const { return kind; }
 
 protected:
   PatternWithoutRangeKind kind;

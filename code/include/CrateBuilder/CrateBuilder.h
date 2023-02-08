@@ -3,15 +3,15 @@
 #include "ADT/ScopedHashTable.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/BlockExpression.h"
+#include "AST/CallExpression.h"
 #include "AST/Crate.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/LoopExpression.h"
+#include "AST/MethodCallExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/VariableDeclaration.h"
 #include "CrateBuilder/Target.h"
 #include "Hir/HirDialect.h"
-#include "AST/CallExpression.h"
-#include "AST/MethodCallExpression.h"
 
 #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
@@ -86,7 +86,7 @@ public:
     theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
   };
 
-  void emitCrate(rust_compiler::ast::Crate &crate);
+  void emitCrate(std::shared_ptr<rust_compiler::ast::Crate> crate);
 
   mlir::ModuleOp getModule() const { return theModule; };
 
@@ -108,9 +108,8 @@ private:
   mlir::Value emitArithmeticOrLogicalExpression(
       std::shared_ptr<ast::ArithmeticOrLogicalExpression> expr);
 
-    mlir::Value
-  emitCallExpression(std::shared_ptr<ast::CallExpression> expr);
-    mlir::Value
+  mlir::Value emitCallExpression(std::shared_ptr<ast::CallExpression> expr);
+  mlir::Value
   emitMethodCallExpression(std::shared_ptr<ast::MethodCallExpression> expr);
 
   /// Helper conversion for a Rust AST location to an MLIR location.
@@ -121,6 +120,6 @@ private:
   }
 };
 
-void build(rust_compiler::ast::Crate &crate);
+  //void build(std::shared_ptr<rust_compiler::ast::Crate> crate);
 
 } // namespace rust_compiler::crate_builder

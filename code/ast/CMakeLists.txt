@@ -53,6 +53,7 @@ add_library(ast
            TupleStruct.cpp
            Crate.cpp
            ASTVisitor.cpp
+           PathIdentSegment.cpp
            )
 
 

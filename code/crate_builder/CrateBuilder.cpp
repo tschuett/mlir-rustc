@@ -4,23 +4,23 @@
 
 namespace rust_compiler::crate_builder {
 
-void build(rust_compiler::ast::Crate &crate) {
-  mlir::MLIRContext context;
+//void build(std::shared_ptr<rust_compiler::ast::Crate> crate) {
+//  mlir::MLIRContext context;
+//
+//  // FIXME: + .yaml
+//  std::string fn = std::string(crate.getCrateName());
+//
+//  std::error_code EC;
+//  llvm::raw_fd_stream stream = {fn, EC};
+//
+//  CrateBuilder builder = {stream, context};
+//
+//  builder->emitCrate(crate);
+//}
 
-  // FIXME: + .yaml
-  std::string fn = std::string(crate.getCrateName());
+void CrateBuilder::emitCrate(std::shared_ptr<rust_compiler::ast::Crate> crate) {
 
-  std::error_code EC;
-  llvm::raw_fd_stream stream = {fn, EC};
-
-  CrateBuilder builder = {stream, context};
-
-  builder.emitCrate(crate);
-}
-
-void CrateBuilder::emitCrate(rust_compiler::ast::Crate &crate) {
-
-  for (auto& i : crate.getItems()) {
+  for (auto &i : crate->getItems()) {
     emitItem(i);
   }
 }

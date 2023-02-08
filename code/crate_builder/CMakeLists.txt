@@ -12,6 +12,7 @@ add_library(crate_builder
            LoopExpression.cpp
            Expression.cpp
            OperatorExpression.cpp
+           Target.cpp
            )
 
 

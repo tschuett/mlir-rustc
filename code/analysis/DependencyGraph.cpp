@@ -23,4 +23,8 @@ DepdendencyGraph::getNewNodes() {
   return newNodes;
 }
 
+bool DepdendencyGraph::areDepsEmpty(const DependencyGraphNode *Node) {
+  return dependendencies[Node].empty();
+}
+
 } // namespace rust_compiler::analysis::attributor

@@ -8,14 +8,12 @@ add_library(parser
            Function.cpp
            SimplePath.cpp
            Util.cpp
-           Type.cpp
            Pattern.cpp
            Generics.cpp
            WhereClause.cpp
            FunctionParameters.cpp
            BlockExpression.cpp
            IdentifierPattern.cpp
-           PrimitiveType.cpp
            Statement.cpp
            ExpressionWithoutBlock.cpp
            ExpressionWithBlock.cpp
@@ -59,6 +57,7 @@ add_library(parser
            AssignmentExpression.cpp
            PrintToken.cpp
            AwaitExpression.cpp
+           TypeExpression.cpp
            )
 
 

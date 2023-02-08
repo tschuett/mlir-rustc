@@ -242,9 +242,6 @@ def VTableOp: Hir_Op<"vtable", [IsolatedFromAbove, Symbol, ImplicitMirTerminator
     OptionalAttr<StrAttr>:$parent
   );
 
-  let hasCustomAssemblyFormat = 1;
-  let hasVerifier = 1;
-
   let regions = (region AnyRegion:$region);
 
   let skipDefaultBuilders = 1;
@@ -280,8 +277,6 @@ def VTEntryOp : Hir_Op<"vt_entry", [HasParent<"VTableOp">]> {
   }];
 
   let arguments = (ins StrAttr:$method, SymbolRefAttr:$proc);
-
-  let hasCustomAssemblyFormat = 1;
 
   let extraClassDeclaration = [{
     static constexpr llvm::StringRef getMethodAttrNameStr() { return "method"; }
@@ -332,8 +327,6 @@ def StructAccessOp : Hir_Op<"struct_access", [Pure]> {
   let builders = [
     OpBuilder<(ins "mlir::Value":$input, "size_t":$index)>
   ];
-
-  let hasCanonicalizeMethod = 1;
 }
 
 

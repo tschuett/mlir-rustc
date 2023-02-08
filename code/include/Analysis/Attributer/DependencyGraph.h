@@ -28,6 +28,7 @@ public:
                         const DependencyGraphNode *dep);
 
   void resetNewNodes();
+
   llvm::SetVector<DependencyGraphNode *, std::vector<DependencyGraphNode *>,
                   llvm::DenseSet<DependencyGraphNode *>>
   getNewNodes();
@@ -36,10 +37,9 @@ private:
   // FIXME highly inefficient
   std::map<const DependencyGraphNode *, std::set<const DependencyGraphNode *>>
       dependendencies;
-  llvm::SetVector<DependencyGraphNode *,
-                  std::vector<DependencyGraphNode *>,
+  llvm::SetVector<DependencyGraphNode *, std::vector<DependencyGraphNode *>,
                   llvm::DenseSet<DependencyGraphNode *>>
       newNodes;
 };
 
-} // namespace rust_compiler::analysis::attributor
+} // namespace rust_compiler::analysis::attributer

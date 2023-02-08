@@ -2,7 +2,7 @@
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/IR/Operation.h"
 
-namespace rust_compiler::analysis::attributor {
+namespace rust_compiler::analysis::attributer {
 
 /// An abstract interface for liveness abstract attribute.
 struct AAIsDead : public AbstractElement {

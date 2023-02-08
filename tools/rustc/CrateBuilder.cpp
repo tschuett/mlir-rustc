@@ -4,12 +4,13 @@
 #include "AST/Module.h"
 #include "CodeGen/DumpLLVMIR.h"
 #include "CodeGen/PassPipeLine.h"
+#include "CrateBuilder/CrateBuilder.h"
+#include "Hir/HirDialect.h"
 #include "Lexer/Lexer.h"
 #include "ModuleBuilder/ModuleBuilder.h"
 #include "ModuleBuilder/Target.h"
 #include "Parser/Parser.h"
 #include "Sema/Sema.h"
-#include "mlir/IR/BuiltinOps.h"
 
 #include <fstream>
 #include <llvm/MC/TargetRegistry.h>
@@ -24,6 +25,7 @@
 #include <mlir/Dialect/Async/IR/Async.h>
 #include <mlir/Dialect/ControlFlow/IR/ControlFlow.h>
 #include <mlir/Dialect/MemRef/IR/MemRef.h>
+#include <mlir/IR/BuiltinOps.h>
 #include <sstream>
 
 using namespace rust_compiler::parser;
@@ -90,8 +92,8 @@ void buildCrate(std::string_view path, std::string_view edition) {
   llvm::outs() << "code generation"
                << "\n";
 
-  Target target = {tm.get()};
   mlir::MLIRContext context;
+  context.getOrLoadDialect<hir::HirDialect>();
   context.getOrLoadDialect<Mir::MirDialect>();
   context.getOrLoadDialect<mlir::func::FuncDialect>();
   context.getOrLoadDialect<mlir::arith::ArithDialect>();
@@ -99,11 +101,16 @@ void buildCrate(std::string_view path, std::string_view edition) {
   context.getOrLoadDialect<mlir::memref::MemRefDialect>();
   context.getOrLoadDialect<mlir::cf::ControlFlowDialect>();
 
-  rust_compiler::ModuleBuilder mb = {"lib", &target, stream, context};
+  rust_compiler::crate_builder::CrateBuilder builder = {stream, context};
+  builder.emitCrate(crate);
 
-  mb.build(module);
+  // rust_compiler::crate_builder::build(crate);
 
-  mlir::ModuleOp moduleOp = mb.getModule();
+  //  rust_compiler::ModuleBuilder mb = {"lib", &target, stream, context};
+  //
+  //  mb.build(module);
+  //
+  mlir::ModuleOp moduleOp = builder.getModule();
 
   moduleOp.dump();
   // dumpLLVMIR(moduleOp);
