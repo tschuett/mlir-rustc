@@ -15,6 +15,7 @@
 #include "AST/Patterns/RestPattern.h"
 #include "AST/Patterns/TuplePattern.h"
 #include "AST/Scrutinee.h"
+#include "AST/Types/TypeExpression.h"
 #include "AST/UseDeclaration.h"
 #include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
@@ -72,7 +73,7 @@ public:
   std::optional<ast::FunctionSignature>
   tryParseFunctionSignature(std::span<lexer::Token> tokens);
 
-  std::optional<std::shared_ptr<ast::types::Type>>
+  std::optional<std::shared_ptr<ast::types::TypeExpression>>
   tryParseFunctionReturnType(std::span<lexer::Token> tokens);
 
   std::optional<std::shared_ptr<ast::BlockExpression>>
@@ -183,7 +184,7 @@ public:
   std::optional<std::shared_ptr<ast::patterns::PatternWithoutRange>>
   tryParseIdentifierPattern(std::span<lexer::Token> tokens);
 
-  std::optional<PathIdentSegment>
+  std::optional<ast::PathIdentSegment>
   tryParsePathIdentSegment(std::span<lexer::Token> tokens);
 
   std::optional<ast::GenericArgs>
@@ -233,6 +234,9 @@ public:
 
   std::optional<std::shared_ptr<ast::Expression>>
       tryParseAwaitExpression(std::span<lexer::Token>);
+
+  std::optional<std::shared_ptr<ast::types::TypeExpression>>
+      tryParseTypeExpression(std::span<lexer::Token>);
 
   void printToken(lexer::Token &);
 };

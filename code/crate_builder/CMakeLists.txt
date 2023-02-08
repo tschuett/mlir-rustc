@@ -11,6 +11,7 @@ add_library(crate_builder
            ExpressionStatement.cpp
            LoopExpression.cpp
            Expression.cpp
+           OperatorExpression.cpp
            )
 
 

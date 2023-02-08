@@ -1,10 +1,10 @@
 
 #include "AST/Patterns/IdentifierPattern.h"
+#include "AST/Types/TypeExpression.h"
+#include "Parser/Parser.h"
 
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
-
-#include "Parser/Parser.h"
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
@@ -15,40 +15,42 @@ std::optional<ast::FunctionParam>
 Parser::tryParseFunctionParam(std::span<lexer::Token> tokens) {
   std::span<lexer::Token> view = tokens;
 
-//  llvm::errs() << "tryParseFunctionParam"
-//               << "\n";
+  //  llvm::errs() << "tryParseFunctionParam"
+  //               << "\n";
 
-  //std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>> notopalt =
-  //    tryParsePatternNoTopAlt(view);
+  // std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>> notopalt =
+  //     tryParsePatternNoTopAlt(view);
 
-    std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>> notopalt =
+  std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>> notopalt =
       tryParseIdentifierPattern(view);
 
-  //llvm::errs() << "tryParseFunctionParam " << notopalt.has_value() << "\n";
+  // llvm::errs() << "tryParseFunctionParam " << notopalt.has_value() << "\n";
 
   if (notopalt) {
     view = view.subspan((*notopalt)->getTokens());
 
-    //llvm::errs() << "tryParseFunctionParam: tokens: "
-    //             << (*notopalt)->getTokens() << "\n";
+    // llvm::errs() << "tryParseFunctionParam: tokens: "
+    //              << (*notopalt)->getTokens() << "\n";
 
     if (view.front().getKind() == TokenKind::Colon) {
       view = view.subspan(1);
-      //llvm::errs() << "tryParseFunctionParam: found colon"
-      //             << "\n";
+      // llvm::errs() << "tryParseFunctionParam: found colon"
+      //              << "\n";
 
-      //printTokenState(view);
+      // printTokenState(view);
 
-      std::optional<std::shared_ptr<ast::types::Type>> type =
-          tryParseType(view);
+      std::optional<std::shared_ptr<ast::types::TypeExpression>> type =
+          tryParseTypeExpression(view);
 
       if (type) {
         FunctionParam param{tokens.front().getLocation()};
 
-        //llvm::errs() << "tryParseFunctionParam: found type"
-        //           << "\n";
+        // llvm::errs() << "tryParseFunctionParam: found type"
+        //            << "\n";
 
-        param.setName(std::static_pointer_cast<ast::patterns::IdentifierPattern>(*notopalt));
+        param.setName(
+            std::static_pointer_cast<ast::patterns::IdentifierPattern>(
+                *notopalt));
         param.setType(*type);
 
         return param;

@@ -15,7 +15,7 @@ public:
 
   TypeExpressionKind getKind() const;
 
-  virtual size_t getTokens() override = 0;
+  //size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast::types

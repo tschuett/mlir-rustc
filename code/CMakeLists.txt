@@ -11,7 +11,7 @@ add_subdirectory(ast)
 add_subdirectory(sema)
 add_subdirectory(analysis)
 
-add_subdirectory(moduleBuilder)
+#add_subdirectory(moduleBuilder)
 add_subdirectory(remarks)
 add_subdirectory(crate_builder)
 add_subdirectory(Optimizer)

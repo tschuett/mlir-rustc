@@ -3,6 +3,7 @@
 #include "AST/FunctionQualifiers.h"
 #include "AST/GenericParams.h"
 #include "AST/Type.h"
+#include "AST/Types/TypeExpression.h"
 #include "AST/WhereClause.h"
 #include "Generics.h"
 #include "Lexer/Token.h"
@@ -47,7 +48,7 @@ Parser::tryParseFunctionQualifiers(std::span<lexer::Token> tokens) {
   return qual;
 }
 
-std::optional<std::shared_ptr<ast::types::Type>>
+std::optional<std::shared_ptr<ast::types::TypeExpression>>
 Parser::tryParseFunctionReturnType(std::span<lexer::Token> tokens) {
   std::span<Token> view = tokens;
 
@@ -56,7 +57,8 @@ Parser::tryParseFunctionReturnType(std::span<lexer::Token> tokens) {
 
   view = view.subspan(1);
 
-  std::optional<std::shared_ptr<ast::types::Type>> type = tryParseType(view);
+  std::optional<std::shared_ptr<ast::types::TypeExpression>> type =
+      tryParseTypeExpression(view);
 
   return type;
 }
@@ -130,7 +132,7 @@ Parser::tryParseFunctionSignature(std::span<lexer::Token> tokens) {
     return std::nullopt;
   }
 
-  std::optional<std::shared_ptr<ast::types::Type>> returnType =
+  std::optional<std::shared_ptr<ast::types::TypeExpression>> returnType =
       tryParseFunctionReturnType(view);
 
   if (returnType) {

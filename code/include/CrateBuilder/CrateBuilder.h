@@ -1,10 +1,13 @@
 #pragma once
 
 #include "ADT/ScopedHashTable.h"
+#include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/Crate.h"
-#include "AST/VariableDeclaration.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/LoopExpression.h"
+#include "AST/OperatorExpression.h"
+#include "AST/VariableDeclaration.h"
 #include "CrateBuilder/Target.h"
 #include "Hir/HirDialect.h"
 
@@ -98,6 +101,17 @@ private:
   void emitStatement(std::shared_ptr<ast::Statement>);
   void emitExpressionStatement(std::shared_ptr<ast::ExpressionStatement> stmt);
   mlir::Value emitLoopExpression(std::shared_ptr<ast::LoopExpression> expr);
+  mlir::Value
+  emitOperatorExpression(std::shared_ptr<ast::OperatorExpression> expr);
+  mlir::Value emitArithmeticOrLogicalExpression(
+      std::shared_ptr<ast::ArithmeticOrLogicalExpression> expr);
+
+  /// Helper conversion for a Rust AST location to an MLIR location.
+  mlir::Location getLocation(const Location &loc) {
+    return mlir::FileLineColLoc::get(builder.getStringAttr(loc.getFileName()),
+                                     loc.getLineNumber(),
+                                     loc.getColumnNumber());
+  }
 };
 
 void build(rust_compiler::ast::Crate &crate);

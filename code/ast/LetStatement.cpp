@@ -1,6 +1,7 @@
 #include "AST/LetStatement.h"
 
 #include "AST/LetStatementParam.h"
+#include "AST/Types/TypeExpression.h"
 #include "AST/VariableDeclaration.h"
 
 namespace rust_compiler::ast {
@@ -14,8 +15,9 @@ size_t LetStatement::getTokens() {
 
   count += pat->getTokens();
 
-  if (type)
-    count += 1 + type->getTokens();
+// FIXME
+//  if (type)
+//    count += 1 + type->getTokens();
 
   if (expr)
     count += 1 + expr->getTokens();

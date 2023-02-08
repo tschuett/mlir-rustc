@@ -26,6 +26,14 @@ int processMLIR(mlir::MLIRContext &context,
   // Apply any generic pass manager command line options and run the pipeline.
   applyPassManagerCLOptions(pm);
 
+  // Hir
+
+  // Mir
+
+  // Lir
+
+  // LLLVM Dialect
+
   // optimize
   pm.addPass(mlir::createCanonicalizerPass());
   pm.addPass(mlir::createCSEPass());

@@ -3,6 +3,7 @@
 #include "AST/Expression.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Statement.h"
+#include "AST/Types/TypeExpression.h"
 #include "AST/Types/Types.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
@@ -39,8 +40,8 @@ Parser::tryParseLetStatement(std::span<lexer::Token> tokens) {
       // type
       if (view.front().getKind() == lexer::TokenKind::Colon) {
         view = view.subspan(1);
-        std::optional<std::shared_ptr<ast::types::Type>> type =
-            tryParseType(view);
+        std::optional<std::shared_ptr<ast::types::TypeExpression>> type =
+            tryParseTypeExpression(view);
         if (type) {
           view = view.subspan((*type)->getTokens());
           let.setType(*type);

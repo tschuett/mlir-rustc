@@ -59,6 +59,9 @@ void CrateBuilder::emitVisItem(std::shared_ptr<VisItem> visItem) {
   case VisItemKind::ExternBlock: {
     break;
   }
+  case VisItemKind::AssociatedItem: {
+    break;
+  }
   }
 }
 

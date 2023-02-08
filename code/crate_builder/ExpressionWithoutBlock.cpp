@@ -1,10 +1,11 @@
 #include "AST/AwaitExpression.h"
 #include "AST/Expression.h"
 #include "CrateBuilder/CrateBuilder.h"
-
 #include "Hir/HirOps.h"
 
 #include <memory>
+
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::crate_builder {
 
@@ -20,6 +21,8 @@ mlir::Value CrateBuilder::emitExpressionWithoutBlock(
     break;
   }
   case ast::ExpressionWithoutBlockKind::OperatorExpression: {
+    return emitOperatorExpression(
+        std::static_pointer_cast<OperatorExpression>(withOut));
     break;
   }
   case ast::ExpressionWithoutBlockKind::GroupedExpression: {
@@ -29,10 +32,11 @@ mlir::Value CrateBuilder::emitExpressionWithoutBlock(
     break;
   }
   case ast::ExpressionWithoutBlockKind::AwaitExpression: {
-    std::shared_ptr<ast::AwaitExpression> await =
-        std::static_pointer_cast<ast::AwaitExpression>(withOut);
-    mlir::Value body = emitExpression(await->getBody());
-    return builder.create<Hir::AwaitOp>(wait-getLocation());
+    //    std::shared_ptr<ast::AwaitExpression> await =
+    //        std::static_pointer_cast<ast::AwaitExpression>(withOut);
+    //    mlir::Value body = emitExpression(await->getBody());
+    //    return builder.create<hir::AwaitOp>(getLocation(await->getLocation()),
+    //    ,body);
     break;
   }
   case ast::ExpressionWithoutBlockKind::IndexExpression: {
