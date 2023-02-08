@@ -23,8 +23,6 @@ public:
   Mappings(Sema *sema) : sema(sema){};
 
 private:
-  std::map<AstId, ast::Expression *> expressions;
-  std::map<AstId, ast::types::Type *> types;
-};
+  };
 
 } // namespace rust_compiler::sema

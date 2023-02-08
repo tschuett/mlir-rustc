@@ -1,4 +1,5 @@
 #include "AST/AwaitExpression.h"
+#include "AST/CallExpression.h"
 #include "AST/Expression.h"
 #include "CrateBuilder/CrateBuilder.h"
 #include "Hir/HirOps.h"
@@ -32,9 +33,9 @@ mlir::Value CrateBuilder::emitExpressionWithoutBlock(
     break;
   }
   case ast::ExpressionWithoutBlockKind::AwaitExpression: {
-    //    std::shared_ptr<ast::AwaitExpression> await =
-    //        std::static_pointer_cast<ast::AwaitExpression>(withOut);
-    //    mlir::Value body = emitExpression(await->getBody());
+    std::shared_ptr<ast::AwaitExpression> await =
+        std::static_pointer_cast<ast::AwaitExpression>(withOut);
+    mlir::Value body = emitExpression(await->getBody());
     //    return builder.create<hir::AwaitOp>(getLocation(await->getLocation()),
     //    ,body);
     break;
@@ -52,9 +53,15 @@ mlir::Value CrateBuilder::emitExpressionWithoutBlock(
     break;
   }
   case ast::ExpressionWithoutBlockKind::CallExpression: {
+    std::shared_ptr<ast::CallExpression> call =
+        std::static_pointer_cast<ast::CallExpression>(withOut);
+    return emitCallExpression(call);
     break;
   }
   case ast::ExpressionWithoutBlockKind::MethodCallExpression: {
+    std::shared_ptr<ast::MethodCallExpression> call =
+        std::static_pointer_cast<ast::MethodCallExpression>(withOut);
+    return emitMethodCallExpression(call);
     break;
   }
   case ast::ExpressionWithoutBlockKind::FieldExpression: {
@@ -86,5 +93,11 @@ mlir::Value CrateBuilder::emitExpressionWithoutBlock(
   }
   }
 }
+
+mlir::Value
+CrateBuilder::emitCallExpression(std::shared_ptr<ast::CallExpression> expr) {}
+
+mlir::Value CrateBuilder::emitMethodCallExpression(
+    std::shared_ptr<ast::MethodCallExpression> expr) {}
 
 } // namespace rust_compiler::crate_builder

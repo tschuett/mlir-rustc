@@ -10,6 +10,8 @@
 #include "AST/VariableDeclaration.h"
 #include "CrateBuilder/Target.h"
 #include "Hir/HirDialect.h"
+#include "AST/CallExpression.h"
+#include "AST/MethodCallExpression.h"
 
 #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
@@ -105,6 +107,11 @@ private:
   emitOperatorExpression(std::shared_ptr<ast::OperatorExpression> expr);
   mlir::Value emitArithmeticOrLogicalExpression(
       std::shared_ptr<ast::ArithmeticOrLogicalExpression> expr);
+
+    mlir::Value
+  emitCallExpression(std::shared_ptr<ast::CallExpression> expr);
+    mlir::Value
+  emitMethodCallExpression(std::shared_ptr<ast::MethodCallExpression> expr);
 
   /// Helper conversion for a Rust AST location to an MLIR location.
   mlir::Location getLocation(const Location &loc) {

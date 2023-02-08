@@ -5,7 +5,7 @@ using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
-std::optional<std::shared_ptr<ast::types::Type>>
+std::optional<std::shared_ptr<ast::types::TypeExpression>>
 Parser::tryParseTypePath(std::span<lexer::Token> tokens) {}
 
 } // namespace rust_compiler::parser

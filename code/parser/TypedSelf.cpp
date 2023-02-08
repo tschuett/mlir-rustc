@@ -2,7 +2,6 @@
 
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
-#include "Type.h"
 #include "Parser/Parser.h"
 
 #include <memory>
@@ -29,8 +28,8 @@ Parser::tryParseTypedSelf(std::span<lexer::Token> tokens) {
     view = view.subspan(1);
     if (view.front().getKind() == TokenKind::Colon) {
       view = view.subspan(1);
-      std::optional<std::shared_ptr<ast::types::Type>> type =
-          tryParseType(view);
+      std::optional<std::shared_ptr<ast::types::TypeExpression>> type =
+          tryParseTypeExpression(view);
       if (type) {
         typedSelf.setType(*type);
         return std::static_pointer_cast<ast::SelfParam>(

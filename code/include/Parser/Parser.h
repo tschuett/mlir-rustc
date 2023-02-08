@@ -130,17 +130,14 @@ public:
   std::optional<std::shared_ptr<ast::Expression>>
   tryParseReturnExpression(std::span<lexer::Token> tokens);
 
-  std::optional<std::shared_ptr<ast::types::Type>>
-  tryParseType(std::span<lexer::Token> tokens);
-
   std::optional<std::shared_ptr<ast::OuterAttribute>>
   tryParseOuterAttribute(std::span<lexer::Token> tokens);
 
   std::optional<ast::InnerAttribute>
   tryParseInnerAttribute(std::span<lexer::Token> tokens);
 
-  std::optional<std::shared_ptr<ast::types::Type>>
-  tryParsePrimitiveType(std::span<lexer::Token> tokens);
+//  std::optional<std::shared_ptr<ast::types::TypeExpression>>
+//  tryParsePrimitiveType(std::span<lexer::Token> tokens);
 
   std::optional<std::shared_ptr<ast::Expression>>
   tryParseNegationExpression(std::span<lexer::Token> tokens);
@@ -211,14 +208,11 @@ public:
   std::optional<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   tryParseRestPattern(std::span<lexer::Token> tokens);
 
-  std::optional<std::shared_ptr<ast::types::Type>>
+  std::optional<std::shared_ptr<ast::types::TypeExpression>>
   tryParseQualifiedPathType(std::span<lexer::Token> tokens);
 
-  std::optional<std::shared_ptr<ast::types::Type>>
+  std::optional<std::shared_ptr<ast::types::TypeExpression>>
   tryParseQualifiedPathInType(std::span<lexer::Token> tokens);
-
-  std::optional<std::shared_ptr<ast::types::Type>>
-  tryParseTypePath(std::span<lexer::Token> tokens);
 
   std::optional<std::shared_ptr<ast::Expression>>
   tryParsePredicateLoopExpression(std::span<lexer::Token> tokens);
@@ -237,6 +231,18 @@ public:
 
   std::optional<std::shared_ptr<ast::types::TypeExpression>>
       tryParseTypeExpression(std::span<lexer::Token>);
+
+  std::optional<std::shared_ptr<ast::types::TypeExpression>>
+      tryParseTypeNoBounds(std::span<lexer::Token>);
+
+  std::optional<std::shared_ptr<ast::types::TypeExpression>>
+      tryParseParenthesizedType(std::span<lexer::Token>);
+
+  std::optional<std::shared_ptr<ast::types::TypeExpression>>
+      tryParseTypePath(std::span<lexer::Token>);
+
+  std::optional<std::shared_ptr<ast::SelfParam>>
+  tryParseSelfParam(std::span<lexer::Token> tokens);
 
   void printToken(lexer::Token &);
 };

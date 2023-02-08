@@ -1,12 +1,12 @@
 #pragma once
 
 #include "AST/BlockExpression.h"
+#include "AST/CallExpression.h"
 #include "AST/Crate.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/LetStatement.h"
-#include "AST/Statements.h"
-#include "AST/CallExpression.h"
 #include "AST/MethodCallExpression.h"
+#include "AST/Statements.h"
 #include "AST/Types/Types.h"
 #include "Sema/Common.h"
 #include "Sema/Mappings.h"
@@ -28,6 +28,8 @@ class MatchGuard;
 namespace rust_compiler::sema {
 
 class Sema {
+  using ItemId = uint32_t;
+
 public:
   void analyze(std::shared_ptr<ast::Crate> &ast);
 
@@ -41,7 +43,8 @@ private:
   void analyzeStatements(std::shared_ptr<ast::Statements> stmts);
   void analyzeLetStatement(std::shared_ptr<ast::LetStatement> let);
   void analyzeCallExpression(std::shared_ptr<ast::CallExpression> let);
-  void analyzeMethodCallExpression(std::shared_ptr<ast::MethodCallExpression> let);
+  void
+  analyzeMethodCallExpression(std::shared_ptr<ast::MethodCallExpression> let);
   void
   analyzeExpressionStatement(std::shared_ptr<ast::ExpressionStatement> expr);
   void
@@ -51,10 +54,13 @@ private:
 
   void checkExhaustiveness(std::shared_ptr<ast::MatchGuard>);
 
-  bool isReachable(std::shared_ptr<ast::VisItem>, std::shared_ptr<ast::VisItem>);
+  bool isReachable(std::shared_ptr<ast::VisItem>,
+                   std::shared_ptr<ast::VisItem>);
 
   TypeChecking typeChecking = {this};
-  Mappings mappings = {this};
+  // Mappings mappings = {this};
+
+  std::map<ItemId, std::shared_ptr<ast::Item>> items;
 };
 
 void analyzeSemantics(std::shared_ptr<ast::Crate> &ast);
