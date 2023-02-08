@@ -27,4 +27,17 @@ bool DepdendencyGraph::areDepsEmpty(const DependencyGraphNode *Node) {
   return dependendencies[Node].empty();
 }
 
+DependencyGraphNode *
+DepdendencyGraph::pickDependency(const DependencyGraphNode *Node) {
+  assert(false);
+}
+
+void DepdendencyGraph::removeDependency(const DependencyGraphNode *owner,
+                                        const DependencyGraphNode *dep) {
+  if (dependendencies.contains(owner)) {
+    auto it = dependendencies.find(owner);
+    it->second.erase(dep);
+  }
+}
+
 } // namespace rust_compiler::analysis::attributor
