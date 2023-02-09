@@ -49,8 +49,25 @@ private:
   analyzeExpressionStatement(std::shared_ptr<ast::ExpressionStatement> expr);
   void
   analyzeMacroInvocationSemi(std::shared_ptr<ast::MacroInvocationSemi> macro);
+  void analyzeExpression(std::shared_ptr<ast::Expression> let);
+  void
+  analyzeExpressionWithBlock(std::shared_ptr<ast::ExpressionWithBlock> let);
+  void analyzeExpressionWithoutBlock(
+      std::shared_ptr<ast::ExpressionWithoutBlock> let);
 
   void analyzeItemDeclaration(std::shared_ptr<ast::Node> item);
+
+  void analyzeArithmeticOrLogicalExpression(
+      std::shared_ptr<ast::ArithmeticOrLogicalExpression> arith);
+
+  void analyzeLoopExpression(std::shared_ptr<ast::LoopExpression> arith);
+  void
+  analyzeOperatorExpression(std::shared_ptr<ast::OperatorExpression> arith);
+
+  void analyzeLiteralExpression(std::shared_ptr<ast::LiteralExpression> arith);
+
+  void analyzeInfiniteLoopExpression(
+      std::shared_ptr<ast::InfiniteLoopExpression> arith);
 
   void checkExhaustiveness(std::shared_ptr<ast::MatchGuard>);
 
@@ -60,7 +77,10 @@ private:
   TypeChecking typeChecking = {this};
   // Mappings mappings = {this};
 
+  AstId getAstId(std::shared_ptr<ast::Node>);
+
   std::map<ItemId, std::shared_ptr<ast::Item>> items;
+  std::map<AstId, std::shared_ptr<ast::Node>> nodes;
 };
 
 void analyzeSemantics(std::shared_ptr<ast::Crate> &ast);

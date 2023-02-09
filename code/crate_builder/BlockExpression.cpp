@@ -4,7 +4,7 @@ namespace rust_compiler::crate_builder {
 
 mlir::Value
 CrateBuilder::emitBlockExpression(std::shared_ptr<ast::BlockExpression> block) {
-  emitStatements(block->getExpressions());
+  return emitStatements(block->getExpressions());
 }
 
 } // namespace rust_compiler::crate_builder

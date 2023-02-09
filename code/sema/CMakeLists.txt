@@ -20,6 +20,8 @@ add_library(sema
            OperatorExpression.cpp
            BlockExpressionVisitor.cpp
            LiteralExpression.cpp
+           Expression.cpp
+           LoopExpression.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)

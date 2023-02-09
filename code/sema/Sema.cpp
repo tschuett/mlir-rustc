@@ -27,8 +27,6 @@ void analyzeSemantics(std::shared_ptr<ast::Crate> &crate) {
   // Trait resolution
 
   // monomorph
-
-  sema.analyze(crate);
 }
 
 void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
@@ -37,7 +35,6 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
 
   {
     TimeTraceScope scope("type inference");
-    typeChecking.checkCrate(crate);
   }
 
   { TimeTraceScope scope("trait solving"); }
@@ -91,6 +88,9 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
       break;
     }
     case VisItemKind::ExternBlock: {
+      break;
+    }
+    case VisItemKind::AssociatedItem: {
       break;
     }
     }

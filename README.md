@@ -37,7 +37,7 @@
 - [ ] types
 - [ ] patterns
 - [ ] error progation
-
+- [ ] type uniquing
 # References
 
 * https://mlir.llvm.org/docs/Tutorials/Toy/Ch-6/

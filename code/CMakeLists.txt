@@ -4,6 +4,7 @@ add_subdirectory(codegen)
 add_subdirectory(mir)
 add_subdirectory(hir)
 add_subdirectory(toml)
+add_subdirectory(Basic)
 
 add_subdirectory(include)
 

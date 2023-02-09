@@ -12,6 +12,7 @@ void CrateBuilder::emitStatement(std::shared_ptr<ast::Statement> stmt) {
     break;
   }
   case ast::StatementKind::LetStatement: {
+    emitLetStatement(std::static_pointer_cast<ast::LetStatement>(stmt));
     break;
   }
   case ast::StatementKind::ExpressionStatement: {

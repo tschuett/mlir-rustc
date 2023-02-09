@@ -19,8 +19,8 @@ size_t LetStatement::getTokens() {
 //  if (type)
 //    count += 1 + type->getTokens();
 
-  if (expr)
-    count += 1 + expr->getTokens();
+//  if (expr)
+//    count += 1 + expr->getTokens();
 
   return count + 1;
 }

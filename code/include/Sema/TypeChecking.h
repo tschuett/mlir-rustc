@@ -24,18 +24,20 @@ class TypeChecking {
 public:
   TypeChecking(Sema *sema) : sema(sema) {}
 
-  void checkCrate(std::shared_ptr<ast::Crate> &crate);
-
-  void eqExpr(AstId, AstId);
+  //void eqExpr(AstId, AstId);
   void eqType(AstId, AstId);
-  void sub();
+  void isIntegerLike(AstId);
+  void isFloatLike(AstId);
+  void isIntegerOrFloatLike(AstId);
+  void isKnownType(AstId, std::shared_ptr<ast::types::Type>);
+  //void sub();
 
 private:
-  void checkInfiniteLoopExpression(
-      std::shared_ptr<ast::InfiniteLoopExpression> loop);
-  void checkArithmeticOrLogicalExpression(
-      std::shared_ptr<ast::ArithmeticOrLogicalExpression> arith);
-  void checkLiteralExpression(std::shared_ptr<ast::LiteralExpression> lit);
+//  void checkInfiniteLoopExpression(
+//      std::shared_ptr<ast::InfiniteLoopExpression> loop);
+//  void checkArithmeticOrLogicalExpression(
+//      std::shared_ptr<ast::ArithmeticOrLogicalExpression> arith);
+//  void checkLiteralExpression(std::shared_ptr<ast::LiteralExpression> lit);
 };
 
 } // namespace rust_compiler::sema

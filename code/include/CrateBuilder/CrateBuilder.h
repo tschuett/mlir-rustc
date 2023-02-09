@@ -6,6 +6,7 @@
 #include "AST/CallExpression.h"
 #include "AST/Crate.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/LetStatement.h"
 #include "AST/LoopExpression.h"
 #include "AST/MethodCallExpression.h"
 #include "AST/OperatorExpression.h"
@@ -102,6 +103,7 @@ private:
   mlir::Value emitExpressionWithBlock(std::shared_ptr<ast::Expression> expr);
   void emitStatement(std::shared_ptr<ast::Statement>);
   void emitExpressionStatement(std::shared_ptr<ast::ExpressionStatement> stmt);
+  void emitLetStatement(std::shared_ptr<ast::LetStatement> stmt);
   mlir::Value emitLoopExpression(std::shared_ptr<ast::LoopExpression> expr);
   mlir::Value
   emitOperatorExpression(std::shared_ptr<ast::OperatorExpression> expr);
@@ -120,6 +122,6 @@ private:
   }
 };
 
-  //void build(std::shared_ptr<rust_compiler::ast::Crate> crate);
+// void build(std::shared_ptr<rust_compiler::ast::Crate> crate);
 
 } // namespace rust_compiler::crate_builder

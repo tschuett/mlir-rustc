@@ -1,6 +1,6 @@
 #include "AST/BreakExpression.h"
 #include "BlockExpressionVisitor.h"
-#include "Sema/TypeChecking.h"
+#include "Sema/Sema.h"
 
 #include <memory>
 
@@ -22,7 +22,7 @@ public:
   };
 };
 
-void TypeChecking::checkInfiniteLoopExpression(
+void Sema::analyzeInfiniteLoopExpression(
     std::shared_ptr<ast::InfiniteLoopExpression> loop) {
 
   BreakExpressionCollector collector;
@@ -32,7 +32,12 @@ void TypeChecking::checkInfiniteLoopExpression(
   std::vector<std::shared_ptr<ast::BreakExpression>> breaks =
       collector.getBreaks();
   // collect breaks in BlockExpression
-}
+
+  AstId astId = getAstId(loop);
+  if (breaks.size() == 0)
+    typeChecking.isKnownType(
+        astId, std::make_shared<PrimitiveType>(loop->getLocation(),
+                                               PrimitiveTypeKind::Unit));
 
 } // namespace rust_compiler::sema
 
