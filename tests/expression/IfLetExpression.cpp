@@ -3,11 +3,12 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
 #include "Util.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 TEST(IfLetExpressionTest, CheckIfLetExpression) {
 
@@ -21,7 +22,7 @@ TEST(IfLetExpressionTest, CheckIfLetExpression) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
       parser.tryParseIfLetExpression(ts.getAsView());

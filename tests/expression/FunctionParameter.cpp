@@ -2,11 +2,13 @@
 #include "FunctionParameters.h"
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
-#include "gtest/gtest.h"
+
+#include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 TEST(FunctionParameterExpressionTest, CheckFunctionParameter) {
 
@@ -14,7 +16,7 @@ TEST(FunctionParameterExpressionTest, CheckFunctionParameter) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<rust_compiler::ast::FunctionParam> param =
       parser.tryParseFunctionParam(ts.getAsView());
@@ -28,7 +30,7 @@ TEST(FunctionParameterExpressionTest, CheckFunctionParameters) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<rust_compiler::ast::FunctionParameters> params =
       parser.tryParseFunctionParameters(ts.getAsView());

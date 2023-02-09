@@ -3,11 +3,12 @@
 #include "Parser/Parser.h"
 
 #include "Lexer/Lexer.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 //TEST(StatementsTest, CheckStatements1) {
 //
@@ -39,7 +40,7 @@ TEST(StatementsTest, CheckFun0a) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> fun =
       parser.tryParseStatement(ts.getAsView());
@@ -53,7 +54,7 @@ TEST(StatementsTest, CheckFun0c) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statements>> fun =
       parser.tryParseStatements(ts.getAsView());
@@ -67,7 +68,7 @@ TEST(StatementsTest, CheckFun0d) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> fun =
       parser.tryParseLetStatement(ts.getAsView());
@@ -81,7 +82,7 @@ TEST(StatementsTest, CheckFun1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statements>> fun =
       parser.tryParseStatements(ts.getAsView());
@@ -95,7 +96,7 @@ TEST(StatementsTest, CheckFun2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> fun =
       parser.tryParseStatement(ts.getAsView());
@@ -109,7 +110,7 @@ TEST(StatementsTest, CheckFun3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> fun =
       parser.tryParseLetStatement(ts.getAsView());

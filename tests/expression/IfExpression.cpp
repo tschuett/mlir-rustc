@@ -1,13 +1,15 @@
 #include "AST/IfExpression.h"
 
+#include "ADT/CanonicalPath.h"
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
 #include "Util.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 TEST(IfExpressionTest, CheckIfExpression) {
 
@@ -21,7 +23,7 @@ TEST(IfExpressionTest, CheckIfExpression) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
       parser.tryParseIfExpression(ts.getAsView());
@@ -41,7 +43,7 @@ TEST(IfExpressionTest, CheckIfExpression1) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
       parser.tryParseIfExpression(ts.getAsView());
@@ -61,7 +63,7 @@ TEST(IfExpressionTest, CheckIfExpression2) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
       parser.tryParseIfExpression(ts.getAsView());
@@ -81,7 +83,7 @@ TEST(IfExpressionTest, CheckIfExpression3) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
       parser.tryParseIfExpression(ts.getAsView());
@@ -101,7 +103,7 @@ TEST(IfExpressionTest, CheckIfExpression4) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
       parser.tryParseIfExpression(ts.getAsView());

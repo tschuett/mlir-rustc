@@ -1,10 +1,11 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 TEST(ExpressionTest, CheckLiteralExpr) {
 
@@ -12,7 +13,7 @@ TEST(ExpressionTest, CheckLiteralExpr) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> lit =
       parser.tryParseLiteralExpression(ts.getAsView());
@@ -26,7 +27,7 @@ TEST(ExpressionTest, CheckNegationExpr1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> neg =
       parser.tryParseNegationExpression(ts.getAsView());
@@ -40,7 +41,7 @@ TEST(ExpressionTest, CheckNegationExpr2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> neg =
       parser.tryParseNegationExpression(ts.getAsView());
@@ -54,7 +55,7 @@ TEST(ExpressionTest, CheckExprSmaller) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> neg =
       parser.tryParseExpression(ts.getAsView());

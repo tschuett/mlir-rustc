@@ -41,6 +41,8 @@ public:
       : Type(loc, TypeKind::PrimitiveType), kind(kind) {}
 
   PrimitiveTypeKind getKind() const { return kind; }
+
+   size_t getTokens() override;
 };
 
 std::optional<std::string> PrimitiveType2String(PrimitiveTypeKind);

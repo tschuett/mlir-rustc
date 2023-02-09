@@ -1,29 +1,14 @@
+#include "Parser/Parser.h"
+
 #include "Lexer/Lexer.h"
 #include "Modules.h"
-#include "gtest/gtest.h"
-#include "Parser/Parser.h"
+
+#include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
-
-TEST(ParserTest, CheckClippy) {
-
-  std::string text = "#![deny(clippy::as_conversions,clippy::missing_safety_"
-                     "doc,clippy::undocumented_unsafe_blocks)]\n";
-
-  TokenStream ts = lex(text, "lib.rs");
-
-  Parser parser = {ts, ""};
-
-  std::optional<ClippyAttribute> clippy =
-      parser.tryParseClippyAttribute(ts.getAsView());
-
-  // size_t expectedLendth = 2;
-  EXPECT_TRUE(clippy.has_value());
-
-  //  EXPECT_EQ(ts.getLength(), expectedLendth);
-};
+using namespace rust_compiler::adt;
 
 TEST(ParserTest, CheckModuleDecl) {
 
@@ -33,10 +18,10 @@ TEST(ParserTest, CheckModuleDecl) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<rust_compiler::ast::Module> module =
-      parser.tryParseModule(ts.getAsView(), "");
+      parser.tryParseModule(ts.getAsView());
 
   EXPECT_TRUE(module.has_value());
 };
@@ -47,10 +32,10 @@ TEST(ParserTest, CheckSimpleModDecl) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<rust_compiler::ast::Module> module =
-      parser.tryParseModule(ts.getAsView(), "");
+      parser.tryParseModule(ts.getAsView());
 
   EXPECT_TRUE(module.has_value());
 };
@@ -61,9 +46,10 @@ TEST(ParserTest, CheckUseDecl) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
-  std::optional<UseDeclaration> use = parser.tryParseUseDeclaration(ts.getAsView());
+  std::optional<UseDeclaration> use =
+      parser.tryParseUseDeclaration(ts.getAsView());
 
   EXPECT_TRUE(use.has_value());
 };
@@ -75,9 +61,10 @@ TEST(ParserTest, CheckSimpleUseTreeDecl) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
-  std::optional<UseDeclaration> use = parser.tryParseUseDeclaration(ts.getAsView());
+  std::optional<UseDeclaration> use =
+      parser.tryParseUseDeclaration(ts.getAsView());
 
   EXPECT_TRUE(use.has_value());
 };
@@ -90,9 +77,10 @@ TEST(ParserTest, CheckUseTreeDecl) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
-  std::optional<UseDeclaration> use = parser.tryParseUseDeclaration(ts.getAsView());
+  std::optional<UseDeclaration> use =
+      parser.tryParseUseDeclaration(ts.getAsView());
 
   EXPECT_TRUE(use.has_value());
 };

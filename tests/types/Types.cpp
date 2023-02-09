@@ -1,12 +1,11 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
-#include "PrimitiveType.h"
-#include "Type.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 TEST(TypesTest, Checki128) {
 
@@ -14,7 +13,7 @@ TEST(TypesTest, Checki128) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
       parser.tryParsePrimitiveType(ts.getAsView());
@@ -28,7 +27,7 @@ TEST(TypesTest, Checkf64) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
       parser.tryParsePrimitiveType(ts.getAsView());
@@ -42,7 +41,7 @@ TEST(TypesTest, Checkisize) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
       parser.tryParsePrimitiveType(ts.getAsView());
@@ -56,7 +55,7 @@ TEST(TypesTest, CheckBool) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
       parser.tryParsePrimitiveType(ts.getAsView());
@@ -70,7 +69,7 @@ TEST(TypesTest, CheckBoolAsType) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
       parser.tryParseType(ts.getAsView());
@@ -84,7 +83,7 @@ TEST(TypesTest, CheckI128AsType) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
       parser.tryParseType(ts.getAsView());

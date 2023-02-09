@@ -1,12 +1,14 @@
 #include "AST/OperatorExpression.h"
 
+#include "ADT/CanonicalPath.h"
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 TEST(OperatorExpressionTest, CheckOperatorExprSimple) {
 
@@ -18,7 +20,7 @@ TEST(OperatorExpressionTest, CheckOperatorExprSimple) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> op =
       parser.tryParseOperatorExpression(ts.getAsView());
@@ -36,7 +38,7 @@ TEST(OperatorExpressionTest, CheckOperatorExprSimple2) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> op =
       parser.tryParseOperatorExpression(ts.getAsView());
@@ -54,7 +56,7 @@ TEST(OperatorExpressionTest, CheckOperatorExprSimple3) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> op =
       parser.tryParseOperatorExpression(ts.getAsView());

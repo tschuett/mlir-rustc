@@ -2,13 +2,14 @@
 #include "AST/Item.h"
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
-#include "gtest/gtest.h"
 
+#include <gtest/gtest.h>
 #include <memory>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 TEST(ExamplesFun2Test, CheckFun1) {
 
@@ -17,10 +18,10 @@ TEST(ExamplesFun2Test, CheckFun1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Item>> fun =
-      parser.tryParseItem(ts.getAsView(), "");
+      parser.tryParseItem(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 };
@@ -32,37 +33,35 @@ TEST(ExamplesFun2Test, CheckFun2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView(), "");
+      parser.tryParseFunction(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 };
 
 TEST(ExamplesFun2Test, CheckFun3) {
 
-  std::string text =
-      "fn add(right: usize) -> usize { return if true { 5 } }";
+  std::string text = "fn add(right: usize) -> usize { return if true { 5 } }";
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView(), "");
+      parser.tryParseFunction(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 };
 
 TEST(ExamplesFun2Test, CheckFun4) {
 
-  std::string text =
-      "return if true { 5 }";
+  std::string text = "return if true { 5 }";
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> fun =
       parser.tryParseReturnExpression(ts.getAsView());
@@ -72,12 +71,11 @@ TEST(ExamplesFun2Test, CheckFun4) {
 
 TEST(ExamplesFun2Test, CheckFun5) {
 
-  std::string text =
-      "return if true { 5 } else { 6 }";
+  std::string text = "return if true { 5 } else { 6 }";
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> fun =
       parser.tryParseReturnExpression(ts.getAsView());
@@ -87,30 +85,28 @@ TEST(ExamplesFun2Test, CheckFun5) {
 
 TEST(ExamplesFun2Test, CheckFun6) {
 
-  std::string text =
-      "fn add(right: usize) -> usize {  return 5; };";
+  std::string text = "fn add(right: usize) -> usize {  return 5; };";
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView(), "");
+      parser.tryParseFunction(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 };
 
 TEST(ExamplesFun2Test, CheckFun7) {
 
-  std::string text =
-      "fn add(right: usize) -> usize { };";
+  std::string text = "fn add(right: usize) -> usize { };";
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView(), "");
+      parser.tryParseFunction(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 };
@@ -121,7 +117,7 @@ TEST(ExamplesFun2Test, CheckFun8) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> fun =
       parser.tryParseReturnExpression(ts.getAsView());
@@ -135,7 +131,7 @@ TEST(ExamplesFun2Test, CheckFun9) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> fun =
       parser.tryParseIfExpression(ts.getAsView());

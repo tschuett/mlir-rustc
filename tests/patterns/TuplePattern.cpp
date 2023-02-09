@@ -5,6 +5,7 @@
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 TEST(PatternTupleTest, CheckTuplePattern1) {
 
@@ -12,7 +13,7 @@ TEST(PatternTupleTest, CheckTuplePattern1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>>
       pattern = parser.tryParseTuplePattern(ts.getAsView());
@@ -26,7 +27,7 @@ TEST(PatternTupleTest, CheckTuplePattern2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>>
       pattern = parser.tryParseTuplePattern(ts.getAsView());

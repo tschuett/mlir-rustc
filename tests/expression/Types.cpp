@@ -1,7 +1,6 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
-#include "Type.h"
-#include "gtest/gtest.h"
+#include >gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;

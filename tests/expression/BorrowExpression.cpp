@@ -1,10 +1,11 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 TEST(BorrowExpressionTest, CheckBorrowExpr1) {
 
@@ -12,7 +13,7 @@ TEST(BorrowExpressionTest, CheckBorrowExpr1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
       parser.tryParseBorrowExpression(ts.getAsView());
@@ -26,7 +27,7 @@ TEST(BorrowExpressionTest, CheckBorrowExpr2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
       parser.tryParseBorrowExpression(ts.getAsView());
@@ -40,7 +41,7 @@ TEST(BorrowExpressionTest, CheckBorrowExpr3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
       parser.tryParseBorrowExpression(ts.getAsView());
@@ -54,7 +55,7 @@ TEST(BorrowExpressionTest, CheckBorrowExpr4) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
       parser.tryParseBorrowExpression(ts.getAsView());

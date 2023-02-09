@@ -3,13 +3,14 @@
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "Lexer/Lexer.h"
 #include "Util.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include "Parser/Parser.h"
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple) {
 
@@ -23,7 +24,7 @@ TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> arith =
       parser.tryParseArithmeticOrLogicalExpresion(ts.getAsView());
@@ -41,7 +42,7 @@ TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple2) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> arith =
       parser.tryParseArithmeticOrLogicalExpresion(ts.getAsView());
@@ -59,7 +60,7 @@ TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple3) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> arith =
       parser.tryParseArithmeticOrLogicalExpresion(ts.getAsView());

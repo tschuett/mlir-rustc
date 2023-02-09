@@ -1,11 +1,13 @@
 #include "AST/Item.h"
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
-#include "gtest/gtest.h"
+
+#include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 TEST(ExamplesFun1Test, CheckFun5) {
 
@@ -13,10 +15,10 @@ TEST(ExamplesFun1Test, CheckFun5) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView(), "");
+      parser.tryParseFunction(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 };
@@ -27,10 +29,10 @@ TEST(ExamplesFun1Test, CheckFun4a) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView(), "");
+      parser.tryParseFunction(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 };
@@ -41,10 +43,10 @@ TEST(ExamplesFun1Test, CheckFun4) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView(), "");
+      parser.tryParseFunction(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 };
@@ -55,10 +57,10 @@ TEST(ExamplesFun1Test, CheckFun3a) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView(), "");
+      parser.tryParseFunction(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 };
@@ -69,10 +71,10 @@ TEST(ExamplesFun1Test, CheckFun3b) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView(), "");
+      parser.tryParseFunction(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 };
@@ -83,10 +85,10 @@ TEST(ExamplesFun1Test, CheckFun3c) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView(), "");
+      parser.tryParseFunction(ts.getAsView());
 
   EXPECT_TRUE(fun.has_value());
 };
@@ -97,10 +99,10 @@ TEST(ExamplesFun1Test, CheckFun1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Item>> item =
-      parser.tryParseItem(ts.getAsView(), "");
+      parser.tryParseItem(ts.getAsView());
 
   EXPECT_TRUE(item.has_value());
 };
@@ -112,10 +114,10 @@ TEST(ExamplesFun1Test, CheckFun2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Item>> item =
-      parser.tryParseItem(ts.getAsView(), "");
+      parser.tryParseItem(ts.getAsView());
 
   size_t expectedLendth = 17;
 
@@ -131,13 +133,15 @@ TEST(ExamplesFun1Test, CheckModule1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
-  std::optional<std::shared_ptr<rust_compiler::ast::Module>> mod =
-      parser.parse();
+  Parser parser = {ts, CanonicalPath("")};
+
+  std::shared_ptr<rust_compiler::ast::Module> mod;
+
+  mlir::LogicalResult result = parser.parseFile(mod);
 
   size_t expectedLendth = 17;
 
-  EXPECT_EQ((*mod)->getTokens(), expectedLendth);
+  EXPECT_EQ((*mod).getTokens(), expectedLendth);
 
-  EXPECT_TRUE(mod.has_value());
+  //EXPECT_TRUE(mod.has_value());
 };

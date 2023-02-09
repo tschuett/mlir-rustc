@@ -5,6 +5,7 @@
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 TEST(PatternTupleItemsTest, CheckTuplePatternItems1) {
 
@@ -12,7 +13,7 @@ TEST(PatternTupleItemsTest, CheckTuplePatternItems1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::patterns::TuplePatternItems>>
       pattern = parser.tryParseTuplePatternItems(ts.getAsView());
@@ -26,7 +27,7 @@ TEST(PatternTupleItemsTest, CheckTuplePatternItems2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::patterns::TuplePatternItems>>
       pattern = parser.tryParseTuplePatternItems(ts.getAsView());
@@ -40,7 +41,7 @@ TEST(PatternTupleItemsTest, CheckTuplePatternItems3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::patterns::TuplePatternItems>>
       pattern = parser.tryParseTuplePatternItems(ts.getAsView());
@@ -54,7 +55,7 @@ TEST(PatternTupleItemsTest, CheckTuplePatternItems4) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::patterns::TuplePatternItems>>
       pattern = parser.tryParseTuplePatternItems(ts.getAsView());
@@ -68,7 +69,7 @@ TEST(PatternTupleItemsTest, CheckTuplePatternItems5) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::patterns::TuplePatternItems>>
       pattern = parser.tryParseTuplePatternItems(ts.getAsView());

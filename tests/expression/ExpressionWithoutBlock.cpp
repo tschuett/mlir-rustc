@@ -1,12 +1,13 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include <string>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 TEST(ExpressionWithoutBlockTest, CheckLiteralBlock) {
 
@@ -14,7 +15,7 @@ TEST(ExpressionWithoutBlockTest, CheckLiteralBlock) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
       parser.tryParseExpressionWithoutBlock(ts.getAsView());
@@ -28,7 +29,7 @@ TEST(ExpressionWithoutBlockTest, CheckPathBlock1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
       parser.tryParseExpressionWithoutBlock(ts.getAsView());
@@ -42,7 +43,7 @@ TEST(ExpressionWithoutBlockTest, CheckPathBlock2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
       parser.tryParseExpressionWithoutBlock(ts.getAsView());
@@ -56,7 +57,7 @@ TEST(ExpressionWithoutBlockTest, CheckOperatorBlock1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
       parser.tryParseExpressionWithoutBlock(ts.getAsView());
@@ -70,7 +71,7 @@ TEST(ExpressionWithoutBlockTest, CheckOperatorBlock2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
       parser.tryParseExpressionWithoutBlock(ts.getAsView());

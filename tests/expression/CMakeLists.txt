@@ -14,7 +14,7 @@ add_executable(ExpressionTests
         BlockExpression.cpp
         ExpressionWithoutBlock.cpp
         Function.cpp
-        Types.cpp
+#        Types.cpp
         ExamplesFun1.cpp
         ExamplesFun2.cpp
         ExamplesFun3.cpp
@@ -28,7 +28,7 @@ add_executable(ExpressionTests
 
 llvm_map_components_to_libnames(llvm_libs Support)
 
-target_link_libraries(ExpressionTests lexer parser ${llvm_libs} ${GTest_LDFLAGS})
+target_link_libraries(ExpressionTests lexer parser adt ${llvm_libs} ${GTest_LDFLAGS})
 
 target_include_directories(ExpressionTests PUBLIC ../../code/parser ../../code/include ${GTest_INCLUDE_DIRS})
 

@@ -1,10 +1,11 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 TEST(BlockExpressionTest, CheckBlockExpr1) {
 
@@ -12,7 +13,7 @@ TEST(BlockExpressionTest, CheckBlockExpr1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
       parser.tryParseBlockExpression(ts.getAsView());
@@ -26,7 +27,7 @@ TEST(BlockExpressionTest, CheckBlockExpr2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
       parser.tryParseBlockExpression(ts.getAsView());
@@ -40,7 +41,7 @@ TEST(BlockExpressionTest, CheckBlockExpr3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
       parser.tryParseBlockExpression(ts.getAsView());
@@ -54,7 +55,7 @@ TEST(BlockExpressionTest, CheckBlockExpr4) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
       parser.tryParseBlockExpression(ts.getAsView());
@@ -68,7 +69,7 @@ TEST(BlockExpressionTest, CheckBlockExpr5) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
       parser.tryParseBlockExpression(ts.getAsView());
@@ -82,7 +83,7 @@ TEST(BlockExpressionTest, CheckBlockExpr40) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, ""};
+  Parser parser = {ts, CanonicalPath("")};
 
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
       parser.tryParseBlockExpression(ts.getAsView());
