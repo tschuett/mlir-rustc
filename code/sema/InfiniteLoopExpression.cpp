@@ -5,6 +5,7 @@
 #include <memory>
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::basic;
 
 namespace rust_compiler::sema {
 

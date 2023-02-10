@@ -1,15 +1,16 @@
 #pragma once
 
-#include "Sema/Common.h"
+#include "Basic/Ids.h"
 
 #include <stack>
 #include <string_view>
 #include <vector>
 
 namespace rust_compiler::sema::resolver {
+
 class Rib {
 public:
-  Rib(std::string_view crateName, NodeId node_id);
+  Rib(std::string_view crateName, basic::NodeId node_id);
 };
 
 class Scope {
@@ -23,8 +24,11 @@ private:
 class Resolver {
 public:
   static Resolver *get();
-  ~Resolver() {}
+  ~Resolver() = default;
 
+  void pushNewModuleScope(basic::NodeId);
+  void popNewModuleScope(basic::NodeId);
+  basic::NodeId peekCurrentModuleScope();
 private:
   Resolver();
 
@@ -32,6 +36,9 @@ private:
   Scope typeScope;
   Scope labelScope;
   Scope macroScope;
+
+  // keep track of the current module scope ids
+  std::stack<basic::NodeId> currentModuleStack;
 };
 
 } // namespace rust_compiler::sema::resolver

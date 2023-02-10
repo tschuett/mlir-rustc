@@ -5,8 +5,6 @@ add_library(sema
            VisItem.cpp
            OuterAttributes.cpp
            Function.cpp
-           TypeChecking.cpp
-           Mappings.cpp
            BlockExpression.cpp
            ExhaustivenessCheck.cpp
            AttributeAnalyzer.cpp

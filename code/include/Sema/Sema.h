@@ -1,30 +1,24 @@
 #pragma once
 
+#include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/AssignmentExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/CallExpression.h"
 #include "AST/Crate.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/LetStatement.h"
+#include "AST/LoopExpression.h"
 #include "AST/MethodCallExpression.h"
 #include "AST/Statements.h"
 #include "AST/Types/Types.h"
-#include "Sema/Common.h"
-#include "Sema/Mappings.h"
-#include "Sema/TypeChecking.h"
+#include "AST/MacroInvocationSemi.h"
+#include "AST/LiteralExpression.h"
+#include "AST/InfiniteLoopExpression.h"
+#include "AST/MatchArmGuard.h"
+#include "Basic/Ids.h"
 
 #include <map>
 #include <memory>
-
-namespace rust_compiler::ast {
-class Function;
-class VisItem;
-class Item;
-class OuterAttributes;
-class Expression;
-class MacroInvocationSemi;
-class MatchGuard;
-} // namespace rust_compiler::ast
 
 namespace rust_compiler::sema {
 
@@ -72,21 +66,18 @@ private:
   void
   analyzeAssignmentExpression(std::shared_ptr<ast::AssignmentExpression> arith);
 
-  void checkExhaustiveness(std::shared_ptr<ast::MatchGuard>);
+  //void checkExhaustiveness(std::shared_ptr<ast::MatchArmGuard>);
 
   bool isReachable(std::shared_ptr<ast::VisItem>,
                    std::shared_ptr<ast::VisItem>);
 
-  TypeChecking typeChecking = {this};
-  // Mappings mappings = {this};
+  basic::NodeId getNodeId(std::shared_ptr<ast::Node>);
 
-  NodeId getNodeId(std::shared_ptr<ast::Node>);
+  std::map<basic::ItemId, std::shared_ptr<ast::Item>> items;
+  std::map<basic::NodeId, std::shared_ptr<ast::Node>> nodes;
+  std::map<std::shared_ptr<ast::Node>, basic::NodeId> nodeIds;
 
-  std::map<ItemId, std::shared_ptr<ast::Item>> items;
-  std::map<NodeId, std::shared_ptr<ast::Node>> nodes;
-  std::map<std::shared_ptr<ast::Node>, NodeId> nodeIds;
-
-  NodeId nextId = 0;
+  basic::NodeId nextId = 0;
 };
 
 void analyzeSemantics(std::shared_ptr<ast::Crate> &ast);

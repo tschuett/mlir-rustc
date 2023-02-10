@@ -4,6 +4,7 @@
 #include "AST/InnerAttribute.h"
 #include "AST/Item.h"
 #include "AST/Module.h"
+#include "Basic/Ids.h"
 
 #include <memory>
 #include <span>
@@ -13,7 +14,7 @@
 
 namespace rust_compiler::ast {
 
-// A crate AST object - holds all the data for a single compilation unit
+/// A crate AST object - holds all the data for a single compilation unit
 class Crate {
   std::vector<std::shared_ptr<InnerAttribute>> inner_attrs;
   // dodgy spacing required here
@@ -23,8 +24,11 @@ class Crate {
 
   std::string crateName;
 
+  basic::NodeId nodeId;
+
 public:
-  Crate(std::string_view crateName) : crateName(crateName){};
+  Crate(std::string_view crateName, basic::NodeId nodeId)
+      : crateName(crateName), nodeId(nodeId){};
 
   void merge(std::shared_ptr<ast::Module> module, adt::CanonicalPath path);
 

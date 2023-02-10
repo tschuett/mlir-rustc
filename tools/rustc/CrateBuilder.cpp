@@ -29,6 +29,7 @@
 #include <sstream>
 
 using namespace rust_compiler::parser;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::rustc {
 
@@ -78,16 +79,16 @@ void buildCrate(std::string_view path, std::string_view edition) {
 
   llvm::outs() << "finished parsing: " << module->getItems().size() << "\n";
 
-  std::shared_ptr<ast::Crate> crate = std::make_shared<ast::Crate>("toy1");
-
-  crate->merge(module, adt::CanonicalPath("toy1"));
-
-  sema::analyzeSemantics(crate);
-
   std::string fn = "lib.yaml";
 
   std::error_code EC;
   llvm::raw_fd_stream stream = {fn, EC};
+
+  std::shared_ptr<Crate> crate = std::make_shared<Crate>(
+      "toy1", std::numeric_limits<uint32_t>::max()); // hack
+  crate->merge(module, adt::CanonicalPath("toy2"));
+
+  sema::analyzeSemantics(crate);
 
   llvm::outs() << "code generation"
                << "\n";

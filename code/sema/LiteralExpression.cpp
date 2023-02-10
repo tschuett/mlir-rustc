@@ -4,6 +4,7 @@
 #include "Sema/Sema.h"
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::basic;
 
 namespace rust_compiler::sema {
 
@@ -14,9 +15,6 @@ void Sema::analyzeLiteralExpression(
 
   switch (lit->getLiteralKind()) {
   case LiteralExpressionKind::CharLiteral: {
-    typeChecking.isKnownType(
-        nodeId, std::make_shared<types::PrimitiveType>(
-                   lit->getLocation(), types::PrimitiveTypeKind::Char));
     break;
   }
   case LiteralExpressionKind::StringLiteral: {
@@ -29,23 +27,15 @@ void Sema::analyzeLiteralExpression(
     break;
   }
   case LiteralExpressionKind::IntegerLiteral: {
-    typeChecking.isIntegerLike(nodeId);
     break;
   }
   case LiteralExpressionKind::FloatLiteral: {
-    typeChecking.isFloatLike(nodeId);
     break;
   }
   case LiteralExpressionKind::True: {
-    typeChecking.isKnownType(
-        nodeId, std::make_shared<types::PrimitiveType>(
-                   lit->getLocation(), types::PrimitiveTypeKind::Boolean));
     break;
   }
   case LiteralExpressionKind::False: {
-    typeChecking.isKnownType(
-        nodeId, std::make_shared<types::PrimitiveType>(
-                   lit->getLocation(), types::PrimitiveTypeKind::Boolean));
     break;
   }
   }
