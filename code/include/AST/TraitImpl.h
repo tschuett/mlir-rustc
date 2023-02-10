@@ -24,6 +24,8 @@ public:
   TraitImpl(const adt::CanonicalPath &path, ImplementationKind kind,
             Location loc)
       : Implementation(path, ImplementationKind::TraitImpl, loc) {}
+
+  std::span<AssociatedItem> getAssociatedItems() const;
 };
 
 } // namespace rust_compiler::ast

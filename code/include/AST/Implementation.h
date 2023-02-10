@@ -13,6 +13,8 @@ public:
   Implementation(const adt::CanonicalPath &path, ImplementationKind kind,
                  Location loc)
       : VisItem(path, loc, VisItemKind::Implementation), kind(kind) {}
+
+  ImplementationKind getKind() const { return kind; }
 };
 
 } // namespace rust_compiler::ast

@@ -22,6 +22,7 @@ add_library(sema
            LiteralExpression.cpp
            Expression.cpp
            LoopExpression.cpp
+           ItemVisitor.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)

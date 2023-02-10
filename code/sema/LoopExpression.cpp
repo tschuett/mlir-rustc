@@ -2,11 +2,14 @@
 
 #include "Sema/Sema.h"
 
+using namespace rust_compiler::ast;
+
 namespace rust_compiler::sema {
 
 void Sema::analyzeLoopExpression(std::shared_ptr<ast::LoopExpression> arith) {
   switch (arith->getLoopExpressionKind()) {
   case ast::LoopExpressionKind::InfiniteLoopExpression: {
+    analyzeInfiniteLoopExpression(std::static_pointer_cast<InfiniteLoopExpression>(arith));
     break;
   }
   case ast::LoopExpressionKind::PredicateLoopExpression: {

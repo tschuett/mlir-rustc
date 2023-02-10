@@ -37,7 +37,8 @@
 - [ ] types
 - [ ] patterns
 - [ ] error progation
-- [ ] type uniquing
+- [ ] type uniquing or equivalence?
+- [ ] iterators
 # References
 
 * https://mlir.llvm.org/docs/Tutorials/Toy/Ch-6/

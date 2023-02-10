@@ -12,6 +12,8 @@
 
 #include <optional>
 #include <string>
+#include <span>
+#include <vector>
 
 namespace rust_compiler::ast {
 
@@ -23,11 +25,14 @@ class Trait : public VisItem {
   std::optional<WhereClause> whereClause;
 
   std::vector<InnerAttribute> innerAttributes;
-  std::vector<AssociatedItem> associatedItem;
+  std::vector<std::shared_ptr<AssociatedItem>> associatedItem;
 
 public:
   Trait(const adt::CanonicalPath &path, Location loc)
       : VisItem(path, loc, VisItemKind::Trait) {}
+
+  std::span<std::shared_ptr<AssociatedItem>> getAssociatedItems() const;
+
 };
 
 } // namespace rust_compiler::ast

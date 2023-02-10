@@ -7,6 +7,17 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::sema {
 
+void Sema::analyzeAssignmentExpression(
+    std::shared_ptr<AssignmentExpression> arith) {
+  AstId left = getAstId(arith->getLHS());
+  AstId right = getAstId(arith->getRHS());
+  typeChecking.eqType(left, right);
+  analyzeExpression(arith->getLHS());
+  analyzeExpression(arith->getRHS());
+
+  // FIXME
+}
+
 void Sema::analyzeArithmeticOrLogicalExpression(
     std::shared_ptr<ast::ArithmeticOrLogicalExpression> arith) {
 
@@ -125,6 +136,8 @@ void Sema::analyzeOperatorExpression(
     break;
   }
   case OperatorExpressionKind::AssignmentExpression: {
+    analyzeAssignmentExpression(
+        std::static_pointer_cast<AssignmentExpression>(arith));
     break;
   }
   case OperatorExpressionKind::CompoundAssignmentExpression: {

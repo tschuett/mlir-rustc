@@ -17,6 +17,8 @@ void analyzeSemantics(std::shared_ptr<ast::Crate> &crate) {
 
   Sema sema;
 
+  sema.analyze(crate);
+
   // path resolution
   // type checking
   // visiblity checks -> turns into linkage
@@ -24,7 +26,7 @@ void analyzeSemantics(std::shared_ptr<ast::Crate> &crate) {
   // constant folding
   // drops
 
-  // Trait resolution
+  // Trait resolution (AssociatedItems, Implementations, Traits, and Structs
 
   // monomorph
 }
@@ -33,9 +35,7 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
   // FIXME
   { TimeTraceScope scope("name resolution"); }
 
-  {
-    TimeTraceScope scope("type inference");
-  }
+  { TimeTraceScope scope("type inference"); }
 
   { TimeTraceScope scope("trait solving"); }
 
@@ -95,6 +95,19 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
     }
     }
   }
+}
+
+AstId Sema::getAstId(std::shared_ptr<ast::Node> node) {
+  auto it = astIds.find(node);
+  if (it != astIds.end())
+    return it->second;
+
+  AstId id = ++nextId;
+
+  nodes.insert_or_assign(id, node);
+  astIds.insert_or_assign(node, id);
+
+  return id;
 }
 
 } // namespace rust_compiler::sema

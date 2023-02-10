@@ -24,6 +24,9 @@ public:
   InherentImpl(const adt::CanonicalPath &path, ImplementationKind kind,
                Location loc)
       : Implementation(path, ImplementationKind::InherentImpl, loc) {}
+
+
+  std::span<AssociatedItem> getAssociatedItems() const;
 };
 
 } // namespace rust_compiler::ast

@@ -346,6 +346,23 @@ OpenMP, SYCL~\cite{mlirsycl}, OpenACC, CUDA, ..+
 
 \subsection{Attributer}
 
+\subsection{Fortan SUM — Sum of array elements}
+
+SUM is a Fortran Intrinsic since Fortran 90.
+
+\begin{lstlisting}{language=Fortran}
+subroutine sum_dim(a, s, d)
+  integer :: a(:,:), s(:), d
+  s = SUM(a, d)
+end subroutine
+\end{lstlisting}
+
+The Flang community first investigated inlining strategies, see
+\url{https://reviews.llvm.org/D125407}.
+
+hlfir.\code{SumOp}: https://reviews.llvm.org/D142897
+
+
 \section{Evaluation\label{sec.evaluation} --- TO BE DONE}
 
 
@@ -422,6 +439,8 @@ SSA~\cite{cytron1991efficiently, braun2013simple}
 Value Range Analysis~\cite{birch2004value}
 
 Rust mangling~\cite{mangling}
+
+GVN~\cite{gargi2002sparse}
 
 \section{Future Work}
 

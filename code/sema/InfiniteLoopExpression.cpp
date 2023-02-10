@@ -34,10 +34,11 @@ void Sema::analyzeInfiniteLoopExpression(
   // collect breaks in BlockExpression
 
   AstId astId = getAstId(loop);
-  if (breaks.size() == 0)
-    typeChecking.isKnownType(
-        astId, std::make_shared<PrimitiveType>(loop->getLocation(),
-                                               PrimitiveTypeKind::Unit));
+  //  if (breaks.size() == 0)
+  //    typeChecking.isKnownType(
+  //        astId, std::make_shared<PrimitiveType>(loop->getLocation(),
+  //                                               PrimitiveTypeKind::Unit));
+}
 
 } // namespace rust_compiler::sema
 

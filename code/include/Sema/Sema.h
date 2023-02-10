@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AST/AssignmentExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/CallExpression.h"
 #include "AST/Crate.h"
@@ -69,6 +70,9 @@ private:
   void analyzeInfiniteLoopExpression(
       std::shared_ptr<ast::InfiniteLoopExpression> arith);
 
+  void
+  analyzeAssignmentExpression(std::shared_ptr<ast::AssignmentExpression> arith);
+
   void checkExhaustiveness(std::shared_ptr<ast::MatchGuard>);
 
   bool isReachable(std::shared_ptr<ast::VisItem>,
@@ -81,6 +85,9 @@ private:
 
   std::map<ItemId, std::shared_ptr<ast::Item>> items;
   std::map<AstId, std::shared_ptr<ast::Node>> nodes;
+  std::map<std::shared_ptr<ast::Node>, AstId> astIds;
+
+  AstId nextId = 0;
 };
 
 void analyzeSemantics(std::shared_ptr<ast::Crate> &ast);
