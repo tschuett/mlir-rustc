@@ -25,11 +25,11 @@ public:
   TypeChecking(Sema *sema) : sema(sema) {}
 
   //void eqExpr(AstId, AstId);
-  void eqType(AstId, AstId);
-  void isIntegerLike(AstId);
-  void isFloatLike(AstId);
-  void isIntegerOrFloatLike(AstId);
-  void isKnownType(AstId, std::shared_ptr<ast::types::Type>);
+  void eqType(NodeId, NodeId);
+  void isIntegerLike(NodeId);
+  void isFloatLike(NodeId);
+  void isIntegerOrFloatLike(NodeId);
+  void isKnownType(NodeId, std::shared_ptr<ast::types::Type>);
   //void sub();
 
 private:

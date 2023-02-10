@@ -9,8 +9,8 @@ namespace rust_compiler::sema {
 
 void Sema::analyzeAssignmentExpression(
     std::shared_ptr<AssignmentExpression> arith) {
-  AstId left = getAstId(arith->getLHS());
-  AstId right = getAstId(arith->getRHS());
+  NodeId left = getNodeId(arith->getLHS());
+  NodeId right = getNodeId(arith->getRHS());
   typeChecking.eqType(left, right);
   analyzeExpression(arith->getLHS());
   analyzeExpression(arith->getRHS());
@@ -21,8 +21,8 @@ void Sema::analyzeAssignmentExpression(
 void Sema::analyzeArithmeticOrLogicalExpression(
     std::shared_ptr<ast::ArithmeticOrLogicalExpression> arith) {
 
-  AstId left = getAstId(arith->getLHS());
-  AstId right = getAstId(arith->getRHS());
+  NodeId left = getNodeId(arith->getLHS());
+  NodeId right = getNodeId(arith->getRHS());
 
   switch (arith->getKind()) {
   case ArithmeticOrLogicalExpressionKind::Addition: {

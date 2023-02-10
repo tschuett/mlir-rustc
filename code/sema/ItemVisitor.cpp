@@ -12,14 +12,6 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::sema {
 
-// class ItemVisitor {
-// public:
-//   virtual void visitItem(std::shared_ptr<ast::Item> let) {}
-//   virtual void visitItemDeclaration(std::shared_ptr<ast::ItemDeclaration>
-//   let); virtual void visitVisItem(std::shared_ptr<ast::VisItem> let);
-// }
-// };
-
 void visitItem(std::shared_ptr<ast::Item> item, ItemVisitor *visitor);
 
 void visitVisItem(std::shared_ptr<ast::VisItem> visItem, ItemVisitor *visitor);

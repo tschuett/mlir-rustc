@@ -8,6 +8,9 @@
 #include <llvm/Support/TimeProfiler.h>
 #include <memory>
 
+#include "Resolver/Resolver.h"
+#include "TypeChecking/TypeChecking.h"
+
 using namespace llvm;
 using namespace rust_compiler::ast;
 
@@ -97,15 +100,15 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
   }
 }
 
-AstId Sema::getAstId(std::shared_ptr<ast::Node> node) {
-  auto it = astIds.find(node);
-  if (it != astIds.end())
+NodeId Sema::getNodeId(std::shared_ptr<ast::Node> node) {
+  auto it = nodeIds.find(node);
+  if (it != nodeIds.end())
     return it->second;
 
-  AstId id = ++nextId;
+  NodeId id = ++nextId;
 
   nodes.insert_or_assign(id, node);
-  astIds.insert_or_assign(node, id);
+  nodeIds.insert_or_assign(node, id);
 
   return id;
 }

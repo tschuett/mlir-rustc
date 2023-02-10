@@ -23,9 +23,14 @@ add_library(sema
            Expression.cpp
            LoopExpression.cpp
            ItemVisitor.cpp
+           ModuleTree.cpp
+           NormalizeUseTree.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)
 
 
-target_link_libraries(sema )
+target_link_libraries(sema Resolver)
+
+add_subdirectory(Resolver)
+add_subdirectory(TypeChecking)

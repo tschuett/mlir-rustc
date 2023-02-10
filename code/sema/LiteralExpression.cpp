@@ -10,12 +10,12 @@ namespace rust_compiler::sema {
 void Sema::analyzeLiteralExpression(
     std::shared_ptr<ast::LiteralExpression> lit) {
 
-  AstId astId = getAstId(lit);
+  NodeId nodeId = getNodeId(lit);
 
   switch (lit->getLiteralKind()) {
   case LiteralExpressionKind::CharLiteral: {
     typeChecking.isKnownType(
-        astId, std::make_shared<types::PrimitiveType>(
+        nodeId, std::make_shared<types::PrimitiveType>(
                    lit->getLocation(), types::PrimitiveTypeKind::Char));
     break;
   }
@@ -29,22 +29,22 @@ void Sema::analyzeLiteralExpression(
     break;
   }
   case LiteralExpressionKind::IntegerLiteral: {
-    typeChecking.isIntegerLike(astId);
+    typeChecking.isIntegerLike(nodeId);
     break;
   }
   case LiteralExpressionKind::FloatLiteral: {
-    typeChecking.isFloatLike(astId);
+    typeChecking.isFloatLike(nodeId);
     break;
   }
   case LiteralExpressionKind::True: {
     typeChecking.isKnownType(
-        astId, std::make_shared<types::PrimitiveType>(
+        nodeId, std::make_shared<types::PrimitiveType>(
                    lit->getLocation(), types::PrimitiveTypeKind::Boolean));
     break;
   }
   case LiteralExpressionKind::False: {
     typeChecking.isKnownType(
-        astId, std::make_shared<types::PrimitiveType>(
+        nodeId, std::make_shared<types::PrimitiveType>(
                    lit->getLocation(), types::PrimitiveTypeKind::Boolean));
     break;
   }

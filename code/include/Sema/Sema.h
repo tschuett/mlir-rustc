@@ -29,7 +29,6 @@ class MatchGuard;
 namespace rust_compiler::sema {
 
 class Sema {
-  using ItemId = uint32_t;
 
 public:
   void analyze(std::shared_ptr<ast::Crate> &ast);
@@ -81,13 +80,13 @@ private:
   TypeChecking typeChecking = {this};
   // Mappings mappings = {this};
 
-  AstId getAstId(std::shared_ptr<ast::Node>);
+  NodeId getNodeId(std::shared_ptr<ast::Node>);
 
   std::map<ItemId, std::shared_ptr<ast::Item>> items;
-  std::map<AstId, std::shared_ptr<ast::Node>> nodes;
-  std::map<std::shared_ptr<ast::Node>, AstId> astIds;
+  std::map<NodeId, std::shared_ptr<ast::Node>> nodes;
+  std::map<std::shared_ptr<ast::Node>, NodeId> nodeIds;
 
-  AstId nextId = 0;
+  NodeId nextId = 0;
 };
 
 void analyzeSemantics(std::shared_ptr<ast::Crate> &ast);

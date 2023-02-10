@@ -2,8 +2,8 @@
 
 namespace rust_compiler::sema {
 
-void TypeChecking::eqType(AstId, AstId) {}
-void TypeChecking::isIntegerLike(AstId) {}
-void TypeChecking::isIntegerOrFloatLike(AstId) {}
+void TypeChecking::eqType(NodeId, NodeId) {}
+void TypeChecking::isIntegerLike(NodeId) {}
+void TypeChecking::isIntegerOrFloatLike(NodeId) {}
 
 } // namespace rust_compiler::sema

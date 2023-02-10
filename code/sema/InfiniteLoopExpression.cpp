@@ -33,7 +33,7 @@ void Sema::analyzeInfiniteLoopExpression(
       collector.getBreaks();
   // collect breaks in BlockExpression
 
-  AstId astId = getAstId(loop);
+  NodeId nodeId = getNodeId(loop);
   //  if (breaks.size() == 0)
   //    typeChecking.isKnownType(
   //        astId, std::make_shared<PrimitiveType>(loop->getLocation(),
