@@ -11,6 +11,7 @@
 #include "ModuleBuilder/Target.h"
 #include "Parser/Parser.h"
 #include "Sema/Sema.h"
+#include "Mappings/Mappings.h"
 
 #include <fstream>
 #include <llvm/MC/TargetRegistry.h>
@@ -84,9 +85,9 @@ void buildCrate(std::string_view path, std::string_view edition) {
   std::error_code EC;
   llvm::raw_fd_stream stream = {fn, EC};
 
-  std::shared_ptr<Crate> crate = std::make_shared<Crate>(
-      "toy1", std::numeric_limits<uint32_t>::max()); // hack
-  crate->merge(module, adt::CanonicalPath("toy2"));
+  std::shared_ptr<Crate> crate =
+    std::make_shared<Crate>("toy1", mappings::Mappings::get()->getCrateNum("toy1"));
+  crate->merge(module, adt::CanonicalPath("toy2")); // hack
 
   sema::analyzeSemantics(crate);
 

@@ -4,16 +4,17 @@
 #include "AST/Function.h"
 #include "AST/Module.h"
 #include "AST/VisItem.h"
+#include "Resolver/NameResolution.h"
+#include "Resolver/Resolver.h"
+#include "TypeChecking/TypeChecking.h"
 
 #include <llvm/Support/TimeProfiler.h>
 #include <memory>
 
-#include "Resolver/Resolver.h"
-#include "TypeChecking/TypeChecking.h"
-
 using namespace llvm;
 using namespace rust_compiler::ast;
 using namespace rust_compiler::basic;
+using namespace rust_compiler::sema::resolver;
 
 namespace rust_compiler::sema {
 
@@ -37,7 +38,11 @@ void analyzeSemantics(std::shared_ptr<ast::Crate> &crate) {
 
 void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
   // FIXME
-  { TimeTraceScope scope("name resolution"); }
+  {
+    TimeTraceScope scope("name resolution");
+    NameResolution nameResolution = {mappings::Mappings::get(), Resolver::get()};
+    nameResolution.resolve(crate);
+  }
 
   { TimeTraceScope scope("type inference"); }
 

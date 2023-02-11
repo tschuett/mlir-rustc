@@ -28,8 +28,8 @@ class Trait : public VisItem {
   std::vector<std::shared_ptr<AssociatedItem>> associatedItem;
 
 public:
-  Trait(const adt::CanonicalPath &path, Location loc)
-      : VisItem(path, loc, VisItemKind::Trait) {}
+  Trait(Location loc)
+      : VisItem(loc, VisItemKind::Trait) {}
 
   std::span<std::shared_ptr<AssociatedItem>> getAssociatedItems() const;
 

@@ -20,8 +20,8 @@ class StaticItem : public VisItem {
   std::optional<std::shared_ptr<Expression>> init;
 
 public:
-  StaticItem(const adt::CanonicalPath &path, Location loc)
-      : VisItem(path, loc, VisItemKind::StaticItem) {}
+  StaticItem(Location loc)
+      : VisItem(loc, VisItemKind::StaticItem) {}
 };
 
 } // namespace rust_compiler::ast

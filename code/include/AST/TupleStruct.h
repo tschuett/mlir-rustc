@@ -17,8 +17,8 @@ class TupleStruct : public Struct {
   std::optional<WhereClause> whereClause;
 
 public:
-  TupleStruct(const adt::CanonicalPath &path, Location loc)
-      : Struct(path, loc, StructKind::TupleStruct) {}
+  TupleStruct(Location loc)
+      : Struct(loc, StructKind::TupleStruct) {}
 };
 
 } // namespace rust_compiler::ast

@@ -14,8 +14,8 @@ class Union : public VisItem {
   StructFields fields;
 
 public:
-  Union(const adt::CanonicalPath &path, Location loc)
-    : VisItem(path, loc, VisItemKind::Union), fields(loc) {}
+  Union(Location loc)
+    : VisItem(loc, VisItemKind::Union), fields(loc) {}
 };
 
 } // namespace rust_compiler::ast

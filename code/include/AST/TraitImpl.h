@@ -21,9 +21,9 @@ class TraitImpl : public Implementation {
   std::vector<AssociatedItem> associatedItem;
 
 public:
-  TraitImpl(const adt::CanonicalPath &path, ImplementationKind kind,
+  TraitImpl(ImplementationKind kind,
             Location loc)
-      : Implementation(path, ImplementationKind::TraitImpl, loc) {}
+      : Implementation(ImplementationKind::TraitImpl, loc) {}
 
   std::span<AssociatedItem> getAssociatedItems() const;
 };

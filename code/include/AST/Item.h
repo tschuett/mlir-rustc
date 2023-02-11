@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ADT/CanonicalPath.h"
 #include "AST/AST.h"
 #include "AST/OuterAttributes.h"
 #include "Location.h"
@@ -20,7 +19,7 @@ class Item : public Node {
   ItemKind kind;
 
 public:
-  explicit Item(rust_compiler::Location location, ItemKind kind)
+  explicit Item(Location loc, ItemKind kind)
       : Node(location), kind(kind) {}
 
   void setOuterAttributes(std::shared_ptr<OuterAttributes> outer);

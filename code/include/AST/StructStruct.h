@@ -16,8 +16,8 @@ class StructStruct : public Struct {
   std::optional<StructFields> structFields;
 
 public:
-  StructStruct(const adt::CanonicalPath &path, Location loc)
-      : Struct(path, loc, StructKind::StructStruct) {}
+  StructStruct(Location loc)
+      : Struct(loc, StructKind::StructStruct) {}
 };
 
 } // namespace rust_compiler::ast

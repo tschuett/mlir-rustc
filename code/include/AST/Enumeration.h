@@ -16,8 +16,8 @@ class Enumeration : public VisItem {
   EnumItems enumItems;
 
 public:
-  Enumeration(const adt::CanonicalPath &path, Location loc)
-    : VisItem(path, loc, VisItemKind::Enumeration), enumItems(loc) {}
+  Enumeration(Location loc)
+    : VisItem(loc, VisItemKind::Enumeration), enumItems(loc) {}
 
   size_t getTokens() override;
 };

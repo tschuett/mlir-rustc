@@ -18,8 +18,7 @@ std::optional<ast::Module>
 Parser::tryParseModuleTree(std::span<Token> tokens,
                            std::string_view moduleName) {
 
-  Module module = {path.getCurrentPath().append(moduleName),
-                   tokens.front().getLocation(), ModuleKind::ModuleTree};
+  Module module = {tokens.front().getLocation(), ModuleKind::ModuleTree};
 
   std::span<Token> view = tokens;
 
@@ -85,8 +84,7 @@ std::optional<ast::Module> Parser::tryParseModule(std::span<Token> tokens) {
       view.front().getIdentifier() == "mod") {
     if (view[1].getKind() == TokenKind::Identifier) {
       if (view[2].getKind() == TokenKind::Semi) {
-        return Module(path.getCurrentPath().append(view[1].getIdentifier()),
-                      view.front().getLocation(), ModuleKind::Module);
+        return Module(view.front().getLocation(), ModuleKind::Module);
       }
     }
   }

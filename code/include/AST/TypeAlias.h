@@ -21,8 +21,8 @@ class TypeAlias : public VisItem {
   std::optional<std::shared_ptr<types::Type>> type;
 
 public:
-  TypeAlias(const adt::CanonicalPath &path, Location loc)
-      : VisItem(path, loc, VisItemKind::TypeAlias) {}
+  TypeAlias(Location loc)
+      : VisItem(loc, VisItemKind::TypeAlias) {}
 };
 
 } // namespace rust_compiler::ast

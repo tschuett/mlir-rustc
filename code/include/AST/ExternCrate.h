@@ -14,8 +14,8 @@ class ExternCrate : public VisItem {
   std::optional<AsClause> asClasue;
 
 public:
-  ExternCrate(const adt::CanonicalPath &path, Location loc)
-    : VisItem(path, loc, VisItemKind::ExternCrate), crateRef(loc) {}
+  ExternCrate(Location loc)
+    : VisItem(loc, VisItemKind::ExternCrate), crateRef(loc) {}
 
    size_t getTokens() override;
 };

@@ -27,8 +27,8 @@ add_library(sema
 
 target_include_directories(sema PRIVATE  ../include)
 
-
-target_link_libraries(sema Resolver)
-
 add_subdirectory(Resolver)
 add_subdirectory(TypeChecking)
+
+target_link_libraries(sema Resolver TypeChecking Mappings)
+

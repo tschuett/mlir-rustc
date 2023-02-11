@@ -19,8 +19,8 @@ class ConstantItem : public VisItem {
   std::optional<std::shared_ptr<types::TypeExpression>> type;
 
 public:
-  ConstantItem(const adt::CanonicalPath &path, Location loc)
-      : VisItem(path, loc, VisItemKind::ConstantItem) {}
+  ConstantItem(Location loc)
+      : VisItem(loc, VisItemKind::ConstantItem) {}
 };
 
 } // namespace rust_compiler::ast

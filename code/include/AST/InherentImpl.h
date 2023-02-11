@@ -21,9 +21,9 @@ class InherentImpl : public Implementation {
   std::vector<AssociatedItem> associatedItem;
 
 public:
-  InherentImpl(const adt::CanonicalPath &path, ImplementationKind kind,
+  InherentImpl(ImplementationKind kind,
                Location loc)
-      : Implementation(path, ImplementationKind::InherentImpl, loc) {}
+      : Implementation(ImplementationKind::InherentImpl, loc) {}
 
 
   std::span<AssociatedItem> getAssociatedItems() const;

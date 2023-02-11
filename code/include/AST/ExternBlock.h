@@ -16,8 +16,8 @@ class ExternBlock : public VisItem {
   std::vector<ExternalItem> externalItems;
 
 public:
-  ExternBlock(const adt::CanonicalPath &path, Location loc)
-    : VisItem(path, loc, VisItemKind::ExternBlock) {}
+  ExternBlock(Location loc)
+    : VisItem(loc, VisItemKind::ExternBlock) {}
 
    size_t getTokens() override;
 };

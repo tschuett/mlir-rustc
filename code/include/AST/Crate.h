@@ -24,11 +24,11 @@ class Crate {
 
   std::string crateName;
 
-  basic::NodeId nodeId;
+  basic::CrateNum crateNum;
 
 public:
-  Crate(std::string_view crateName, basic::NodeId nodeId)
-      : crateName(crateName), nodeId(nodeId){};
+  Crate(std::string_view crateName, basic::CrateNum crateNum)
+      : crateName(crateName), crateNum(crateNum){};
 
   void merge(std::shared_ptr<ast::Module> module, adt::CanonicalPath path);
 

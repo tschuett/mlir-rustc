@@ -27,3 +27,6 @@ TII->getName(MI->getOpcode());
 https://discourse.llvm.org/t/rfc-interfaces-and-dialects-for-precise-ir-transformation-control/60927
 
 https://developers.redhat.com/articles/2023/02/02/support-c23-assume-feature-gcc
+
+
+https://www.lei.chat/posts/compilers-and-irs-llvm-ir-spirv-and-mlir/

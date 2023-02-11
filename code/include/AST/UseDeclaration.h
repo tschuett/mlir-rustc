@@ -14,9 +14,8 @@ class UseDeclaration : public VisItem {
   std::shared_ptr<use_tree::UseTree> tree;
 
 public:
-  UseDeclaration(const adt::CanonicalPath &path,
-                 rust_compiler::Location location)
-      : VisItem(path, location, VisItemKind::UseDeclaration){};
+  UseDeclaration(rust_compiler::Location location)
+      : VisItem(location, VisItemKind::UseDeclaration){};
 
   void setComponent(std::shared_ptr<use_tree::UseTree> tree);
 

@@ -14,3 +14,7 @@ add_subdirectory(TargetInfo)
 add_subdirectory(CodeGen)
 add_subdirectory(ADT)
 add_subdirectory(Basic)
+add_subdirectory(CrateLoader)
+add_subdirectory(Mappings)
+
+

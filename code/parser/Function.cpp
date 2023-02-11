@@ -158,8 +158,7 @@ Parser::tryParseFunction(std::span<lexer::Token> tokens) {
   std::optional<FunctionSignature> sig = tryParseFunctionSignature(view);
 
   if (sig) {
-    Function f = {path.getCurrentPath().append(sig->getName()),
-                  view.front().getLocation()};
+    Function f = {view.front().getLocation()};
     f.setSignature(*sig);
     view = view.subspan((*sig).getTokens());
     if (view.front().getKind() == TokenKind::Semi) {

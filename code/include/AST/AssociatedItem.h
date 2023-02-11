@@ -24,9 +24,9 @@ class AssociatedItem : public VisItem {
   AssociatedItemKind kind;
 
 public:
-  AssociatedItem(const adt::CanonicalPath &path, Location loc,
+  AssociatedItem(Location loc,
                  AssociatedItemKind kind)
-      : VisItem(path, loc, VisItemKind::AssociatedItem), kind(kind) {}
+      : VisItem(loc, VisItemKind::AssociatedItem), kind(kind) {}
 
   AssociatedItemKind getKind() const;
 };
@@ -35,8 +35,8 @@ class AssociatedItemMacroInvocation : public AssociatedItem {
   MacroInvocation macroInvocation;
 
 public:
-  AssociatedItemMacroInvocation(const adt::CanonicalPath &path, Location loc)
-      : AssociatedItem(path, loc, AssociatedItemKind::MacroInvocation),
+  AssociatedItemMacroInvocation(Location loc)
+      : AssociatedItem(loc, AssociatedItemKind::MacroInvocation),
         macroInvocation(loc) {}
 };
 
@@ -44,26 +44,26 @@ class AssociatedItemTypeAlias : public AssociatedItem {
   TypeAlias typeAlias;
 
 public:
-  AssociatedItemTypeAlias(const adt::CanonicalPath &path, Location loc)
-      : AssociatedItem(path, loc, AssociatedItemKind::TypeAlias),
-        typeAlias(path, loc) {}
+  AssociatedItemTypeAlias(Location loc)
+      : AssociatedItem(loc, AssociatedItemKind::TypeAlias),
+        typeAlias(loc) {}
 };
 
 class AssociatedItemConstantItem : public AssociatedItem {
   ConstantItem constantItem;
 
 public:
-  AssociatedItemConstantItem(const adt::CanonicalPath &path, Location loc)
-      : AssociatedItem(path, loc, AssociatedItemKind::ConstantItem),
-        constantItem(path, loc) {}
+  AssociatedItemConstantItem(Location loc)
+      : AssociatedItem(loc, AssociatedItemKind::ConstantItem),
+        constantItem(loc) {}
 };
 
 class AssociatedItemFunction : public AssociatedItem {
   std::shared_ptr<Function> function;
 
 public:
-  AssociatedItemFunction(const adt::CanonicalPath &path, Location loc)
-      : AssociatedItem(path, loc, AssociatedItemKind::Function) {}
+  AssociatedItemFunction(Location loc)
+      : AssociatedItem(loc, AssociatedItemKind::Function) {}
 
   std::shared_ptr<Function> getFunction() const;
 };

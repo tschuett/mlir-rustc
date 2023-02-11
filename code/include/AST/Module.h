@@ -21,10 +21,9 @@ class Module : public VisItem {
   // std::vector<std::shared_ptr<Function>> funs;
 
 public:
-  Module(const adt::CanonicalPath &path, rust_compiler::Location loc,
-         ModuleKind kind)
-      : VisItem(path, loc, VisItemKind::Module),
-        vis(loc, VisibilityKind::Private), kind(kind){};
+  Module(rust_compiler::Location loc, ModuleKind kind)
+      : VisItem(loc, VisItemKind::Module), vis(loc, VisibilityKind::Private),
+        kind(kind){};
 
   ModuleKind getModuleKind() const { return kind; }
   void setVisibility(Visibility vis);

@@ -10,9 +10,9 @@ class Implementation : public VisItem {
   ImplementationKind kind;
 
 public:
-  Implementation(const adt::CanonicalPath &path, ImplementationKind kind,
+  Implementation(ImplementationKind kind,
                  Location loc)
-      : VisItem(path, loc, VisItemKind::Implementation), kind(kind) {}
+      : VisItem(loc, VisItemKind::Implementation), kind(kind) {}
 
   ImplementationKind getKind() const { return kind; }
 };

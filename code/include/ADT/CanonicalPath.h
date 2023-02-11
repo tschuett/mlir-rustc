@@ -1,51 +1,59 @@
 #pragma once
 
+#include "Basic/Ids.h"
+
 #include <string>
 #include <vector>
 
 namespace rust_compiler::adt {
-  class ScopedCanonicalPath;
+class ScopedCanonicalPath;
 }
+
+/// https://doc.rust-lang.org/reference/paths.html#canonical-paths
 
 namespace rust_compiler::adt {
 
 class CanonicalPath {
-  std::vector<std::string> segments;
-  std::string crateName;
+  std::vector<std::pair<basic::NodeId, std::string>> segments;
+  basic::CrateNum crateNum;
 
 public:
-  CanonicalPath(std::string_view crateName) : crateName(crateName) {}
-
-  CanonicalPath append(std::string_view segment) const {
-    if (isEmpty()) {
-      std::vector<std::string> segs;
-      segs.push_back(std::string(segment));
-      auto canPath = CanonicalPath(crateName);
-      canPath.segments = segs;
-      return canPath;
-    }
-
-    std::vector<std::string> copy(segments);
-    copy.push_back(std::string(segment));
-
-    auto canPath = CanonicalPath(crateName);
-    canPath.segments = copy;
-    return canPath;
+  static CanonicalPath newSegment(basic::NodeId id, std::string_view path) {
+    assert(!path.empty());
+    return CanonicalPath({std::pair<basic::NodeId, std::string>(id, path)},
+                         basic::UNKNOWN_CREATENUM);
   }
 
   std::string asString() const {
     std::string buf;
     for (size_t i = 0; i < segments.size(); i++) {
-      bool have_more = (i + 1) < segments.size();
-      const std::string &seg = segments.at(i);
-      buf += seg + (have_more ? "::" : "");
+      bool haveMore = (i + 1) < segments.size();
+      const std::string &seg = segments.at(i).second;
+      buf += seg + (haveMore ? "::" : "");
     }
     return buf;
+  }
+
+  CanonicalPath append(const CanonicalPath &other) const {
+    assert(!other.isEmpty());
+    if (isEmpty())
+      return CanonicalPath(other.segments, crateNum);
+
+    std::vector<std::pair<basic::NodeId, std::string>> copy(segments);
+    for (auto &s : other.segments)
+      copy.push_back(s);
+
+    return CanonicalPath(copy, crateNum);
   }
 
   bool isEmpty() const { return segments.size() == 0; }
 
 private:
+  explicit CanonicalPath(
+      std::vector<std::pair<basic::NodeId, std::string>> path,
+      basic::CrateNum crateNum)
+      : segments(path), crateNum(crateNum) {}
+
   friend ScopedCanonicalPath;
 };
 
