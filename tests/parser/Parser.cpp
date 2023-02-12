@@ -18,7 +18,7 @@ TEST(ParserTest, CheckModuleDecl) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::Module> module =
       parser.tryParseModule(ts.getAsView());
@@ -32,7 +32,7 @@ TEST(ParserTest, CheckSimpleModDecl) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::Module> module =
       parser.tryParseModule(ts.getAsView());
@@ -46,7 +46,7 @@ TEST(ParserTest, CheckUseDecl) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<UseDeclaration> use =
       parser.tryParseUseDeclaration(ts.getAsView());
@@ -61,7 +61,7 @@ TEST(ParserTest, CheckSimpleUseTreeDecl) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<UseDeclaration> use =
       parser.tryParseUseDeclaration(ts.getAsView());
@@ -77,7 +77,7 @@ TEST(ParserTest, CheckUseTreeDecl) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<UseDeclaration> use =
       parser.tryParseUseDeclaration(ts.getAsView());

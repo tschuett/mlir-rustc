@@ -17,7 +17,7 @@ TEST(LetStatementTest, CheckLetStatement1) {
 
   size_t expected = 3;
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
       parser.tryParseStatement(ts.getAsView());
@@ -37,7 +37,7 @@ TEST(LetStatementTest, CheckLetStatement2) {
 
   size_t expected = 5;
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
       parser.tryParseStatement(ts.getAsView());
@@ -57,7 +57,7 @@ TEST(LetStatementTest, CheckLetStatement3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
       parser.tryParseStatement(ts.getAsView());
@@ -77,7 +77,7 @@ TEST(LetStatementTest, CheckLetStatement4) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
       parser.tryParseStatement(ts.getAsView());

@@ -19,7 +19,7 @@ TEST(FunctionTest, CheckFunctionReturnType1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::types::TypeExpression>> type =
       parser.tryParseFunctionReturnType(ts.getAsView());
@@ -37,7 +37,7 @@ TEST(FunctionTest, CheckFunctionReturnType2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::types::TypeExpression>>
       type = parser.tryParseFunctionReturnType(ts.getAsView());
@@ -55,7 +55,7 @@ TEST(FunctionTest, CheckFunctionQual1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::FunctionQualifiers> fun =
       parser.tryParseFunctionQualifiers(ts.getAsView());
@@ -73,7 +73,7 @@ TEST(FunctionTest, CheckFunctionParameters1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::FunctionParameters> fun =
       parser.tryParseFunctionParameters(ts.getAsView());
@@ -91,7 +91,7 @@ TEST(FunctionTest, CheckFunctionParam1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::FunctionParam> fun =
       parser.tryParseFunctionParam(ts.getAsView());
@@ -109,7 +109,7 @@ TEST(FunctionTest, CheckFunctionSig0) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::FunctionSignature> fun =
       parser.tryParseFunctionSignature(ts.getAsView());
@@ -127,7 +127,7 @@ TEST(FunctionTest, CheckFunctionSig0b) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::FunctionSignature> fun =
       parser.tryParseFunctionSignature(ts.getAsView());
@@ -145,7 +145,7 @@ TEST(FunctionTest, CheckFunctionSig1a) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::FunctionSignature> fun =
       parser.tryParseFunctionSignature(ts.getAsView());
@@ -163,7 +163,7 @@ TEST(FunctionTest, CheckFunctionSig1b) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::FunctionSignature> fun =
       parser.tryParseFunctionSignature(ts.getAsView());
@@ -181,7 +181,7 @@ TEST(FunctionTest, CheckFunctionSig2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::FunctionSignature> fun =
       parser.tryParseFunctionSignature(ts.getAsView());
@@ -199,7 +199,7 @@ TEST(FunctionTest, CheckFunctionSig3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::FunctionSignature> fun =
       parser.tryParseFunctionSignature(ts.getAsView());
@@ -217,7 +217,7 @@ TEST(FunctionTest, CheckFunctionBody1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<BlockExpression>> block =
       parser.tryParseBlockExpression(ts.getAsView());
@@ -235,7 +235,7 @@ TEST(FunctionTest, CheckFunctionBody2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<BlockExpression>> block =
       parser.tryParseBlockExpression(ts.getAsView());
@@ -253,7 +253,7 @@ TEST(FunctionTest, CheckFunction1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::Function> fun =
       parser.tryParseFunction(ts.getAsView());

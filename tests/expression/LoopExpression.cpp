@@ -13,7 +13,7 @@ TEST(LoopExpressionTest, CheckLoopExpr1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> loop =
       parser.tryParsePredicateLoopExpression(ts.getAsView());
@@ -31,7 +31,7 @@ TEST(LoopExpressionTest, CheckLoopExpr2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> loop =
       parser.tryParsePredicateLoopExpression(ts.getAsView());

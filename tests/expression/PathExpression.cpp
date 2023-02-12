@@ -14,7 +14,7 @@ TEST(PathExpressionTest, CheckPathInExpr1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> pathIn =
       parser.tryParsePathInExpression(ts.getAsView());
@@ -28,7 +28,7 @@ TEST(PathExpressionTest, CheckPathInExpr2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> pathIn =
       parser.tryParsePathInExpression(ts.getAsView());
@@ -42,7 +42,7 @@ TEST(PathExpressionTest, CheckPathInExpr3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> pathIn =
       parser.tryParsePathInExpression(ts.getAsView());

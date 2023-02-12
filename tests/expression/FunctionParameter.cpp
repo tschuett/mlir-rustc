@@ -16,7 +16,7 @@ TEST(FunctionParameterExpressionTest, CheckFunctionParameter) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::FunctionParam> param =
       parser.tryParseFunctionParam(ts.getAsView());
@@ -30,7 +30,7 @@ TEST(FunctionParameterExpressionTest, CheckFunctionParameters) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::FunctionParameters> params =
       parser.tryParseFunctionParameters(ts.getAsView());

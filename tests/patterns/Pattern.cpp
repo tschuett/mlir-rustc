@@ -14,7 +14,7 @@ TEST(PatternTest, CheckIdentifierPattern1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<
       std::shared_ptr<rust_compiler::ast::patterns::PatternWithoutRange>>
@@ -29,7 +29,7 @@ TEST(PatternTest, CheckIdentifierPattern2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<
       std::shared_ptr<rust_compiler::ast::patterns::PatternWithoutRange>>
@@ -44,7 +44,7 @@ TEST(PatternTest, CheckIdentifierPattern3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<
       std::shared_ptr<rust_compiler::ast::patterns::PatternWithoutRange>>

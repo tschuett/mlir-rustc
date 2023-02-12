@@ -20,7 +20,7 @@ TEST(OperatorExpressionTest, CheckOperatorExprSimple) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> op =
       parser.tryParseOperatorExpression(ts.getAsView());
@@ -38,7 +38,7 @@ TEST(OperatorExpressionTest, CheckOperatorExprSimple2) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> op =
       parser.tryParseOperatorExpression(ts.getAsView());
@@ -56,7 +56,7 @@ TEST(OperatorExpressionTest, CheckOperatorExprSimple3) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> op =
       parser.tryParseOperatorExpression(ts.getAsView());

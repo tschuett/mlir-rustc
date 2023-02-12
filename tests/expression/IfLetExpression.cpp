@@ -22,7 +22,7 @@ TEST(IfLetExpressionTest, CheckIfLetExpression) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
       parser.tryParseIfLetExpression(ts.getAsView());

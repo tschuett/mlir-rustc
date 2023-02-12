@@ -15,7 +15,7 @@ TEST(ExamplesFun1Test, CheckFun5) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::Function> fun =
       parser.tryParseFunction(ts.getAsView());
@@ -29,7 +29,7 @@ TEST(ExamplesFun1Test, CheckFun4a) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::Function> fun =
       parser.tryParseFunction(ts.getAsView());
@@ -43,7 +43,7 @@ TEST(ExamplesFun1Test, CheckFun4) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::Function> fun =
       parser.tryParseFunction(ts.getAsView());
@@ -57,7 +57,7 @@ TEST(ExamplesFun1Test, CheckFun3a) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::Function> fun =
       parser.tryParseFunction(ts.getAsView());
@@ -71,7 +71,7 @@ TEST(ExamplesFun1Test, CheckFun3b) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::Function> fun =
       parser.tryParseFunction(ts.getAsView());
@@ -85,7 +85,7 @@ TEST(ExamplesFun1Test, CheckFun3c) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::Function> fun =
       parser.tryParseFunction(ts.getAsView());
@@ -99,7 +99,7 @@ TEST(ExamplesFun1Test, CheckFun1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Item>> item =
       parser.tryParseItem(ts.getAsView());
@@ -114,7 +114,7 @@ TEST(ExamplesFun1Test, CheckFun2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Item>> item =
       parser.tryParseItem(ts.getAsView());
@@ -133,7 +133,7 @@ TEST(ExamplesFun1Test, CheckModule1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::shared_ptr<rust_compiler::ast::Module> mod;
 

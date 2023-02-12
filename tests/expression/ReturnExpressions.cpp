@@ -19,7 +19,7 @@ TEST(ReturnExpressionTest, CheckReturnExpr) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ret =
       parser.tryParseReturnExpression(ts.getAsView());
@@ -37,7 +37,7 @@ TEST(ReturnExpressionTest, CheckReturnExpr1) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ret =
       parser.tryParseReturnExpression(ts.getAsView());
@@ -55,7 +55,7 @@ TEST(ReturnExpressionTest, CheckReturnExpr2) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ret =
       parser.tryParseReturnExpression(ts.getAsView());

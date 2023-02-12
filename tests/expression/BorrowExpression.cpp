@@ -13,7 +13,7 @@ TEST(BorrowExpressionTest, CheckBorrowExpr1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
       parser.tryParseBorrowExpression(ts.getAsView());
@@ -27,7 +27,7 @@ TEST(BorrowExpressionTest, CheckBorrowExpr2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
       parser.tryParseBorrowExpression(ts.getAsView());
@@ -41,7 +41,7 @@ TEST(BorrowExpressionTest, CheckBorrowExpr3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
       parser.tryParseBorrowExpression(ts.getAsView());
@@ -55,7 +55,7 @@ TEST(BorrowExpressionTest, CheckBorrowExpr4) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
       parser.tryParseBorrowExpression(ts.getAsView());

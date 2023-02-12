@@ -14,7 +14,7 @@ TEST(RestPatternTest, CheckRestPattern1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>>
       pattern = parser.tryParseRestPattern(ts.getAsView());

@@ -15,7 +15,7 @@ TEST(StatementTest, CheckReturnStatement) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> stmt =
       parser.tryParseStatement(ts.getAsView());
@@ -29,7 +29,7 @@ TEST(StatementTest, CheckStatement) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> stmt =
       parser.tryParseStatement(ts.getAsView());
@@ -43,7 +43,7 @@ TEST(StatementTest, CheckExpressionStatement) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> stmt =
       parser.tryParseExpressionStatement(ts.getAsView());
@@ -57,7 +57,7 @@ TEST(StatementTest, CheckExpressionWithoutBlock) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> stmt =
       parser.tryParseExpressionWithoutBlock(ts.getAsView());
@@ -71,7 +71,7 @@ TEST(StatementTest, CheckReturnExpression) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> stmt =
       parser.tryParseReturnExpression(ts.getAsView());
@@ -85,7 +85,7 @@ TEST(StatementTest, CheckLetStatement) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> stmt =
       parser.tryParseStatement(ts.getAsView());
@@ -99,7 +99,7 @@ TEST(StatementTest, CheckLetStatement1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> stmt =
       parser.tryParseStatement(ts.getAsView());
@@ -113,7 +113,7 @@ TEST(StatementTest, CheckLetStatement2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Statement>> stmt =
       parser.tryParseStatement(ts.getAsView());

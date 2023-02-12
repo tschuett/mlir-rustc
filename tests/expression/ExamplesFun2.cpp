@@ -18,7 +18,7 @@ TEST(ExamplesFun2Test, CheckFun1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Item>> fun =
       parser.tryParseItem(ts.getAsView());
@@ -33,7 +33,7 @@ TEST(ExamplesFun2Test, CheckFun2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::Function> fun =
       parser.tryParseFunction(ts.getAsView());
@@ -47,7 +47,7 @@ TEST(ExamplesFun2Test, CheckFun3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::Function> fun =
       parser.tryParseFunction(ts.getAsView());
@@ -61,7 +61,7 @@ TEST(ExamplesFun2Test, CheckFun4) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> fun =
       parser.tryParseReturnExpression(ts.getAsView());
@@ -75,7 +75,7 @@ TEST(ExamplesFun2Test, CheckFun5) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> fun =
       parser.tryParseReturnExpression(ts.getAsView());
@@ -89,7 +89,7 @@ TEST(ExamplesFun2Test, CheckFun6) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::Function> fun =
       parser.tryParseFunction(ts.getAsView());
@@ -103,7 +103,7 @@ TEST(ExamplesFun2Test, CheckFun7) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<rust_compiler::ast::Function> fun =
       parser.tryParseFunction(ts.getAsView());
@@ -117,7 +117,7 @@ TEST(ExamplesFun2Test, CheckFun8) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> fun =
       parser.tryParseReturnExpression(ts.getAsView());
@@ -131,7 +131,7 @@ TEST(ExamplesFun2Test, CheckFun9) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::Expression>> fun =
       parser.tryParseIfExpression(ts.getAsView());

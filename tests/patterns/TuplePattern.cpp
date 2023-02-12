@@ -13,7 +13,7 @@ TEST(PatternTupleTest, CheckTuplePattern1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>>
       pattern = parser.tryParseTuplePattern(ts.getAsView());
@@ -27,7 +27,7 @@ TEST(PatternTupleTest, CheckTuplePattern2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>>
       pattern = parser.tryParseTuplePattern(ts.getAsView());

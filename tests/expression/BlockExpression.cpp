@@ -13,7 +13,7 @@ TEST(BlockExpressionTest, CheckBlockExpr1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
       parser.tryParseBlockExpression(ts.getAsView());
@@ -27,7 +27,7 @@ TEST(BlockExpressionTest, CheckBlockExpr2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
       parser.tryParseBlockExpression(ts.getAsView());
@@ -41,7 +41,7 @@ TEST(BlockExpressionTest, CheckBlockExpr3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
       parser.tryParseBlockExpression(ts.getAsView());
@@ -55,7 +55,7 @@ TEST(BlockExpressionTest, CheckBlockExpr4) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
       parser.tryParseBlockExpression(ts.getAsView());
@@ -69,7 +69,7 @@ TEST(BlockExpressionTest, CheckBlockExpr5) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
       parser.tryParseBlockExpression(ts.getAsView());
@@ -83,7 +83,7 @@ TEST(BlockExpressionTest, CheckBlockExpr40) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
   std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
       parser.tryParseBlockExpression(ts.getAsView());
