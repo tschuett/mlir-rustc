@@ -48,6 +48,4 @@ size_t IfExpression::getTokens() {
   return count;
 }
 
-std::shared_ptr<ast::types::Type> IfExpression::getType() {}
-
 } // namespace rust_compiler::ast

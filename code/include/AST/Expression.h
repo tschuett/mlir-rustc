@@ -21,8 +21,6 @@ public:
 
   bool getHasTrailingSemi() { return hasTrailingSemi; }
 
-  virtual std::shared_ptr<ast::types::Type> getType() = 0;
-
   virtual bool containsBreakExpression() = 0;
 
 private:

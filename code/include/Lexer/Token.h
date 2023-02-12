@@ -7,6 +7,7 @@
 #include <variant>
 
 // https://doc.rust-lang.org/reference/tokens.html
+// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_ast/token/enum.TokenKind.html
 
 namespace rust_compiler::lexer {
 

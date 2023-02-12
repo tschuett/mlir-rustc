@@ -31,8 +31,4 @@ std::shared_ptr<ast::BlockExpression> PredicateLoopExpression::getBody() const {
   return block;
 }
 
-std::shared_ptr<ast::types::Type> PredicateLoopExpression::getType() {
-  assert(false);
-}
-
 } // namespace rust_compiler::ast

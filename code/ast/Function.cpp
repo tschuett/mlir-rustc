@@ -12,8 +12,6 @@ bool Function::hasBody() const {
 
 std::shared_ptr<BlockExpression> Function::getBody() { return body; }
 
-Location Function::getLocation() const { return location; }
-
 const FunctionSignature &Function::getSignature() const { return signature; }
 
 FunctionQualifiers Function::getFunctionQualifiers() const {

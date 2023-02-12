@@ -42,17 +42,17 @@ std::shared_ptr<ast::patterns::PatternNoTopAlt> LetStatement::getPattern() {
   return pat;
 }
 
-std::span<LetStatementParam> LetStatement::getVarDecls() {
-  if (not filledVars) {
-    std::vector<std::string> lits = pat->getLiterals();
-    for (std::string &li : lits) {
-      LetStatementParam param = {location};
-      param.setName(li);
-      // param.setType();
-      var.push_back(param);
-    }
-  }
-  return var;
-}
+//std::span<LetStatementParam> LetStatement::getVarDecls() {
+//  if (not filledVars) {
+//    std::vector<std::string> lits = pat->getLiterals();
+//    for (std::string &li : lits) {
+//      LetStatementParam param = {location};
+//      param.setName(li);
+//      // param.setType();
+//      var.push_back(param);
+//    }
+//  }
+//  return var;
+//}
 
 } // namespace rust_compiler::ast

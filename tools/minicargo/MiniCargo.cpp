@@ -1,11 +1,11 @@
 #include "Opts.inc"
 #include "Toml/Toml.h"
 
-#include "llvm/ADT/StringRef.h"
-#include "llvm/Option/ArgList.h"
-#include "llvm/Option/OptTable.h"
-#include "llvm/Option/Option.h"
-#include "llvm/Support/raw_ostream.h"
+#include <llvm/ADT/StringRef.h>
+#include <llvm/Option/ArgList.h>
+#include <llvm/Option/OptTable.h>
+#include <llvm/Option/Option.h>
+#include <llvm/Support/raw_ostream.h>
 
 #include <fstream>
 #include <sstream>

@@ -19,7 +19,6 @@ public:
         qualifiers(loc) {}
 
   const FunctionSignature &getSignature() const;
-  Location getLocation() const;
   FunctionQualifiers getFunctionQualifiers() const;
 
   bool hasBody() const;

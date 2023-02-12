@@ -30,3 +30,7 @@ https://developers.redhat.com/articles/2023/02/02/support-c23-assume-feature-gcc
 
 
 https://www.lei.chat/posts/compilers-and-irs-llvm-ir-spirv-and-mlir/
+
+
+
+https://github.com/powerboat9/gccrs/tree/master/gcc/testsuite/rust/execute/torture

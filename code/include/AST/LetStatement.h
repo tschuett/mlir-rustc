@@ -32,7 +32,7 @@ public:
   void setType(std::shared_ptr<ast::types::TypeExpression> type);
   void setExpression(std::shared_ptr<ast::Expression> expr);
 
-  std::span<LetStatementParam> getVarDecls();
+  //std::span<LetStatementParam> getVarDecls();
 
   bool containsBreakExpression() override;
 

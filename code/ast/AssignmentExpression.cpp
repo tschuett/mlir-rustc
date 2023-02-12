@@ -22,8 +22,4 @@ bool AssignmentExpression::containsBreakExpression() {
   return false;
 }
 
-std::shared_ptr<ast::types::Type> AssignmentExpression::getType() {
-  assert(false);
-}
-
 } // namespace rust_compiler::ast

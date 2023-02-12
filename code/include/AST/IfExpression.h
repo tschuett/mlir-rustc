@@ -31,9 +31,6 @@ public:
   size_t getTokens() override;
 
   bool containsBreakExpression()  override;
-
-
-  std::shared_ptr<ast::types::Type> getType() override;
 };
 
 } // namespace rust_compiler::ast

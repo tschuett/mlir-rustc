@@ -20,7 +20,7 @@ class Item : public Node {
 
 public:
   explicit Item(Location loc, ItemKind kind)
-      : Node(location), kind(kind) {}
+      : Node(loc), kind(kind) {}
 
   void setOuterAttributes(std::shared_ptr<OuterAttributes> outer);
   void setVisItem(std::shared_ptr<VisItem> visItem);

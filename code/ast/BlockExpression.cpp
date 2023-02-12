@@ -25,9 +25,5 @@ size_t BlockExpression::getTokens() {
   return 1 + count + 1; // { }
 }
 
-std::shared_ptr<ast::types::Type> BlockExpression::getType() {
-  assert(stmts);
-  return stmts->getType();
-}
 
 } // namespace rust_compiler::ast

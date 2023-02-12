@@ -1,6 +1,7 @@
-#pragma once
+ #pragma once
 
 #include "Basic/Ids.h"
+#include "AST/Types/Types.h"
 
 #include <map>
 #include <stack>
@@ -11,6 +12,9 @@ namespace rust_compiler::sema::resolver {
 
 class Rib {
 public:
+  // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/enum.RibKind.html
+  enum class RibKind { Type };
+
   Rib(basic::CrateNum crateNum, basic::NodeId nodeId)
       : crateNum(crateNum), nodeId(nodeId) {}
 
@@ -43,6 +47,10 @@ public:
 
   // these builtin types
   void insertBuiltinTypes(Rib *r);
+
+  // these will be required for type resolution passes to
+  // map back to tyty nodes
+  std::vector<std::shared_ptr<ast::types::Type>> &getBuiltinTypes();
 
   void pushNewTypeRib(Rib *);
 

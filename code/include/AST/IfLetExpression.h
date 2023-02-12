@@ -1,4 +1,4 @@
-#pragma once
+code/include/AST/PredicateLoopExpression.h #pragma once
 
 #include "AST/Expression.h"
 #include "AST/Patterns/Pattern.h"
@@ -28,8 +28,6 @@ public:
   bool containsBreakExpression() override;
 
   size_t getTokens() override;
-
-  std::shared_ptr<ast::types::Type> getType() override;
 };
 
 } // namespace rust_compiler::ast

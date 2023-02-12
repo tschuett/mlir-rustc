@@ -6,4 +6,4 @@ add_library(CrateLoader
 target_include_directories(CrateLoader PRIVATE  ../include)
 
 
-target_link_libraries(CrateLoader sema)
+target_link_libraries(CrateLoader sema Serialization)

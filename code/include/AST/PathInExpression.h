@@ -20,8 +20,6 @@ public:
 
   bool containsBreakExpression() override;
 
-  std::shared_ptr<ast::types::Type> getType() override;
-
   std::vector<PathExprSegment> getSegments() const { return segs; }
 };
 

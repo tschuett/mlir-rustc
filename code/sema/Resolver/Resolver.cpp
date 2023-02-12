@@ -25,9 +25,12 @@ void Resolver::insertBuiltinTypes(Rib *r) {
     CanonicalPath builtinPath =
         CanonicalPath::newSegment(builtin->getNodeId(), builtin->asString());
     r->insertName(builtinPath, builtin->getNodeId(),
-                   Linemap::predeclared_location(), false, Rib::ItemType::Type,
-                   [](const CanonicalPath &, NodeId, Location) -> void {});
+                  Linemap::predeclared_location(), false, Rib::RibKind::Type,
+                  [](const CanonicalPath &, NodeId, Location) -> void {});
   }
+}
+
+std::vector<std::shared_ptr<ast::types::Type>> &Resolver::getBuiltinTypes() {
 }
 
 } // namespace rust_compiler::sema::resolver

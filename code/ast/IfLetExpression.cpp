@@ -28,6 +28,4 @@ bool IfLetExpression::containsBreakExpression() {
 
 size_t IfLetExpression::getTokens() { assert(false); }
 
-std::shared_ptr<ast::types::Type> IfLetExpression::getType() { assert(false); }
-
 } // namespace rust_compiler::ast

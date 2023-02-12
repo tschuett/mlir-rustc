@@ -18,13 +18,28 @@ namespace rust_compiler::ast::types {
 
 // trait types
 
+/// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/type.TyKind.html
+
 enum class TypeKind {
-  PrimitiveType,
-  SequenceType,
-  UserDefinedTypes,
-  FunctionTypes,
-  PointerTypes,
-  TraitTypes
+  Bool,
+  Uint,
+  Int,
+  Float,
+  Char,
+  Str,
+  Never,
+  Tuple,
+  Array,
+  Slice,
+  Struct,
+  Enum,
+  Union,
+  Function,
+  Closure,
+  Ref,
+  RawPointer,
+  FunctionPointer,
+  FIXME
 };
 
 class Type : public Node {

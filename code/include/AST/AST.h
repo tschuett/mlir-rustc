@@ -5,10 +5,11 @@
 #include <cstddef>
 #include <vector>
 
+// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_ast/ast/index.html
+
 namespace rust_compiler::ast {
 
 class Node {
-protected:
   Location location;
 
 public:

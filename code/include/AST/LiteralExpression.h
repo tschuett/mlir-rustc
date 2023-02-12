@@ -37,8 +37,6 @@ public:
 
   bool containsBreakExpression() override;
 
-  std::shared_ptr<ast::types::Type> getType() override;
-
   std::string getValue() const { return value; }
 };
 
