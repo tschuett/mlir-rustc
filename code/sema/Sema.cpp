@@ -101,9 +101,6 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
     case VisItemKind::ExternBlock: {
       break;
     }
-    case VisItemKind::AssociatedItem: {
-      break;
-    }
     }
   }
 }

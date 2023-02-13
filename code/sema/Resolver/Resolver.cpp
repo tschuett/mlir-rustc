@@ -88,10 +88,6 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem) {
     // setName(nodeId, canonicalPath);
     break;
   }
-  case VisItemKind::AssociatedItem: {
-    // setName(nodeId, canonicalPath);
-    break;
-  }
   }
 }
 

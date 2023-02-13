@@ -102,7 +102,8 @@ Parser::parseMod(std::optional<ast::Visibility> vis) {
     assert(eat(lexer::TokenKind::Identifier));
     assert(eat(lexer::TokenKind::Semi));
 
-    return std::make_shared<ast::Module>(loc, ast::ModuleKind::Module, modName, vis);
+    return std::make_shared<ast::Module>(loc, vis, ast::ModuleKind::Module,
+                                         modName);
   }
 
   if (checkKeyWord(lexer::KeyWordKind::KW_MOD) &&
