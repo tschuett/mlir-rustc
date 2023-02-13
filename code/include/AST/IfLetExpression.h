@@ -1,4 +1,4 @@
-code/include/AST/PredicateLoopExpression.h #pragma once
+#pragma once
 
 #include "AST/Expression.h"
 #include "AST/Patterns/Pattern.h"

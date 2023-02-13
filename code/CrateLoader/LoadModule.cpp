@@ -2,21 +2,25 @@
 
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
+#include "mlir/IR/Location.h"
+#include "mlir/Support/LogicalResult.h"
 
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::parser;
+using namespace llvm;
 
 namespace rust_compiler::crate_loader {
 
-std::shared_ptr<ast::Module>
-loadRootModule(llvm::SmallVectorImpl<char> &libPath, std::string_view crateName,
-               adt::CanonicalPath canonicalPath) {
+std::shared_ptr<ast::Crate>
+loadRootModule(llvm::SmallVectorImpl<char> &libPath,
+               std::string_view crateName) {
 
   if (not llvm::sys::fs::exists(libPath)) {
-    llvm::outs() << "file: " << libPath << "does not exits" << "\n";
+    llvm::outs() << "file: " << libPath << "does not exits"
+                 << "\n";
     exit(EXIT_FAILURE);
   }
 
@@ -32,16 +36,18 @@ loadRootModule(llvm::SmallVectorImpl<char> &libPath, std::string_view crateName,
 
   lexer::TokenStream ts = lexer::lex(str, "lib.rs");
 
-  Parser parser = {ts, canonicalPath};
+  Parser parser = {ts};
 
-  std::shared_ptr<ast::Module> module = std::make_shared<ast::Module>(
-      canonicalPath, ts.getAsView().front().getLocation(),
-      ast::ModuleKind::Module);
-  if (parser.parseFile(module).succeeded())
-    return module;
+  llvm::Expected<std::shared_ptr<ast::Crate>> crate = parser.parseCrateModule(crateName);
 
-  llvm::outs() << "parsing failed" << "\n";
-  exit(EXIT_FAILURE);
+  if (auto E = crate.takeError()) {
+    errs() << "Failed to parse crate module " << toString(std::move(E)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  // todo
+
+  return *crate;
 }
 
 } // namespace rust_compiler::crate_loader

@@ -19,14 +19,14 @@ class Item : public Node {
   ItemKind kind;
 
 public:
-  explicit Item(Location loc, ItemKind kind)
-      : Node(loc), kind(kind) {}
+  explicit Item(Location loc, ItemKind kind) : Node(loc), kind(kind) {}
 
   void setOuterAttributes(std::shared_ptr<OuterAttributes> outer);
   void setVisItem(std::shared_ptr<VisItem> visItem);
 
   std::shared_ptr<OuterAttributes> getOuterAttributes() const;
 
+  ItemKind getItemKind() const { return kind; }
   std::shared_ptr<VisItem> getVisItem() const;
 
   size_t getTokens() override;

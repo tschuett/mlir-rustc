@@ -5,13 +5,14 @@
 #include "CodeGen/DumpLLVMIR.h"
 #include "CodeGen/PassPipeLine.h"
 #include "CrateBuilder/CrateBuilder.h"
+#include "CrateLoader/CrateLoader.h"
 #include "Hir/HirDialect.h"
 #include "Lexer/Lexer.h"
+#include "Mappings/Mappings.h"
 #include "ModuleBuilder/ModuleBuilder.h"
 #include "ModuleBuilder/Target.h"
 #include "Parser/Parser.h"
 #include "Sema/Sema.h"
-#include "Mappings/Mappings.h"
 
 #include <fstream>
 #include <llvm/MC/TargetRegistry.h>
@@ -34,7 +35,8 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::rustc {
 
-void buildCrate(std::string_view path, std::string_view edition) {
+void buildCrate(std::string_view path, std::string_view crateName,
+                basic::Edition edition) {
   // Create `Target`
   std::string theTriple =
       llvm::Triple::normalize(llvm::sys::getDefaultTargetTriple());
@@ -43,81 +45,57 @@ void buildCrate(std::string_view path, std::string_view edition) {
   const llvm::Target *theTarget =
       llvm::TargetRegistry::lookupTarget(theTriple, error);
 
-  std::string featuresStr;
-  std::string cpu = "sapphirerapids";
-  cpu = llvm::sys::getHostCPUName();
-  std::unique_ptr<::llvm::TargetMachine> tm;
-  tm.reset(theTarget->createTargetMachine(
-      theTriple, /*CPU=*/cpu,
-      /*Features=*/featuresStr, llvm::TargetOptions(),
-      /*Reloc::Model=*/llvm::Reloc::Model::PIC_,
-      /*CodeModel::Model=*/std::nullopt, llvm::CodeGenOpt::Aggressive));
-  assert(tm && "Failed to create TargetMachine");
+  std::shared_ptr<ast::Crate> crate =
+      crate_loader::loadCrate(path, crateName, edition);
 
-  llvm::SmallVector<char, 128> cargoTomlDir{path.begin(), path.end()};
+  // llvm::sys::path::append(cargoTomlDir, "src");
+  // llvm::sys::path::append(cargoTomlDir, "lib.rs");
 
-  llvm::sys::path::append(cargoTomlDir, "src");
-  llvm::sys::path::append(cargoTomlDir, "lib.rs");
+  // if (not llvm::sys::fs::exists(cargoTomlDir))
+  //   return;
 
-  if (not llvm::sys::fs::exists(cargoTomlDir))
-    return;
-
-  llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> outputBuffer =
-      llvm::MemoryBuffer::getFile(cargoTomlDir, true);
-  if (!outputBuffer) {
-    return;
-  }
-
-  std::string str((*outputBuffer)->getBufferStart(),
-                  (*outputBuffer)->getBufferEnd());
-
-  lexer::TokenStream ts = lexer::lex(str, "lib.rs");
-  Parser parser = {ts, adt::CanonicalPath("toy1")};
-  std::shared_ptr<ast::Module> module = std::make_shared<ast::Module>(
-      adt::CanonicalPath("toy1"), ts.getAsView().front().getLocation(),
-      ast::ModuleKind::Module);
-  (void)parser.parseFile(module);
-
-  llvm::outs() << "finished parsing: " << module->getItems().size() << "\n";
-
+  // llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> outputBuffer =
+  //     llvm::MemoryBuffer::getFile(cargoTomlDir, true);
+  // if (!outputBuffer) {
+  //   return;
+  // }
+  //
+  // std::string str((*outputBuffer)->getBufferStart(),
+  //                 (*outputBuffer)->getBufferEnd());
+  //
+  // lexer::TokenStream ts = lexer::lex(str, "lib.rs");
+  // Parser parser = {ts};
+  // std::shared_ptr<ast::Module> module = std::make_shared<ast::Module>(
+  //     ts.getAsView().front().getLocation(), ast::ModuleKind::Module);
+  //(void)parser.parseFile(module);
+  //
+  // llvm::outs() << "finished parsing: " << module->getItems().size() << "\n";
+  //
   std::string fn = "lib.yaml";
-
+  //
   std::error_code EC;
   llvm::raw_fd_stream stream = {fn, EC};
 
-  std::shared_ptr<Crate> crate =
-    std::make_shared<Crate>("toy1", mappings::Mappings::get()->getCrateNum("toy1"));
-  crate->merge(module, adt::CanonicalPath("toy2")); // hack
-
-  sema::analyzeSemantics(crate);
+  // std::shared_ptr<Crate> crate = std::make_shared<Crate>(
+  //     "toy1", mappings::Mappings::get()->getCrateNum("toy1"));
+  // crate->merge(module, adt::CanonicalPath("toy2")); // hack
+  //
+  // sema::analyzeSemantics(crate);
 
   llvm::outs() << "code generation"
                << "\n";
 
   mlir::MLIRContext context;
-  context.getOrLoadDialect<hir::HirDialect>();
-  context.getOrLoadDialect<Mir::MirDialect>();
-  context.getOrLoadDialect<mlir::func::FuncDialect>();
-  context.getOrLoadDialect<mlir::arith::ArithDialect>();
-  context.getOrLoadDialect<mlir::async::AsyncDialect>();
-  context.getOrLoadDialect<mlir::memref::MemRefDialect>();
-  context.getOrLoadDialect<mlir::cf::ControlFlowDialect>();
 
   rust_compiler::crate_builder::CrateBuilder builder = {stream, context};
   builder.emitCrate(crate);
 
-  // rust_compiler::crate_builder::build(crate);
-
-  //  rust_compiler::ModuleBuilder mb = {"lib", &target, stream, context};
-  //
-  //  mb.build(module);
-  //
   mlir::ModuleOp moduleOp = builder.getModule();
 
   moduleOp.dump();
   // dumpLLVMIR(moduleOp);
   mlir::OwningOpRef<mlir::ModuleOp> owningModuleOp = {moduleOp};
-  processMLIR(context, owningModuleOp);
+  // processMLIR(context, owningModuleOp);
 }
 
 } // namespace rust_compiler::rustc

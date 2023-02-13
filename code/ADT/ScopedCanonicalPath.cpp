@@ -5,8 +5,9 @@
 namespace rust_compiler::adt {
 
 ScopedCanonicalPathScope::ScopedCanonicalPathScope(ScopedCanonicalPath *storage,
+                                                   basic::NodeId nodeId,
                                                    std::string_view segment) {
-  storage->registerScope(this, segment);
+  storage->registerScope(this, nodeId, segment);
   parent = storage;
 };
 
@@ -14,29 +15,20 @@ ScopedCanonicalPathScope::~ScopedCanonicalPathScope() {
   parent->deregisterScope(this);
 }
 
-CanonicalPath ScopedCanonicalPath::getCurrentPath() const {
-  CanonicalPath canPath = {crateName};
+CanonicalPath ScopedCanonicalPath::getCurrentPath() const {}
 
-  std::stack<std::string> copy(segments);
-  std::vector<std::string> result;
-
-  for (unsigned i = 0; i < copy.size(); ++i) {
-    result.push_back(copy.top());
-    copy.pop();
-  }
-
-  std::reverse(result.begin(), result.end());
-
-  canPath.segments = result;
-
-  return canPath;
-}
-
-void ScopedCanonicalPath::registerScope(ScopedCanonicalPathScope *,
+void ScopedCanonicalPath::registerScope(ScopedCanonicalPathScope *scope,
+                                        basic::NodeId nodeId,
                                         std::string_view segment) {
+  std::pair<basic::NodeId, std::string> p = std::make_pair(nodeId, std::string(segment));
+  scopes.push(scope);
+  segments.push(p);
   assert(false);
 }
-void ScopedCanonicalPath::deregisterScope(ScopedCanonicalPathScope *) {
+
+void ScopedCanonicalPath::deregisterScope(ScopedCanonicalPathScope *scope) {
+  scopes.pop();
+  segments.pop();
   assert(false);
 }
 

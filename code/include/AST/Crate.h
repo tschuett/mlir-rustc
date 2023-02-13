@@ -30,6 +30,7 @@ public:
   Crate(std::string_view crateName, basic::CrateNum crateNum)
       : crateName(crateName), crateNum(crateNum){};
 
+  /// how?
   void merge(std::shared_ptr<ast::Module> module, adt::CanonicalPath path);
 
   std::span<std::shared_ptr<Item>> getItems() const;

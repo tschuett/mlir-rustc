@@ -14,7 +14,7 @@ class ScopedCanonicalPathScope {
   ScopedCanonicalPath *parent;
 
 public:
-  ScopedCanonicalPathScope(ScopedCanonicalPath *storage,
+  ScopedCanonicalPathScope(ScopedCanonicalPath *storage, basic::NodeId id,
                            std::string_view segment);
 
   ~ScopedCanonicalPathScope();
@@ -25,18 +25,19 @@ class ScopedCanonicalPath {
 
   std::stack<ScopeTy *> scopes;
 
-  std::stack<std::string> segments;
+  std::stack<std::pair<basic::NodeId, std::string>> segments;
   std::string crateName;
 
 public:
-  ScopedCanonicalPath(const CanonicalPath &path){};
+  ScopedCanonicalPath(const CanonicalPath &path);
 
   CanonicalPath getCurrentPath() const;
 
 private:
   friend ScopedCanonicalPathScope;
 
-  void registerScope(ScopedCanonicalPathScope *, std::string_view segment);
+  void registerScope(ScopedCanonicalPathScope *, basic::NodeId nodeId,
+                     std::string_view segment);
   void deregisterScope(ScopedCanonicalPathScope *);
 };
 

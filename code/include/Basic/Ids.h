@@ -16,4 +16,10 @@ using ItemId = uint32_t;
 
 const uint32_t UNKNOWN_CREATENUM = std::numeric_limits<uint32_t>::max();
 
+/// refers to a definition
+struct DefId {
+  uint32_t DefIndex;
+  CrateNum krate;
+};
+
 } // namespace rust_compiler::basic

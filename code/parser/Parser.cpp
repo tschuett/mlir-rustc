@@ -1,52 +1,87 @@
 #include "Parser/Parser.h"
 
-#include "AST/Crate.h"
-#include "AST/Module.h"
-#include "AST/OuterAttribute.h"
+#include "AST/Visiblity.h"
+#include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
-#include "Util.h"
 
-#include <cstdlib>
-#include <llvm/Support/raw_ostream.h>
-#include <memory>
-#include <mlir/Support/LogicalResult.h>
-#include <optional>
-
-using namespace rust_compiler::ast;
-using namespace rust_compiler::lexer;
-using namespace mlir;
+#include <vector>
 
 namespace rust_compiler::parser {
 
-LogicalResult Parser::parseFile(std::shared_ptr<ast::Module> &module) {
-  std::span<Token> tokens = ts.getAsView();
+llvm::Expected<std::vector<std::shared_ptr<ast::Item>>> Parser::parseItems() {
+  if (check(lexer::TokenKind::Hash) && check(lexer::TokenKind::Not, 1) &&
+      check(lexer::TokenKind::SquareOpen, 2)) {
+    llvm::Expected<std::vector<ast::OuterAttribute>> result =
+        parseOuterAttributes();
+  }
+  //  llvm::Expected<ast::Item> item = parseItem();
+  // FIXME
+}
 
-  size_t last = tokens.size();
-  while (tokens.size() > 0) {
-    last = tokens.size();
+llvm::Expected<std::shared_ptr<ast::VisItem>> Parser::parseVisItem() {
+  ast::Visibility vis = {getLocation(), ast::VisibilityKind::Private};
 
-    // printTokenState(tokens);
-
-    std::optional<std::shared_ptr<ast::Item>> item = tryParseItem(tokens);
-    if (item) {
-      llvm::errs() << "found tokens: " << (*item)->getTokens() << "\n";
-      tokens = tokens.subspan((*item)->getTokens());
-      module->addItem(*item);
-      llvm::errs() << "added item"
+  if (checkKeyWord(lexer::KeyWordKind::KW_PUB)) {
+    // FIXME
+    llvm::Expected<ast::Visibility> result = parseVisibility();
+    if (auto e = result.takeError()) {
+      llvm::errs() << "failed to parse visiblity: " << toString(std::move(e))
                    << "\n";
-    } else {
-      return LogicalResult::failure();
-    }
-
-    if (tokens.size() == last) {
-      llvm::errs() << "parser: no progress"
-                   << "\n";
-      printTokenState(tokens);
       exit(EXIT_FAILURE);
     }
+    vis = *result;
   }
 
-  return LogicalResult::success();
+  if (checkKeyWord(lexer::KeyWordKind::KW_CONST)) {
+    if (checkKeyWord(lexer::KeyWordKind::KW_ASYNC, 1)) {
+      return parseFunction(vis);
+    } else if (checkKeyWord(lexer::KeyWordKind::KW_UNSAFE, 1)) {
+      return parseFunction(vis);
+    } else if (checkKeyWord(lexer::KeyWordKind::KW_EXTERN, 1)) {
+      return parseFunction(vis);
+    } else if (checkKeyWord(lexer::KeyWordKind::KW_FN, 1)) {
+      return parseFunction(vis);
+    } else {
+      return parseConstantItem(vis);
+    }
+  } else if (checkKeyWord(lexer::KeyWordKind::KW_ASYNC)) {
+    return parseFunction(vis);
+  } else if (checkKeyWord(lexer::KeyWordKind::KW_UNSAFE)) {
+    if (checkKeyWord(lexer::KeyWordKind::KW_TRAIT, 1)) {
+      return parseTrait(vis);
+    } else if (checkKeyWord(lexer::KeyWordKind::KW_MOD, 1)) {
+      return parseMod(vis);
+    } else if (checkKeyWord(lexer::KeyWordKind::KW_IMPL, 1)) {
+      return parseImplementation(vis);
+    } else if (checkKeyWord(lexer::KeyWordKind::KW_EXTERN, 1)) {
+      return parseExternBlock(vis);
+    }
+
+    return parseFunction(vis);
+  } else if (checkKeyWord(lexer::KeyWordKind::KW_MOD)) {
+    return parseMod(vis);
+  } else if (checkKeyWord(lexer::KeyWordKind::KW_FN)) {
+    return parseFunction(vis);
+  } else if (checkKeyWord(lexer::KeyWordKind::KW_USE)) {
+    return parseUseDeclaration(vis);
+  } else if (checkKeyWord(lexer::KeyWordKind::KW_TYPE)) {
+    return parseTypeAlias(vis);
+  } else if (checkKeyWord(lexer::KeyWordKind::KW_STRUCT)) {
+    return parseStruct(vis);
+  } else if (checkKeyWord(lexer::KeyWordKind::KW_ENUM)) {
+    return parseEnumeration(vis);
+  } else if (checkKeyWord(lexer::KeyWordKind::KW_UNION)) {
+    return parseUnion(vis);
+  } else if (checkKeyWord(lexer::KeyWordKind::KW_STATIC)) {
+    return parseStaticItem(vis);
+  } else if (checkKeyWord(lexer::KeyWordKind::KW_TRAIT)) {
+    return parseTrait(vis);
+  } else if (checkKeyWord(lexer::KeyWordKind::KW_IMPL)) {
+    return parseImplementation(vis);
+  } else if (checkKeyWord(lexer::KeyWordKind::KW_EXTERN)) {
+    return parseExternBlock(vis);
+  }
+  // complete?
 }
 
 } // namespace rust_compiler::parser

@@ -1,64 +1,6 @@
 add_library(parser
-           Parser2.cpp
            Parser.cpp
-           Attributes.cpp
-           UseDeclaration.cpp
-           Visibility.cpp
-           Modules.cpp
-           Item.cpp
-           Function.cpp
-           SimplePath.cpp
            Util.cpp
-           Pattern.cpp
-           Generics.cpp
-           WhereClause.cpp
-           FunctionParameters.cpp
-           BlockExpression.cpp
-           IdentifierPattern.cpp
-           Statement.cpp
-           ExpressionWithoutBlock.cpp
-           ExpressionWithBlock.cpp
-           ReturnExpression.cpp
-           ExpressionStatement.cpp
-           Expression.cpp
-           OperatorExpression.cpp
-           ArithmeticOrLogicalExpression.cpp
-           LiteralExpression.cpp
-           PathExpression.cpp
-           PathInExpression.cpp
-           QualifiedPathInExpression.cpp
-           FunctionParam.cpp
-           PathExprSegment.cpp
-           GenericArgs.cpp
-           PathIdentSegment.cpp
-           Statements.cpp
-           OperatorFeeding.cpp
-           PatternNoTopAlt.cpp
-           LiteralPattern.cpp
-           SelfParam.cpp
-           ShorthandSelf.cpp
-           TypedSelf.cpp
-           NegationExpression.cpp
-           BorrowExpression.cpp
-           OuterAttribute.cpp
-           VisItem.cpp
-           OuterAttributes.cpp
-           IfExpression.cpp
-           IfLetExpression.cpp
-           Scrutinee.cpp
-           RestPattern.cpp
-           TuplePattern.cpp
-           TuplePatternItems.cpp
-           QualifiedPathType.cpp
-           QualifiedPathInType.cpp
-           TypePath.cpp
-           PredicateLoopExpression.cpp
-           LetStatement.cpp
-           ComparisonExpression.cpp
-           AssignmentExpression.cpp
-           PrintToken.cpp
-           AwaitExpression.cpp
-           TypeExpression.cpp
            )
 
 

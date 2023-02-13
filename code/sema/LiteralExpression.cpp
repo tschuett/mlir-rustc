@@ -1,6 +1,5 @@
 #include "AST/LiteralExpression.h"
 
-#include "AST/Types/PrimitiveTypes.h"
 #include "Sema/Sema.h"
 
 using namespace rust_compiler::ast;

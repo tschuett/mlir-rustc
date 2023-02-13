@@ -1,7 +1,15 @@
- #pragma once
+#pragma once
 
+#include "ADT/CanonicalPath.h"
+#include "ADT/ScopedCanonicalPath.h"
+#include "AST/Crate.h"
+#include "AST/Implementation.h"
+#include "AST/InherentImpl.h"
+#include "AST/MacroItem.h"
+#include "AST/TraitImpl.h"
+#include "AST/UseDeclaration.h"
+#include "AST/VisItem.h"
 #include "Basic/Ids.h"
-#include "AST/Types/Types.h"
 
 #include <map>
 #include <stack>
@@ -10,19 +18,17 @@
 
 namespace rust_compiler::sema::resolver {
 
+/// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/struct.Rib.html
 class Rib {
 public:
   // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/enum.RibKind.html
   enum class RibKind { Type };
 
-  Rib(basic::CrateNum crateNum, basic::NodeId nodeId)
-      : crateNum(crateNum), nodeId(nodeId) {}
-
-  basic::NodeId getNodeId() const { return nodeId; }
+  Rib(RibKind kind) : kind(kind) {}
 
 private:
-  basic::CrateNum crateNum;
-  basic::NodeId nodeId;
+  std::map<std::string, basic::NodeId> bindings;
+  RibKind kind;
 };
 
 class Scope {
@@ -40,45 +46,54 @@ private:
   std::vector<Rib *> stack;
 };
 
-class Resolver {
+class Segment {
+  std::string name;
+};
+
+class Import {
 public:
-  static Resolver *get();
-  ~Resolver() = default;
-
-  // these builtin types
-  void insertBuiltinTypes(Rib *r);
-
-  // these will be required for type resolution passes to
-  // map back to tyty nodes
-  std::vector<std::shared_ptr<ast::types::Type>> &getBuiltinTypes();
-
-  void pushNewTypeRib(Rib *);
-
-  void pushNewModuleScope(basic::NodeId);
-  void popNewModuleScope(basic::NodeId);
-  basic::NodeId peekCurrentModuleScope();
-
-  Scope &getTypeScope() { return typeScope; }
+  enum class ImportKind { Single, Glob, ExternCrate, MacroUse, MacroExport };
 
 private:
-  Resolver();
+  ImportKind kind;
+  basic::NodeId nodeId;
+  llvm::SmallVector<Segment> modulePath;
+};
 
-  /// ?
-  basic::NodeId globalTypeNodeId;
+class Resolver {
+public:
+  Resolver() = delete;
+  Resolver(std::string_view crateName)
+      : scopedPath(adt::CanonicalPath::newSegment(getNextNodeId(), crateName)) {
+  }
 
-  Scope nameScope;
-  Scope typeScope;
-  Scope labelScope;
-  Scope macroScope;
+  ~Resolver() = default;
 
-  // map a AST Node to a Rib
-  std::map<basic::NodeId, Rib *> nameRibs;
-  std::map<basic::NodeId, Rib *> typeRibs;
-  std::map<basic::NodeId, Rib *> labelRibs;
-  std::map<basic::NodeId, Rib *> macroRibs;
+  void resolveCrate(std::shared_ptr<ast::Crate>);
 
-  // keep track of the current module scope ids
-  std::stack<basic::NodeId> currentModuleStack;
+private:
+  adt::ScopedCanonicalPath scopedPath;
+
+  void resolveVisItem(std::shared_ptr<ast::VisItem>);
+  void resolveMacroItem(std::shared_ptr<ast::MacroItem>);
+  void resolveImplementation(std::shared_ptr<ast::Implementation>);
+  void resolveUseDeclaration(std::shared_ptr<ast::UseDeclaration>);
+
+  void resolveInherentImpl(std::shared_ptr<ast::InherentImpl>);
+  void resolveTraitImpl(std::shared_ptr<ast::TraitImpl>);
+
+  std::map<basic::NodeId, std::shared_ptr<ast::UseDeclaration>> useDeclarations;
+  std::map<basic::NodeId, std::shared_ptr<ast::Module>> modules;
+
+  basic::NodeId nodeId = 0;
+
+  basic::NodeId getNextNodeId();
+  void addModule(std::shared_ptr<ast::Module> mod, basic::NodeId,
+                 const adt::CanonicalPath &path);
+
+  std::vector<Import> determinedImports;
 };
 
 } // namespace rust_compiler::sema::resolver
+
+// FIXME: Scoped

@@ -4,7 +4,6 @@
 #include "AST/Function.h"
 #include "AST/Module.h"
 #include "AST/VisItem.h"
-#include "Resolver/NameResolution.h"
 #include "Resolver/Resolver.h"
 #include "TypeChecking/TypeChecking.h"
 
@@ -38,13 +37,16 @@ void analyzeSemantics(std::shared_ptr<ast::Crate> &crate) {
 
 void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
   // FIXME
+  Resolver resolver = {crate->getCrateName()};
+
   {
     TimeTraceScope scope("name resolution");
-    NameResolution nameResolution = {mappings::Mappings::get(), Resolver::get()};
-    nameResolution.resolve(crate);
+    resolver.resolveCrate(crate);
   }
 
-  { TimeTraceScope scope("type inference"); }
+  {
+    TimeTraceScope scope("type inference");
+  }
 
   { TimeTraceScope scope("trait solving"); }
 

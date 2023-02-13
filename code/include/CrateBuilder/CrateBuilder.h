@@ -63,8 +63,7 @@ public:
         llvm::TargetRegistry::lookupTarget(theTriple, error);
 
     std::string featuresStr;
-    std::string cpu = "sapphirerapids";
-    cpu = llvm::sys::getHostCPUName();
+    std::string cpu = std::string(llvm::sys::getHostCPUName());
     std::unique_ptr<::llvm::TargetMachine> tm;
     tm.reset(theTarget->createTargetMachine(
         theTriple, /*CPU=*/cpu,
@@ -80,8 +79,8 @@ public:
     context.getOrLoadDialect<hir::HirDialect>();
     context.getOrLoadDialect<mlir::func::FuncDialect>();
     context.getOrLoadDialect<mlir::arith::ArithDialect>();
-    // context.getOrLoadDialect<mlir::async::AsyncDialect>();
-    // context.getOrLoadDialect<mlir::memref::MemRefDialect>();
+    //context.getOrLoadDialect<mlir::async::AsyncDialect>();
+    //context.getOrLoadDialect<mlir::memref::MemRefDialect>();
     context.getOrLoadDialect<mlir::cf::ControlFlowDialect>();
 
     theModule = mlir::ModuleOp::create(builder.getUnknownLoc());

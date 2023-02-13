@@ -1,12 +1,12 @@
+#include "Basic/Edition.h"
 #include "CrateBuilder.h"
 #include "Toml/Toml.h"
-
 #include "llvm/Option/ArgList.h"
 #include "llvm/Option/OptTable.h"
 #include "llvm/Option/Option.h"
+#include "llvm/Support/InitLLVM.h"
 #include "llvm/Support/TargetSelect.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Support/InitLLVM.h"
 
 #include <fstream>
 #include <sstream>
@@ -87,12 +87,14 @@ int main(int argc, char **argv) {
     path = A->getValue();
   }
 
-  if (not path) {
-    llvm::errs() << "path parameter is missing" << '\n';
-    return -1;
+  std::optional<std::string> crateName = std::nullopt;
+  if (const llvm::opt::Arg *A = Args.getLastArg(OPT_crate_EQ)) {
+    crateName = A->getValue();
+  } else {
+    errs() << "the crate name is missing" << "\n";
+    exit(EXIT_FAILURE);
   }
 
-  llvm::outs() << "path :" << *path << '\n';
-
-  rust_compiler::rustc::buildCrate(*path, edition);
+  rust_compiler::rustc::buildCrate(*path, *crateName,
+                                   basic::Edition::Edition2024);
 }

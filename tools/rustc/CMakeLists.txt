@@ -14,7 +14,7 @@ add_dependencies(rustc RustCOptsTableGen)
 
 llvm_map_components_to_libnames(llvm_libs Option AArch64CodeGen AArch64Desc AArch64Info ARMCodeGen ARMDesc ARMInfo X86CodeGen X86Info X86Desc TargetParser Support MC)
 
-target_link_libraries(rustc lexer parser sema crate_builder MirDialect codegen MLIRAsmParser ${llvm_libs})
+target_link_libraries(rustc lexer parser sema Serialization CrateLoader crate_builder MirDialect codegen MLIRAsmParser ${llvm_libs})
 
 #target_link_libraries(rustc lexer parser  ${llvm_libs})
 

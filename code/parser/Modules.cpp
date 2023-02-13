@@ -44,8 +44,6 @@ Parser::tryParseModuleTree(std::span<Token> tokens,
 
   // everything is fine
 
-  ScopedCanonicalPathScope scope = {&path, moduleName};
-
   view = view.subspan(3);
 
   size_t last = view.size();
