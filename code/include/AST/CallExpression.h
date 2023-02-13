@@ -18,8 +18,6 @@ public:
                                ExpressionWithoutBlockKind::CallExpression) {}
 
   std::shared_ptr<Expression> getFunction() const;
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

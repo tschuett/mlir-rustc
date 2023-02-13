@@ -22,8 +22,8 @@ class InherentImpl : public Implementation {
 
 public:
   InherentImpl(ImplementationKind kind,
-               Location loc)
-      : Implementation(ImplementationKind::InherentImpl, loc) {}
+               Location loc, std::optional<Visibility> vis)
+    : Implementation(ImplementationKind::InherentImpl, loc, vis) {}
 
 
   std::span<AssociatedItem> getAssociatedItems() const;

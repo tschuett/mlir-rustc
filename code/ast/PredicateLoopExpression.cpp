@@ -15,14 +15,6 @@ void PredicateLoopExpression::setBody(
   block = _body;
 }
 
-size_t PredicateLoopExpression::getTokens() {
-  size_t count = 0;
-  count += condition->getTokens();
-  count += block->getTokens();
-
-  return 1 + count;
-}
-
 std::shared_ptr<ast::Expression> PredicateLoopExpression::getCondition() const {
   return condition;
 }

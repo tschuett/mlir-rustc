@@ -16,8 +16,8 @@ class StructStruct : public Struct {
   std::optional<StructFields> structFields;
 
 public:
-  StructStruct(Location loc)
-      : Struct(loc, StructKind::StructStruct) {}
+  StructStruct(Location loc, std::optional<Visibility> vis)
+    : Struct(loc, StructKind::StructStruct, vis) {}
 };
 
 } // namespace rust_compiler::ast

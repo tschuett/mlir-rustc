@@ -25,8 +25,6 @@ public:
 
   Visibility(Location loc, SimplePath simplePath)
       : Node(loc), kind(VisibilityKind::PublicIn), simplePath(simplePath) {}
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

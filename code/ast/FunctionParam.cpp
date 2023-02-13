@@ -16,10 +16,6 @@ void FunctionParam::setType(std::shared_ptr<ast::types::TypeExpression> _type) {
   type = _type;
 }
 
-size_t FunctionParam::getTokens() {
-  return name->getTokens() + 1 + type->getTokens();
-}
-
 std::string FunctionParam::getName() {
   assert(name);
   return name->getIdentifier();

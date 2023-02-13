@@ -14,8 +14,6 @@ class TupleElements : public Node {
 
 public:
   TupleElements(Location loc) : Node(loc) {}
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

@@ -36,8 +36,6 @@ public:
 
   bool containsBreakExpression() override;
 
-  size_t getTokens() override;
-
   std::shared_ptr<ast::patterns::PatternNoTopAlt> getPattern();
 
 private:

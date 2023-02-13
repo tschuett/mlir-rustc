@@ -22,7 +22,6 @@ enum class VisItemKind {
   Trait,
   Implementation,
   ExternBlock,
-  AssociatedItem
 };
 
 class VisItem : public Item {
@@ -30,8 +29,9 @@ class VisItem : public Item {
   std::optional<Visibility> vis;
 
 public:
-  explicit VisItem(rust_compiler::Location location, VisItemKind kind)
-      : Item(location, ItemKind::VisItem), kind(kind) {}
+  explicit VisItem(rust_compiler::Location location, VisItemKind kind,
+                   std::optional<Visibility> vis)
+      : Item(location, ItemKind::VisItem), kind(kind), vis(vis) {}
 
   VisItemKind getKind() const { return kind; }
 

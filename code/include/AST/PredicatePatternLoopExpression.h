@@ -22,8 +22,6 @@ public:
   //  std::shared_ptr<ast::BlockExpression> getBody() const;
   //
   bool containsBreakExpression() override;
-  //
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

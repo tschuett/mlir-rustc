@@ -28,8 +28,6 @@ public:
 
   bool hasTrailing() const;
 
-  size_t getTokens() override;
-
   bool containsBreakExpression()  override;
 };
 

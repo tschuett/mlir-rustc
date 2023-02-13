@@ -1,9 +1,9 @@
 #pragma once
 
-#include "AST/VisItem.h"
-#include "AST/InnerAttribute.h"
-#include "AST/ExternalItem.h"
 #include "AST/Abi.h"
+#include "AST/ExternalItem.h"
+#include "AST/InnerAttribute.h"
+#include "AST/VisItem.h"
 
 #include <optional>
 
@@ -16,10 +16,8 @@ class ExternBlock : public VisItem {
   std::vector<ExternalItem> externalItems;
 
 public:
-  ExternBlock(Location loc)
-    : VisItem(loc, VisItemKind::ExternBlock) {}
-
-   size_t getTokens() override;
+  ExternBlock(Location loc, std::optional<Visibility> vis)
+      : VisItem(loc, VisItemKind::ExternBlock, vis) {}
 };
 
 } // namespace rust_compiler::ast

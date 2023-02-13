@@ -16,8 +16,6 @@ public:
       : Node(location), attr(location) {}
 
   SimplePath getPath() const;
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

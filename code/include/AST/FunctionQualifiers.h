@@ -24,8 +24,6 @@ public:
 
   FunctionQualifierKind getKind() const { return kind; }
 
-  size_t getTokens() override;
-
   void setAsync();
   void setConst();
   void setUnsafe();

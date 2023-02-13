@@ -16,7 +16,6 @@ public:
   void setMut();
   void setAnd();
 
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

@@ -12,7 +12,6 @@ enum class GenericArgsConstKind {
 
 class GenericArgsConst : public Node {
 public:
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

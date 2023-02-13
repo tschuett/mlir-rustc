@@ -16,8 +16,6 @@ class TypePath final : public TypeNoBounds {
 
 public:
   TypePath(Location loc) : TypeNoBounds(loc, TypeNoBoundsKind::TypePath) {}
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast::types

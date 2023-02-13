@@ -16,8 +16,6 @@ public:
 
   std::shared_ptr<BlockExpression> getBody() const;
 
-  size_t getTokens() override;
-
   bool containsBreakExpression() override;
 };
 

@@ -22,8 +22,6 @@ class EnumItem : public Node {
 
 public:
   EnumItem(Location loc) : Node(loc) {}
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

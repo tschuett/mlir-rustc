@@ -14,8 +14,6 @@ class TypeParamBounds : public Node {
 
 public:
   TypeParamBounds(Location loc) : Node(loc) {}
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast::types

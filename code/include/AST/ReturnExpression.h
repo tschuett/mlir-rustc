@@ -20,8 +20,6 @@ public:
   std::shared_ptr<ast::Expression> getExpression();
 
     bool containsBreakExpression() override;
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

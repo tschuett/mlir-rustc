@@ -13,8 +13,6 @@ class OuterAttributes : public Node {
 
 public:
   OuterAttributes(Location loc) : Node(loc) {}
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

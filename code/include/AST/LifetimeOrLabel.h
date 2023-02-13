@@ -12,8 +12,6 @@ class LifetimeOrLabel : public Node {
 
 public:
   LifetimeOrLabel(Location loc) : Node(loc) {}
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

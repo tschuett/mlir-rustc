@@ -25,8 +25,6 @@ public:
 
   std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
 
-  size_t getTokens() override;
-
   std::string getName() override;
 };
 

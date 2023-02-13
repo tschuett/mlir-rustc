@@ -10,8 +10,8 @@ class Struct : public VisItem {
   StructKind kind;
 
 public:
-  Struct(Location loc, StructKind kind)
-      : VisItem(loc, VisItemKind::Struct), kind(kind) {}
+  Struct(Location loc, StructKind kind, std::optional<Visibility> vis)
+      : VisItem(loc, VisItemKind::Struct, vis), kind(kind) {}
 };
 
 } // namespace rust_compiler::ast

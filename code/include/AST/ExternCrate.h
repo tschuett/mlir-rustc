@@ -14,10 +14,8 @@ class ExternCrate : public VisItem {
   std::optional<AsClause> asClasue;
 
 public:
-  ExternCrate(Location loc)
-    : VisItem(loc, VisItemKind::ExternCrate), crateRef(loc) {}
-
-   size_t getTokens() override;
+  ExternCrate(Location loc, std::optional<Visibility> vis)
+    : VisItem(loc, VisItemKind::ExternCrate, vis), crateRef(loc) {}
 };
 
 } // namespace rust_compiler::ast

@@ -28,8 +28,12 @@ class ScopedCanonicalPath {
   std::stack<std::pair<basic::NodeId, std::string>> segments;
   std::string crateName;
 
+  CanonicalPath path;
+
 public:
-  ScopedCanonicalPath(const CanonicalPath &path);
+  ScopedCanonicalPath(const CanonicalPath &path) : path(path) {
+    crateName = path.getCrateName();
+  }
 
   CanonicalPath getCurrentPath() const;
 

@@ -13,8 +13,6 @@ class GenericParam : public Node {
 
 public:
   GenericParam(Location loc, GenericParamKind kind) : Node(loc), kind(kind) {}
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

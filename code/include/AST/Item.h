@@ -28,8 +28,6 @@ public:
 
   ItemKind getItemKind() const { return kind; }
   std::shared_ptr<VisItem> getVisItem() const;
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

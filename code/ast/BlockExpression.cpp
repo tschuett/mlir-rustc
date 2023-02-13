@@ -14,16 +14,5 @@ bool BlockExpression::containsBreakExpression() {
   return stmts->containsBreakExpression();
 }
 
-size_t BlockExpression::getTokens() {
-  size_t count = 0;
-
-  count += stmts->getTokens();
-
-  if (getHasTrailingSemi())
-    ++count;
-
-  return 1 + count + 1; // { }
-}
-
 
 } // namespace rust_compiler::ast

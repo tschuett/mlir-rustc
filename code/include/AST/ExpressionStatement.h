@@ -20,8 +20,6 @@ public:
   bool containsBreakExpression() override;
 
   ExpressionStatementKind getKind() const;
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

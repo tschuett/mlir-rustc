@@ -36,16 +36,4 @@ std::shared_ptr<ast::Expression> IfExpression::getTrailing() const {
 
 bool IfExpression::hasTrailing() const { return !!trailing; };
 
-size_t IfExpression::getTokens() {
-  size_t count = 1;
-
-  count += condition->getTokens();
-  count += block->getTokens();
-
-  if (trailing)
-    count += trailing->getTokens();
-
-  return count;
-}
-
 } // namespace rust_compiler::ast

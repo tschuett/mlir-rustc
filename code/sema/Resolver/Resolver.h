@@ -64,8 +64,8 @@ class Resolver {
 public:
   Resolver() = delete;
   Resolver(std::string_view crateName)
-      : scopedPath(adt::CanonicalPath::newSegment(getNextNodeId(), crateName)) {
-  }
+      : scopedPath(adt::CanonicalPath::newSegment(getNextNodeId(), "crate",
+                                                  crateName)) {}
 
   ~Resolver() = default;
 

@@ -16,8 +16,6 @@ class TypeParam : public GenericParam {
 
 public:
   TypeParam(Location loc) : GenericParam(loc, GenericParamKind::TypeParam) {}
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

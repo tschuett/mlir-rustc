@@ -20,8 +20,6 @@ public:
   void setType(std::shared_ptr<ast::types::Type> type);
 
   std::shared_ptr<ast::types::Type> getType() const { return type; }
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

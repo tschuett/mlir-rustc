@@ -13,8 +13,6 @@ class TypeCastExpression : public OperatorExpression {
 public:
   TypeCastExpression(Location loc)
       : OperatorExpression(loc, OperatorExpressionKind::TypeCastExpression) {}
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

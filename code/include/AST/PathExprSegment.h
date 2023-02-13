@@ -18,8 +18,6 @@ class PathExprSegment : public Node {
 public:
   PathExprSegment(Location loc) : Node(loc), ident(loc) {}
 
-  size_t getTokens() override;
-
   void addIdentSegment(const PathIdentSegment& _ident) { ident = _ident; }
   void addGenerics(GenericArgs generic) { generics = generic; }
 

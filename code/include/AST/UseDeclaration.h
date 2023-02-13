@@ -14,12 +14,11 @@ class UseDeclaration : public VisItem {
   std::shared_ptr<use_tree::UseTree> tree;
 
 public:
-  UseDeclaration(rust_compiler::Location location)
-      : VisItem(location, VisItemKind::UseDeclaration){};
+  UseDeclaration(rust_compiler::Location location,
+                 std::optional<Visibility> vis)
+      : VisItem(location, VisItemKind::UseDeclaration, vis){};
 
   void setComponent(std::shared_ptr<use_tree::UseTree> tree);
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

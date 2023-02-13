@@ -13,8 +13,6 @@ class TupleFields : public Node {
 
 public:
   TupleFields(Location loc) : Node(loc) {}
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

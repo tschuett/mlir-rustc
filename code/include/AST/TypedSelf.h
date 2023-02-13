@@ -17,8 +17,6 @@ public:
 
   void setMut() { mut = true; }
   void setType(std::shared_ptr<ast::types::TypeExpression> _type) { type = _type; }
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

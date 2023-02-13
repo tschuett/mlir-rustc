@@ -16,10 +16,8 @@ class Enumeration : public VisItem {
   EnumItems enumItems;
 
 public:
-  Enumeration(Location loc)
-    : VisItem(loc, VisItemKind::Enumeration), enumItems(loc) {}
-
-  size_t getTokens() override;
+  Enumeration(Location loc, std::optional<Visibility> vis)
+    : VisItem(loc, VisItemKind::Enumeration, vis), enumItems(loc) {}
 };
 
 } // namespace rust_compiler::ast

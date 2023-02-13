@@ -21,7 +21,6 @@ public:
 
   PathIdentSegmentKind getKind() const { return kind; }
 
-   size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

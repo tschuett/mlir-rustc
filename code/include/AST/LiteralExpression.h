@@ -33,8 +33,6 @@ public:
 
   LiteralExpressionKind getLiteralKind() const { return kind; }
 
-  size_t getTokens() override;
-
   bool containsBreakExpression() override;
 
   std::string getValue() const { return value; }

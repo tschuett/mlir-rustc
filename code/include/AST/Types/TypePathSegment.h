@@ -17,8 +17,6 @@ class TypePathSegment final : public Node {
 
 public:
   TypePathSegment(Location loc) : Node(loc), pathIdentSegment(loc) {}
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast::types

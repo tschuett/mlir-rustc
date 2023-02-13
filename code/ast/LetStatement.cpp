@@ -8,23 +8,6 @@ namespace rust_compiler::ast {
 
 bool LetStatement::containsBreakExpression() { return false; }
 
-size_t LetStatement::getTokens() {
-  size_t count = 0;
-
-  ++count; // let
-
-  count += pat->getTokens();
-
-// FIXME
-//  if (type)
-//    count += 1 + type->getTokens();
-
-//  if (expr)
-//    count += 1 + expr->getTokens();
-
-  return count + 1;
-}
-
 void LetStatement::setPattern(
     std::shared_ptr<ast::patterns::PatternNoTopAlt> _pat) {
   pat = _pat;

@@ -10,10 +10,6 @@ void AssignmentExpression::setRight(std::shared_ptr<Expression> _right) {
   right = _right;
 }
 
-size_t AssignmentExpression::getTokens() {
-  return left->getTokens() + 1 + right->getTokens();
-}
-
 bool AssignmentExpression::containsBreakExpression() {
   if (left->containsBreakExpression())
     return true;

@@ -10,7 +10,6 @@ public:
   RestPattern(Location loc)
       : PatternWithoutRange(loc, PatternWithoutRangeKind::RestPattern) {}
 
-  size_t getTokens() override;
 
   std::vector<std::string> getLiterals() override;
 };

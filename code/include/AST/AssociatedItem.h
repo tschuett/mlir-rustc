@@ -4,7 +4,7 @@
 #include "AST/MacroInvocation.h"
 #include "AST/OuterAttribute.h"
 #include "AST/TypeAlias.h"
-#include "AST/VisItem.h"
+#include "AST/AST.h"
 #include "AST/Function.h"
 
 #include <optional>
@@ -19,14 +19,14 @@ enum class AssociatedItemKind {
   Function
 };
 
-class AssociatedItem : public VisItem {
+class AssociatedItem : public Node {
   std::vector<OuterAttribute> outerAtributes;
   AssociatedItemKind kind;
 
 public:
   AssociatedItem(Location loc,
                  AssociatedItemKind kind)
-      : VisItem(loc, VisItemKind::AssociatedItem), kind(kind) {}
+      : Node(loc), kind(kind) {}
 
   AssociatedItemKind getKind() const;
 };
@@ -35,7 +35,7 @@ class AssociatedItemMacroInvocation : public AssociatedItem {
   MacroInvocation macroInvocation;
 
 public:
-  AssociatedItemMacroInvocation(Location loc)
+  AssociatedItemMacroInvocation(Location loc, std::optional<Visibility> vis)
       : AssociatedItem(loc, AssociatedItemKind::MacroInvocation),
         macroInvocation(loc) {}
 };
@@ -44,18 +44,18 @@ class AssociatedItemTypeAlias : public AssociatedItem {
   TypeAlias typeAlias;
 
 public:
-  AssociatedItemTypeAlias(Location loc)
+  AssociatedItemTypeAlias(Location loc, std::optional<Visibility> vis)
       : AssociatedItem(loc, AssociatedItemKind::TypeAlias),
-        typeAlias(loc) {}
+        typeAlias(loc, vis) {}
 };
 
 class AssociatedItemConstantItem : public AssociatedItem {
   ConstantItem constantItem;
 
 public:
-  AssociatedItemConstantItem(Location loc)
+  AssociatedItemConstantItem(Location loc, std::optional<Visibility> vis)
       : AssociatedItem(loc, AssociatedItemKind::ConstantItem),
-        constantItem(loc) {}
+        constantItem(loc, vis) {}
 };
 
 class AssociatedItemFunction : public AssociatedItem {

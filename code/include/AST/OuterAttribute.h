@@ -14,8 +14,6 @@ public:
   OuterAttribute(Location loc) : Node(loc), attr(loc) {}
 
   SimplePath getPath() const;
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

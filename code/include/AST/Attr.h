@@ -14,7 +14,6 @@ class Attr : public Node {
 public:
  Attr(Location loc) : Node(loc), path(loc) {}
 
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

@@ -13,7 +13,6 @@ class GenericArgsBinding : public Node {
   std::shared_ptr<types::Type> type;
 
 public:
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

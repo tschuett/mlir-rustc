@@ -26,8 +26,6 @@ public:
   void setTrailing(std::shared_ptr<ast::Expression> block);
 
   bool containsBreakExpression() override;
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

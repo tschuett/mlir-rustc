@@ -17,8 +17,6 @@ public:
   IteratorLoopExpression(Location loc)
       : LoopExpression(loc, LoopExpressionKind::IteratorLoopExpression){};
 
-  size_t getTokens() override;
-
   bool containsBreakExpression() override;
 };
 

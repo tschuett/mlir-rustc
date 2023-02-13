@@ -6,7 +6,6 @@ namespace rust_compiler::ast {
 
 class GenericArgs : public Node {
 public:
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

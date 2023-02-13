@@ -17,7 +17,6 @@ namespace rust_compiler::ast {
 enum class ModuleKind { Module, ModuleTree };
 
 class Module : public VisItem {
-  Visibility vis;
   ModuleKind kind;
   bool unsafe;
   std::string identifier;
@@ -25,23 +24,20 @@ class Module : public VisItem {
   std::vector<std::shared_ptr<Item>> items;
 
 public:
-  Module(rust_compiler::Location loc, ModuleKind kind)
-      : VisItem(loc, VisItemKind::Module), vis(loc, VisibilityKind::Private),
+  Module(rust_compiler::Location loc, std::optional<Visibility> vis, ModuleKind kind,
+         std::string_view modName)
+    : VisItem(loc, VisItemKind::Module, vis),
         kind(kind){};
 
   ModuleKind getModuleKind() const { return kind; }
   std::string_view getModuleName() const { return identifier; }
-  void setVisibility(Visibility vis);
 
   void addItem(std::shared_ptr<Item> item);
 
   // void addFunction(std::shared_ptr<Function> func);
 
-  size_t getTokens() override;
-
   std::span<std::shared_ptr<Item>> getItems();
   void setItems(std::span<std::shared_ptr<Item>> items);
-
 };
 
 } // namespace rust_compiler::ast

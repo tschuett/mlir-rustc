@@ -10,8 +10,6 @@ class ArrayElements : public Node {
   // FIXME
 public:
   ArrayElements(Location loc) : Node(loc) {}
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

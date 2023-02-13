@@ -11,8 +11,8 @@ class Implementation : public VisItem {
 
 public:
   Implementation(ImplementationKind kind,
-                 Location loc)
-      : VisItem(loc, VisItemKind::Implementation), kind(kind) {}
+                 Location loc, std::optional<Visibility> vis)
+    : VisItem(loc, VisItemKind::Implementation, vis), kind(kind) {}
 
   ImplementationKind getKind() const { return kind; }
 };

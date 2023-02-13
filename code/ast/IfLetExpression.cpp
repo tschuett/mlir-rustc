@@ -26,6 +26,5 @@ bool IfLetExpression::containsBreakExpression() {
     return trailing->containsBreakExpression();
 }
 
-size_t IfLetExpression::getTokens() { assert(false); }
 
 } // namespace rust_compiler::ast

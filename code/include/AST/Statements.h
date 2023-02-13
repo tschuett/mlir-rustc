@@ -34,8 +34,6 @@ public:
 
   bool containsBreakExpression();
 
-  size_t getTokens() override;
-
   std::shared_ptr<ast::types::Type> getType();
 };
 

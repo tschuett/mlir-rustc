@@ -14,8 +14,8 @@ class Union : public VisItem {
   StructFields fields;
 
 public:
-  Union(Location loc)
-    : VisItem(loc, VisItemKind::Union), fields(loc) {}
+  Union(Location loc, std::optional<Visibility> vis)
+    : VisItem(loc, VisItemKind::Union, vis), fields(loc) {}
 };
 
 } // namespace rust_compiler::ast

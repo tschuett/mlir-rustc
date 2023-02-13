@@ -20,7 +20,6 @@ public:
 
   size_t getLength() const;
   
-  size_t getTokens() override;
 
   std::string toString();
 };

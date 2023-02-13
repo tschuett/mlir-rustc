@@ -18,8 +18,6 @@ public:
   explicit SimplePathNode(Location loc) : UseTree(loc), path(loc) {}
 
   void setSimplePath(SimplePath path);
-
-  size_t getTokens() override;
 };
 
 /// { ... }
@@ -29,7 +27,6 @@ class PathList : public UseTree {
 public:
   explicit PathList(Location loc) : UseTree(loc) {}
 
-  size_t getTokens() override;
 
   void addTree(std::shared_ptr<UseTree> tree);
 };
@@ -38,7 +35,6 @@ class Star : public UseTree {
 public:
   explicit Star(Location loc) : UseTree(loc) {}
 
-  size_t getTokens() override;
 };
 
 /// :: *
@@ -46,15 +42,12 @@ class DoubleColonStar : public UseTree {
 public:
   explicit DoubleColonStar(Location loc) : UseTree(loc) {}
 
-  size_t getTokens() override;
 };
 
 /// SimplePath :: *
 class SimplePathDoubleColonStar : public UseTree {
 public:
   explicit SimplePathDoubleColonStar(Location loc) : UseTree(loc) {}
-
-  size_t getTokens() override;
 
   void setPath(SimplePath path);
 };
@@ -66,8 +59,6 @@ class SimplePathDoubleColonWithPathList : public UseTree {
 public:
   explicit SimplePathDoubleColonWithPathList(Location loc) : UseTree(loc), list(loc) {}
 
-  size_t getTokens() override;
-
   void setPathList(PathList list);
 };
 
@@ -78,8 +69,6 @@ class DoubleColonWithPathList : public UseTree {
 public:
   explicit DoubleColonWithPathList(Location loc) : UseTree(loc), list(loc) {}
 
-  size_t getTokens() override;
-
   // void append(SimplePath path);
 };
 
@@ -88,7 +77,6 @@ class Rebinding : public UseTree {
 public:
   explicit Rebinding(Location loc) : UseTree(loc) {}
 
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast::use_tree

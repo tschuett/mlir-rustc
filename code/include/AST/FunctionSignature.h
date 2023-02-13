@@ -51,8 +51,6 @@ public:
   void setWhereClause(std::shared_ptr<WhereClause> where);
 
   void setVisibility(Visibility _vis) { vis = _vis; }
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

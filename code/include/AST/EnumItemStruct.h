@@ -13,8 +13,6 @@ class EnumItemStruct : public Node {
 
 public:
   EnumItemStruct(Location loc) : Node(loc) {}
-
-  size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast

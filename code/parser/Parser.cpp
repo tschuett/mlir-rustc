@@ -1,10 +1,13 @@
 #include "Parser/Parser.h"
 
+#include "AST/Module.h"
 #include "AST/Visiblity.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 
 #include <vector>
+
+using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
@@ -19,7 +22,7 @@ llvm::Expected<std::vector<std::shared_ptr<ast::Item>>> Parser::parseItems() {
 }
 
 llvm::Expected<std::shared_ptr<ast::VisItem>> Parser::parseVisItem() {
-  ast::Visibility vis = {getLocation(), ast::VisibilityKind::Private};
+  std::optional<ast::Visibility> vis;
 
   if (checkKeyWord(lexer::KeyWordKind::KW_PUB)) {
     // FIXME
@@ -82,6 +85,33 @@ llvm::Expected<std::shared_ptr<ast::VisItem>> Parser::parseVisItem() {
     return parseExternBlock(vis);
   }
   // complete?
+}
+
+llvm::Expected<std::shared_ptr<ast::VisItem>>
+Parser::parseMod(std::optional<ast::Visibility> vis) {
+
+  Location loc = getLocation();
+
+  if (checkKeyWord(lexer::KeyWordKind::KW_MOD) &&
+      check(lexer::TokenKind::Identifier, 1) &&
+      check(lexer::TokenKind::Semi, 2)) {
+    // mod foo;
+    assert(eatKeyWord(lexer::KeyWordKind::KW_MOD));
+    Token token = getToken();
+    std::string modName = token.getIdentifier();
+    assert(eat(lexer::TokenKind::Identifier));
+    assert(eat(lexer::TokenKind::Semi));
+
+    return std::make_shared<ast::Module>(loc, ast::ModuleKind::Module, modName, vis);
+  }
+
+  if (checkKeyWord(lexer::KeyWordKind::KW_MOD) &&
+      check(lexer::TokenKind::Identifier, 1) &&
+      check(lexer::TokenKind::BraceOpen, 2)) {
+    // mod foo {}
+  }
+
+  // error
 }
 
 } // namespace rust_compiler::parser

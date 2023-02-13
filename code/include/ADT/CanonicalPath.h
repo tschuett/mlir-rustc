@@ -2,6 +2,7 @@
 
 #include "Basic/Ids.h"
 
+#include <span>
 #include <string>
 #include <vector>
 
@@ -15,14 +16,17 @@ namespace rust_compiler::adt {
 
 class CanonicalPath {
   std::vector<std::pair<basic::NodeId, std::string>> segments;
-  basic::CrateNum crateNum;
+  std::string crateName;
 
 public:
-  static CanonicalPath newSegment(basic::NodeId id, std::string_view path) {
+  static CanonicalPath newSegment(basic::NodeId id, std::string_view path,
+                                  std::string_view crateName) {
     assert(!path.empty());
     return CanonicalPath({std::pair<basic::NodeId, std::string>(id, path)},
-                         basic::UNKNOWN_CREATENUM);
+                         crateName);
   }
+
+  std::string_view getCrateName() const { return crateName; }
 
   std::string asString() const {
     std::string buf;
@@ -37,13 +41,13 @@ public:
   CanonicalPath append(const CanonicalPath &other) const {
     assert(!other.isEmpty());
     if (isEmpty())
-      return CanonicalPath(other.segments, crateNum);
+      return CanonicalPath(other.segments, crateName);
 
     std::vector<std::pair<basic::NodeId, std::string>> copy(segments);
     for (auto &s : other.segments)
       copy.push_back(s);
 
-    return CanonicalPath(copy, crateNum);
+    return CanonicalPath(copy, crateName);
   }
 
   bool isEmpty() const { return segments.size() == 0; }
@@ -51,8 +55,8 @@ public:
 private:
   explicit CanonicalPath(
       std::vector<std::pair<basic::NodeId, std::string>> path,
-      basic::CrateNum crateNum)
-      : segments(path), crateNum(crateNum) {}
+      std::string_view crateName)
+      : segments(path), crateName(crateName) {}
 
   friend ScopedCanonicalPath;
 };

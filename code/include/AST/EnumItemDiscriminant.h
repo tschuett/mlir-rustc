@@ -9,8 +9,6 @@ class EnumItemDiscriminant : public Node {
   std::shared_ptr<Expression> expr;
 public:
   EnumItemDiscriminant(Location loc) : Node(loc) {}
-
-  size_t getTokens() override;
 };
 
 }; // namespace rust_compiler::ast

@@ -14,8 +14,6 @@ public:
   LabelBlockExpression(Location loc)
       : LoopExpression(loc, LoopExpressionKind::LabelBlockExpression){};
 
-  size_t getTokens() override;
-
   bool containsBreakExpression() override;
 };
 

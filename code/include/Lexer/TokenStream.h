@@ -17,6 +17,8 @@ public:
   void print(unsigned limit);
 
   size_t getLength() const { return tokens.size(); }
+
+  Token getAt(size_t);
 };
 
 } // namespace rust_compiler::lexer

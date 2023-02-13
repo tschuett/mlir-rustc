@@ -14,8 +14,6 @@ class TypePathFnInputs final : public Node {
 
 public:
   TypePathFnInputs(Location loc) : Node(loc) {}
-
-   size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast::types

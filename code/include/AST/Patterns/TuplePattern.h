@@ -17,7 +17,6 @@ public:
 
   void add(std::shared_ptr<ast::patterns::TuplePatternItems> its);
 
-  size_t getTokens() override;
 
   std::vector<std::string> getLiterals() override;
 };

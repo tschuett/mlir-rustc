@@ -14,8 +14,8 @@ class Function : public VisItem {
   FunctionQualifiers qualifiers;
 
 public:
-  Function(Location loc)
-      : VisItem(loc, VisItemKind::Function), signature(loc),
+  Function(Location loc, std::optional<Visibility> vis)
+    : VisItem(loc, VisItemKind::Function, vis), signature(loc),
         qualifiers(loc) {}
 
   const FunctionSignature &getSignature() const;
@@ -24,8 +24,6 @@ public:
   bool hasBody() const;
 
   std::shared_ptr<BlockExpression> getBody();
-
-  size_t getTokens() override;
 
   void setSignature(FunctionSignature nature);
 

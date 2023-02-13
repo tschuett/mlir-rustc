@@ -1,7 +1,5 @@
 add_library(ast
-           OuterAttribute.cpp
            Module.cpp
-           InnerAttribute.cpp
            UseDeclaration.cpp
            FunctionSignature.cpp
            Function.cpp
@@ -53,7 +51,6 @@ add_library(ast
            Crate.cpp
            ASTVisitor.cpp
            PathIdentSegment.cpp
-           Attr.cpp
            )
 
 

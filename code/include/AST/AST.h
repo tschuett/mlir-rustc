@@ -15,7 +15,6 @@ class Node {
 public:
   explicit Node(Location location) : location(location) {}
   virtual ~Node() = default;
-  virtual size_t getTokens() = 0;
 
   rust_compiler::Location getLocation() const { return location; }
 };

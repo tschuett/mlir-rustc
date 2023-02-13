@@ -42,9 +42,6 @@ public:
 
   bool containsBreakExpression() override;
 
-  size_t getTokens() override {
-    return left->getTokens() + 1 + right->getTokens();
-  }
 };
 
 } // namespace rust_compiler::ast

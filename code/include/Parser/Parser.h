@@ -13,7 +13,6 @@
 #include "Location.h"
 
 #include <llvm/Support/Error.h>
-
 #include <string_view>
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_parse/parser/struct.Parser.html#method.new
@@ -21,6 +20,8 @@ namespace rust_compiler::parser {
 
 class Parser {
   lexer::TokenStream ts;
+
+  size_t offset = 0;
 
   rust_compiler::Location getLocation();
 
@@ -35,27 +36,30 @@ public:
   llvm::Expected<std::shared_ptr<ast::VisItem>> parseVisItem();
 
   /// VisItems
-  llvm::Expected<std::shared_ptr<ast::VisItem>> parseMod(ast::Visibility vis);
   llvm::Expected<std::shared_ptr<ast::VisItem>>
-  parseUseDeclaration(ast::Visibility vis);
+  parseMod(std::optional<ast::Visibility> vis);
   llvm::Expected<std::shared_ptr<ast::VisItem>>
-  parseTypeAlias(ast::Visibility vis);
+  parseUseDeclaration(std::optional<ast::Visibility> vis);
   llvm::Expected<std::shared_ptr<ast::VisItem>>
-  parseEnumeration(ast::Visibility vis);
-  llvm::Expected<std::shared_ptr<ast::VisItem>> parseUnion(ast::Visibility vis);
+  parseTypeAlias(std::optional<ast::Visibility> vis);
   llvm::Expected<std::shared_ptr<ast::VisItem>>
-  parseStaticItem(ast::Visibility vis);
-  llvm::Expected<std::shared_ptr<ast::VisItem>> parseTrait(ast::Visibility vis);
+  parseEnumeration(std::optional<ast::Visibility> vis);
   llvm::Expected<std::shared_ptr<ast::VisItem>>
-  parseFunction(ast::Visibility vis);
+  parseUnion(std::optional<ast::Visibility> vis);
   llvm::Expected<std::shared_ptr<ast::VisItem>>
-  parseConstantItem(ast::Visibility vis);
+  parseStaticItem(std::optional<ast::Visibility> vis);
   llvm::Expected<std::shared_ptr<ast::VisItem>>
-  parseExternBlock(ast::Visibility vis);
+  parseTrait(std::optional<ast::Visibility> vis);
   llvm::Expected<std::shared_ptr<ast::VisItem>>
-  parseStruct(ast::Visibility vis);
+  parseFunction(std::optional<ast::Visibility> vis);
   llvm::Expected<std::shared_ptr<ast::VisItem>>
-  parseImplementation(ast::Visibility vis);
+  parseConstantItem(std::optional<ast::Visibility> vis);
+  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  parseExternBlock(std::optional<ast::Visibility> vis);
+  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  parseStruct(std::optional<ast::Visibility> vis);
+  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  parseImplementation(std::optional<ast::Visibility> vis);
 
   llvm::Expected<std::vector<ast::OuterAttribute>> parseOuterAttributes();
 
@@ -67,7 +71,8 @@ public:
 
   llvm::Expected<std::vector<std::shared_ptr<ast::Item>>> parseItems();
 
-  llvm::Expected<std::shared_ptr<ast::Crate>> parseCrateModule(std::string_view crateName);
+  llvm::Expected<std::shared_ptr<ast::Crate>>
+  parseCrateModule(std::string_view crateName);
 
 private:
   bool check(lexer::TokenKind token);
@@ -78,6 +83,8 @@ private:
 
   bool eat(lexer::TokenKind token);
   bool eatKeyWord(lexer::KeyWordKind keyword);
+
+  lexer::Token getToken();
 };
 
 } // namespace rust_compiler::parser

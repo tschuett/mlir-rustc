@@ -1,11 +1,11 @@
 #pragma once
 
-#include "AST/VisItem.h"
-#include "Location.h"
-#include "AST/WhereClause.h"
 #include "AST/GenericParams.h"
-#include "AST/Types/Types.h"
 #include "AST/Types/TypeParamBounds.h"
+#include "AST/Types/Types.h"
+#include "AST/VisItem.h"
+#include "AST/WhereClause.h"
+#include "Location.h"
 
 #include <optional>
 
@@ -21,8 +21,8 @@ class TypeAlias : public VisItem {
   std::optional<std::shared_ptr<types::Type>> type;
 
 public:
-  TypeAlias(Location loc)
-      : VisItem(loc, VisItemKind::TypeAlias) {}
+  TypeAlias(Location loc, std::optional<Visibility> vis)
+      : VisItem(loc, VisItemKind::TypeAlias, vis) {}
 };
 
 } // namespace rust_compiler::ast

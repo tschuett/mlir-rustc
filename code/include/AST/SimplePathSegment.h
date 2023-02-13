@@ -15,8 +15,6 @@ public:
   SimplePathSegment(Location loc, std::string_view segment)
       : Node(loc), segment(segment){};
 
-  size_t getTokens() override;
-
   std::string getSegment() const { return segment; }
 };
 
