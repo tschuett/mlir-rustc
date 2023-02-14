@@ -30,9 +30,9 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::ThinArrow: {
     return std::string("->");
   }
-  case TokenKind::LessThan: {
-    return std::string("<");
-  }
+//  case TokenKind::LessThan: {
+//    return std::string("<");
+//  }
 //  case TokenKind::DoubleGreaterThan: {
 //    return std::string(">>");
 //  }

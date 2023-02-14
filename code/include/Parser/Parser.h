@@ -1,6 +1,8 @@
 #pragma once
 
 #include "AST/Crate.h"
+#include "AST/EnumItem.h"
+#include "AST/EnumItems.h"
 #include "AST/Function.h"
 #include "AST/OuterAttribute.h"
 #include "AST/TypeAlias.h"
@@ -62,17 +64,55 @@ public:
   parseImplementation(std::optional<ast::Visibility> vis);
 
   llvm::Expected<std::vector<ast::OuterAttribute>> parseOuterAttributes();
+  llvm::Expected<std::vector<ast::InnerAttribute>> parseInnerAttributes();
+
+  llvm::Expected<ast::OuterAttribute> parseOuterAttribute();
+  llvm::Expected<ast::InnerAttribute> parseInnerAttribute();
 
   // Function
   llvm::Expected<ast::FunctionQualifiers> parseFunctionQualifiers();
   llvm::Expected<std::shared_ptr<ast::BlockExpression>> parseFunctionBody();
   llvm::Expected<ast::FunctionSignature> parseFunctionsignature();
   llvm::Expected<ast::FunctionParam> parseFunctionParam();
+  llvm::Expected<ast::FunctionParameters> parseFunctionParameters();
+  llvm::Expected<ast::FunctionParamPattern> parseFunctionParamPattern();
+
+  // Types
+  llvm::Expected<ast::types::TypeExpression> parseType();
 
   llvm::Expected<std::vector<std::shared_ptr<ast::Item>>> parseItems();
 
   llvm::Expected<std::shared_ptr<ast::Crate>>
   parseCrateModule(std::string_view crateName);
+
+  // Patterns
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parsePatternNoTopAlt();
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseReferencePattern();
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseRestPattern();
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseWildCardPattern();
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseTupleOrGroupedPattern();
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseSlicePattern();
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parsePatternWithoutRange();
+
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseRangePattern();
+
+  // Expressions
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseExpression();
+  llvm::Expected<std::shared_ptr<ast::BlockExpression>> parseBlockExpression();
+
+  llvm::Expected<std::shared_ptr<ast::GenericParams>> parseGenericParams();
+  llvm::Expected<std::shared_ptr<ast::WhereClause>> parseWhereClause();
+
+  llvm::Expected<std::shared_ptr<ast::EnumItems>> parseEnumItems();
+  llvm::Expected<std::shared_ptr<ast::EnumItem>> parseEnumItem();
 
 private:
   bool check(lexer::TokenKind token);
@@ -80,6 +120,8 @@ private:
   bool checkKeyWord(lexer::KeyWordKind keyword);
   bool checkKeyWord(lexer::KeyWordKind keyword, size_t offset);
   bool checkInKeyWords(std::span<lexer::KeyWordKind> keywords);
+
+  bool checkOuterAttribute();
 
   bool eat(lexer::TokenKind token);
   bool eatKeyWord(lexer::KeyWordKind keyword);

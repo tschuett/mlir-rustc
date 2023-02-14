@@ -36,7 +36,7 @@ enum class TokenKind {
   DoubleColon,
   Colon,
   ThinArrow,
-  LessThan,
+  //LessThan,
   // DoubleGreaterThan,
   // GreaterThan,
   Eq,
@@ -75,13 +75,14 @@ enum class TokenKind {
   Shl,
   Shr,
   DotDot,
+  DotDotDot,
   Lt,
   EqEq,
   Ne,
   Gt,
   Ge,
-  Le
-
+  Le,
+  Underscore
 };
 
 class Token {

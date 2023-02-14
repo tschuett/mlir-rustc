@@ -485,7 +485,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       columnNumber += 2;
     } else if (code.starts_with("<")) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::LessThan));
+                      TokenKind::Le));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("::")) {

@@ -11,6 +11,20 @@ using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
+bool Parser::check(lexer::TokenKind token) {
+  return ts.getAt(offset).getKind() == token;
+}
+
+bool Parser::check(lexer::TokenKind token, size_t _offset) {
+  return ts.getAt(offset + _offset).getKind() == token;
+}
+
+bool Parser::checkKeyWord(lexer::KeyWordKind keyword) {
+  if (ts.getAt(offset).getKind() == TokenKind::Keyword)
+    return ts.getAt(offset).getKeyWordKind() == keyword;
+  return false;
+}
+
 llvm::Expected<std::vector<std::shared_ptr<ast::Item>>> Parser::parseItems() {
   if (check(lexer::TokenKind::Hash) && check(lexer::TokenKind::Not, 1) &&
       check(lexer::TokenKind::SquareOpen, 2)) {
@@ -113,6 +127,29 @@ Parser::parseMod(std::optional<ast::Visibility> vis) {
   }
 
   // error
+}
+
+llvm::Expected<std::shared_ptr<ast::Crate>>
+Parser::parseCrateModule(std::string_view crateName) {
+  assert(false);
+  Location loc = getLocation();
+
+  llvm::Expected<std::vector<ast::InnerAttribute>> innerAttributes =
+      parseInnerAttributes();
+  if (auto e = innerAttributes.takeError()) {
+    llvm::errs() << "failed to parse inner attributes: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  // parseInnerAttributes
+
+  llvm::Expected<std::vector<std::shared_ptr<ast::Item>>> items = parseItems();
+  if (auto e = items.takeError()) {
+    llvm::errs() << "failed to parse items: " << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  // parseItems
 }
 
 } // namespace rust_compiler::parser
