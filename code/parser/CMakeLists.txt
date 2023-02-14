@@ -6,6 +6,9 @@ add_library(parser
            PatternNoTopAlt.cpp
            Expression.cpp
            Enumeration.cpp
+           Closure.cpp
+           Types.cpp
+           Statement.cpp
            )
 
 

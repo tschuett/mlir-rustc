@@ -77,8 +77,8 @@ public:
 
 private:
   mlir::func::FuncOp emitFun(std::shared_ptr<ast::Function> f);
-  mlir::func::FuncOp buildFunctionSignature(ast::FunctionSignature sig,
-                                            mlir::Location locaction);
+//  mlir::func::FuncOp buildFunctionSignature(ast::FunctionSignature sig,
+//                                            mlir::Location locaction);
   std::optional<mlir::Value>
   emitBlockExpression(std::shared_ptr<ast::BlockExpression> blk);
 

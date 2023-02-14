@@ -2,14 +2,15 @@
 
 #include "AST/AST.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
-#include "AST/Types/Types.h"
+#include "AST/Types/TypeExpression.h"
 
 #include <memory>
+#include <optional>
 
 namespace rust_compiler::ast {
 
 class FunctionParamPattern : public Node {
-  std::shared_ptr<ast::types::Type> type;
+  std::optional<std::shared_ptr<ast::types::TypeExpression>> type;
   std::shared_ptr<ast::patterns::PatternNoTopAlt> name;
 
 public:
@@ -17,9 +18,7 @@ public:
 
   void setName(std::shared_ptr<ast::patterns::PatternNoTopAlt> name);
 
-  void setType(std::shared_ptr<ast::types::Type> type);
-
-  std::shared_ptr<ast::types::Type> getType() const { return type; }
+  void setType(std::shared_ptr<ast::types::TypeExpression> type);
 };
 
 } // namespace rust_compiler::ast

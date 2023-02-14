@@ -25,6 +25,30 @@ bool Parser::checkKeyWord(lexer::KeyWordKind keyword) {
   return false;
 }
 
+bool Parser::eatKeyWord(lexer::KeyWordKind keyword) {
+  if (checkKeyWord(keyword)) {
+    ++offset;
+    return true;
+  }
+  ++offset;
+  return false;
+}
+
+bool Parser::eat(lexer::TokenKind token) {
+  if (check(token)) {
+    ++offset;
+    return true;
+  }
+  ++offset;
+  return false;
+}
+
+rust_compiler::Location Parser::getLocation() {
+  return ts.getAt(offset).getLocation();
+}
+
+lexer::Token Parser::getToken() { return ts.getAt(offset); }
+
 llvm::Expected<std::vector<std::shared_ptr<ast::Item>>> Parser::parseItems() {
   if (check(lexer::TokenKind::Hash) && check(lexer::TokenKind::Not, 1) &&
       check(lexer::TokenKind::SquareOpen, 2)) {

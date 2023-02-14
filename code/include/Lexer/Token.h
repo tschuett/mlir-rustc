@@ -32,13 +32,12 @@ enum class IntegerKind {
 enum class FloatKind { F32, F64 };
 
 enum class TokenKind {
-  DecLiteral,
   DoubleColon,
   Colon,
-  ThinArrow,
-  //LessThan,
-  // DoubleGreaterThan,
-  // GreaterThan,
+  RArrow,
+  // LessThan,
+  //  DoubleGreaterThan,
+  //  GreaterThan,
   Eq,
   Dot,
   QMark,
@@ -71,6 +70,8 @@ enum class TokenKind {
   And,
   AndAnd,
   Or,
+  OrOr,
+  PathSep,
   Caret,
   Shl,
   Shr,
@@ -82,7 +83,21 @@ enum class TokenKind {
   Gt,
   Ge,
   Le,
-  Underscore
+  Underscore,
+  LIFETIME_TOKEN,
+  LIFETIME_OR_LABEL,
+  CHAR_LITERAL,
+  QUOTE_ESCAPE,
+  ASCII_ESCAPE,
+  UNICODE_ESCAPE,
+  STRING_LITERAL,
+  RAW_STRING_LITERAL,
+  BYTE_LITERAL,
+  BYTE_STRING_LITERAL,
+  RAW_BYTE_STRING_LITERAL,
+  INTEGER_LITERAL,
+  FLOAT_LITERAL,
+  RESERVED_NUMBER, Eof
 };
 
 class Token {

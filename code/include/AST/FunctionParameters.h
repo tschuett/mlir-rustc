@@ -18,6 +18,8 @@ public:
 
   std::vector<FunctionParam> getParams() { return params; }
 
+    void addSelfParam(ast::SelfParam selfParam);
+
   void addFunctionParam(ast::FunctionParam param);
 
   size_t getTokens();

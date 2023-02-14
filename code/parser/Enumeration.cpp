@@ -29,14 +29,15 @@ Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
 
   if (check(TokenKind::Lt)) {
     // GenericParams
-    llvm::Expected<std::shared_ptr<ast::GenericParams>> genericParams =
+    llvm::Expected<ast::GenericParams> genericParams =
         parseGenericParams();
   }
 
   if (checkKeyWord(KeyWordKind::KW_WHERE)) {
     // where clause
-    llvm::Expected<std::shared_ptr<ast::WhereClause>> whereClasue =
+    llvm::Expected<ast::WhereClause> whereClasue =
         parseWhereClause();
+    // check error
   }
 
   if (!check(TokenKind::BraceOpen)) {

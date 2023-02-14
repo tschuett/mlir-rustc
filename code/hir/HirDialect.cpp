@@ -1,13 +1,14 @@
 #include "Hir/HirDialect.h"
 
+#include "Hir/HirEnum.h"
 #include "Hir/HirInterfaces.h"
 #include "Hir/HirOps.h"
 #include "Hir/HirStruct.h"
-#include "Hir/HirEnum.h"
 
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/WithColor.h>
 #include <mlir/Dialect/Arith/IR/Arith.h>
+#include <mlir/Dialect/ControlFlow/IR/ControlFlow.h>
 #include <mlir/IR/BlockAndValueMapping.h>
 #include <mlir/IR/Builders.h>
 #include <mlir/IR/BuiltinTypes.h>

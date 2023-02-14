@@ -18,16 +18,13 @@ bool Token::isAs() const { return kind == TokenKind::Keyword && id == "as"; }
 
 std::string Token2String(TokenKind kind) {
   switch (kind) {
-  case TokenKind::DecLiteral: {
-    return std::string("DecLiteral");
-  }
   case TokenKind::DoubleColon: {
     return std::string("::");
   }
   case TokenKind::Colon: {
     return std::string(":");
   }
-  case TokenKind::ThinArrow: {
+  case TokenKind::RArrow: {
     return std::string("->");
   }
 //  case TokenKind::LessThan: {

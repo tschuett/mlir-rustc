@@ -4,8 +4,16 @@
 #include "AST/EnumItem.h"
 #include "AST/EnumItems.h"
 #include "AST/Function.h"
+#include "AST/FunctionParam.h"
+#include "AST/FunctionParamPattern.h"
+#include "AST/FunctionParameters.h"
 #include "AST/OuterAttribute.h"
+#include "AST/Patterns/PatternNoTopAlt.h"
+#include "AST/SelfParam.h"
+#include "AST/Statements.h"
 #include "AST/TypeAlias.h"
+#include "AST/Types/TraitBound.h"
+#include "AST/Types/TypeParamBounds.h"
 #include "AST/UseTree.h"
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
@@ -71,14 +79,36 @@ public:
 
   // Function
   llvm::Expected<ast::FunctionQualifiers> parseFunctionQualifiers();
-  llvm::Expected<std::shared_ptr<ast::BlockExpression>> parseFunctionBody();
-  llvm::Expected<ast::FunctionSignature> parseFunctionsignature();
+  // llvm::Expected<ast::FunctionSignature> parseFunctionsignature();
   llvm::Expected<ast::FunctionParam> parseFunctionParam();
   llvm::Expected<ast::FunctionParameters> parseFunctionParameters();
   llvm::Expected<ast::FunctionParamPattern> parseFunctionParamPattern();
+  llvm::Expected<ast::SelfParam> parseSelfParam();
+
+  llvm::Expected<ast::Statements> parseStatements();
 
   // Types
-  llvm::Expected<ast::types::TypeExpression> parseType();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseType();
+  llvm::Expected<ast::types::TypeParamBounds> parseTypeParamBounds();
+  llvm::Expected<ast::types::TraitBound> parseTraitBound();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseBareFunctionType();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseQualifiedPathInType();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseRawPointerType();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseNeverType();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseReferenceType();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseInferredType();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseTraitObjectType();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseImplType();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseArrayOrSliceType();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseTupleOrParensType();
 
   llvm::Expected<std::vector<std::shared_ptr<ast::Item>>> parseItems();
 
@@ -107,12 +137,18 @@ public:
   // Expressions
   llvm::Expected<std::shared_ptr<ast::Expression>> parseExpression();
   llvm::Expected<std::shared_ptr<ast::BlockExpression>> parseBlockExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+  parseExpressionWithoutBlock();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseClosureExpression();
 
-  llvm::Expected<std::shared_ptr<ast::GenericParams>> parseGenericParams();
-  llvm::Expected<std::shared_ptr<ast::WhereClause>> parseWhereClause();
+  llvm::Expected<ast::GenericParams> parseGenericParams();
+  llvm::Expected<ast::WhereClause> parseWhereClause();
 
   llvm::Expected<std::shared_ptr<ast::EnumItems>> parseEnumItems();
   llvm::Expected<std::shared_ptr<ast::EnumItem>> parseEnumItem();
+
+  // statements
+  llvm::Expected<std::shared_ptr<ast::Statement>> parseLetStatement();
 
 private:
   bool check(lexer::TokenKind token);
@@ -122,6 +158,15 @@ private:
   bool checkInKeyWords(std::span<lexer::KeyWordKind> keywords);
 
   bool checkOuterAttribute();
+
+  bool checkLoopLabel();
+
+  bool checkLiteral();
+
+  /// super | self | Self | crate | $crate
+  bool checkSuperSelf();
+
+  bool checkSelfParam();
 
   bool eat(lexer::TokenKind token);
   bool eatKeyWord(lexer::KeyWordKind keyword);

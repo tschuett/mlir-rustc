@@ -11,7 +11,7 @@ class ForLifetimes : public Node {
   GenericParams genericParams;
 
 public:
-  ForLifetimes(Location loc) : Node(loc) {}
+  ForLifetimes(Location loc) : Node(loc), genericParams(loc) {}
 };
 
 } // namespace rust_compiler::ast::types

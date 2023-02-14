@@ -8,8 +8,68 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<ast::FunctionParameters> Parser::parseFunctionParameters() {
+llvm::Expected<ast::SelfParam> Parser::parseSelfParam() {
+  if(checkOuterAttribute()) {
+  }
+}
 
+bool Parser::checkSelfParam() {
+  if (check(TokenKind::And)) {
+    return true;
+  } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
+    return true;
+  } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
+    return true;
+  }
+  return false;
+}
+
+llvm::Expected<ast::FunctionParameters> Parser::parseFunctionParameters() {
+  Location loc = getLocation();
+
+  ast::FunctionParameters parameters = {loc};
+
+  if (checkSelfParam()) {
+    llvm::Expected<ast::SelfParam> selfParam = parseSelfParam();
+    if (auto e = selfParam.takeError()) {
+      llvm::errs() << "failed to parse self param: " << toString(std::move(e))
+                   << "\n";
+      exit(EXIT_FAILURE);
+    }
+    parameters.addSelfParam(*selfParam);
+    if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
+      assert(eat(TokenKind::Comma));
+      return parameters;
+    } else if (check(TokenKind::ParenClose)) {
+      return parameters;
+    } else {
+      // continue
+      while (true) {
+      }
+    }
+  } else {
+    // no self param
+    while (true) {
+      if (check(TokenKind::Eof)) {
+        llvm::errs() << "unexpected EOF"
+                     << "\n";
+        exit(EXIT_FAILURE);
+      } else if (check(TokenKind::ParenClose)) {
+        return parameters;
+      } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
+        assert(eat(TokenKind::Comma));
+        return parameters;
+      } else {
+        llvm::Expected<ast::FunctionParam> param = parseFunctionParam();
+        if (auto e = param.takeError()) {
+          llvm::errs() << "failed to parse function param: "
+                       << toString(std::move(e)) << "\n";
+          exit(EXIT_FAILURE);
+        }
+        parameters.addFunctionParam(*param);
+      }
+    }
+  }
   // FIXME
 }
 
@@ -34,19 +94,26 @@ llvm::Expected<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
   if (check(TokenKind::DotDotDot)) {
     // done
     assert(eat(TokenKind::DotDotDot));
-    return FunctionParamPattern(loc, *pattern, /* ... */);
+    FunctionParamPattern pat = (loc);
+    pat.setName(*pattern);
+    return pat;
   }
 
-  llvm::Expected<ast::types::TypeExpression> type = parseType();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+      parseType();
   if (auto e = type.takeError()) {
     llvm::errs() << "failed to parse type: " << toString(std::move(e)) << "\n";
     exit(EXIT_FAILURE);
   }
 
-  // return
+  FunctionParamPattern pat = (loc);
+  pat.setName(*pattern);
+  pat.setType(*type);
+  return pat;
 }
 
 llvm::Expected<ast::FunctionParam> Parser::parseFunctionParam() {
+  Location loc = getLocation();
   std::vector<ast::OuterAttribute> outerAttributes;
 
   if (checkOuterAttribute()) {
@@ -63,21 +130,23 @@ llvm::Expected<ast::FunctionParam> Parser::parseFunctionParam() {
   if (check(TokenKind::DotDotDot)) {
     // done
     assert(eat(TokenKind::DotDotDot));
-    return FunctionParam(loc, *pattern, /* ... */);
+    FunctionParam param = {loc, FunctionParamKind::DotDotDot};
+    param.setAttributes(outerAttributes);
+    return param;
   }
 
   // ???
 }
 
-llvm::Expected<std::shared_ptr<ast::BlockExpression>>
-Parser::parseFunctionBody() {}
-
-llvm::Expected<ast::FunctionSignature> Parser::parseFunctionsignature() {}
+// llvm::Expected<ast::FunctionSignature> Parser::parseFunctionsignature() {}
 
 llvm::Expected<ast::FunctionQualifiers> Parser::parseFunctionQualifiers() {}
 
 llvm::Expected<std::shared_ptr<ast::VisItem>>
 Parser::parseFunction(std::optional<ast::Visibility> vis) {
+  Location loc = getLocation();
+
+  Function fun = {loc, vis};
 
   if (checkKeyWord(KeyWordKind::KW_CONST) ||
       checkKeyWord(KeyWordKind::KW_ASYNC) ||
@@ -85,17 +154,25 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
       checkKeyWord(KeyWordKind::KW_EXTERN)) {
     llvm::Expected<ast::FunctionQualifiers> qualifiers =
         parseFunctionQualifiers();
-    // check error
+    if (auto e = qualifiers.takeError()) {
+      llvm::errs() << "failed to parse function qualifiers: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    fun.setQualifiers(*qualifiers);
   }
 
   if (!checkKeyWord(KeyWordKind::KW_FN)) {
-    // error
+    llvm::errs() << "found no fn"
+                 << "\n";
+    exit(EXIT_FAILURE);
   }
 
   assert(eatKeyWord(KeyWordKind::KW_FN));
 
   if (!check(TokenKind::Identifier)) {
-    // error
+    llvm::errs() << "found no fn identifier"
+                 << "\n";
   }
 
   Token id = getToken();
@@ -104,9 +181,14 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   assert(eat(TokenKind::Identifier));
 
   if (check(TokenKind::Lt)) {
-    llvm::Expected<std::shared_ptr<ast::GenericParams>> genericParams =
+    llvm::Expected<ast::GenericParams> genericParams =
         parseGenericParams();
-    // check error
+    if (auto e = genericParams.takeError()) {
+      llvm::errs() << "failed to parse generic parameters: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    fun.setGenericParams(*genericParams);
   }
 
   if (!check(TokenKind::ParenOpen)) {
@@ -119,38 +201,56 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   if (!check(TokenKind::ParenClose)) {
     llvm::Expected<ast::FunctionParameters> parameters =
         parseFunctionParameters();
-    // check error
+    if (auto e = parameters.takeError()) {
+      llvm::errs() << "failed to parse fn parameters: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    fun.setParameters(*parameters);
   }
 
   assert(eat(TokenKind::ParenClose));
 
   // return type
-  if (check(TokenKind::ThinArrow)) {
-    assert(eat(TokenKind::ThinArrow));
-    llvm::Expected<ast::types::TypeExpression> returnType = parseType();
-    // check error
+  if (check(TokenKind::RArrow)) {
+    assert(eat(TokenKind::RArrow));
+    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> returnType =
+        parseType();
+    if (auto e = returnType.takeError()) {
+      llvm::errs() << "failed to parse fn return type: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    fun.setReturnType(*returnType);
   }
 
   if (checkKeyWord(KeyWordKind::KW_WHERE)) {
-    llvm::Expected<std::shared_ptr<ast::WhereClause>> whereClause =
+    llvm::Expected<ast::WhereClause> whereClause =
         parseWhereClause();
-    // check error
+    if (auto e = whereClause.takeError()) {
+      llvm::errs() << "failed to parse fn where clause: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    fun.setWhereClasue(*whereClause);
   }
 
   if (check(TokenKind::Semi)) {
     assert(eat(TokenKind::Semi));
-    // done
+    return std::make_shared<ast::VisItem>(fun);
   }
 
   llvm::Expected<std::shared_ptr<ast::BlockExpression>> body =
       parseBlockExpression();
-  // check error
+  if (auto e = body.takeError()) {
+    llvm::errs() << "failed to parse fn bofy: " << toString(std::move(e))
+                 << "\n";
+    exit(EXIT_FAILURE);
+  }
+  fun.setBody(*body);
+
+  return std::make_shared<ast::VisItem>(fun);
 }
 
 } // namespace rust_compiler::parser
 
-/*
-  TODO:
-
-  https://doc.rust-lang.org/reference/items/generics.html
- */

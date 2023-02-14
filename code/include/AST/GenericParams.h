@@ -6,6 +6,7 @@ namespace rust_compiler::ast {
 
 class GenericParams : public Node {
 public:
+  GenericParams(Location loc) : Node(loc){};
 };
 
 } // namespace rust_compiler::ast

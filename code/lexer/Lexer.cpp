@@ -377,7 +377,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
     std::optional<std::string> decInt = tryLexDecLiteral(code);
     if (decInt) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::DecLiteral, *decInt));
+                      TokenKind::INTEGER_LITERAL, *decInt));
       code.remove_prefix(decInt->size());
       columnNumber += decInt->size();
       continue;
@@ -430,7 +430,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       columnNumber += 1;
     } else if (code.starts_with("->")) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::ThinArrow));
+                      TokenKind::RArrow));
       code.remove_prefix(2);
       columnNumber += 2;
     } else if (code.starts_with("+")) {

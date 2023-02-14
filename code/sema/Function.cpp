@@ -1,6 +1,5 @@
 #include "AST/Function.h"
 
-#include "AST/FunctionSignature.h"
 #include "AST/MacroInvocation.h"
 #include "Sema/Sema.h"
 
@@ -35,16 +34,6 @@ namespace rust_compiler::sema {
 
 void Sema::analyzeFunction(std::shared_ptr<ast::Function> fun) {
 
-  if (fun->hasBody()) {
-    const FunctionSignature &sig = fun->getSignature();
-    if (sig.hasReturnType()) {
-      // typechecking.eqType();
-
-      analyzeBlockExpression(fun->getBody());
-    }
-    fun->getSignature().getReturnType();
-    // typechecking.eqType();
-  }
 }
 
 } // namespace rust_compiler::sema

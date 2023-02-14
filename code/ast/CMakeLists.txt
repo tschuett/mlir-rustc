@@ -1,7 +1,6 @@
 add_library(ast
            Module.cpp
            UseDeclaration.cpp
-           FunctionSignature.cpp
            Function.cpp
            BlockExpression.cpp
            Visibility.cpp

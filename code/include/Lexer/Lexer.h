@@ -8,4 +8,16 @@ namespace rust_compiler::lexer {
 
 TokenStream lex(std::string_view code, std::string_view fileName);
 
-}
+class Lexer {
+  std::string chars;
+  uint32_t remaining;
+  TokenStream tokenStream;
+public:
+  void lex();
+
+
+private:
+  std::optional<char> bump();
+};
+
+} // namespace rust_compiler::lexer
