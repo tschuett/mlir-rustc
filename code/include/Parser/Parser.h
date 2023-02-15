@@ -133,6 +133,8 @@ public:
 
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parseRangePattern();
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseIdentifierPattern();
 
   // Expressions
   llvm::Expected<std::shared_ptr<ast::Expression>> parseExpression();
@@ -150,6 +152,9 @@ public:
   // statements
   llvm::Expected<std::shared_ptr<ast::Statement>> parseLetStatement();
 
+  llvm::Expected<std::shared_ptr<ast::SelfParam>> parseShorthandSelf();
+  llvm::Expected<std::shared_ptr<ast::SelfParam>> parseTypedSelf();
+
 private:
   bool check(lexer::TokenKind token);
   bool check(lexer::TokenKind token, size_t offset);
@@ -162,6 +167,7 @@ private:
   bool checkLoopLabel();
 
   bool checkLiteral();
+  bool checkLifetime(size_t offset);
 
   /// super | self | Self | crate | $crate
   bool checkSuperSelf();
@@ -175,3 +181,10 @@ private:
 };
 
 } // namespace rust_compiler::parser
+
+/*
+  Lifetime :
+      LIFETIME_OR_LABEL
+   | 'static
+   | '_
+ */

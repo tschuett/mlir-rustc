@@ -1,15 +1,143 @@
+#include "AST/SelfParam.h"
+#include "AST/ShorthandSelf.h"
+#include "AST/TypedSelf.h"
+#include "Lexer/KeyWords.h"
+#include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/Error.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <optional>
 
+using namespace llvm;
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
+llvm::Expected<std::shared_ptr<ast::SelfParam>> Parser::parseShorthandSelf() {
+  Location loc = getLocation();
+
+  ShorthandSelf self = {loc};
+
+  // FIXME Lifetime
+
+  if (check(TokenKind::And)) {
+    assert(eat(TokenKind::And));
+    self.setAnd();
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_MUT)) {
+    assert(eatKeyWord(KeyWordKind::KW_MUT));
+    self.setMut();
+  }
+
+  if (!checkKeyWord(KeyWordKind::KW_SELFVALUE))
+    return createStringError(inconvertibleErrorCode(), "failed to parse self");
+
+  assert(eatKeyWord(KeyWordKind::KW_SELFVALUE));
+
+  return std::make_shared<ShorthandSelf>(self);
+}
+
+llvm::Expected<std::shared_ptr<ast::SelfParam>> Parser::parseTypedSelf() {
+  Location loc = getLocation();
+
+  TypedSelf self = {loc};
+
+  if (checkKeyWord(KeyWordKind::KW_MUT))
+    self.setMut();
+
+  if (!checkKeyWord(KeyWordKind::KW_SELFVALUE))
+    return createStringError(inconvertibleErrorCode(), "failed to parse self");
+
+  assert(eatKeyWord(KeyWordKind::KW_SELFVALUE));
+
+  if (!check(TokenKind::Colon))
+    return createStringError(inconvertibleErrorCode(), "failed to parse colon");
+
+  assert(eat(TokenKind::Colon));
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+      parseType();
+  if (auto e = type.takeError()) {
+    llvm::errs() << "failed to parse type: " << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  self.setType(*type);
+
+  return std::make_shared<TypedSelf>(self);
+}
+
 llvm::Expected<ast::SelfParam> Parser::parseSelfParam() {
-  if(checkOuterAttribute()) {
+  Location loc = getLocation();
+
+  SelfParam self = {loc};
+
+  if (checkOuterAttribute()) {
+    llvm::Expected<std::vector<ast::OuterAttribute>> parsedOuterAttributes =
+        parseOuterAttributes();
+    if (auto e = parsedOuterAttributes.takeError()) {
+      llvm::errs() << "failed to parse outer attributes: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    self.setOuterAttributes(*parsedOuterAttributes);
+  }
+
+  if (check(TokenKind::And)) {
+    // ShordhandSelf
+    llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
+        parseShorthandSelf();
+    if (auto e = shortA.takeError()) {
+      llvm::errs() << "failed to parse ShortandSelf: " << toString(std::move(e))
+                   << "\n";
+      exit(EXIT_FAILURE);
+      self.setSelf(SelfParamKind::ShorthandSelf, *shortA);
+    } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
+      if (checkKeyWord(KeyWordKind::KW_SELFVALUE, 1)) {
+        if (check(TokenKind::Colon, 2)) {
+          llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
+              parseTypedSelf();
+          if (auto e = shortA.takeError()) {
+            llvm::errs() << "failed to parse TypeSelf: "
+                         << toString(std::move(e)) << "\n";
+            exit(EXIT_FAILURE);
+            self.setSelf(SelfParamKind::TypeSelf, *shortA);
+            // TypedSelf
+          } else {
+            llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
+                parseShorthandSelf();
+            if (auto e = shortA.takeError()) {
+              llvm::errs() << "failed to parse ShortandSelf: "
+                           << toString(std::move(e)) << "\n";
+              exit(EXIT_FAILURE);
+              self.setSelf(SelfParamKind::ShorthandSelf, *shortA);
+            }
+          }
+        } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
+          if (check(TokenKind::Colon, 1)) {
+            llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
+                parseTypedSelf();
+            if (auto e = shortA.takeError()) {
+              llvm::errs() << "failed to parse TypeSelf: "
+                           << toString(std::move(e)) << "\n";
+              exit(EXIT_FAILURE);
+              self.setSelf(SelfParamKind::TypeSelf, *shortA);
+            } else {
+              llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
+                  parseShorthandSelf();
+              if (auto e = shortA.takeError()) {
+                llvm::errs() << "failed to parse ShortandSelf: "
+                             << toString(std::move(e)) << "\n";
+                exit(EXIT_FAILURE);
+                self.setSelf(SelfParamKind::ShorthandSelf, *shortA);
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -29,7 +157,7 @@ llvm::Expected<ast::FunctionParameters> Parser::parseFunctionParameters() {
 
   ast::FunctionParameters parameters = {loc};
 
-  if (checkSelfParam()) {
+  if (checkSelfParam()) { // FIXME OuterAttributes
     llvm::Expected<ast::SelfParam> selfParam = parseSelfParam();
     if (auto e = selfParam.takeError()) {
       llvm::errs() << "failed to parse self param: " << toString(std::move(e))
@@ -138,7 +266,8 @@ llvm::Expected<ast::FunctionParam> Parser::parseFunctionParam() {
   // ???
 }
 
-// llvm::Expected<ast::FunctionSignature> Parser::parseFunctionsignature() {}
+// llvm::Expected<ast::FunctionSignature> Parser::parseFunctionsignature()
+// {}
 
 llvm::Expected<ast::FunctionQualifiers> Parser::parseFunctionQualifiers() {}
 
@@ -181,8 +310,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   assert(eat(TokenKind::Identifier));
 
   if (check(TokenKind::Lt)) {
-    llvm::Expected<ast::GenericParams> genericParams =
-        parseGenericParams();
+    llvm::Expected<ast::GenericParams> genericParams = parseGenericParams();
     if (auto e = genericParams.takeError()) {
       llvm::errs() << "failed to parse generic parameters: "
                    << toString(std::move(e)) << "\n";
@@ -225,8 +353,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   }
 
   if (checkKeyWord(KeyWordKind::KW_WHERE)) {
-    llvm::Expected<ast::WhereClause> whereClause =
-        parseWhereClause();
+    llvm::Expected<ast::WhereClause> whereClause = parseWhereClause();
     if (auto e = whereClause.takeError()) {
       llvm::errs() << "failed to parse fn where clause: "
                    << toString(std::move(e)) << "\n";
@@ -253,4 +380,3 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
 }
 
 } // namespace rust_compiler::parser
-

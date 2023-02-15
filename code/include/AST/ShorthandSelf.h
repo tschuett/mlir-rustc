@@ -10,12 +10,12 @@ class ShorthandSelf : public SelfParam {
   bool mut = false;
   bool andP = false;
 
+  // lifetime
 public:
   ShorthandSelf(Location loc) : SelfParam(loc) {}
 
   void setMut();
   void setAnd();
-
 };
 
 } // namespace rust_compiler::ast

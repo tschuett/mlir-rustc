@@ -54,6 +54,21 @@ Parser::parsePatternNoTopAlt() {
 
   if (check(lexer::TokenKind::Underscore))
     return parseWildCardPattern();
+
+  if (checkKeyWord(KeyWordKind::KW_MUT))
+    return parseIdentifierPattern();
+
+  if (checkKeyWord(KeyWordKind::KW_REF))
+    return parseIdentifierPattern();
 }
 
 } // namespace rust_compiler::parser
+
+/*
+  RangePattern
+  StructPattern
+  TupleStructPattern
+  PathPattern
+  MacroInvocation
+  IdentifierPattern
+ */
