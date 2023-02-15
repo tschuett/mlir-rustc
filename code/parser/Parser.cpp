@@ -7,9 +7,24 @@
 
 #include <vector>
 
+using namespace llvm;
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
+
+bool Parser::checkOuterAttribute() {
+  if (check(TokenKind::Hash) && check(TokenKind::SquareOpen, 1))
+    return true;
+  return false;
+}
+
+bool Parser::checkInnerAttribute() {
+  if (check(TokenKind::Hash) && check(TokenKind::Not, 1) &&
+      check(TokenKind::SquareOpen, 2))
+    return true;
+  return false;
+}
 
 bool Parser::check(lexer::TokenKind token) {
   return ts.getAt(offset).getKind() == token;
@@ -22,6 +37,12 @@ bool Parser::check(lexer::TokenKind token, size_t _offset) {
 bool Parser::checkKeyWord(lexer::KeyWordKind keyword) {
   if (ts.getAt(offset).getKind() == TokenKind::Keyword)
     return ts.getAt(offset).getKeyWordKind() == keyword;
+  return false;
+}
+
+bool Parser::checkKeyWord(lexer::KeyWordKind keyword, size_t _offset) {
+  if (ts.getAt(offset + _offset).getKind() == TokenKind::Keyword)
+    return ts.getAt(offset + _offset).getKeyWordKind() == keyword;
   return false;
 }
 
@@ -174,6 +195,25 @@ Parser::parseCrateModule(std::string_view crateName) {
   }
 
   // parseItems
+}
+
+llvm::Expected<ast::WhereClause> Parser::parseWhereClause() {
+  Location loc = getLocation();
+
+  WhereClause where{loc};
+
+  if (!checkKeyWord(KeyWordKind::KW_WHERE)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse where keyword in where clause");
+  }
+
+  // FIXME
+}
+
+llvm::Expected<ast::GenericParams> Parser::parseGenericParams() {
+  Location loc = getLocation();
+
+  // FIXME
 }
 
 } // namespace rust_compiler::parser

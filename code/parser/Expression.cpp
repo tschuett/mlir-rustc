@@ -1,5 +1,11 @@
-#include "AST/ReturnExpression.h"
+#include "AST/BorrowExpression.h"
 #include "AST/ContinueExpression.h"
+#include "AST/DereferenceExpression.h"
+#include "AST/IfExpression.h"
+#include "AST/IfLetExpression.h"
+#include "AST/MatchExpression.h"
+#include "AST/NegationExpression.h"
+#include "AST/ReturnExpression.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
@@ -11,6 +17,198 @@ using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseIfLetExpression() {
+  Location loc = getLocation();
+  IfLetExpression ifLet = {loc};
+
+  if (checkKeyWord(KeyWordKind::KW_IF)) {
+    assert(eatKeyWord(KeyWordKind::KW_IF));
+  } else {
+    // check error
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_LET)) {
+    assert(eatKeyWord(KeyWordKind::KW_LET));
+  } else {
+    // check error
+  }
+
+  llvm::Expected<ast::patterns::Pattern> pattern = parsePattern();
+  // check error
+
+  if (check(TokenKind::Eq)) {
+    assert(eat(TokenKind::Eq));
+  } else {
+    // check error
+  }
+
+  llvm::Expected<ast::Scrutinee> scrutinee = parseScrutinee();
+  if (auto e = scrutinee.takeError()) {
+    llvm::errs() << "failed to parse scrutinee in if let expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> block =
+      parseBlockExpression();
+  // check error
+
+  if (checkKeyWord(KeyWordKind::KW_ELSE)) {
+    assert(eatKeyWord(KeyWordKind::KW_ELSE));
+  } else {
+    // done
+  }
+
+  // FIXME
+  if (checkKeyWord(KeyWordKind::KW_IF) &&
+      checkKeyWord(KeyWordKind::KW_LET, 1)) {
+    llvm::Expected<std::shared_ptr<ast::Expression>> ifLetExpr =
+        parseIfLetExpression();
+    // check error
+  } else if (checkKeyWord(KeyWordKind::KW_IF) &&
+             !checkKeyWord(KeyWordKind::KW_LET, 1)) {
+    llvm::Expected<std::shared_ptr<ast::Expression>> ifExpr =
+        parseIfExpression();
+    // check error
+  } else {
+    llvm::Expected<std::shared_ptr<ast::Expression>> block =
+        parseBlockExpression();
+    // check error
+  }
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseDereferenceExpression() {
+  Location loc = getLocation();
+  DereferenceExpression defer = {loc};
+
+  if (check(TokenKind::Star)) {
+    assert(eat(TokenKind::Star));
+  } else {
+    // check error
+  }
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+  if (auto e = expr.takeError()) {
+    llvm::errs() << "failed to parse expression in dereference expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  defer.setExpression(*expr);
+
+  return std::make_shared<DereferenceExpression>(defer);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parseIfExpression() {
+  Location loc = getLocation();
+  IfExpression ifExpr = {loc};
+
+  if (checkKeyWord(KeyWordKind::KW_IF)) {
+    assert(eatKeyWord(KeyWordKind::KW_IF));
+  } else {
+    // check error
+  }
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> cond = parseExpression();
+  if (auto e = cond.takeError()) {
+    llvm::errs() << "failed to parse condition in if expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  ifExpr.setCondition(*cond);
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> block =
+      parseBlockExpression();
+  if (auto e = block.takeError()) {
+    llvm::errs() << "failed to parse block in if expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  ifExpr.setBlock(*block);
+
+  if (checkKeyWord(KeyWordKind::KW_ELSE)) {
+    assert(eatKeyWord(KeyWordKind::KW_ELSE));
+  } else {
+    // without else
+    return std::make_shared<IfExpression>(ifExpr);
+  }
+
+  // FIXME
+  if (checkKeyWord(KeyWordKind::KW_IF) &&
+      checkKeyWord(KeyWordKind::KW_LET, 1)) {
+    llvm::Expected<std::shared_ptr<ast::Expression>> ifLetExpr =
+        parseIfLetExpression();
+    // check error
+  } else if (checkKeyWord(KeyWordKind::KW_IF) &&
+             !checkKeyWord(KeyWordKind::KW_LET, 1)) {
+    llvm::Expected<std::shared_ptr<ast::Expression>> ifExpr =
+        parseIfExpression();
+    // check error
+  } else {
+    llvm::Expected<std::shared_ptr<ast::Expression>> block =
+        parseBlockExpression();
+    // check error
+  }
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseBorrowExpression() {
+  Location loc = getLocation();
+  BorrowExpression borrow = {loc};
+
+  if (check(TokenKind::And)) {
+    assert(eat(TokenKind::And));
+  } else if (check(TokenKind::AndAnd)) {
+    assert(eat(TokenKind::AndAnd));
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_MUT)) {
+    assert(eatKeyWord(KeyWordKind::KW_MUT));
+    borrow.setMut();
+  }
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+  if (auto e = expr.takeError()) {
+    llvm::errs() << "failed to parse borrow tail expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  borrow.setExpression(*expr);
+
+  return std::make_shared<BorrowExpression>(borrow);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseNegationExpression() {
+  Location loc = getLocation();
+  NegationExpression neg = {loc};
+
+  if (check(TokenKind::Minus)) {
+    neg.setMinus();
+    assert(eat());
+  } else if (check(TokenKind::Not)) {
+    neg.setNot();
+    assert(eat());
+  } else {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to negation token in negation expression");
+  }
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+  if (auto e = expr.takeError()) {
+    llvm::errs() << "failed to parse negation tail expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  neg.setRight(*expr);
+
+  return std::make_shared<NegationExpression>(neg);
+}
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseContinueExpression() {

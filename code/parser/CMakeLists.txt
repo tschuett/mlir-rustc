@@ -9,6 +9,8 @@ add_library(parser
            Closure.cpp
            Types.cpp
            Statement.cpp
+           Item.cpp
+           MatchExpression.cpp
            )
 
 

@@ -20,6 +20,8 @@ class MatchExpression : public ExpressionWithBlock {
 public:
   MatchExpression(Location loc)
       : ExpressionWithBlock(loc, ExpressionWithBlockKind::MatchExpression) {}
+
+  void setScrutinee(Scrutinee);
 };
 
 } // namespace rust_compiler::ast

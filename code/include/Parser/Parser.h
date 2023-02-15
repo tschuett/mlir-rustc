@@ -7,8 +7,13 @@
 #include "AST/FunctionParam.h"
 #include "AST/FunctionParamPattern.h"
 #include "AST/FunctionParameters.h"
+#include "AST/MatchArm.h"
+#include "AST/MatchArmGuard.h"
+#include "AST/MatchArms.h"
 #include "AST/OuterAttribute.h"
+#include "AST/Patterns/Pattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
+#include "AST/Scrutinee.h"
 #include "AST/SelfParam.h"
 #include "AST/Statements.h"
 #include "AST/TypeAlias.h"
@@ -123,6 +128,7 @@ public:
   parseCrateModule(std::string_view crateName);
 
   // Patterns
+  llvm::Expected<ast::patterns::Pattern> parsePattern();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parsePatternNoTopAlt();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
@@ -164,6 +170,11 @@ public:
   llvm::Expected<std::shared_ptr<ast::Expression>> parseIfExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseIfLetExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseUnsafeBlockExpression();
+  llvm::Expected<ast::Scrutinee> parseScrutinee();
+
+  llvm::Expected<ast::MatchArms> parseMatchArms();
+  llvm::Expected<ast::MatchArm> parseMatchArm();
+  llvm::Expected<ast::MatchArmGuard> parseMatchGuard();
 
   llvm::Expected<ast::GenericParams> parseGenericParams();
   llvm::Expected<ast::WhereClause> parseWhereClause();
@@ -186,6 +197,7 @@ private:
   bool checkInKeyWords(std::span<lexer::KeyWordKind> keywords);
 
   bool checkOuterAttribute();
+  bool checkInnerAttribute();
 
   bool checkLoopLabel();
 
