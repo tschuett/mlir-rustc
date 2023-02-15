@@ -16,8 +16,6 @@ public:
         lhs(lhs) {}
 
   std::shared_ptr<Expression> getBody() const;
-
-  bool containsBreakExpression() override;
 };
 
 } // namespace rust_compiler::ast

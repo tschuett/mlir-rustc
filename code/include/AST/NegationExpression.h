@@ -20,8 +20,6 @@ public:
   void setMinus();
   void setNot();
 
-  bool containsBreakExpression() override;
-
   std::shared_ptr<Expression> getRHS() const { return right; };
 };
 

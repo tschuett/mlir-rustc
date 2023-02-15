@@ -14,8 +14,6 @@ public:
   BreakExpression(Location loc)
       : ExpressionWithoutBlock(loc,
                                ExpressionWithoutBlockKind::BreakExpression){};
-
-  bool containsBreakExpression() override;
 };
 
 } // namespace rust_compiler::ast

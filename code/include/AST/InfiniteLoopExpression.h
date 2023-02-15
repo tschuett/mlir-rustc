@@ -15,8 +15,6 @@ public:
       : LoopExpression(loc, LoopExpressionKind::InfiniteLoopExpression){};
 
   std::shared_ptr<BlockExpression> getBody() const;
-
-  bool containsBreakExpression() override;
 };
 
 } // namespace rust_compiler::ast

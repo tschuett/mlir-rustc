@@ -8,6 +8,8 @@
 #include "AST/Trait.h"
 #include "AST/TraitImpl.h"
 
+#include <memory>
+
 using namespace rust_compiler::ast;
 
 namespace rust_compiler::sema {
@@ -44,7 +46,13 @@ void visitStatement(std::shared_ptr<ast::Statement> stmt,
   case StatementKind::ItemDeclaration: {
     break;
   }
+  case StatementKind::LetStatement: {
+    break;
+  }
   case StatementKind::ExpressionStatement: {
+    break;
+  }
+  case StatementKind::MacroInvocationSemi: {
     break;
   }
   }
@@ -95,9 +103,11 @@ void visitTrait(std::shared_ptr<ast::Trait> trait, ItemVisitor *visitor) {
   }
 }
 
-void visitBlockExpression(std::shared_ptr<ast::BlockExpression> block,
+void visitBlockExpression(std::shared_ptr<ast::Expression> block,
                           ItemVisitor *visitor) {
-  visitStatements(block->getExpressions(), visitor);
+  std::shared_ptr<ast::BlockExpression> _block =
+      std::static_pointer_cast<BlockExpression>(block);
+  visitStatements(_block->getExpressions(), visitor);
 }
 
 void visitFunction(std::shared_ptr<ast::Function> fun, ItemVisitor *visitor) {

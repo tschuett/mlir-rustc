@@ -17,9 +17,8 @@ public:
       : ExpressionWithoutBlock(loc,
                                ExpressionWithoutBlockKind::ReturnExpression) {}
 
+  void setTail(std::shared_ptr<ast::Expression>);
   std::shared_ptr<ast::Expression> getExpression();
-
-    bool containsBreakExpression() override;
 };
 
 } // namespace rust_compiler::ast

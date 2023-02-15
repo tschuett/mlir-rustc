@@ -14,6 +14,8 @@ public:
   ContinueExpression(Location loc)
       : ExpressionWithoutBlock(
             loc, ExpressionWithoutBlockKind::ContinueExpression) {}
+
+  void setLifetime();
 };
 
 } // namespace rust_compiler::ast

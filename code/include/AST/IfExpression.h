@@ -27,8 +27,6 @@ public:
   std::shared_ptr<ast::Expression> getTrailing() const;
 
   bool hasTrailing() const;
-
-  bool containsBreakExpression()  override;
 };
 
 } // namespace rust_compiler::ast

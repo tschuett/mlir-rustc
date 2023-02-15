@@ -16,8 +16,6 @@ class IteratorLoopExpression final : public LoopExpression {
 public:
   IteratorLoopExpression(Location loc)
       : LoopExpression(loc, LoopExpressionKind::IteratorLoopExpression){};
-
-  bool containsBreakExpression() override;
 };
 
 } // namespace rust_compiler::ast

@@ -1,17 +1,17 @@
 #pragma once
 
+#include "AST/FunctionParameters.h"
 #include "AST/FunctionQualifiers.h"
 #include "AST/GenericParams.h"
 #include "AST/VisItem.h"
 #include "AST/WhereClause.h"
-#include "AST/FunctionParameters.h"
 
 namespace rust_compiler::ast {
 
 class BlockExpression;
 
 class Function : public VisItem {
-  std::shared_ptr<BlockExpression> body;
+  std::shared_ptr<Expression> body;
   FunctionQualifiers qualifiers;
 
 public:
@@ -20,7 +20,7 @@ public:
 
   bool hasBody() const;
 
-  std::shared_ptr<BlockExpression> getBody();
+  std::shared_ptr<Expression> getBody();
 
   void setQualifiers(FunctionQualifiers qualifiers);
 
@@ -28,12 +28,11 @@ public:
 
   void setWhereClasue(WhereClause whereClause);
 
-    void setParameters(FunctionParameters functionParameters);
+  void setParameters(FunctionParameters functionParameters);
 
-  void setBody(std::shared_ptr<BlockExpression> block);
+  void setBody(std::shared_ptr<Expression> block);
 
   void setReturnType(std::shared_ptr<ast::types::TypeExpression> returnType);
-
 };
 
 } // namespace rust_compiler::ast

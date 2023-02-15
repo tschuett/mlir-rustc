@@ -16,8 +16,6 @@ public:
   void addSegment(PathExprSegment segment) { segs.push_back(segment); }
   void addDoubleColon() { ++doubleColons; };
 
-  bool containsBreakExpression() override;
-
   std::vector<PathExprSegment> getSegments() const { return segs; }
 };
 

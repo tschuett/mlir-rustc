@@ -24,8 +24,6 @@ public:
   void setBlock(std::shared_ptr<ast::Expression> block);
 
   void setTrailing(std::shared_ptr<ast::Expression> block);
-
-  bool containsBreakExpression() override;
 };
 
 } // namespace rust_compiler::ast

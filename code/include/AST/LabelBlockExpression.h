@@ -13,8 +13,6 @@ class LabelBlockExpression final : public LoopExpression {
 public:
   LabelBlockExpression(Location loc)
       : LoopExpression(loc, LoopExpressionKind::LabelBlockExpression){};
-
-  bool containsBreakExpression() override;
 };
 
 } // namespace rust_compiler::ast

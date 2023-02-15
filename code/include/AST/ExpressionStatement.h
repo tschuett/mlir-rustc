@@ -17,8 +17,6 @@ public:
   ExpressionStatement(Location loc, std::shared_ptr<Expression> expr)
       : Statement(loc, StatementKind::ExpressionStatement), expr(expr) {}
 
-  bool containsBreakExpression() override;
-
   ExpressionStatementKind getKind() const;
 };
 

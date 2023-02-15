@@ -367,7 +367,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
     return std::make_shared<ast::VisItem>(fun);
   }
 
-  llvm::Expected<std::shared_ptr<ast::BlockExpression>> body =
+  llvm::Expected<std::shared_ptr<ast::Expression>> body =
       parseBlockExpression();
   if (auto e = body.takeError()) {
     llvm::errs() << "failed to parse fn bofy: " << toString(std::move(e))

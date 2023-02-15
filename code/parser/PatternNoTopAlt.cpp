@@ -52,8 +52,8 @@ Parser::parsePatternNoTopAlt() {
   // if (check(lexer::TokenKind::DotDot))
   //   return parseRestPattern();
 
-  if (check(lexer::TokenKind::Underscore))
-    return parseWildCardPattern();
+//  if (check(lexer::TokenKind::Underscore))
+//    return parseWildCardPattern(); // maybe range literal
 
   if (checkKeyWord(KeyWordKind::KW_MUT))
     return parseIdentifierPattern();

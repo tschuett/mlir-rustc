@@ -21,8 +21,6 @@ public:
 
   bool getHasTrailingSemi() { return hasTrailingSemi; }
 
-  virtual bool containsBreakExpression() = 0;
-
 private:
   rust_compiler::Location loc;
   ExpressionKind expressionKind;

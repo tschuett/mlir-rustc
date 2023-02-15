@@ -28,9 +28,12 @@ class LetStatement final : public Statement {
 public:
   LetStatement(Location loc) : Statement(loc, StatementKind::LetStatement){};
 
+  void setOuterAttributes(std::span<OuterAttribute> out);
+
   void setPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat);
   void setType(std::shared_ptr<ast::types::TypeExpression> type);
   void setExpression(std::shared_ptr<ast::Expression> expr);
+  void setElseExpr(std::shared_ptr<ast::Expression> expr);
 
   //std::span<LetStatementParam> getVarDecls();
 

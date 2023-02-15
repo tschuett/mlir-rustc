@@ -2,8 +2,6 @@
 
 namespace rust_compiler::ast {
 
-bool BorrowExpression::containsBreakExpression() { return false; }
-
 void BorrowExpression::setExpression(std::shared_ptr<Expression> _expr) {
   expr = _expr;
 }

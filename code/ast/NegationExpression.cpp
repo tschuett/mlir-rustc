@@ -4,8 +4,6 @@
 
 namespace rust_compiler::ast {
 
-bool NegationExpression::containsBreakExpression() { return false; }
-
 void NegationExpression::setRight(std::shared_ptr<Expression> ri) {
   right = ri;
 }

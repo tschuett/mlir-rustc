@@ -17,8 +17,6 @@ public:
 
   std::shared_ptr<Expression> getExpression() const;
   bool isMutable() const;
-
-    bool containsBreakExpression() override;
 };
 
 } // namespace rust_compiler::ast

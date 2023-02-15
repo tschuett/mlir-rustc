@@ -4,8 +4,6 @@
 
 namespace rust_compiler::ast {
 
-bool ReturnExpression::containsBreakExpression() { return false; }
-
 std::shared_ptr<ast::Expression> ReturnExpression::getExpression() {
   return expr;
 }

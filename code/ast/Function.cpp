@@ -10,9 +10,9 @@ bool Function::hasBody() const {
   return (bool)body;
 }
 
-std::shared_ptr<BlockExpression> Function::getBody() { return body; }
+std::shared_ptr<Expression> Function::getBody() { return body; }
 
-void Function::setBody(std::shared_ptr<BlockExpression> _body) { body = _body; }
+void Function::setBody(std::shared_ptr<Expression> _body) { body = _body; }
 
 
 } // namespace rust_compiler::ast

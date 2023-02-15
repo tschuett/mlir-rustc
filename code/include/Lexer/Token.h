@@ -77,6 +77,7 @@ enum class TokenKind {
   Shr,
   DotDot,
   DotDotDot,
+  DotDotEq,
   Lt,
   EqEq,
   Ne,

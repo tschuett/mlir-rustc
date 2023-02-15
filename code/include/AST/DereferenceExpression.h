@@ -16,8 +16,6 @@ public:
   }
 
   std::shared_ptr<Expression> getRHS() const { return right;};
-
-  bool containsBreakExpression() override;
 };
 
 } // namespace rust_compiler::ast

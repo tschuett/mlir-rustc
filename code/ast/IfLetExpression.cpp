@@ -19,12 +19,4 @@ void IfLetExpression::setTrailing(std::shared_ptr<ast::Expression> _trailing) {
   trailing = _trailing;
 }
 
-bool IfLetExpression::containsBreakExpression() {
-  if (block->containsBreakExpression())
-    return true;
-  if (trailing)
-    return trailing->containsBreakExpression();
-}
-
-
 } // namespace rust_compiler::ast

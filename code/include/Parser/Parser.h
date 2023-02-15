@@ -28,6 +28,8 @@
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_parse/parser/struct.Parser.html#method.new
 namespace rust_compiler::parser {
 
+enum PathKind { TypePath, SimplePath, Unknown };
+
 class Parser {
   lexer::TokenStream ts;
 
@@ -109,8 +111,13 @@ public:
   parseArrayOrSliceType();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
   parseTupleOrParensType();
-
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseTupleType();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType();
   llvm::Expected<std::vector<std::shared_ptr<ast::Item>>> parseItems();
+  // only for types !!!
+
+  PathKind testTypePathOrSimplePath();
 
   llvm::Expected<std::shared_ptr<ast::Crate>>
   parseCrateModule(std::string_view crateName);
@@ -136,15 +143,31 @@ public:
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parseIdentifierPattern();
 
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectType();
+
   // Expressions
   llvm::Expected<std::shared_ptr<ast::Expression>> parseExpression();
-  llvm::Expected<std::shared_ptr<ast::BlockExpression>> parseBlockExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseBlockExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>>
   parseExpressionWithoutBlock();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseExpressionWithBlock();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseClosureExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseReturnExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseBreakExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseContinueExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseNegationExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseDereferenceExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseBorrowExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseAsyncBlockExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseMatchExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseIfExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseIfLetExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseUnsafeBlockExpression();
 
   llvm::Expected<ast::GenericParams> parseGenericParams();
   llvm::Expected<ast::WhereClause> parseWhereClause();
+  llvm::Expected<ast::types::ForLifetimes> parseForLifetimes();
 
   llvm::Expected<std::shared_ptr<ast::EnumItems>> parseEnumItems();
   llvm::Expected<std::shared_ptr<ast::EnumItem>> parseEnumItem();
@@ -174,6 +197,7 @@ private:
 
   bool checkSelfParam();
 
+  bool eat();
   bool eat(lexer::TokenKind token);
   bool eatKeyWord(lexer::KeyWordKind keyword);
 
