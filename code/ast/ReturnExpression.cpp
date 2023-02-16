@@ -8,14 +8,18 @@ std::shared_ptr<ast::Expression> ReturnExpression::getExpression() {
   return expr;
 }
 
-//std::shared_ptr<ast::types::Type> ReturnExpression::getType() {
-//  if (expr)
-//    return expr->getType();
+void ReturnExpression::setTail(std::shared_ptr<ast::Expression> _tail) {
+  expr = _tail;
+}
+
+// std::shared_ptr<ast::types::Type> ReturnExpression::getType() {
+//   if (expr)
+//     return expr->getType();
 //
-//  return std::static_pointer_cast<ast::types::Type>(
-//      std::make_shared<ast::types::PrimitiveType>(
-//          getLocation(), types::PrimitiveTypeKind::Unit));
-//}
+//   return std::static_pointer_cast<ast::types::Type>(
+//       std::make_shared<ast::types::PrimitiveType>(
+//           getLocation(), types::PrimitiveTypeKind::Unit));
+// }
 
 } // namespace rust_compiler::ast
 

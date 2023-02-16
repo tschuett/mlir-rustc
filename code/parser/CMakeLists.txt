@@ -19,6 +19,7 @@ add_library(parser
            Pointer.cpp
            QualifiedPathType.cpp
            RawPointerType.cpp
+           Trait.cpp
            )
 
 

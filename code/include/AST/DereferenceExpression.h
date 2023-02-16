@@ -15,7 +15,7 @@ public:
       : OperatorExpression(loc, OperatorExpressionKind::DereferenceExpression) {
   }
 
-  void setExpression(std::shared_ptr<Expression>);
+  void setExpression(std::shared_ptr<Expression> r) { right = r; }
 
   std::shared_ptr<Expression> getRHS() const { return right; };
 };

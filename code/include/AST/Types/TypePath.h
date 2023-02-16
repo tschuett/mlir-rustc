@@ -16,6 +16,8 @@ class TypePath final : public TypeNoBounds {
 
 public:
   TypePath(Location loc) : TypeNoBounds(loc, TypeNoBoundsKind::TypePath) {}
+
+  void setTrailing() { trailingDoubleColon = true; }
 };
 
 } // namespace rust_compiler::ast::types

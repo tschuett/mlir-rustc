@@ -13,6 +13,7 @@
 #include <optional>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace rust_compiler::ast {
@@ -32,6 +33,15 @@ public:
       : VisItem(loc, VisItemKind::Trait, vis) {}
 
   std::span<std::shared_ptr<AssociatedItem>> getAssociatedItems() const;
+
+  void setUnsafe() { unsafe = true; }
+  void setIdentifier(std::string_view id) { identifier = id; }
+  void setGenericParams(const GenericParams &p) { genericParams = p; }
+
+  void setBounds(const types::TypeParamBounds &b) { typeParamBounds = b; }
+  void setWhere(const WhereClause &w) { whereClause = w; }
+
+  void setInner(std::vector<InnerAttribute> &inn) { innerAttributes = inn; }
 };
 
 } // namespace rust_compiler::ast

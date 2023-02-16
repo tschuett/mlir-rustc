@@ -10,6 +10,7 @@
 #include "AST/MatchArm.h"
 #include "AST/MatchArmGuard.h"
 #include "AST/MatchArms.h"
+#include "AST/AssociatedItem.h"
 #include "AST/OuterAttribute.h"
 #include "AST/Patterns/Pattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
@@ -21,6 +22,7 @@
 #include "AST/Types/QualifiedPathType.h"
 #include "AST/Types/TraitBound.h"
 #include "AST/Types/TypeParamBounds.h"
+#include "AST/Types/TypePathFnInputs.h"
 #include "AST/UseTree.h"
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
@@ -103,7 +105,13 @@ public:
   llvm::Expected<std::shared_ptr<ast::types::TypeNoBounds>> parseTypeNoBounds();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseType();
   llvm::Expected<std::shared_ptr<ast::types::TypePath>> parseTypePath();
-  llvm::Expected<ast::types::TypeParamBounds> parseTypeParamBounds();
+
+  llvm::Expected<ast::types::TypePathSegment> parseTypePathSegment();
+  llvm::Expected<ast::PathIdentSegment> parsePathIdentSegment();
+
+  llvm::Expected<ast::types::TypePathFn> parseTypePathFn();
+  llvm::Expected<ast::types::TypePathFnInputs> parseTypePathFnInputs();
+
   llvm::Expected<ast::types::TraitBound> parseTraitBound();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
   parseBareFunctionType();
@@ -186,6 +194,7 @@ public:
   llvm::Expected<ast::MatchArm> parseMatchArm();
   llvm::Expected<ast::MatchArmGuard> parseMatchGuard();
 
+  llvm::Expected<ast::GenericArgs> parseGenericArgs();
   llvm::Expected<ast::GenericParams> parseGenericParams();
   llvm::Expected<ast::WhereClause> parseWhereClause();
   llvm::Expected<ast::types::ForLifetimes> parseForLifetimes();
@@ -199,7 +208,11 @@ public:
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseShorthandSelf();
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseTypedSelf();
 
+  llvm::Expected<ast::types::TypeParamBounds> parseTypeParamBounds();
+
   llvm::Expected<ast::SimplePath> parseSimplePath();
+
+  llvm::Expected<std::shared_ptr<ast::AssociatedItem>> parseAssociatedItem();
 
 private:
   bool check(lexer::TokenKind token);
@@ -226,8 +239,6 @@ private:
   bool eatKeyWord(lexer::KeyWordKind keyword);
 
   lexer::Token getToken();
-
-  
 };
 
 } // namespace rust_compiler::parser

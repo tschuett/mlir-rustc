@@ -53,6 +53,8 @@ add_library(ast
            MatchExpression.cpp
            StaticItem.cpp
            ConstantItem.cpp
+           AsyncBlockExpression.cpp
+           FunctionParamPattern.cpp
            )
 
 

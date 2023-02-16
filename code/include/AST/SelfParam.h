@@ -3,8 +3,8 @@
 #include "AST/AST.h"
 #include "AST/OuterAttribute.h"
 
-#include <vector>
 #include <span>
+#include <vector>
 
 namespace rust_compiler::ast {
 
@@ -21,8 +21,9 @@ public:
 
   void setSelf(SelfParamKind kind, std::shared_ptr<ast::SelfParam> self);
 
-  void setOuterAttributes(std::span<OuterAttribute> outerAttributes);
-  
+  void setOuterAttributes(std::span<OuterAttribute> outerAttribute) {
+    outerAttributes = {outerAttribute.begin(), outerAttribute.end()};
+  }
 };
 
 } // namespace rust_compiler::ast

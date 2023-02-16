@@ -17,6 +17,15 @@ class TypePathSegment final : public Node {
 
 public:
   TypePathSegment(Location loc) : Node(loc), pathIdentSegment(loc) {}
+
+  void setSegment(const PathIdentSegment &seg) { pathIdentSegment = seg; }
+
+  void setDoubleColon() { doubleColon = true;}
+
+  void setGenericArgs(const GenericArgs& a) { tail = a; }
+
+    void setTypePathFn(const TypePathFn& f) { tail = f; }
+
 };
 
 } // namespace rust_compiler::ast::types

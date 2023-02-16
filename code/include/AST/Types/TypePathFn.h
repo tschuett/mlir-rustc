@@ -13,10 +13,16 @@ namespace rust_compiler::ast::types {
 
 class TypePathFn final : public Node {
   std::optional<TypePathFnInputs> typePathFnInputs;
-  std::optional<std::shared_ptr<types::Type>> type;
+  std::optional<std::shared_ptr<types::TypeExpression>> type;
 
 public:
   TypePathFn(Location loc) : Node(loc) {}
+
+  void setTypePathFnInputs(ast::types::TypePathFnInputs in) {
+    typePathFnInputs = in;
+  };
+
+  void setType(std::shared_ptr<types::TypeExpression> ex) { type = ex; }
 };
 
 } // namespace rust_compiler::ast::types

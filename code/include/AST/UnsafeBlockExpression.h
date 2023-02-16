@@ -12,12 +12,10 @@ class UnsafeBlockExpression : public ExpressionWithBlock {
 
 public:
   UnsafeBlockExpression(Location loc)
-      : ExpressionWithBlock(
-            loc, ExpressionWithBlockKind::UnsafeBlockExpression) {}
+      : ExpressionWithBlock(loc,
+                            ExpressionWithBlockKind::UnsafeBlockExpression) {}
 
-  void setBlock(std::shared_ptr<Expression>);
+  void setBlock(std::shared_ptr<Expression> b) { expr = b; }
 };
 
 } // namespace rust_compiler::ast
-
-// FIXME kind?

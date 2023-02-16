@@ -16,8 +16,8 @@ public:
   ReferenceType(Location loc)
       : TypeNoBounds(loc, TypeNoBoundsKind::ReferenceType) {}
 
-  void setMut();
-  void setType(std::shared_ptr<ast::types::TypeNoBounds>);
+  void setMut() { mut = true; }
+  void setType(std::shared_ptr<ast::types::TypeNoBounds> t) { noBounds = t; }
 };
 
 } // namespace rust_compiler::ast::types

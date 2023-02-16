@@ -3,17 +3,20 @@
 #include "AST/AST.h"
 #include "AST/Types/Types.h"
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 namespace rust_compiler::ast::types {
 
 class TypePathFnInputs final : public Node {
-  std::vector<std::shared_ptr<types::Type>> types;
+  std::vector<std::shared_ptr<types::TypeExpression>> types;
   bool trailingcomma;
 
 public:
   TypePathFnInputs(Location loc) : Node(loc) {}
+
+  void setTrailingComma() { trailingcomma = true; }
+  void addType(std::shared_ptr<types::TypeExpression> t) { types.push_back(t); }
 };
 
 } // namespace rust_compiler::ast::types

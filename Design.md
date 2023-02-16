@@ -34,3 +34,6 @@ https://www.lei.chat/posts/compilers-and-irs-llvm-ir-spirv-and-mlir/
 
 
 https://github.com/powerboat9/gccrs/tree/master/gcc/testsuite/rust/execute/torture
+
+
+https://discourse.llvm.org/t/playing-around-with-a-c-dialect-and-wondering-about-how-high-level-it-should-be/1103
