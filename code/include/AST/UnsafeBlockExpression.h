@@ -7,15 +7,17 @@
 
 namespace rust_compiler::ast {
 
-class UnsafeBlockExpression : public Node {
+class UnsafeBlockExpression : public ExpressionWithBlock {
   std::shared_ptr<Expression> expr;
 
 public:
-  UnsafeBlockExpression(Location loc) : Node(loc) {}
+  UnsafeBlockExpression(Location loc)
+      : ExpressionWithBlock(
+            loc, ExpressionWithBlockKind::UnsafeBlockExpression) {}
+
+  void setBlock(std::shared_ptr<Expression>);
 };
 
 } // namespace rust_compiler::ast
-
-
 
 // FIXME kind?

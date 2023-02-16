@@ -20,8 +20,6 @@ public:
   void setIdentifier(std::string_view id) { identifier = id; }
 
   std::string getIdentifier();
-
-  std::vector<std::string> getLiterals() override;
 };
 
 } // namespace rust_compiler::ast::patterns

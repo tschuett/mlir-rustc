@@ -4,12 +4,11 @@
 
 namespace rust_compiler::ast::patterns {
 
-class RestPattern : public PatternWithoutRange {
+class SlicePattern : public PatternWithoutRange {
 
 public:
-  RestPattern(Location loc)
-      : PatternWithoutRange(loc, PatternWithoutRangeKind::RestPattern) {}
-
+  SlicePattern(Location loc)
+      : PatternWithoutRange(loc, PatternWithoutRangeKind::SlicePattern) {}
 };
 
 } // namespace rust_compiler::ast::patterns

@@ -11,6 +11,9 @@ add_library(parser
            Statement.cpp
            Item.cpp
            MatchExpression.cpp
+           Struct.cpp
+           Pattern.cpp
+           BareFunctionType.cpp
            )
 
 

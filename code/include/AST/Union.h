@@ -1,6 +1,9 @@
 #pragma once
 
 #include "AST/VisItem.h"
+#include "AST/GenericParams.h"
+#include "AST/WhereClause.h"
+#include "AST/StructFields.h"
 #include "Location.h"
 
 #include <optional>

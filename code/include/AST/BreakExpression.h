@@ -14,6 +14,8 @@ public:
   BreakExpression(Location loc)
       : ExpressionWithoutBlock(loc,
                                ExpressionWithoutBlockKind::BreakExpression){};
+
+  void setExpression(std::shared_ptr<Expression>);
 };
 
 } // namespace rust_compiler::ast

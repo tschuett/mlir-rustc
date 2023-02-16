@@ -1,4 +1,6 @@
+#include "AST/AsyncBlockExpression.h"
 #include "AST/BorrowExpression.h"
+#include "AST/BreakExpression.h"
 #include "AST/ContinueExpression.h"
 #include "AST/DereferenceExpression.h"
 #include "AST/IfExpression.h"
@@ -6,6 +8,7 @@
 #include "AST/MatchExpression.h"
 #include "AST/NegationExpression.h"
 #include "AST/ReturnExpression.h"
+#include "AST/UnsafeBlockExpression.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
@@ -17,6 +20,91 @@ using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseUnsafeBlockExpression() {
+  Location loc = getLocation();
+  UnsafeBlockExpression unsafeExpr = {loc};
+
+  if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
+    assert(eatKeyWord(KeyWordKind::KW_UNSAFE));
+  } else {
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse unsafe token in unsafe block expression");
+  }
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> block =
+      parseBlockExpression();
+  if (auto e = block.takeError()) {
+    llvm::errs() << "failed to parse block in unsafe block expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  unsafeExpr.setBlock(*block);
+
+  return std::make_shared<UnsafeBlockExpression>(unsafeExpr);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseAsyncBlockExpression() {
+  Location loc = getLocation();
+  AsyncBlockExpression asyncExpr = {loc};
+
+  if (checkKeyWord(KeyWordKind::KW_ASYNC)) {
+    assert(eatKeyWord(KeyWordKind::KW_ASYNC));
+  } else {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to async token in async expression");
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_MOVE)) {
+    assert(eatKeyWord(KeyWordKind::KW_MOVE));
+    asyncExpr.setMove();
+  }
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> block =
+      parseBlockExpression();
+  if (auto e = block.takeError()) {
+    llvm::errs() << "failed to parse block in async block expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  asyncExpr.setBlock(*block);
+
+  return std::make_shared<AsyncBlockExpression>(asyncExpr);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseBreakExpression() {
+  Location loc = getLocation();
+  BreakExpression breakExpr = {loc};
+
+  if (checkKeyWord(KeyWordKind::KW_BREAK)) {
+    assert(eatKeyWord(KeyWordKind::KW_BREAK));
+  } else {
+    // check error
+  }
+
+  if (check(TokenKind::LIFETIME_OR_LABEL)) {
+    assert(eat(TokenKind::LIFETIME_OR_LABEL));
+    // do something
+  }
+
+  if (check(TokenKind::Semi)) {
+    return std::make_shared<BreakExpression>(breakExpr);
+  } else {
+    llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+    if (auto e = expr.takeError()) {
+      llvm::errs() << "failed to parse expression in return expression: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    breakExpr.setExpression(*expr);
+  }
+
+  return std::make_shared<BreakExpression>(breakExpr);
+}
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseIfLetExpression() {

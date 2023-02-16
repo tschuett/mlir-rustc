@@ -13,6 +13,7 @@
 #include "AST/OuterAttribute.h"
 #include "AST/Patterns/Pattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
+#include "AST/Patterns/SlicePatternItems.h"
 #include "AST/Scrutinee.h"
 #include "AST/SelfParam.h"
 #include "AST/Statements.h"
@@ -75,6 +76,9 @@ public:
   parseExternBlock(std::optional<ast::Visibility> vis);
   llvm::Expected<std::shared_ptr<ast::VisItem>>
   parseStruct(std::optional<ast::Visibility> vis);
+  llvm::Expected<std::shared_ptr<ast::StructFields>> parseStructFields();
+  llvm::Expected<std::shared_ptr<ast::StructField>> parseStructField();
+
   llvm::Expected<std::shared_ptr<ast::VisItem>>
   parseImplementation(std::optional<ast::Visibility> vis);
 
@@ -141,6 +145,7 @@ public:
   parseTupleOrGroupedPattern();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parseSlicePattern();
+  llvm::Expected<ast::patterns::SlicePatternItems> parseSlicePatternItems();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parsePatternWithoutRange();
 
