@@ -14,6 +14,7 @@ add_library(parser
            Struct.cpp
            Pattern.cpp
            BareFunctionType.cpp
+           UseDeclaration.cpp
            )
 
 
