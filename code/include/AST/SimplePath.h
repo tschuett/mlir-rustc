@@ -4,7 +4,6 @@
 #include "AST/SimplePathSegment.h"
 
 #include <cstddef>
-
 #include <llvm/ADT/SmallVector.h>
 
 namespace rust_compiler::ast {
@@ -19,10 +18,8 @@ public:
   void addPathSegment(SimplePathSegment &seg);
 
   size_t getLength() const;
-  
 
   std::string toString();
 };
 
 } // namespace rust_compiler::ast
-

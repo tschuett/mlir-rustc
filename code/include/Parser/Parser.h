@@ -18,6 +18,7 @@
 #include "AST/SelfParam.h"
 #include "AST/Statements.h"
 #include "AST/TypeAlias.h"
+#include "AST/Types/QualifiedPathType.h"
 #include "AST/Types/TraitBound.h"
 #include "AST/Types/TypeParamBounds.h"
 #include "AST/UseTree.h"
@@ -99,13 +100,13 @@ public:
   llvm::Expected<ast::Statements> parseStatements();
 
   // Types
+  llvm::Expected<std::shared_ptr<ast::types::TypeNoBounds>> parseTypeNoBounds();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseType();
+  llvm::Expected<std::shared_ptr<ast::types::TypePath>> parseTypePath();
   llvm::Expected<ast::types::TypeParamBounds> parseTypeParamBounds();
   llvm::Expected<ast::types::TraitBound> parseTraitBound();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
   parseBareFunctionType();
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
-  parseQualifiedPathInType();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
   parseRawPointerType();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseNeverType();
@@ -125,6 +126,10 @@ public:
   parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType();
   llvm::Expected<std::vector<std::shared_ptr<ast::Item>>> parseItems();
   // only for types !!!
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseQualifiedPathInType();
+  llvm::Expected<ast::types::QualifiedPathType> parseQualifiedPathType();
 
   PathKind testTypePathOrSimplePath();
 
@@ -221,6 +226,8 @@ private:
   bool eatKeyWord(lexer::KeyWordKind keyword);
 
   lexer::Token getToken();
+
+  
 };
 
 } // namespace rust_compiler::parser

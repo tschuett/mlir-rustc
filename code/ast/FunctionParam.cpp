@@ -21,4 +21,8 @@ std::string FunctionParam::getName() {
   return name->getIdentifier();
 }
 
+void FunctionParam::setAttributes(std::span<OuterAttribute> attr) {
+  outerAttributes = {attr.begin(), attr.end()};
+}
+
 } // namespace rust_compiler::ast

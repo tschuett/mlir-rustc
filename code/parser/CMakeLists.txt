@@ -15,6 +15,10 @@ add_library(parser
            Pattern.cpp
            BareFunctionType.cpp
            UseDeclaration.cpp
+           Path.cpp
+           Pointer.cpp
+           QualifiedPathType.cpp
+           RawPointerType.cpp
            )
 
 

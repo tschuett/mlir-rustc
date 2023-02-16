@@ -50,6 +50,9 @@ add_library(ast
            Crate.cpp
            ASTVisitor.cpp
            PathIdentSegment.cpp
+           MatchExpression.cpp
+           StaticItem.cpp
+           ConstantItem.cpp
            )
 
 

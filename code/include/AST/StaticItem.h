@@ -1,14 +1,15 @@
 #pragma once
 
 #include "AST/Expression.h"
-#include "AST/VisItem.h"
-#include "Location.h"
-#include "AST/WhereClause.h"
 #include "AST/GenericParams.h"
 #include "AST/Types/TypeExpression.h"
+#include "AST/VisItem.h"
+#include "AST/WhereClause.h"
+#include "Location.h"
 
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace rust_compiler::ast {
 
@@ -21,7 +22,12 @@ class StaticItem : public VisItem {
 
 public:
   StaticItem(Location loc, std::optional<Visibility> vis)
-    : VisItem(loc, VisItemKind::StaticItem, vis) {}
+      : VisItem(loc, VisItemKind::StaticItem, vis) {}
+
+  void setMut();
+  void setIdentifier(std::string_view);
+  void setType(std::shared_ptr<types::TypeExpression>);
+  void setInit(std::shared_ptr<Expression>);
 };
 
 } // namespace rust_compiler::ast

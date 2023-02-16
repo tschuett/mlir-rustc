@@ -13,10 +13,15 @@ class BlockExpression;
 class Function : public VisItem {
   std::shared_ptr<Expression> body;
   FunctionQualifiers qualifiers;
+  FunctionParameters functionParameters;
+  GenericParams genericParams;
+  std::shared_ptr<ast::types::TypeExpression> returnType;
+  WhereClause whereClause;
 
 public:
   Function(Location loc, std::optional<Visibility> vis)
-      : VisItem(loc, VisItemKind::Function, vis), qualifiers(loc) {}
+      : VisItem(loc, VisItemKind::Function, vis), qualifiers(loc),
+        functionParameters(loc), genericParams(loc), whereClause(loc) {}
 
   bool hasBody() const;
 

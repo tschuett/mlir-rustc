@@ -2,15 +2,15 @@
 
 #include "AST/AST.h"
 #include "AST/FunctionParamPattern.h"
+#include "AST/OuterAttribute.h"
 #include "AST/Patterns/IdentifierPattern.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/VariableDeclaration.h"
-#include "AST/OuterAttribute.h"
 
 #include <memory>
 #include <optional>
-#include <vector>
 #include <span>
+#include <vector>
 
 namespace rust_compiler::ast {
 
@@ -24,13 +24,16 @@ class FunctionParam : public VariableDeclaration {
 
 public:
   FunctionParam(Location loc, FunctionParamKind kind)
-    : VariableDeclaration(loc, VariableDeclarationKind::FunctionParameter), kind(kind) {}
+      : VariableDeclaration(loc, VariableDeclarationKind::FunctionParameter),
+        kind(kind) {}
 
   void setAttributes(std::span<OuterAttribute>);
   void setName(std::shared_ptr<ast::patterns::IdentifierPattern> name);
   void setType(std::shared_ptr<ast::types::TypeExpression> type);
 
   std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
+
+  FunctionParamKind getKind() const { return kind; }
 
   std::string getName() override;
 };
