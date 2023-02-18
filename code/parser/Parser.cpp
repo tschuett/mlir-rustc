@@ -231,6 +231,57 @@ Parser::parseCrateModule(std::string_view crateName) {
   // parseItems
 }
 
+llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
+Parser::parseLifetimeWhereClasueItem() {
+  Location loc = getLocation();
+  LifetimeWhereClauseItem item = {loc};
+}
+
+llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
+Parser::parseTypeBoundWhereClauseItem() {
+  Location loc = getLocation();
+
+  TypeBoundWhereClauseItem item = {loc};
+
+  if (checkKeyWord(KeyWordKind::KW_FOR)) {
+    llvm::Expected<ast::types::ForLifetimes> forLifetime = parseForLifetimes();
+    if (auto e = forLifetime.takeError()) {
+      llvm::errs()
+          << "failed to parse ForLifetime in TypeBoundWhereClauseItem: "
+          << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    item.setForLifetimes(*forLifetime);
+  }
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+      parseType();
+  if (auto e = type.takeError()) {
+    llvm::errs() << "failed to parse type in TypeBoundWhereClauseItem: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  item.setType(*type);
+
+  if (!check(TokenKind::Colon))
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse : token in TypeBoundWhereClauseItem");
+
+  assert(eat(TokenKind::Colon));
+
+  llvm::Expected<ast::types::TypeParamBounds> bounds = parseTypeParamBounds();
+  if (auto e = bounds.takeError()) {
+    llvm::errs()
+        << "failed to parse type param bounds in TypeBoundWhereClauseItem: "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  item.setBounds(*bounds);
+
+  return std::make_shared<TypeBoundWhereClauseItem>(item);
+}
+
 llvm::Expected<ast::WhereClause> Parser::parseWhereClause() {
   Location loc = getLocation();
 
@@ -241,14 +292,109 @@ llvm::Expected<ast::WhereClause> Parser::parseWhereClause() {
                              "failed to parse where keyword in where clause");
   }
 
+  assert(eatKeyWord(KeyWordKind::KW_WHERE));
+
   // FIXME
 }
 
-llvm::Expected<ast::ConstParam> Parser::parseConstParam() {}
+llvm::Expected<ast::ConstParam> Parser::parseConstParam() {
+  Location loc = getLocation();
+
+  ConstParam param = {loc};
+
+  if (!checkKeyWord(KeyWordKind::KW_CONST)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse const keyword in const param");
+
+    assert(eatKeyWord(KeyWordKind::KW_CONST));
+  }
+
+  if (check(TokenKind::Identifier)) {
+    Token tok = getToken();
+    param.setIdentifier(tok.getIdentifier());
+    assert(eat(TokenKind::Identifier));
+  } else {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse identifier token in const param");
+  }
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+      parseType();
+  if (auto e = type.takeError()) {
+    llvm::errs() << "failed to parse type in const param: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  param.setType(*type);
+
+  if (check(TokenKind::Eq)) {
+    assert(eat(TokenKind::Eq));
+
+    if (check(TokenKind::BraceOpen)) {
+      llvm::Expected<std::shared_ptr<ast::Expression>> block =
+          parseBlockExpression();
+      if (auto e = type.takeError()) {
+        llvm::errs() << "failed to parse block expression in const param: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      param.setBlock(*block);
+    } else if (check(TokenKind::Identifier)) {
+      Token tok = getToken();
+      param.setInit(tok.getIdentifier());
+      assert(check(TokenKind::Identifier));
+    } else if (check(TokenKind::Minus)) {
+      assert(check(TokenKind::Minus));
+      llvm::Expected<std::shared_ptr<ast::Expression>> literal =
+          parseLiteralExpression();
+      if (auto e = literal.takeError()) {
+        llvm::errs() << "failed to parse literal expression in const param: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      param.setInitLiteral(*literal);
+    } else {
+      llvm::Expected<std::shared_ptr<ast::Expression>> literal =
+          parseLiteralExpression();
+      if (auto e = literal.takeError()) {
+        llvm::errs() << "failed to parse literal expression in const param: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      param.setInitLiteral(*literal);
+    }
+  }
+
+  return param;
+}
 
 llvm::Expected<ast::LifetimeParam> Parser::parseLifetimeParam() {}
 
-llvm::Expected<ast::TypeParam> Parser::parseTypeParam() {}
+llvm::Expected<ast::TypeParam> Parser::parseTypeParam() {
+  Location loc = getLocation();
+
+  TypeParam param = {loc};
+
+  if (!check(TokenKind::Identifier))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse identifier token in type param");
+
+  Token tok = getToken();
+  param.setIdentifier(tok.getIdentifier());
+  assert(eat(TokenKind::Identifier));
+
+  if (check(TokenKind::Colon)) {
+    assert(eat(TokenKind::Colon));
+    llvm::Expected<ast::types::TypeParamBounds> bounds = parseTypeParamBounds();
+    if (auto e = bounds.takeError()) {
+      llvm::errs() << "failed to parse TypeParamBounds in type param: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    param.setBounds(*bounds);
+    // FIXME
+  }
+}
 
 llvm::Expected<ast::GenericParam> Parser::parseGenericParam() {
   Location loc = getLocation();

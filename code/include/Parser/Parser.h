@@ -2,6 +2,8 @@
 
 #include "AST/Abi.h"
 #include "AST/AssociatedItem.h"
+#include "AST/LifetimeWhereClauseItem.h"
+#include "AST/TypeBoundWhereClauseItem.h"
 #include "AST/ConstParam.h"
 #include "AST/Crate.h"
 #include "AST/EnumItem.h"
@@ -32,6 +34,7 @@
 #include "AST/UseTree.h"
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
+#include "AST/WhereClauseItem.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
@@ -262,6 +265,8 @@ public:
       parseCompoundAssignmentExpression(std::shared_ptr<ast::Expression>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
   parseQualifiedPathInExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+  parseLiteralExpression();
 
   llvm::Expected<ast::MatchArms> parseMatchArms();
   llvm::Expected<ast::MatchArm> parseMatchArm();
@@ -272,6 +277,11 @@ public:
   llvm::Expected<ast::GenericParams> parseGenericParams();
   llvm::Expected<ast::WhereClause> parseWhereClause();
   llvm::Expected<ast::types::ForLifetimes> parseForLifetimes();
+
+  llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
+  parseLifetimeWhereClasueItem();
+  llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
+  parseTypeBoundWhereClauseItem();
 
   llvm::Expected<std::shared_ptr<ast::EnumItems>> parseEnumItems();
   llvm::Expected<std::shared_ptr<ast::EnumItem>> parseEnumItem();
