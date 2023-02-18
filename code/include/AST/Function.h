@@ -6,6 +6,9 @@
 #include "AST/VisItem.h"
 #include "AST/WhereClause.h"
 
+#include <string>
+#include <memory>
+
 namespace rust_compiler::ast {
 
 class BlockExpression;
@@ -17,6 +20,8 @@ class Function : public VisItem {
   GenericParams genericParams;
   std::shared_ptr<ast::types::TypeExpression> returnType;
   WhereClause whereClause;
+
+  std::string identifier;
 
 public:
   Function(Location loc, std::optional<Visibility> vis)
@@ -38,6 +43,8 @@ public:
   void setBody(std::shared_ptr<Expression> block);
 
   void setReturnType(std::shared_ptr<ast::types::TypeExpression> returnType);
+
+  void setIdentifier(std::string_view id) { identifier = id; }
 };
 
 } // namespace rust_compiler::ast

@@ -36,6 +36,8 @@ public:
   std::span<std::shared_ptr<Item>> getItems() const;
 
   std::string_view getCrateName() const;
+
+  basic::CrateNum getCrateNum() const { return crateNum; }
 };
 
 } // namespace rust_compiler::ast

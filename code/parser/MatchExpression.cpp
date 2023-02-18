@@ -21,7 +21,8 @@ llvm::Expected<ast::MatchArm> Parser::parseMatchArm() {
     // check error
   }
 
-  llvm::Expected<ast::patterns::Pattern> pattern = parsePattern();
+  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> pattern =
+      parsePattern();
   // check error
 
   if (checkKeyWord(KeyWordKind::KW_IF)) {

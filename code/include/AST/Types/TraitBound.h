@@ -16,6 +16,8 @@ class TraitBound : public TypeParamBound {
 public:
   TraitBound(Location loc)
       : TypeParamBound(TypeParamBoundKind::TraitBound, loc), typePath(loc) {}
+
+  bool hasQuestionMark() const { return questionMark; }
 };
 
 } // namespace rust_compiler::ast::types

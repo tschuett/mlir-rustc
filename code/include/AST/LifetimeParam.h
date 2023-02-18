@@ -1,14 +1,12 @@
 #pragma once
 
 #include "AST/AST.h"
-#include "AST/GenericParam.h"
 
 namespace rust_compiler::ast {
 
-class LifetimeParam : public GenericParam {
+class LifetimeParam : public Node {
 public:
-  LifetimeParam(Location loc)
-      : GenericParam(loc, GenericParamKind::LifetimeParam) {}
+  LifetimeParam(Location loc) : Node(loc) {}
 };
 
 } // namespace rust_compiler::ast

@@ -32,7 +32,7 @@ Parser::parseRawPointerType() {
         "failed to parse mut or const keyword in raw pointer type");
   }
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeNoBounds>> noBounds =
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> noBounds =
       parseTypeNoBounds();
   if (auto e = noBounds.takeError()) {
     llvm::errs() << "failed to parse type in raw pointer type: "
@@ -62,7 +62,7 @@ Parser::parseReferenceType() {
     assert(eatKeyWord(KeyWordKind::KW_MUT));
   }
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeNoBounds>> noBounds =
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> noBounds =
       parseTypeNoBounds();
   if (auto e = noBounds.takeError()) {
     llvm::errs() << "failed to parse type in reference type: "

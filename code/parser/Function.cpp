@@ -1,3 +1,4 @@
+#include "AST/FunctionQualifiers.h"
 #include "AST/SelfParam.h"
 #include "AST/ShorthandSelf.h"
 #include "AST/TypedSelf.h"
@@ -266,10 +267,56 @@ llvm::Expected<ast::FunctionParam> Parser::parseFunctionParam() {
   // ???
 }
 
-// llvm::Expected<ast::FunctionSignature> Parser::parseFunctionsignature()
-// {}
+llvm::Expected<ast::Abi> Parser::parseAbi() {
+  Location loc = getLocation();
 
-llvm::Expected<ast::FunctionQualifiers> Parser::parseFunctionQualifiers() {}
+  Abi abi = {loc};
+
+  if (check(TokenKind::STRING_LITERAL)) {
+    // FIXME
+    return abi;
+  } else if (check(TokenKind::RAW_STRING_LITERAL)) {
+    // FIXME
+    return abi;
+  }
+
+  return createStringError(inconvertibleErrorCode(), "failed to parse Abi");
+}
+
+llvm::Expected<ast::FunctionQualifiers> Parser::parseFunctionQualifiers() {
+  Location loc = getLocation();
+
+  FunctionQualifiers qual = {loc};
+
+  if (checkKeyWord(KeyWordKind::KW_CONST)) {
+    assert(eatKeyWord(KeyWordKind::KW_CONST));
+    qual.setConst();
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_ASYNC)) {
+    assert(eatKeyWord(KeyWordKind::KW_ASYNC));
+    qual.setAsync();
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
+    assert(eatKeyWord(KeyWordKind::KW_UNSAFE));
+    qual.setUnsafe();
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
+    assert(eatKeyWord(KeyWordKind::KW_EXTERN));
+
+    llvm::Expected<ast::Abi> abi = Parser::parseAbi();
+    if (auto e = abi.takeError()) {
+      llvm::errs() << "failed to parse Abi in function qualifiers: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    qual.setAbi(*abi);
+  }
+
+  return qual;
+}
 
 llvm::Expected<std::shared_ptr<ast::VisItem>>
 Parser::parseFunction(std::optional<ast::Visibility> vis) {
@@ -309,6 +356,8 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
 
   assert(eat(TokenKind::Identifier));
 
+  fun.setIdentifier(identifier);
+
   if (check(TokenKind::Lt)) {
     llvm::Expected<ast::GenericParams> genericParams = parseGenericParams();
     if (auto e = genericParams.takeError()) {
@@ -320,7 +369,8 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   }
 
   if (!check(TokenKind::ParenOpen)) {
-    // error
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse generic params");
   }
 
   assert(eat(TokenKind::ParenOpen));

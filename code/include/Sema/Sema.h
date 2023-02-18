@@ -6,15 +6,15 @@
 #include "AST/CallExpression.h"
 #include "AST/Crate.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/InfiniteLoopExpression.h"
 #include "AST/LetStatement.h"
+#include "AST/LiteralExpression.h"
 #include "AST/LoopExpression.h"
+#include "AST/MacroInvocationSemi.h"
+#include "AST/MatchArmGuard.h"
 #include "AST/MethodCallExpression.h"
 #include "AST/Statements.h"
 #include "AST/Types/Types.h"
-#include "AST/MacroInvocationSemi.h"
-#include "AST/LiteralExpression.h"
-#include "AST/InfiniteLoopExpression.h"
-#include "AST/MatchArmGuard.h"
 #include "Basic/Ids.h"
 
 #include <map>
@@ -34,7 +34,7 @@ private:
 
   void analyzeFunction(std::shared_ptr<ast::Function> fun);
   void analyzeBlockExpression(std::shared_ptr<ast::BlockExpression> block);
-  void analyzeStatements(std::shared_ptr<ast::Statements> stmts);
+  void analyzeStatements(ast::Statements stmts);
   void analyzeLetStatement(std::shared_ptr<ast::LetStatement> let);
   void analyzeCallExpression(std::shared_ptr<ast::CallExpression> let);
   void
@@ -66,7 +66,7 @@ private:
   void
   analyzeAssignmentExpression(std::shared_ptr<ast::AssignmentExpression> arith);
 
-  //void checkExhaustiveness(std::shared_ptr<ast::MatchArmGuard>);
+  // void checkExhaustiveness(std::shared_ptr<ast::MatchArmGuard>);
 
   bool isReachable(std::shared_ptr<ast::VisItem>,
                    std::shared_ptr<ast::VisItem>);

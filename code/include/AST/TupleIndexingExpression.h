@@ -14,6 +14,8 @@ public:
   TupleIndexingExpression(Location loc)
       : ExpressionWithoutBlock(
             loc, ExpressionWithoutBlockKind::TupleIndexingExpression){};
+
+  uint32_t getTupleIndex() const { return tupleIndex; }
 };
 
 } // namespace rust_compiler::ast

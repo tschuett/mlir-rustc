@@ -9,7 +9,7 @@ namespace rust_compiler::ast::types {
 
 class ReferenceType : public TypeNoBounds {
   bool mut;
-  std::shared_ptr<ast::types::TypeNoBounds> noBounds;
+  std::shared_ptr<ast::types::TypeExpression> noBounds;
 
   // FIXME Lifetime
 public:
@@ -17,7 +17,7 @@ public:
       : TypeNoBounds(loc, TypeNoBoundsKind::ReferenceType) {}
 
   void setMut() { mut = true; }
-  void setType(std::shared_ptr<ast::types::TypeNoBounds> t) { noBounds = t; }
+  void setType(std::shared_ptr<ast::types::TypeExpression> t) { noBounds = t; }
 };
 
 } // namespace rust_compiler::ast::types

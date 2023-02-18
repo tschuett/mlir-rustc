@@ -96,7 +96,7 @@ private:
   void emitFunction(std::shared_ptr<ast::Function>);
   void emitModule(std::shared_ptr<ast::Module>);
   mlir::Value emitBlockExpression(std::shared_ptr<ast::BlockExpression>);
-  mlir::Value emitStatements(std::shared_ptr<ast::Statements>);
+  mlir::Value emitStatements(ast::Statements);
   mlir::Value emitExpression(std::shared_ptr<ast::Expression> expr);
   mlir::Value emitExpressionWithoutBlock(std::shared_ptr<ast::Expression> expr);
   mlir::Value emitExpressionWithBlock(std::shared_ptr<ast::Expression> expr);

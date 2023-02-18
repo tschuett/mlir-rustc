@@ -13,6 +13,8 @@ class TupleFields : public Node {
 
 public:
   TupleFields(Location loc) : Node(loc) {}
+
+  bool hasTrailingComma() const { return trailingComma; }
 };
 
 } // namespace rust_compiler::ast

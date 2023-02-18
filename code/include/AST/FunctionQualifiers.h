@@ -1,9 +1,10 @@
 #pragma once
 
 #include "AST/AST.h"
+#include "AST/Abi.h"
 
-#include <string>
 #include <optional>
+#include <string>
 #include <string_view>
 
 namespace rust_compiler::ast {
@@ -12,12 +13,11 @@ enum class FunctionQualifierKind { Const, Async, Unsafe, Extern };
 
 class FunctionQualifiers : public Node {
   FunctionQualifierKind kind;
-  std::optional<std::string> abi;
+  std::optional<Abi> abi;
 
   bool isAsync = false;
   bool isConst = false;
   bool isUnsafe = false;
-  bool isExtern = false;
 
 public:
   FunctionQualifiers(Location loc) : Node(loc){};
@@ -27,8 +27,7 @@ public:
   void setAsync();
   void setConst();
   void setUnsafe();
-  void setExtern(std::string_view abi);
-  void setExtern();
+  void setAbi(Abi _abi) { abi = _abi; }
 };
 
 } // namespace rust_compiler::ast

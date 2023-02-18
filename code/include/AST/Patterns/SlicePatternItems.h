@@ -16,6 +16,10 @@ public:
   SlicePatternItems(Location loc) : Node(loc) {}
 
   bool hasTrailingComma();
+
+  void addPattern(std::shared_ptr<ast::patterns::Pattern> pat) {
+    patterns.push_back(pat);
+  }
 };
 
 } // namespace rust_compiler::ast::patterns

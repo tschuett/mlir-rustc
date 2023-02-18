@@ -13,6 +13,8 @@ class EnumItems : public Node {
 
 public:
   EnumItems(Location loc) : Node(loc) {}
+
+  bool hasTrailingComma() const { return trailingComma; }
 };
 
 } // namespace rust_compiler::ast

@@ -144,6 +144,105 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::Lt: {
     return std::string("<");
   }
+  case TokenKind::OrOr: {
+    return std::string("||");
+  }
+  case TokenKind::PathSep: {
+    return std::string("::");
+  }
+  case TokenKind::DotDotDot: {
+    return std::string("...");
+  }
+  case TokenKind::DotDotEq: {
+    return std::string("..=");
+  }
+  case TokenKind::Ne: {
+    return std::string("!=");
+  }
+  case TokenKind::Ge: {
+    return std::string(">=");
+  }
+  case TokenKind::Le: {
+    return std::string("<=");
+  }
+  case TokenKind::Underscore: {
+    return std::string("_");
+  }
+  case TokenKind::LIFETIME_TOKEN: {
+    return std::string("lifetime token");
+  }
+  case TokenKind::LIFETIME_OR_LABEL: {
+    return std::string("lifetime or label");
+  }
+  case TokenKind::ASCII_ESCAPE: {
+    return std::string("ascii escape");
+  }
+  case TokenKind::QUOTE_ESCAPE: {
+    return std::string("quote escape");
+  }
+  case TokenKind::CHAR_LITERAL: {
+    return std::string("char literal");
+  }
+  case TokenKind::STRING_LITERAL: {
+    return std::string("string literal");
+  }
+  case TokenKind::RAW_STRING_LITERAL: {
+    return std::string("raw string literal");
+  }
+  case TokenKind::BYTE_STRING_LITERAL: {
+    return std::string("byte string literal");
+  }
+  case TokenKind::RAW_BYTE_STRING_LITERAL: {
+    return std::string("raw byte string literal");
+  }
+  case TokenKind::BYTE_LITERAL: {
+    return std::string("byte literal");
+  }
+  case TokenKind::FLOAT_LITERAL: {
+    return std::string("float literal");
+  }
+  case TokenKind::Eof: {
+    return std::string("eof");
+  }
+  case TokenKind::At: {
+    return std::string("@");
+  }
+  case TokenKind::RESERVED_NUMBER: {
+    return std::string("reserved number");
+  }
+  case TokenKind::StarEq: {
+    return std::string("*=");
+  }
+  case TokenKind::PlusEq: {
+    return std::string("+=");
+  }
+  case TokenKind::MinusEq: {
+    return std::string("-=");
+  }
+  case TokenKind::AndEq: {
+    return std::string("&=");
+  }
+  case TokenKind::ShlEq: {
+    return std::string("<<=");
+  }
+  case TokenKind::ShrEq: {
+    return std::string(">>=");
+  }
+  case TokenKind::OrEq: {
+    return std::string("|=");
+  }
+  case TokenKind::PercentEq: {
+    return std::string("%=");
+  }
+  case TokenKind::UNICODE_ESCAPE: {
+    return std::string("unicode escape");
+  }
+  case TokenKind::CaretEq: {
+    return std::string("^=");
+  }
+  case TokenKind::INTEGER_LITERAL: {
+    return std::string("integer literal");
+  }
   }
 }
 

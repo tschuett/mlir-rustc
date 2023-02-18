@@ -7,7 +7,6 @@
 namespace rust_compiler::ast {
 
 class LifetimeOrLabel : public Node {
-  bool lifetime;
   std::string label;
 
 public:

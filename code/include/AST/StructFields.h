@@ -13,6 +13,9 @@ class StructFields : public Node {
 
 public:
   StructFields(Location loc) : Node(loc) {}
+
+  void addStructField(const StructField &sf) { fields.push_back(sf); }
+  void setTrailingComma() { trailingComma = true; }
 };
 
 } // namespace rust_compiler::ast

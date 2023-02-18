@@ -1,9 +1,9 @@
 #pragma once
 
-#include "AST/VisItem.h"
 #include "AST/GenericParams.h"
-#include "AST/WhereClause.h"
 #include "AST/StructFields.h"
+#include "AST/VisItem.h"
+#include "AST/WhereClause.h"
 #include "Location.h"
 
 #include <optional>
@@ -18,7 +18,11 @@ class Union : public VisItem {
 
 public:
   Union(Location loc, std::optional<Visibility> vis)
-    : VisItem(loc, VisItemKind::Union, vis), fields(loc) {}
+      : VisItem(loc, VisItemKind::Union, vis), fields(loc) {}
+
+  void setGenericParams(const GenericParams &gp) { genericParams = gp; }
+  void setWhereClause(const WhereClause &wc) { whereClause = wc; }
+  void setStructfields(const StructFields &sf) { fields = sf; }
 };
 
 } // namespace rust_compiler::ast

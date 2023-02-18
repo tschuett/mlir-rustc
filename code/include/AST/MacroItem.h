@@ -19,6 +19,8 @@ class MacroItem : public Item {
 public:
   MacroItem(Location loc, MacroItemKind kind)
       : Item(loc, ItemKind::MacroItem), kind(kind) {}
+
+  MacroItemKind getKind() const { return kind; }
 };
 
 } // namespace rust_compiler::ast

@@ -14,6 +14,12 @@ class TypeParamBounds : public Node {
 
 public:
   TypeParamBounds(Location loc) : Node(loc) {}
+
+  void addTypeParamBound(const TypeParamBound &tpb) {
+    typeParamBounds.push_back(tpb);
+  }
+
+  bool isTrailingPlus() const { return trailingPlus; }
 };
 
 } // namespace rust_compiler::ast::types

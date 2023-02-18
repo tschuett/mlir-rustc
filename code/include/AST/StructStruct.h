@@ -17,7 +17,11 @@ class StructStruct : public Struct {
 
 public:
   StructStruct(Location loc, std::optional<Visibility> vis)
-    : Struct(loc, StructKind::StructStruct, vis) {}
+      : Struct(loc, StructKind::StructStruct, vis) {}
+
+  void setWhereClause(const WhereClause &wc) { whereClause = wc; }
+  void setGenericParams(const GenericParams &gp) { genericParams = gp; }
+  void setIdentifier(std::string_view id) { identifier = id; }
 };
 
 } // namespace rust_compiler::ast

@@ -14,6 +14,8 @@ class TypeParamBound : public Node {
 public:
   TypeParamBound(TypeParamBoundKind kind, Location loc)
       : Node(loc), kind(kind) {}
+
+  TypeParamBoundKind getKind() const { return kind; };
 };
 
 } // namespace rust_compiler::ast::types

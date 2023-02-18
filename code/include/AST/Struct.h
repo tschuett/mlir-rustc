@@ -12,6 +12,8 @@ class Struct : public VisItem {
 public:
   Struct(Location loc, StructKind kind, std::optional<Visibility> vis)
       : VisItem(loc, VisItemKind::Struct, vis), kind(kind) {}
+
+  StructKind getKind() const { return kind; }
 };
 
 } // namespace rust_compiler::ast

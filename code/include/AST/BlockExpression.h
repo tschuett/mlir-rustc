@@ -12,15 +12,16 @@ namespace rust_compiler::ast {
 
 class BlockExpression : public ExpressionWithBlock {
 
-  std::shared_ptr<Statements> stmts;
+  Statements stmts;
 
 public:
   BlockExpression(Location loc)
-      : ExpressionWithBlock(loc, ExpressionWithBlockKind::BlockExpression) {}
+      : ExpressionWithBlock(loc, ExpressionWithBlockKind::BlockExpression),
+        stmts(loc) {}
 
-  void setStatements(std::shared_ptr<Statements> stmts);
+  void setStatements(const Statements &_stmts) { stmts = _stmts; }
 
-  std::shared_ptr<Statements> getExpressions();
+  Statements getExpressions() { return stmts; }
 };
 
 } // namespace rust_compiler::ast

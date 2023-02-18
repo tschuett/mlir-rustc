@@ -199,16 +199,16 @@ runExpressionWithoutBlock(std::shared_ptr<ast::ExpressionWithoutBlock> woBlock,
 void run(std::shared_ptr<ast::BlockExpression> block,
          BlockExpressionVisitor *visitor) {
 
-  std::shared_ptr<ast::Statements> stmts = block->getExpressions();
+  ast::Statements stmts = block->getExpressions();
   visitor->visitStatements(stmts);
 
-  for (auto &stmt : stmts->getStmts()) {
+  for (auto &stmt : stmts.getStmts()) {
     visitor->visitStatement(stmt);
     runStatement(stmt, visitor);
   }
 
-  if (stmts->hasTrailing()) {
-    std::shared_ptr<Expression> trail = stmts->getTrailing();
+  if (stmts.hasTrailing()) {
+    std::shared_ptr<Expression> trail = stmts.getTrailing();
     visitor->visitExpressionWithoutBlock(
         std::static_pointer_cast<ExpressionWithoutBlock>(trail));
     runExpressionWithoutBlock(

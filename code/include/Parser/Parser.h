@@ -1,16 +1,21 @@
 #pragma once
 
+#include "AST/Abi.h"
+#include "AST/AssociatedItem.h"
+#include "AST/ConstParam.h"
 #include "AST/Crate.h"
 #include "AST/EnumItem.h"
 #include "AST/EnumItems.h"
+#include "AST/ExternalItem.h"
 #include "AST/Function.h"
 #include "AST/FunctionParam.h"
 #include "AST/FunctionParamPattern.h"
 #include "AST/FunctionParameters.h"
+#include "AST/GenericParam.h"
+#include "AST/LifetimeParam.h"
 #include "AST/MatchArm.h"
 #include "AST/MatchArmGuard.h"
 #include "AST/MatchArms.h"
-#include "AST/AssociatedItem.h"
 #include "AST/OuterAttribute.h"
 #include "AST/Patterns/Pattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
@@ -19,6 +24,7 @@
 #include "AST/SelfParam.h"
 #include "AST/Statements.h"
 #include "AST/TypeAlias.h"
+#include "AST/TypeParam.h"
 #include "AST/Types/QualifiedPathType.h"
 #include "AST/Types/TraitBound.h"
 #include "AST/Types/TypeParamBounds.h"
@@ -36,6 +42,14 @@
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_parse/parser/struct.Parser.html#method.new
 namespace rust_compiler::parser {
+
+class CheckPoint {
+  size_t offset = 0;
+
+public:
+  CheckPoint(size_t offset) : offset(offset) {}
+  size_t readOffset() const { return offset; }
+};
 
 enum PathKind { TypePath, SimplePath, Unknown };
 
@@ -55,6 +69,9 @@ public:
   llvm::Expected<std::shared_ptr<ast::Item>> parseItem();
 
   llvm::Expected<std::shared_ptr<ast::VisItem>> parseVisItem();
+
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern();
 
   /// VisItems
   llvm::Expected<std::shared_ptr<ast::VisItem>>
@@ -77,10 +94,13 @@ public:
   parseConstantItem(std::optional<ast::Visibility> vis);
   llvm::Expected<std::shared_ptr<ast::VisItem>>
   parseExternBlock(std::optional<ast::Visibility> vis);
+
+  llvm::Expected<ast::ExternalItem> parseExternalItem();
+
   llvm::Expected<std::shared_ptr<ast::VisItem>>
   parseStruct(std::optional<ast::Visibility> vis);
-  llvm::Expected<std::shared_ptr<ast::StructFields>> parseStructFields();
-  llvm::Expected<std::shared_ptr<ast::StructField>> parseStructField();
+  llvm::Expected<ast::StructFields> parseStructFields();
+  llvm::Expected<ast::StructField> parseStructField();
 
   llvm::Expected<std::shared_ptr<ast::VisItem>>
   parseImplementation(std::optional<ast::Visibility> vis);
@@ -90,6 +110,10 @@ public:
 
   llvm::Expected<ast::OuterAttribute> parseOuterAttribute();
   llvm::Expected<ast::InnerAttribute> parseInnerAttribute();
+
+  llvm::Expected<ast::ConstParam> parseConstParam();
+  llvm::Expected<ast::LifetimeParam> parseLifetimeParam();
+  llvm::Expected<ast::TypeParam> parseTypeParam();
 
   // Function
   llvm::Expected<ast::FunctionQualifiers> parseFunctionQualifiers();
@@ -102,7 +126,8 @@ public:
   llvm::Expected<ast::Statements> parseStatements();
 
   // Types
-  llvm::Expected<std::shared_ptr<ast::types::TypeNoBounds>> parseTypeNoBounds();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseTypeNoBounds();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseType();
   llvm::Expected<std::shared_ptr<ast::types::TypePath>> parseTypePath();
 
@@ -145,7 +170,7 @@ public:
   parseCrateModule(std::string_view crateName);
 
   // Patterns
-  llvm::Expected<ast::patterns::Pattern> parsePattern();
+  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> parsePattern();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parsePatternNoTopAlt();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
@@ -158,6 +183,8 @@ public:
   parseTupleOrGroupedPattern();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parseSlicePattern();
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseLiteralPattern();
   llvm::Expected<ast::patterns::SlicePatternItems> parseSlicePatternItems();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parsePatternWithoutRange();
@@ -165,12 +192,26 @@ public:
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parseRangePattern();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseStructPattern();
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseTupleStructPattern();
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parseIdentifierPattern();
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parsePathOrStructOrTuplePattern();
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseMacroInvocation();
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parsePathPattern();
 
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parsePathInExpressionOrStructExprStructOrStructExprUnitOrMacroInvocation();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
   parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectType();
 
   // Expressions
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseExpressionWithPostfix();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseBlockExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>>
@@ -189,10 +230,43 @@ public:
   llvm::Expected<std::shared_ptr<ast::Expression>> parseIfLetExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseUnsafeBlockExpression();
   llvm::Expected<ast::Scrutinee> parseScrutinee();
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+      parseAwaitExpression(std::shared_ptr<ast::Expression>);
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+      parseIndexingExpression(std::shared_ptr<ast::Expression>);
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+      parseFieldExpression(std::shared_ptr<ast::Expression>);
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseRangeExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseUnderScoreExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+  parseGroupedOrTupleExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseCallExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+      parseErrorPropagationExpression(std::shared_ptr<ast::Expression>);
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+      parseAssignmentExpression(std::shared_ptr<ast::Expression>);
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+      parseTypeCastExpression(std::shared_ptr<ast::Expression>);
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+      parseMethodCallExpression(std::shared_ptr<ast::Expression>);
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+      parseTupleIndexingExpression(std::shared_ptr<ast::Expression>);
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseArrayExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+      parseArithmeticOrLogicalExpression(std::shared_ptr<ast::Expression>);
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+      parseComparisonExpression(std::shared_ptr<ast::Expression>);
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+      parseLazyBooleanExpression(std::shared_ptr<ast::Expression>);
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+      parseCompoundAssignmentExpression(std::shared_ptr<ast::Expression>);
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+  parseQualifiedPathInExpression();
 
   llvm::Expected<ast::MatchArms> parseMatchArms();
   llvm::Expected<ast::MatchArm> parseMatchArm();
   llvm::Expected<ast::MatchArmGuard> parseMatchGuard();
+  llvm::Expected<ast::GenericParam> parseGenericParam();
 
   llvm::Expected<ast::GenericArgs> parseGenericArgs();
   llvm::Expected<ast::GenericParams> parseGenericParams();
@@ -209,10 +283,13 @@ public:
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseTypedSelf();
 
   llvm::Expected<ast::types::TypeParamBounds> parseTypeParamBounds();
+  llvm::Expected<ast::types::TypeParamBound> parseTypeParamBound();
 
   llvm::Expected<ast::SimplePath> parseSimplePath();
 
   llvm::Expected<std::shared_ptr<ast::AssociatedItem>> parseAssociatedItem();
+
+  llvm::Expected<ast::Abi> parseAbi();
 
 private:
   bool check(lexer::TokenKind token);
@@ -232,13 +309,23 @@ private:
   /// super | self | Self | crate | $crate
   bool checkSuperSelf();
 
+  /// IDENTIFIER | super | self | Self | crate | $crate
+  bool checkPathIdentSegment();
+  bool eatPathIdentSegment();
+
+  /// IDENTIFIER | super | self | crate | $crate
+  bool checkSimplePathSegment();
+  bool eatSimplePathSegment();
+
   bool checkSelfParam();
 
-  bool eat();
   bool eat(lexer::TokenKind token);
   bool eatKeyWord(lexer::KeyWordKind keyword);
 
   lexer::Token getToken();
+
+  CheckPoint getCheckPoint();
+  void recover(const CheckPoint &cp);
 };
 
 } // namespace rust_compiler::parser

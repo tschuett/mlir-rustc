@@ -8,4 +8,15 @@ Parser::tryParsePattern(std::span<lexer::Token> tokens) {
   return std::nullopt;
 }
 
+llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>> Parser::
+    parsePathInExpressionOrStructExprStructOrStructExprUnitOrMacroInvocation() {
+  /*
+    PathInExpression as PathExpression
+    PathInExpression as StructExprStruct
+    PathInExpression as StructExprUnit
+    SimplePath as MacroInvocation
+   */
+  xxx
+}
+
 } // namespace rust_compiler::parser

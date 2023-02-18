@@ -20,11 +20,12 @@ class Visibility : public Node {
   SimplePath simplePath;
 
 public:
-  Visibility(Location loc, VisibilityKind kind)
-      : Node(loc), kind(kind), simplePath(loc) {}
+  Visibility(Location loc)
+      : Node(loc), simplePath(loc) {}
 
-  Visibility(Location loc, SimplePath simplePath)
-      : Node(loc), kind(VisibilityKind::PublicIn), simplePath(simplePath) {}
+  void setKind(VisibilityKind _kind) { kind = _kind; }
+
+  void setPath(const SimplePath &p) { simplePath = p; }
 };
 
 } // namespace rust_compiler::ast

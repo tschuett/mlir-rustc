@@ -11,11 +11,16 @@ class PatternNoTopAlt;
 
 class Pattern : public Node {
   std::vector<std::shared_ptr<ast::patterns::PatternNoTopAlt>> patterns;
+  bool leadingOr = false;
 
 public:
   Pattern(Location loc) : Node(loc) {}
 
-  void addPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt>);
+  void setLeadingOr() { leadingOr = true; }
+
+  void addPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat) {
+    patterns.push_back(pat);
+  }
 };
 
 } // namespace rust_compiler::ast::patterns

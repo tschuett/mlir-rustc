@@ -10,10 +10,5 @@ void FunctionQualifiers::setConst() { isConst = true; }
 
 void FunctionQualifiers::setUnsafe() { isUnsafe = true; }
 
-void FunctionQualifiers::setExtern(std::string_view _abi) {
-  isExtern = true;
-  abi = _abi;
-}
-
 
 } // namespace rust_compiler::ast

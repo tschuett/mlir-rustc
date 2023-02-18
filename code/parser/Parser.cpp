@@ -13,6 +13,38 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
+/// IDENTIFIER | super | self | Self | crate | $crate
+bool Parser::checkPathIdentSegment() {
+  if (check(TokenKind::Identifier))
+    return true;
+  if (checkKeyWord(KeyWordKind::KW_SUPER))
+    return true;
+  if (checkKeyWord(KeyWordKind::KW_SELFVALUE))
+    return true;
+  if (checkKeyWord(KeyWordKind::KW_SELFTYPE))
+    return true;
+  if (checkKeyWord(KeyWordKind::KW_CRATE))
+    return true;
+  if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE))
+    return true;
+  return false;
+}
+
+/// IDENTIFIER | super | self | crate | $crate
+bool Parser::checkSimplePathSegment() {
+  if (check(TokenKind::Identifier))
+    return true;
+  if (checkKeyWord(KeyWordKind::KW_SUPER))
+    return true;
+  if (checkKeyWord(KeyWordKind::KW_SELFVALUE))
+    return true;
+  if (checkKeyWord(KeyWordKind::KW_CRATE))
+    return true;
+  if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE))
+    return true;
+  return false;
+}
+
 bool Parser::checkOuterAttribute() {
   if (check(TokenKind::Hash) && check(TokenKind::SquareOpen, 1))
     return true;
@@ -144,6 +176,8 @@ llvm::Expected<std::shared_ptr<ast::VisItem>> Parser::parseVisItem() {
     return parseExternBlock(vis);
   }
   // complete?
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse vis item");
 }
 
 llvm::Expected<std::shared_ptr<ast::VisItem>>
@@ -210,10 +244,134 @@ llvm::Expected<ast::WhereClause> Parser::parseWhereClause() {
   // FIXME
 }
 
+llvm::Expected<ast::ConstParam> Parser::parseConstParam() {}
+
+llvm::Expected<ast::LifetimeParam> Parser::parseLifetimeParam() {}
+
+llvm::Expected<ast::TypeParam> Parser::parseTypeParam() {}
+
+llvm::Expected<ast::GenericParam> Parser::parseGenericParam() {
+  Location loc = getLocation();
+
+  GenericParam param = {loc};
+
+  if (checkOuterAttribute()) {
+    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+        parseOuterAttributes();
+    if (auto e = outer.takeError()) {
+      llvm::errs() << "failed to parse outer attributes in generic param: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    param.setOuterAttributes(*outer);
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_CONST)) {
+    llvm::Expected<ast::ConstParam> constParam = parseConstParam();
+    if (auto e = constParam.takeError()) {
+      llvm::errs() << "failed to parse const param in generic param: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    param.setConstParam(*constParam);
+  } else if (check(TokenKind::LIFETIME_OR_LABEL)) {
+    llvm::Expected<ast::LifetimeParam> lifetimeParam = parseLifetimeParam();
+    if (auto e = lifetimeParam.takeError()) {
+      llvm::errs() << "failed to parse lifetime param in generic param: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    param.setLifetimeParam(*lifetimeParam);
+  } else if (check(TokenKind::Identifier)) {
+    llvm::Expected<ast::TypeParam> typeParam = parseTypeParam();
+    if (auto e = typeParam.takeError()) {
+      llvm::errs() << "failed to parse type param in generic param: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    param.setTypeParam(*typeParam);
+  } else {
+    // report
+  }
+
+  return param;
+}
+
 llvm::Expected<ast::GenericParams> Parser::parseGenericParams() {
   Location loc = getLocation();
 
+  if (check(TokenKind::Lt) && check(TokenKind::Gt, 1)) {
+    // done
+  }
+
+  if (check(TokenKind::Lt)) {
+    parseGenericParam();
+  }
+
   // FIXME
+}
+
+llvm::Expected<ast::Visibility> Parser::parseVisibility() {
+  Location loc = getLocation();
+  Visibility vis = {loc};
+
+  if (checkKeyWord(KeyWordKind::KW_PUB) && check(TokenKind::ParenOpen, 1) &&
+      checkKeyWord(KeyWordKind::KW_CRATE, 2) &&
+      check(TokenKind::ParenClose, 3)) {
+    // pub (crate)
+    assert(eatKeyWord(KeyWordKind::KW_PUB));
+    assert(eat(TokenKind::ParenOpen));
+    assert(eatKeyWord(KeyWordKind::KW_CRATE));
+    assert(eat(TokenKind::ParenClose));
+    vis.setKind(VisibilityKind::PublicCrate);
+    return vis;
+  } else if (checkKeyWord(KeyWordKind::KW_PUB) &&
+             check(TokenKind::ParenOpen, 1) &&
+             checkKeyWord(KeyWordKind::KW_SELFVALUE, 2) &&
+             check(TokenKind::ParenClose, 3)) {
+    // pub (self)
+    vis.setKind(VisibilityKind::PublicSelf);
+    return vis;
+  } else if (checkKeyWord(KeyWordKind::KW_PUB) &&
+             check(TokenKind::ParenOpen, 1) &&
+             checkKeyWord(KeyWordKind::KW_SUPER, 2) &&
+             check(TokenKind::ParenClose, 3)) {
+    // pub (super)
+    assert(eatKeyWord(KeyWordKind::KW_PUB));
+    assert(eat(TokenKind::ParenOpen));
+    assert(eatKeyWord(KeyWordKind::KW_SUPER));
+    assert(eat(TokenKind::ParenClose));
+    vis.setKind(VisibilityKind::PublicSuper);
+    return vis;
+  } else if (checkKeyWord(KeyWordKind::KW_PUB) &&
+             check(TokenKind::ParenOpen, 1) &&
+             checkKeyWord(KeyWordKind::KW_IN, 2)) {
+    // pub (in ...)
+    assert(eatKeyWord(KeyWordKind::KW_PUB));
+    assert(eat(TokenKind::ParenOpen));
+    assert(eatKeyWord(KeyWordKind::KW_IN));
+    llvm::Expected<ast::SimplePath> simple = parseSimplePath();
+    if (auto e = simple.takeError()) {
+      llvm::errs() << "failed to parse simple path in visibility: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    vis.setPath(*simple);
+    if (!check(TokenKind::ParenClose))
+      // report error
+      assert(eat(TokenKind::ParenClose));
+    // done
+    vis.setKind(VisibilityKind::PublicIn);
+    return vis;
+  } else if (checkKeyWord(KeyWordKind::KW_PUB)) {
+    // pub
+    assert(eatKeyWord(KeyWordKind::KW_PUB));
+    vis.setKind(VisibilityKind::Public);
+    return vis;
+  }
+  // private
+  vis.setKind(VisibilityKind::Private);
+  return vis;
 }
 
 } // namespace rust_compiler::parser

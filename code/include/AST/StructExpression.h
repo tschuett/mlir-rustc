@@ -18,6 +18,8 @@ public:
       : ExpressionWithoutBlock(loc,
                                ExpressionWithoutBlockKind::StructExpression),
         kind(kind) {}
+
+  StructExpressionKind getKind() const { return kind; };
 };
 
 } // namespace rust_compiler::ast

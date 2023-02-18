@@ -15,7 +15,7 @@ class BlockExpressionVisitor {
 public:
   virtual ~BlockExpressionVisitor() = default;
 
-  virtual void visitStatements(std::shared_ptr<ast::Statements> stmts) {}
+  virtual void visitStatements(ast::Statements stmts) {}
   virtual void visitStatement(std::shared_ptr<ast::Statement> stmt) {}
   virtual void visitExpressionWithoutBlock(
       std::shared_ptr<ast::ExpressionWithoutBlock> woBlock) {}

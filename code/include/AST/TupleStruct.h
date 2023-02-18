@@ -18,7 +18,10 @@ class TupleStruct : public Struct {
 
 public:
   TupleStruct(Location loc, std::optional<Visibility> vis)
-    : Struct(loc, StructKind::TupleStruct, vis) {}
+      : Struct(loc, StructKind::TupleStruct, vis) {}
+
+  void setIdentifier(std::string_view id) { identifier = id; }
+  void setGenericParams(const GenericParams &gp) { genericParms = gp; }
 };
 
 } // namespace rust_compiler::ast

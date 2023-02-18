@@ -87,7 +87,7 @@ enum class TokenKind {
   Underscore,
   LIFETIME_TOKEN,
   LIFETIME_OR_LABEL,
-  DollarUnderScore,
+  //DollarUnderScore,
   CHAR_LITERAL,
   QUOTE_ESCAPE,
   ASCII_ESCAPE,
@@ -100,7 +100,16 @@ enum class TokenKind {
   INTEGER_LITERAL,
   FLOAT_LITERAL,
   RESERVED_NUMBER,
-  Eof
+  Eof,
+  At,
+  StarEq,
+  PlusEq,
+  MinusEq,
+  PercentEq,
+  AndEq,
+  ShlEq,
+  CaretEq,
+  ShrEq, OrEq
 };
 
 class Token {

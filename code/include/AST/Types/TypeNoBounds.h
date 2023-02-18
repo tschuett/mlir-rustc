@@ -27,6 +27,8 @@ class TypeNoBounds : public TypeExpression {
 public:
   TypeNoBounds(Location loc, TypeNoBoundsKind kind)
       : TypeExpression(loc, TypeExpressionKind::TypeNoBounds), kind(kind) {}
+
+  TypeNoBoundsKind getKind() const { return kind; }
 };
 
 } // namespace rust_compiler::ast::types

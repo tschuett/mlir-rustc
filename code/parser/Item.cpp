@@ -1,7 +1,10 @@
 #include "AST/ConstantItem.h"
+#include "AST/ExternBlock.h"
 #include "AST/Implementation.h"
 #include "AST/StaticItem.h"
 #include "AST/Struct.h"
+#include "AST/StructStruct.h"
+#include "AST/TupleStruct.h"
 #include "AST/Union.h"
 #include "Lexer/KeyWords.h"
 #include "Parser/Parser.h"
@@ -12,13 +15,166 @@ using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<std::shared_ptr<ast::VisItem>>
-Parser::parseImplementation(std::optional<ast::Visibility> vis) {
-  //Location loc = getLocation();
+llvm::Expected<ast::ExternalItem> Parser::parseExternalItem() {
+  Location loc = getLocation();
 
-  //Implementation impl = {loc, vis};
+  ExternalItem impl = {loc};
 
   assert(false);
+}
+
+llvm::Expected<std::shared_ptr<ast::VisItem>>
+Parser::parseExternBlock(std::optional<ast::Visibility> vis) {
+  Location loc = getLocation();
+
+  ExternBlock impl = {loc, vis};
+
+  if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
+    assert(eatKeyWord(KeyWordKind::KW_UNSAFE));
+    impl.setUnsafe()
+  }
+
+  if (!checkKeyWord(KeyWordKind::KW_EXTERN))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse extern keyword in extern block");
+  assert(eatKeyWord(KeyWordKind::KW_EXTERN));
+
+  llvm::Expected<ast::Abi> abi = parseAbi();
+  if (auto e = genericParams.takeError()) {
+    llvm::errs() << "failed to parse abi in extern block : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  impl.setAbi(*abi);
+
+  if (!check(TokenKind::BraceOpen))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse { token in extern block");
+  assert(eat(TokenKin::BraceOpen));
+
+  llvm::Expected<std::vector<ast::InnerAttribute>> innerAttributes =
+      parseInnerAttributes();
+  if (auto e = innerAttributes.takeError()) {
+    llvm::errs() << "failed to parse inner attributes in extern block : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  impl.setInnerAttributes(*innerAttributes);
+
+  assert(false);
+}
+
+llvm::Expected<std::shared_ptr<ast::VisItem>>
+Parser::parseImplementation(std::optional<ast::Visibility> vis) {
+  Location loc = getLocation();
+
+  InherentImpl inherentImpl = {loc, vis};
+  TraitImpl traitImpl = {loc, vis};
+
+  assert(false);
+}
+
+llvm::Expected<std::shared_ptr<ast::VisItem>>
+Parser::parseTypeAlias(std::optional<ast::Visibility> vis) {
+  Location loc = getLocation();
+
+  TypeAlias alias = {loc, vis};
+
+  if (!checkKeyWord(KeyWordKind::KW_TYPE))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse type keyword in type alias");
+
+  assert(eatKeyWord(KeyWordKind::KW_TYPE));
+
+  if (!check(TokenKind::Identifier))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse identifier in type alias");
+
+  Token id = getToken();
+  alias.setIdentifier(id.getIdentifier());
+  assert(eat(TokenKind::Identifier));
+
+  if (check(TokenKind::Lt)) {
+    llvm::Expected<ast::GenericParams> genericParams = parseGenericParams();
+    if (auto e = genericParams.takeError()) {
+      llvm::errs() << "failed to parse  generic params in type alias : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    alias.setGenericParams(*genericParams);
+  }
+
+  if (check(TokenKind::Semi)) {
+    assert(eat(TokenKind::Semi));
+    return std::make_shared<TypeAlias>(alias);
+  }
+
+  if (check(TokenKind::Colon)) {
+    assert(eat(TokenKind::Colon));
+    llvm::Expected<ast::types::TypeParamBounds> bounds = parseTypeParamBounds();
+    if (auto e = bounds.takeError()) {
+      llvm::errs() << "failed to parse  type param bounds in type alias : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    alias.setParamBounds(*bounds);
+  }
+
+  if (check(TokenKind::Semi)) {
+    assert(eat(TokenKind::Semi));
+    return std::make_shared<TypeAlias>(alias);
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_WHERE)) {
+    llvm::Expected<ast::WhereClause> where = parseWhereClause();
+    if (auto e = where.takeError()) {
+      llvm::errs() << "failed to parse where clause in type alias : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    alias.setWhereClause(*where);
+  }
+
+  if (check(TokenKind::Semi)) {
+    assert(eat(TokenKind::Semi));
+    return std::make_shared<TypeAlias>(alias);
+  } else if (check(TokenKind::Eq)) {
+    assert(eat(TokenKind::Eq));
+  } else {
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse where keyword or ; token in type alias");
+  }
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+      parseType();
+  if (auto e = type.takeError()) {
+    llvm::errs() << "failed to parse type in type alias : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  alias.setType(*type);
+
+  if (checkKeyWord(KeyWordKind::KW_WHERE)) {
+    llvm::Expected<ast::WhereClause> where = parseWhereClause();
+    if (auto e = where.takeError()) {
+      llvm::errs() << "failed to parse where clause in type alias : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    alias.setTypeWhereClause(*where);
+  } else if (check(TokenKind::Semi)) {
+    assert(eat(TokenKind::Semi));
+    return std::make_shared<TypeAlias>(alias);
+  }
+  {
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse where keyword or ; token in type alias");
+  }
+
+  assert(eat(TokenKind::Semi));
+  return std::make_shared<TypeAlias>(alias);
 }
 
 llvm::Expected<std::shared_ptr<ast::VisItem>>
@@ -74,7 +230,8 @@ Parser::parseStaticItem(std::optional<ast::Visibility> vis) {
     stat.setInit(*init);
     assert(eat(TokenKind::Semi));
   } else {
-    // report error
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse static item");
   }
   return std::make_shared<StaticItem>(stat);
 }
@@ -135,7 +292,8 @@ Parser::parseConstantItem(std::optional<ast::Visibility> vis) {
     con.setInit(*init);
     assert(eat(TokenKind::Semi));
   } else {
-    // report error
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse constant item");
   }
 
   return std::make_shared<ConstantItem>(con);
@@ -161,12 +319,22 @@ Parser::parseUnion(std::optional<ast::Visibility> vis) {
 
   if (check(TokenKind::Lt)) {
     llvm::Expected<ast::GenericParams> genericParams = parseGenericParams();
-    // check error
+    if (auto e = genericParams.takeError()) {
+      llvm::errs() << "failed to parse generic params in union : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    uni.setGenericParams(*genericParams);
   }
 
   if (checkKeyWord(KeyWordKind::KW_WHERE)) {
-    llvm::Expected<ast::WhereClause> whereClasue = parseWhereClause();
-    // check error
+    llvm::Expected<ast::WhereClause> whereClause = parseWhereClause();
+    if (auto e = whereClause.takeError()) {
+      llvm::errs() << "failed to parse  where clause in union : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    uni.setWhereClause(*whereClause);
   }
 
   if (!check(TokenKind::BraceOpen)) {
@@ -175,44 +343,71 @@ Parser::parseUnion(std::optional<ast::Visibility> vis) {
   }
   assert(check(TokenKind::BraceOpen));
 
-  llvm::Expected<std::shared_ptr<ast::StructFields>> fields =
-      parseStructFields();
-  // check error
+  llvm::Expected<ast::StructFields> fields = parseStructFields();
+  if (auto e = fields.takeError()) {
+    llvm::errs() << "failed to parse  struct fields in union : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  uni.setStructfields(*fields);
+  assert(check(TokenKind::BraceClose));
 
-  // return
+  return std::make_shared<Union>(uni);
 }
 
 llvm::Expected<std::shared_ptr<ast::VisItem>>
 Parser::parseStruct(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
-  // StructStruct stru = {loc, vis};
+  class StructStruct stru = {loc, vis};
+  class TupleStruct tupleStru = {loc, vis};
 
   if (!checkKeyWord(KeyWordKind::KW_STRUCT))
     return createStringError(inconvertibleErrorCode(),
                              "failed to parse struct keyword in struct");
 
-  if (check(TokenKind::Identifier)) {
+  assert(checkKeyWord(KeyWordKind::KW_STRUCT));
+
+  if (!check(TokenKind::Identifier)) {
     return createStringError(inconvertibleErrorCode(),
                              "failed to parse identifier in struct");
   }
 
+  Token tok = getToken();
+  stru.setIdentifier(tok.getIdentifier());
+  tupleStru.setIdentifier(tok.getIdentifier());
+
+  assert(check(TokenKind::Identifier));
+
   if (check(TokenKind::Lt)) {
     llvm::Expected<ast::GenericParams> genericParams = parseGenericParams();
-    // check error
+    if (auto e = genericParams.takeError()) {
+      llvm::errs() << "failed to parse generic params in struct : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    stru.setGenericParams(*genericParams);
+    tupleStru.setGenericParams(*genericParams);
   }
 
   if (checkKeyWord(KeyWordKind::KW_WHERE)) {
-    llvm::Expected<ast::WhereClause> whereClasue = parseWhereClause();
-    // check error
+    llvm::Expected<ast::WhereClause> whereClause = parseWhereClause();
+    if (auto e = whereClause.takeError()) {
+      llvm::errs() << "failed to parse where clause in struct : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    stru.setWhereClause(*whereClause);
   }
 
-  if (check(TokenKind::BraceOpen)) {
+  if (check(TokenKind::BraceOpen) && check(TokenKind::BraceClose, 1)) {
     // StructStruct
-  }
-
-  if (check(TokenKind::ParenOpen)) {
+  } else if (check(TokenKind::BraceOpen)) {
+    // StructStruct
+  } else if (check(TokenKind::ParenOpen)) {
     // TupleStruct
+  } else if (check(TokenKind::Semi)) {
+    // StructStruct
   }
 
   // FIXME

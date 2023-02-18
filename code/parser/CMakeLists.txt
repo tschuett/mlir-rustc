@@ -20,6 +20,9 @@ add_library(parser
            QualifiedPathType.cpp
            RawPointerType.cpp
            Trait.cpp
+           Tuple.cpp
+           TypeNoBounds.cpp
+           Statements.cpp
            )
 
 

@@ -21,10 +21,12 @@ class RangeExpression : public ExpressionWithoutBlock {
   RangeExpressionKind kind;
 
 public:
- RangeExpression(Location loc, RangeExpressionKind kind)
+  RangeExpression(Location loc, RangeExpressionKind kind)
       : ExpressionWithoutBlock(loc,
                                ExpressionWithoutBlockKind::RangeExpression),
         kind(kind) {}
+
+  RangeExpressionKind getKind() const { return kind; };
 };
 
 } // namespace rust_compiler::ast

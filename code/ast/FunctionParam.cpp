@@ -17,8 +17,9 @@ void FunctionParam::setType(std::shared_ptr<ast::types::TypeExpression> _type) {
 }
 
 std::string FunctionParam::getName() {
+  assert(false);
   assert(name);
-  return name->getIdentifier();
+  //return name->getIdentifier();
 }
 
 void FunctionParam::setAttributes(std::span<OuterAttribute> attr) {

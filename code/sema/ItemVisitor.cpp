@@ -18,8 +18,7 @@ void visitItem(std::shared_ptr<ast::Item> item, ItemVisitor *visitor);
 
 void visitVisItem(std::shared_ptr<ast::VisItem> visItem, ItemVisitor *visitor);
 
-void visitStatements(std::shared_ptr<ast::Statements> stmts,
-                     ItemVisitor *visitor);
+void visitStatements(ast::Statements stmts, ItemVisitor *visitor);
 
 void visitAssociatedItem(ast::AssociatedItem assoItem, ItemVisitor *visitor);
 
@@ -115,9 +114,8 @@ void visitFunction(std::shared_ptr<ast::Function> fun, ItemVisitor *visitor) {
     visitBlockExpression(fun->getBody(), visitor);
 }
 
-void visitStatements(std::shared_ptr<ast::Statements> stmts,
-                     ItemVisitor *visitor) {
-  for (auto &stmt : stmts->getStmts())
+void visitStatements(ast::Statements stmts, ItemVisitor *visitor) {
+  for (auto &stmt : stmts.getStmts())
     visitStatement(stmt, visitor);
 }
 

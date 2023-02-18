@@ -22,6 +22,8 @@ public:
   ClosureExpression(Location loc)
       : ExpressionWithoutBlock(loc,
                                ExpressionWithoutBlockKind::ClosureExpression) {}
+
+  bool isMove() const { return move; };
 };
 
 } // namespace rust_compiler::ast

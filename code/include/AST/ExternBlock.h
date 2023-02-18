@@ -18,6 +18,8 @@ class ExternBlock : public VisItem {
 public:
   ExternBlock(Location loc, std::optional<Visibility> vis)
       : VisItem(loc, VisItemKind::ExternBlock, vis) {}
+
+  bool isUnsafe() const { return unsafe; };
 };
 
 } // namespace rust_compiler::ast
