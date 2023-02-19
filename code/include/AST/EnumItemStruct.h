@@ -13,6 +13,8 @@ class EnumItemStruct : public Node {
 
 public:
   EnumItemStruct(Location loc) : Node(loc) {}
+
+  void setStructFields(const StructFields &sf) { fields = sf; }
 };
 
 } // namespace rust_compiler::ast

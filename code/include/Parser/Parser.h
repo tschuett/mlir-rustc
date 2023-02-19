@@ -308,12 +308,11 @@ public:
   llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
   parseTypeBoundWhereClauseItem();
 
-  llvm::Expected<std::shared_ptr<ast::EnumItems>> parseEnumItems();
-  llvm::Expected<std::shared_ptr<ast::EnumItem>> parseEnumItem();
-  llvm::Expected<std::shared_ptr<ast::EnumItemTuple>> parseEnumItemTuple();
-  llvm::Expected<std::shared_ptr<ast::EnumItemStruct>> parseEnumItemStruct();
-  llvm::Expected<std::shared_ptr<ast::EnumItemDiscriminant>>
-  parseEnumItemDiscriminant();
+  llvm::Expected<ast::EnumItems> parseEnumItems();
+  llvm::Expected<ast::EnumItem> parseEnumItem();
+  llvm::Expected<ast::EnumItemTuple> parseEnumItemTuple();
+  llvm::Expected<ast::EnumItemStruct> parseEnumItemStruct();
+  llvm::Expected<ast::EnumItemDiscriminant> parseEnumItemDiscriminant();
 
   // statements
   llvm::Expected<std::shared_ptr<ast::Statement>> parseLetStatement();

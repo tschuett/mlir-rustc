@@ -18,7 +18,7 @@ def ErrorPropagationOp : Hir_Op<"question_mark", []> {
   let summary = "a Rust ? op.";
 
   let description = [{
-  Rust ErrorPropagation Expression
+    Rust ErrorPropagation Expression
   }];
 
   let arguments = (ins AnyType:$rhs);
@@ -353,6 +353,30 @@ def StructConstantOp : Hir_Op<"struct_constant", [ConstantLike, Pure]> {
 
   let assemblyFormat = "$value attr-dict `:` type($output)";
 
+}
+
+
+//===----------------------------------------------------------------------===//
+// StringConstantOp
+//===----------------------------------------------------------------------===//
+
+def StringtConstantOp : Hir_Op<"string_constant", [ConstantLike, Pure]> {
+  let summary = "string constant";
+  let description = [{
+    Constant operation turns a literal string value into an SSA value. The data
+    is attached to the operation as a string attribute. For example:
+
+    ```mlir
+      %0 = hir.string_constant [
+        dense<[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]> : tensor<2x3xf64>
+      ] : !hir.string
+    ```
+  }];
+
+  let arguments = (ins Builtin_StringAttr:$value);
+  let results = (outs Hir_StringType:$output);
+
+  let assemblyFormat = "$value attr-dict `:` type($output)";
 }
 
 #endif

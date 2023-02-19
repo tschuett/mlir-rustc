@@ -1,4 +1,6 @@
 #include "AST/EnumItemDiscriminant.h"
+#include "AST/Enumeration.h"
+#include "AST/EnumItemStruct.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
@@ -11,7 +13,7 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<std::shared_ptr<ast::EnumItem>> Parser::parseEnumItem() {
+llvm::Expected<ast::EnumItem> Parser::parseEnumItem() {
   Location loc = getLocation();
 
   EnumItem item = {loc};
@@ -53,56 +55,112 @@ llvm::Expected<std::shared_ptr<ast::EnumItem>> Parser::parseEnumItem() {
   }
 }
 
-llvm::Expected<std::shared_ptr<ast::EnumItems>> Parser::parseEnumItems() {}
+llvm::Expected<ast::EnumItems> Parser::parseEnumItems() {}
 
 llvm::Expected<std::shared_ptr<ast::VisItem>>
 Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
-  if (!checkKeyWord(lexer::KeyWordKind::KW_ENUM)) {
-    // Error
-  }
+  Location loc = getLocation();
 
+  Enumeration enu = {loc, vis};
+
+  if (!checkKeyWord(lexer::KeyWordKind::KW_ENUM)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse enum keyword in enum ");
+  }
   assert(eatKeyWord(KeyWordKind::KW_ENUM));
 
   if (!check(TokenKind::Identifier)) {
-    // error
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse identifier token in enum ");
   }
 
-  std::string identifier = getToken().getIdentifier();
+  enu.setIdentifier(getToken().getIdentifier());
   assert(eat(TokenKind::Identifier));
 
   if (check(TokenKind::Lt)) {
     // GenericParams
     llvm::Expected<ast::GenericParams> genericParams = parseGenericParams();
+    if (auto e = genericParams.takeError()) {
+      llvm::errs() << "failed to parse generic params in enum: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    enu.setGenericParams(*genericParams);
   }
 
   if (checkKeyWord(KeyWordKind::KW_WHERE)) {
-    // where clause
-    llvm::Expected<ast::WhereClause> whereClasue = parseWhereClause();
-    // check error
+    llvm::Expected<ast::WhereClause> whereClause = parseWhereClause();
+    if (auto e = whereClause.takeError()) {
+      llvm::errs() << "failed to parse where clause in enum: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    enu.setWhereClause(*whereClause);
   }
 
   if (!check(TokenKind::BraceOpen)) {
-    // error
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse { token in enum ");
   }
+  assert(eat(TokenKind::BraceOpen));
+
+  if (check(TokenKind::BraceClose)) {
+    // done
+  } else {
+    llvm::Expected<ast::EnumItems> items = parseEnumItems();
+    if (auto e = items.takeError()) {
+      llvm::errs() << "failed to parse enum items in enum: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    enu.setItems(*items);
+  }
+
+  if (!check(TokenKind::BraceClose)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse } token in enum ");
+  }
+  assert(eat(TokenKind::BraceClose));
+
+  return std::make_shared<Enumeration>(enu);
+}
+
+llvm::Expected<ast::EnumItemTuple>
+Parser::parseEnumItemTuple() {}
+
+llvm::Expected<ast::EnumItemStruct>
+Parser::parseEnumItemStruct() {
+  Location loc = getLocation();
+
+  EnumItemStruct str = {loc};
+
+  if (!check(TokenKind::BraceOpen))
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse { token in enum item discriminant");
 
   assert(eat(TokenKind::BraceOpen));
 
-  parseEnumItems();
-
-  if (!check(TokenKind::BraceClose)) {
-    // error
+  llvm::Expected<ast::StructFields> fields = parseStructFields();
+  if (auto e = fields.takeError()) {
+    llvm::errs()
+        << "failed to parse struct fields expression in enum item struct: "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
   }
+  str.setStructFields(*fields);
+
+  if (!check(TokenKind::BraceClose))
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse } token in enum item discriminant");
 
   assert(eat(TokenKind::BraceClose));
+
+  return str;
 }
 
-llvm::Expected<std::shared_ptr<ast::EnumItemTuple>>
-Parser::parseEnumItemTuple() {}
-
-llvm::Expected<std::shared_ptr<ast::EnumItemStruct>>
-Parser::parseEnumItemStruct() {}
-
-llvm::Expected<std::shared_ptr<ast::EnumItemDiscriminant>>
+llvm::Expected<ast::EnumItemDiscriminant>
 Parser::parseEnumItemDiscriminant() {
   Location loc = getLocation();
 
@@ -123,7 +181,7 @@ Parser::parseEnumItemDiscriminant() {
   }
   dis.setExpression(*expr);
 
-  return std::make_shared<EnumItemDiscriminant>(dis);
+  return dis;
 }
 
 } // namespace rust_compiler::parser
