@@ -20,5 +20,9 @@ def Hir_EnumType :
     DialectType<Hir_Dialect, CPred<"$_self.isa<EnumType>()">,
                 "Hir enum type">;
 
+def Hir_StringType :
+    DialectType<Hir_Dialect, CPred<"$_self.isa<StringType>()">,
+                "Hir string type">;
+
 
 #endif

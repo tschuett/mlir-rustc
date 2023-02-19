@@ -29,6 +29,8 @@ def Hir_Dialect : Dialect {
 
   let useFoldAPI = kEmitFoldAdaptorFolder;
 
+  //let hasConstantMaterializer = true;
+
   let dependentDialects = [
                            "mlir::cf::ControlFlowDialect",
                            "mlir::func::FuncDialect",
