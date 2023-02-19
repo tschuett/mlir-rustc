@@ -15,7 +15,7 @@ public:
       : ExpressionWithoutBlock(
             loc, ExpressionWithoutBlockKind::ContinueExpression) {}
 
-  void setLifetime();
+  void setLifetime(const LifetimeOrLabel &orl) { lifetimeOrLabel = orl;}
 };
 
 } // namespace rust_compiler::ast

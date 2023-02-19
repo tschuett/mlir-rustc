@@ -17,6 +17,7 @@
 #include "AST/LifetimeBounds.h"
 #include "AST/LifetimeParam.h"
 #include "AST/LifetimeWhereClauseItem.h"
+#include "AST/LoopExpression.h"
 #include "AST/MatchArm.h"
 #include "AST/MatchArmGuard.h"
 #include "AST/MatchArms.h"
@@ -216,6 +217,9 @@ public:
 
   // Expressions
 
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+  parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpression();
+
   llvm::Expected<std::shared_ptr<ast::Expression>> parseExpressionWithPostfix();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseBlockExpression();
@@ -241,11 +245,14 @@ public:
       parseIndexingExpression(std::shared_ptr<ast::Expression>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
       parseFieldExpression(std::shared_ptr<ast::Expression>);
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+      parseRangeExpression(std::shared_ptr<ast::Expression>);
   llvm::Expected<std::shared_ptr<ast::Expression>> parseRangeExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseUnderScoreExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>>
   parseGroupedOrTupleExpression();
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseCallExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+      parseCallExpression(std::shared_ptr<ast::Expression>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
       parseErrorPropagationExpression(std::shared_ptr<ast::Expression>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
@@ -268,6 +275,15 @@ public:
   llvm::Expected<std::shared_ptr<ast::Expression>>
   parseQualifiedPathInExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseLiteralExpression();
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseLoopExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+  parseIteratorLoopExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+  parsePredicatePatternLoopExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+  parseInfiniteLoopExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parsePatternLoopExpression();
 
   llvm::Expected<ast::MatchArms> parseMatchArms();
   llvm::Expected<ast::MatchArm> parseMatchArm();

@@ -23,6 +23,7 @@ add_library(parser
            Tuple.cpp
            TypeNoBounds.cpp
            Statements.cpp
+           Loops.cpp
            )
 
 

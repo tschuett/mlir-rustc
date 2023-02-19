@@ -134,15 +134,14 @@ llvm::Expected<ast::AttrInput> Parser::parseAttrInput() {
   return input;
 }
 
-llvm::Expected<ast::DelimTokenTree> Parser::parseDelimTokenTree() {}
-
 llvm::Expected<std::vector<ast::OuterAttribute>>
 Parser::parseOuterAttributes() {
   std::vector<OuterAttribute> outer;
 
   while (true) {
     if (check(TokenKind::Eof)) {
-      // abort
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse outer attributes");
     } else if (checkOuterAttribute()) {
       llvm::Expected<ast::OuterAttribute> outerAttr = parseOuterAttribute();
       if (auto e = outerAttr.takeError()) {
@@ -152,7 +151,7 @@ Parser::parseOuterAttributes() {
       }
       outer.push_back(*outerAttr);
     } else {
-      xxx
+      return outer;
     }
   }
 }
@@ -160,6 +159,27 @@ Parser::parseOuterAttributes() {
 llvm::Expected<std::vector<ast::InnerAttribute>>
 Parser::parseInnerAttributes() {
   std::vector<InnerAttribute> inner;
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse inner attributes");
+    } else if (checkInnerAttribute()) {
+      llvm::Expected<ast::InnerAttribute> innerAttr = parseInnerAttribute();
+      if (auto e = innerAttr.takeError()) {
+        llvm::errs() << "failed to parse inner attribute in inner attributes: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      inner.push_back(*innerAttr);
+    } else {
+      return inner;
+    }
+  }
 }
 
+  //  llvm::Expected<ast::DelimTokenTree> Parser::parseDelimTokenTree() {}
+
+
+  
 } // namespace rust_compiler::parser

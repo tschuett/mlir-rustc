@@ -5,6 +5,7 @@
 #include "AST/DereferenceExpression.h"
 #include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
+#include "AST/LiteralExpression.h"
 #include "AST/MatchExpression.h"
 #include "AST/NegationExpression.h"
 #include "AST/ReturnExpression.h"
@@ -14,6 +15,7 @@
 #include "Parser/Parser.h"
 
 #include <cassert>
+#include <memory>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
@@ -247,7 +249,8 @@ llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parseIfExpression() {
   if (checkKeyWord(KeyWordKind::KW_IF)) {
     assert(eatKeyWord(KeyWordKind::KW_IF));
   } else {
-    // check error
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse if expression");
   }
 
   llvm::Expected<std::shared_ptr<ast::Expression>> cond = parseExpression();
@@ -279,17 +282,38 @@ llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parseIfExpression() {
       checkKeyWord(KeyWordKind::KW_LET, 1)) {
     llvm::Expected<std::shared_ptr<ast::Expression>> ifLetExpr =
         parseIfLetExpression();
-    // check error
+    if (auto e = ifLetExpr.takeError()) {
+      llvm::errs() << "failed to parse if let expression in if expression: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    ifExpr.setTrailing(*ifLetExpr);
+    return std::make_shared<IfExpression>(ifExpr);
   } else if (checkKeyWord(KeyWordKind::KW_IF) &&
              !checkKeyWord(KeyWordKind::KW_LET, 1)) {
-    llvm::Expected<std::shared_ptr<ast::Expression>> ifExpr =
+    llvm::Expected<std::shared_ptr<ast::Expression>> ifExprTail =
         parseIfExpression();
-    // check error
+    if (auto e = ifExprTail.takeError()) {
+      llvm::errs() << "failed to parse if expression in if expression: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    ifExpr.setTrailing(*ifExprTail);
+    return std::make_shared<IfExpression>(ifExpr);
   } else {
     llvm::Expected<std::shared_ptr<ast::Expression>> block =
         parseBlockExpression();
-    // check error
+    if (auto e = block.takeError()) {
+      llvm::errs() << "failed to parse block expression in if expression: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    ifExpr.setTrailing(*block);
+    return std::make_shared<IfExpression>(ifExpr);
   }
+
+  // no tail
+  return std::make_shared<IfExpression>(ifExpr);
 }
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
@@ -361,9 +385,11 @@ Parser::parseContinueExpression() {
   assert(eatKeyWord(KeyWordKind::KW_CONTINUE));
 
   if (check(TokenKind::LIFETIME_OR_LABEL)) {
+    Token tok = getToken();
+    cont.setLifetime(tok);
   }
 
-  // FIXME
+  return std::make_shared<ContinueExpression>(cont);
 }
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
@@ -514,19 +540,54 @@ Parser::parseExpressionWithoutBlock() {
     attributes = *outerAttributes;
   }
 
+  // FIXME attributes
+
   if (checkLiteral()) {
-    // literal | true | false | ...
-    xxx
+    Location loc = getLocation();
+    Token tok = getToken();
+    std::string id = tok.getIdentifier();
+    if (check(TokenKind::CHAR_LITERAL)) {
+      assert(eat(TokenKind::CHAR_LITERAL));
+      return std::make_shared<LiteralExpression>(
+          loc, LiteralExpressionKind::CharLiteral, id, tok);
+    } else if (check(TokenKind::STRING_LITERAL)) {
+      assert(eat(TokenKind::STRING_LITERAL));
+      return std::make_shared<LiteralExpression>(
+          loc, LiteralExpressionKind::StringLiteral, id, tok);
+    } else if (check(TokenKind::RAW_STRING_LITERAL)) {
+      assert(eat(TokenKind::RAW_STRING_LITERAL));
+      return std::make_shared<LiteralExpression>(
+          loc, LiteralExpressionKind::RawStringLiteral, id, tok);
+    } else if (check(TokenKind::BYTE_LITERAL)) {
+      assert(eat(TokenKind::BYTE_LITERAL));
+      return std::make_shared<LiteralExpression>(
+          loc, LiteralExpressionKind::ByteLiteral, id, tok);
+    } else if (check(TokenKind::BYTE_STRING_LITERAL)) {
+      assert(eat(TokenKind::BYTE_STRING_LITERAL));
+      return std::make_shared<LiteralExpression>(
+          loc, LiteralExpressionKind::ByteStringLiteral, id, tok);
+    } else if (check(TokenKind::RAW_BYTE_STRING_LITERAL)) {
+      assert(eat(TokenKind::RAW_BYTE_STRING_LITERAL));
+      return std::make_shared<LiteralExpression>(
+          loc, LiteralExpressionKind::RawByteStringLiteral, id, tok);
+    } else if (check(TokenKind::INTEGER_LITERAL)) {
+      assert(eat(TokenKind::INTEGER_LITERAL));
+      return std::make_shared<LiteralExpression>(
+          loc, LiteralExpressionKind::IntegerLiteral, id, tok);
+    } else if (check(TokenKind::FLOAT_LITERAL)) {
+      assert(eat(TokenKind::FLOAT_LITERAL));
+      return std::make_shared<LiteralExpression>(
+          loc, LiteralExpressionKind::FloatLiteral, id, tok);
+    } else if (checkKeyWord(KeyWordKind::KW_TRUE)) {
+      assert(eatKeyWord(KeyWordKind::KW_TRUE));
+      return std::make_shared<LiteralExpression>(
+          loc, LiteralExpressionKind::True, id, tok);
+    } else if (checkKeyWord(KeyWordKind::KW_FALSE)) {
+      assert(eatKeyWord(KeyWordKind::KW_FALSE));
+      return std::make_shared<LiteralExpression>(
+          loc, LiteralExpressionKind::False, id, tok);
+    }
   }
-
-  if (check(TokenKind::PathSep)) {
-    return parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocation();
-  }
-
-  if (check(TokenKind::SquareOpen)) {
-    return parseArrayExpression();
-  }
-
   if (check(TokenKind::And)) {
     return parseBorrowExpression();
   }
@@ -547,10 +608,6 @@ Parser::parseExpressionWithoutBlock() {
     return parseNegationExpression();
   }
 
-  if (check(TokenKind::ParenOpen)) {
-    return parseGroupedOrTupleExpression();
-  }
-
   if (checkKeyWord(KeyWordKind::KW_MOVE)) {
     return parseClosureExpression();
   }
@@ -561,6 +618,14 @@ Parser::parseExpressionWithoutBlock() {
 
   if (check(TokenKind::Or)) {
     return parseClosureExpression();
+  }
+
+  if (check(TokenKind::SquareOpen)) {
+    return parseArrayExpression();
+  }
+
+  if (check(TokenKind::ParenOpen)) {
+    return parseGroupedOrTupleExpression();
   }
 
   if (check(TokenKind::DotDot)) {
@@ -591,12 +656,20 @@ Parser::parseExpressionWithoutBlock() {
     return parseUnderScoreExpression();
   }
 
+  if (check(TokenKind::PathSep)) {
+    /*
+      PathInExpression -> PathExpression, StructExprStruct, StructExprTuple,
+      StructExprUnit SimplePath -> MacroInvocation
+     */
+    return parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpression();
+  }
+
   if (check(TokenKind::Identifier) || checkKeyWord(KeyWordKind::KW_SUPER) ||
       checkKeyWord(KeyWordKind::KW_SELFVALUE) ||
       checkKeyWord(KeyWordKind::KW_CRATE) ||
       checkKeyWord(KeyWordKind::KW_SELFTYPE) ||
       checkKeyWord(KeyWordKind::KW_DOLLARCRATE)) {
-    return parsePathInExpressionOrStructExprStructOrStructExprUnitOrMacroInvocation();
+    return parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpression();
   }
 
   return parseExpressionWithPostfix();
@@ -650,6 +723,11 @@ Parser::parseExpressionWithPostfix() {
   }
 
   return parseRangeExpression(*left);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>> Parser::
+    parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpression() {
+
 }
 
 } // namespace rust_compiler::parser
