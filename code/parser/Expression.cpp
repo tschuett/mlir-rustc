@@ -588,43 +588,43 @@ Parser::parseExpressionWithoutBlock() {
     if (check(TokenKind::CHAR_LITERAL)) {
       assert(eat(TokenKind::CHAR_LITERAL));
       return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::CharLiteral, id, tok);
+          loc, LiteralExpressionKind::CharLiteral, id);
     } else if (check(TokenKind::STRING_LITERAL)) {
       assert(eat(TokenKind::STRING_LITERAL));
       return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::StringLiteral, id, tok);
+          loc, LiteralExpressionKind::StringLiteral, id);
     } else if (check(TokenKind::RAW_STRING_LITERAL)) {
       assert(eat(TokenKind::RAW_STRING_LITERAL));
       return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::RawStringLiteral, id, tok);
+          loc, LiteralExpressionKind::RawStringLiteral, id);
     } else if (check(TokenKind::BYTE_LITERAL)) {
       assert(eat(TokenKind::BYTE_LITERAL));
       return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::ByteLiteral, id, tok);
+          loc, LiteralExpressionKind::ByteLiteral, id);
     } else if (check(TokenKind::BYTE_STRING_LITERAL)) {
       assert(eat(TokenKind::BYTE_STRING_LITERAL));
       return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::ByteStringLiteral, id, tok);
+          loc, LiteralExpressionKind::ByteStringLiteral, id);
     } else if (check(TokenKind::RAW_BYTE_STRING_LITERAL)) {
       assert(eat(TokenKind::RAW_BYTE_STRING_LITERAL));
       return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::RawByteStringLiteral, id, tok);
+          loc, LiteralExpressionKind::RawByteStringLiteral, id);
     } else if (check(TokenKind::INTEGER_LITERAL)) {
       assert(eat(TokenKind::INTEGER_LITERAL));
       return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::IntegerLiteral, id, tok);
+          loc, LiteralExpressionKind::IntegerLiteral, id);
     } else if (check(TokenKind::FLOAT_LITERAL)) {
       assert(eat(TokenKind::FLOAT_LITERAL));
       return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::FloatLiteral, id, tok);
+          loc, LiteralExpressionKind::FloatLiteral, id);
     } else if (checkKeyWord(KeyWordKind::KW_TRUE)) {
       assert(eatKeyWord(KeyWordKind::KW_TRUE));
       return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::True, id, tok);
+          loc, LiteralExpressionKind::True, id);
     } else if (checkKeyWord(KeyWordKind::KW_FALSE)) {
       assert(eatKeyWord(KeyWordKind::KW_FALSE));
       return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::False, id, tok);
+          loc, LiteralExpressionKind::False, id);
     }
   }
   if (check(TokenKind::And)) {
@@ -766,7 +766,20 @@ Parser::parseExpressionWithPostfix() {
 
 llvm::Expected<std::shared_ptr<ast::Expression>> Parser::
     parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpression() {
+  Location loc = getLocation();
 
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      // abort
+    } else if (check(TokenKind::Eof)) {
+    } else if (check(TokenKind::Not)) {
+      return parseMacroInvocationExpression();
+    } else if (check(TokenKind::BraceOpen)) {
+      return parseStructExpression();
+    } else if (check(TokenKind::ParenOpen)) {
+      return parseStructExpression();
+    }
+  }
 }
 
 } // namespace rust_compiler::parser

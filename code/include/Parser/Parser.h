@@ -6,6 +6,7 @@
 #include "AST/ConstParam.h"
 #include "AST/Crate.h"
 #include "AST/EnumItem.h"
+#include "AST/EnumItemDiscriminant.h"
 #include "AST/EnumItems.h"
 #include "AST/ExternalItem.h"
 #include "AST/Function.h"
@@ -218,6 +219,10 @@ public:
   // Expressions
 
   llvm::Expected<std::shared_ptr<ast::Expression>>
+  parseMacroInvocationExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExpression();
+
+  llvm::Expected<std::shared_ptr<ast::Expression>>
   parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpression();
 
   llvm::Expected<std::shared_ptr<ast::Expression>> parseExpressionWithPostfix();
@@ -305,6 +310,10 @@ public:
 
   llvm::Expected<std::shared_ptr<ast::EnumItems>> parseEnumItems();
   llvm::Expected<std::shared_ptr<ast::EnumItem>> parseEnumItem();
+  llvm::Expected<std::shared_ptr<ast::EnumItemTuple>> parseEnumItemTuple();
+  llvm::Expected<std::shared_ptr<ast::EnumItemStruct>> parseEnumItemStruct();
+  llvm::Expected<std::shared_ptr<ast::EnumItemDiscriminant>>
+  parseEnumItemDiscriminant();
 
   // statements
   llvm::Expected<std::shared_ptr<ast::Statement>> parseLetStatement();
