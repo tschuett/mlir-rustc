@@ -13,7 +13,7 @@ class OuterAttribute : public Node {
 public:
   OuterAttribute(Location loc) : Node(loc), attr(loc) {}
 
-  SimplePath getPath() const;
+  void setAttr(const Attr &at) { attr = at; }
 };
 
 } // namespace rust_compiler::ast

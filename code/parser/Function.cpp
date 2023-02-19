@@ -1,3 +1,4 @@
+#include "AST/FunctionParam.h"
 #include "AST/FunctionQualifiers.h"
 #include "AST/SelfParam.h"
 #include "AST/ShorthandSelf.h"
@@ -94,52 +95,53 @@ llvm::Expected<ast::SelfParam> Parser::parseSelfParam() {
       llvm::errs() << "failed to parse ShortandSelf: " << toString(std::move(e))
                    << "\n";
       exit(EXIT_FAILURE);
-      self.setSelf(SelfParamKind::ShorthandSelf, *shortA);
-    } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
-      if (checkKeyWord(KeyWordKind::KW_SELFVALUE, 1)) {
-        if (check(TokenKind::Colon, 2)) {
-          llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
-              parseTypedSelf();
-          if (auto e = shortA.takeError()) {
-            llvm::errs() << "failed to parse TypeSelf: "
-                         << toString(std::move(e)) << "\n";
-            exit(EXIT_FAILURE);
-            self.setSelf(SelfParamKind::TypeSelf, *shortA);
-            // TypedSelf
-          } else {
-            llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
-                parseShorthandSelf();
-            if (auto e = shortA.takeError()) {
-              llvm::errs() << "failed to parse ShortandSelf: "
-                           << toString(std::move(e)) << "\n";
-              exit(EXIT_FAILURE);
-              self.setSelf(SelfParamKind::ShorthandSelf, *shortA);
-            }
-          }
-        } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
-          if (check(TokenKind::Colon, 1)) {
-            llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
-                parseTypedSelf();
-            if (auto e = shortA.takeError()) {
-              llvm::errs() << "failed to parse TypeSelf: "
-                           << toString(std::move(e)) << "\n";
-              exit(EXIT_FAILURE);
-              self.setSelf(SelfParamKind::TypeSelf, *shortA);
-            } else {
-              llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
-                  parseShorthandSelf();
-              if (auto e = shortA.takeError()) {
-                llvm::errs() << "failed to parse ShortandSelf: "
-                             << toString(std::move(e)) << "\n";
-                exit(EXIT_FAILURE);
-                self.setSelf(SelfParamKind::ShorthandSelf, *shortA);
-              }
-            }
-          }
+    }
+    self.setSelf(SelfParamKind::ShorthandSelf, *shortA);
+  } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
+    if (checkKeyWord(KeyWordKind::KW_SELFVALUE, 1)) {
+      if (check(TokenKind::Colon, 2)) {
+        llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
+            parseTypedSelf();
+        if (auto e = shortA.takeError()) {
+          llvm::errs() << "failed to parse TypeSelf: " << toString(std::move(e))
+                       << "\n";
+          exit(EXIT_FAILURE);
         }
+        self.setSelf(SelfParamKind::TypeSelf, *shortA);
+        // TypedSelf
+      } else {
+        llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
+            parseShorthandSelf();
+        if (auto e = shortA.takeError()) {
+          llvm::errs() << "failed to parse ShortandSelf: "
+                       << toString(std::move(e)) << "\n";
+          exit(EXIT_FAILURE);
+        }
+        self.setSelf(SelfParamKind::ShorthandSelf, *shortA);
       }
     }
+  } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
+    if (check(TokenKind::Colon, 1)) {
+      llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA = parseTypedSelf();
+      if (auto e = shortA.takeError()) {
+        llvm::errs() << "failed to parse TypeSelf: " << toString(std::move(e))
+                     << "\n";
+        exit(EXIT_FAILURE);
+      }
+      self.setSelf(SelfParamKind::TypeSelf, *shortA);
+    } else {
+      llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
+          parseShorthandSelf();
+      if (auto e = shortA.takeError()) {
+        llvm::errs() << "failed to parse ShortandSelf: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      self.setSelf(SelfParamKind::ShorthandSelf, *shortA);
+    }
   }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse colonself param");
 }
 
 bool Parser::checkSelfParam() {
@@ -243,6 +245,7 @@ llvm::Expected<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
 
 llvm::Expected<ast::FunctionParam> Parser::parseFunctionParam() {
   Location loc = getLocation();
+
   std::vector<ast::OuterAttribute> outerAttributes;
 
   if (checkOuterAttribute()) {
@@ -256,15 +259,28 @@ llvm::Expected<ast::FunctionParam> Parser::parseFunctionParam() {
     outerAttributes = *parsedOuterAttributes;
   }
 
+  // FIXME ignore naked type
   if (check(TokenKind::DotDotDot)) {
     // done
     assert(eat(TokenKind::DotDotDot));
     FunctionParam param = {loc, FunctionParamKind::DotDotDot};
-    param.setAttributes(outerAttributes);
+    param.setOuterAttributes(outerAttributes);
+    return param;
+  } else {
+    FunctionParam param = {loc, FunctionParamKind::Pattern};
+    llvm::Expected<ast::FunctionParamPattern> pattern =
+        parseFunctionParamPattern();
+    if (auto e = pattern.takeError()) {
+      llvm::errs() << "failed to parse pattern in function param: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    param.setPattern(*pattern);
+    param.setOuterAttributes(outerAttributes);
     return param;
   }
-
-  // ???
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse function param");
 }
 
 llvm::Expected<ast::Abi> Parser::parseAbi() {

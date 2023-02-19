@@ -1,5 +1,6 @@
 #include "Parser/Parser.h"
 
+#include "AST/GenericParam.h"
 #include "AST/Module.h"
 #include "AST/Visiblity.h"
 #include "Lexer/KeyWords.h"
@@ -488,7 +489,7 @@ llvm::Expected<ast::LifetimeBounds> Parser::parseLifetimeBounds() {
   if (!checkLifetime())
     return bounds;
 
-  bool trailingPlus = true;
+  bool trailingPlus = false;
   while (true) {
     if (check(TokenKind::Eof)) {
       // abort
@@ -499,11 +500,17 @@ llvm::Expected<ast::LifetimeBounds> Parser::parseLifetimeBounds() {
                      << toString(std::move(e)) << "\n";
         exit(EXIT_FAILURE);
       }
+      trailingPlus = false;
       bounds.setLifetime(*life);
-
-      xxx
+      if (check(TokenKind::Plus)) {
+        trailingPlus = true;
+        assert(eat(TokenKind::Plus));
+      }
     }
   }
+
+  if (trailingPlus)
+    bounds.setTrailingPlus();
 
   return bounds;
 }
@@ -550,18 +557,58 @@ llvm::Expected<ast::TypeParam> Parser::parseTypeParam() {
   param.setIdentifier(tok.getIdentifier());
   assert(eat(TokenKind::Identifier));
 
-  if (check(TokenKind::Colon)) {
+  if (check(TokenKind::Colon) && check(TokenKind::Eq, 1)) {
     assert(eat(TokenKind::Colon));
+    assert(eat(TokenKind::Eq));
+    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+        parseType();
+    if (auto e = type.takeError()) {
+      llvm::errs() << "failed to parse type in type param: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    param.setType(*type);
+    return param;
+  } else if (check(TokenKind::Eq)) {
+    // type
+    assert(eat(TokenKind::Eq));
+    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+        parseType();
+    if (auto e = type.takeError()) {
+      llvm::errs() << "failed to parse type in type param: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    param.setType(*type);
+    return param;
+  } else if (check(TokenKind::Colon) && !check(TokenKind::Eq, 1)) {
+    // type param bounds
+
     llvm::Expected<ast::types::TypeParamBounds> bounds = parseTypeParamBounds();
     if (auto e = bounds.takeError()) {
-      llvm::errs() << "failed to parse TypeParamBounds in type param: "
+      llvm::errs() << "failed to parse type param bounds in type param: "
                    << toString(std::move(e)) << "\n";
       exit(EXIT_FAILURE);
     }
     param.setBounds(*bounds);
-    xxx;
-    // FIXME
+    if (check(TokenKind::Eq)) {
+      assert(eat(TokenKind::Eq));
+      llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+          parseType();
+      if (auto e = type.takeError()) {
+        llvm::errs() << "failed to parse type in type param: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      param.setType(*type);
+      return param;
+    } else {
+      return param;
+    }
+  } else if (!check(TokenKind::Colon) && !check(TokenKind::Eq)) {
+    return param;
   }
+  return param;
 }
 
 llvm::Expected<ast::GenericParam> Parser::parseGenericParam() {
@@ -614,15 +661,45 @@ llvm::Expected<ast::GenericParam> Parser::parseGenericParam() {
 llvm::Expected<ast::GenericParams> Parser::parseGenericParams() {
   Location loc = getLocation();
 
+  GenericParams params = {loc};
+
   if (check(TokenKind::Lt) && check(TokenKind::Gt, 1)) {
+    assert(eat(TokenKind::Lt));
+    assert(eat(TokenKind::Gt));
     // done
   }
 
   if (check(TokenKind::Lt)) {
-    parseGenericParam();
+    assert(eat(TokenKind::Lt));
+    while (true) {
+      if (check(TokenKind::Eof)) {
+        return createStringError(inconvertibleErrorCode(),
+                                 "failed to parse generic params with eof");
+      } else if (check(TokenKind::Gt)) {
+        return params;
+      } else if (check(TokenKind::Comma) && check(TokenKind::Gt, 1)) {
+        // done trailingComma
+        params.setTrailingComma();
+        return params;
+      } else if (check(TokenKind::Gt)) {
+        // done
+        return params;
+      } else {
+        llvm::Expected<ast::GenericParam> generic = parseGenericParam();
+        if (auto e = generic.takeError()) {
+          llvm::errs() << "failed to parse generic param in generic params: "
+                       << toString(std::move(e)) << "\n";
+          exit(EXIT_FAILURE);
+        }
+        params.addGenericParam(*generic);
+      }
+    }
+  } else {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse generic params");
   }
 
-  // FIXME
+  return params;
 }
 
 llvm::Expected<ast::Visibility> Parser::parseVisibility() {

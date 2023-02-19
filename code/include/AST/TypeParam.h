@@ -19,6 +19,7 @@ public:
 
   void setIdentifier(std::string_view id) { identifier = id; }
   void setBounds(types::TypeParamBounds b) { bounds = b; }
+  void setType(std::shared_ptr<ast::types::TypeExpression> t) { type = t; }
 };
 
 } // namespace rust_compiler::ast

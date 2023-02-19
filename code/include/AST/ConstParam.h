@@ -2,6 +2,7 @@
 
 #include "AST/AST.h"
 #include "AST/Types/TypeExpression.h"
+#include "AST/Expression.h"
 
 #include <memory>
 #include <optional>

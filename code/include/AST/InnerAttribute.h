@@ -15,7 +15,7 @@ public:
   InnerAttribute(rust_compiler::Location location)
       : Node(location), attr(location) {}
 
-  SimplePath getPath() const;
+  void setAttr(const Attr &at) { attr = at; }
 };
 
 } // namespace rust_compiler::ast

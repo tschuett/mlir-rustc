@@ -16,26 +16,25 @@ namespace rust_compiler::ast {
 
 enum class FunctionParamKind { Pattern, DotDotDot, Type };
 
-class FunctionParam : public VariableDeclaration {
+class FunctionParam : public Node {
   FunctionParamKind kind;
   std::vector<ast::OuterAttribute> outerAttributes;
   std::shared_ptr<ast::types::TypeExpression> type;
-  std::shared_ptr<ast::patterns::IdentifierPattern> name;
+  FunctionParamPattern pattern;
 
 public:
-  FunctionParam(Location loc, FunctionParamKind kind)
-      : VariableDeclaration(loc, VariableDeclarationKind::FunctionParameter),
-        kind(kind) {}
+  FunctionParam(Location loc, FunctionParamKind kind) : Node(loc), kind(kind), pattern(loc) {}
 
-  void setAttributes(std::span<OuterAttribute>);
-  void setName(std::shared_ptr<ast::patterns::IdentifierPattern> name);
+  void setOuterAttributes(std::span<OuterAttribute> out) {
+    outerAttributes = {out.begin(), out.end()};
+  }
   void setType(std::shared_ptr<ast::types::TypeExpression> type);
 
   std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
 
   FunctionParamKind getKind() const { return kind; }
 
-  std::string getName() override;
+  void setPattern(const FunctionParamPattern &pat) { pattern = pat; }
 };
 
 } // namespace rust_compiler::ast

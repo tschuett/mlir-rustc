@@ -12,8 +12,10 @@ class Attr : public Node {
   std::optional<AttrInput> attrInput;
 
 public:
- Attr(Location loc) : Node(loc), path(loc) {}
+  Attr(Location loc) : Node(loc), path(loc) {}
 
+  void setSimplePath(const SimplePath &sim) { path = sim; }
+  void setAttrInput(const AttrInput &input) { attrInput = input; }
 };
 
 } // namespace rust_compiler::ast

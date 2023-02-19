@@ -2,8 +2,7 @@
 
 #include "AST/Abi.h"
 #include "AST/AssociatedItem.h"
-#include "AST/LifetimeBounds.h"
-#include "AST/Lifetime.h"
+#include "AST/AttrInput.h"
 #include "AST/ConstParam.h"
 #include "AST/Crate.h"
 #include "AST/EnumItem.h"
@@ -14,6 +13,8 @@
 #include "AST/FunctionParamPattern.h"
 #include "AST/FunctionParameters.h"
 #include "AST/GenericParam.h"
+#include "AST/Lifetime.h"
+#include "AST/LifetimeBounds.h"
 #include "AST/LifetimeParam.h"
 #include "AST/LifetimeWhereClauseItem.h"
 #include "AST/MatchArm.h"
@@ -300,9 +301,14 @@ public:
 
   llvm::Expected<ast::SimplePath> parseSimplePath();
 
+  llvm::Expected<ast::AttrInput> parseAttrInput();
+
+  llvm::Expected<ast::DelimTokenTree> parseDelimTokenTree();
+
   llvm::Expected<std::shared_ptr<ast::AssociatedItem>> parseAssociatedItem();
 
   llvm::Expected<ast::Abi> parseAbi();
+  llvm::Expected<ast::Attr> parseAttr();
 
 private:
   bool check(lexer::TokenKind token);
