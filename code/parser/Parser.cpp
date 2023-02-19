@@ -102,16 +102,6 @@ rust_compiler::Location Parser::getLocation() {
 
 lexer::Token Parser::getToken() { return ts.getAt(offset); }
 
-llvm::Expected<std::vector<std::shared_ptr<ast::Item>>> Parser::parseItems() {
-  if (check(lexer::TokenKind::Hash) && check(lexer::TokenKind::Not, 1) &&
-      check(lexer::TokenKind::SquareOpen, 2)) {
-    llvm::Expected<std::vector<ast::OuterAttribute>> result =
-        parseOuterAttributes();
-  }
-  //  llvm::Expected<ast::Item> item = parseItem();
-  // FIXME
-}
-
 llvm::Expected<std::shared_ptr<ast::VisItem>> Parser::parseVisItem() {
   std::optional<ast::Visibility> vis;
 
@@ -185,6 +175,13 @@ Parser::parseMod(std::optional<ast::Visibility> vis) {
 
   Location loc = getLocation();
 
+  bool unsafe = false;
+
+  if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
+    unsafe = true;
+    assert(eatKeyWord(KeyWordKind::KW_UNSAFE));
+  }
+
   if (checkKeyWord(lexer::KeyWordKind::KW_MOD) &&
       check(lexer::TokenKind::Identifier, 1) &&
       check(lexer::TokenKind::Semi, 2)) {
@@ -195,46 +192,130 @@ Parser::parseMod(std::optional<ast::Visibility> vis) {
     assert(eat(lexer::TokenKind::Identifier));
     assert(eat(lexer::TokenKind::Semi));
 
-    return std::make_shared<ast::Module>(loc, vis, ast::ModuleKind::Module,
-                                         modName);
+    Module mod = {loc, vis, ast::ModuleKind::Module, modName};
+    if (unsafe)
+      mod.setUnsafe();
+
+    return std::make_shared<ast::Module>(mod);
   }
 
   if (checkKeyWord(lexer::KeyWordKind::KW_MOD) &&
       check(lexer::TokenKind::Identifier, 1) &&
       check(lexer::TokenKind::BraceOpen, 2)) {
+    assert(eatKeyWord(lexer::KeyWordKind::KW_MOD));
+    Token token = getToken();
+    std::string modName = token.getIdentifier();
+    assert(eat(lexer::TokenKind::Identifier));
+    assert(eat(lexer::TokenKind::BraceOpen));
     // mod foo {}
+    Module mod = {loc, vis, ast::ModuleKind::ModuleTree, modName};
+    if (unsafe)
+      mod.setUnsafe();
+
+    if (checkInnerAttribute()) {
+      llvm::Expected<std::vector<ast::InnerAttribute>> inner =
+          parseInnerAttributes();
+      if (auto e = inner.takeError()) {
+        llvm::errs() << "failed to parse inner attributes in mod: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      mod.setInnerAttributes(*inner);
+    }
+
+    if (check(TokenKind::BraceClose)) {
+      assert(eat(lexer::TokenKind::BraceClose));
+      return std::make_shared<Module>(mod);
+    }
+
+    while (true) {
+      if (check(TokenKind::Eof)) {
+        return createStringError(inconvertibleErrorCode(),
+                                 "failed to parse module: eof");
+      } else if (check(TokenKind::BraceClose)) {
+        // done
+        assert(eat(lexer::TokenKind::BraceClose));
+        return std::make_shared<Module>(mod);
+      } else {
+        llvm::Expected<std::shared_ptr<ast::Item>> item = parseItem();
+        if (auto e = item.takeError()) {
+          llvm::errs() << "failed to parse item in mod: "
+                       << toString(std::move(e)) << "\n";
+          exit(EXIT_FAILURE);
+        }
+        mod.addItem(*item);
+      }
+    }
   }
 
-  // error
+  return createStringError(inconvertibleErrorCode(), "failed to parse module");
 }
 
 llvm::Expected<std::shared_ptr<ast::Crate>>
-Parser::parseCrateModule(std::string_view crateName) {
-  assert(false);
+Parser::parseCrateModule(std::string_view crateName, basic::CrateNum crateNum) {
   Location loc = getLocation();
 
-  llvm::Expected<std::vector<ast::InnerAttribute>> innerAttributes =
-      parseInnerAttributes();
-  if (auto e = innerAttributes.takeError()) {
-    llvm::errs() << "failed to parse inner attributes: "
-                 << toString(std::move(e)) << "\n";
-    exit(EXIT_FAILURE);
-  }
-  // parseInnerAttributes
+  Crate crate = {crateName, crateNum};
 
-  llvm::Expected<std::vector<std::shared_ptr<ast::Item>>> items = parseItems();
-  if (auto e = items.takeError()) {
-    llvm::errs() << "failed to parse items: " << toString(std::move(e)) << "\n";
-    exit(EXIT_FAILURE);
+  if (checkInnerAttribute()) {
+
+    llvm::Expected<std::vector<ast::InnerAttribute>> innerAttributes =
+        parseInnerAttributes();
+    if (auto e = innerAttributes.takeError()) {
+      llvm::errs() << "failed to parse inner attributes in crate: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    crate.setInnerAttributes(*innerAttributes);
   }
 
-  // parseItems
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      // done
+      return std::make_shared<Crate>(crate);
+    }
+    llvm::Expected<std::shared_ptr<ast::Item>> item = parseItem();
+    if (auto e = item.takeError()) {
+      llvm::errs() << "failed to parse item in crate: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    crate.addItem(*item);
+  }
+
+  return std::make_shared<Crate>(crate);
 }
 
 llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
-Parser::parseLifetimeWhereClasueItem() {
+Parser::parseLifetimeWhereClauseItem() {
   Location loc = getLocation();
   LifetimeWhereClauseItem item = {loc};
+
+  llvm::Expected<ast::Lifetime> lifetime = parseLifetime();
+  if (auto e = lifetime.takeError()) {
+    llvm::errs() << "failed to parse lifetime in LifetimeWhereClauseItem: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  item.setForLifetimes(*lifetime);
+
+  if (!check(TokenKind::Colon)) {
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse :token in lifetime where clause item");
+  }
+  assert(eat(TokenKind::Colon));
+
+  llvm::Expected<ast::LifetimeBounds> bounds = parseLifetimeBounds();
+  if (auto e = bounds.takeError()) {
+    llvm::errs()
+        << "failed to parse lifetime bounds in LifetimeWhereClauseItem: "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  item.setLifetimeBounds(*bounds);
+
+  return std::make_shared<LifetimeWhereClauseItem>(item);
 }
 
 llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
@@ -282,6 +363,15 @@ Parser::parseTypeBoundWhereClauseItem() {
   return std::make_shared<TypeBoundWhereClauseItem>(item);
 }
 
+llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
+Parser::parseWhereClauseItem() {
+  if (checkKeyWord(KeyWordKind::KW_FOR))
+    return parseTypeBoundWhereClauseItem();
+  if (checkLifetime())
+    return parseLifetimeWhereClauseItem();
+  return parseTypeBoundWhereClauseItem();
+}
+
 llvm::Expected<ast::WhereClause> Parser::parseWhereClause() {
   Location loc = getLocation();
 
@@ -294,7 +384,29 @@ llvm::Expected<ast::WhereClause> Parser::parseWhereClause() {
 
   assert(eatKeyWord(KeyWordKind::KW_WHERE));
 
-  // FIXME
+  bool hasTrailingComma = false;
+
+  while (checkWhereClauseItem()) {
+    llvm::Expected<std::shared_ptr<ast::WhereClauseItem>> clauseItem =
+        parseWhereClauseItem();
+    if (auto e = clauseItem.takeError()) {
+      llvm::errs() << "failed to parse where clause item in where clause: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    where.addWhereClauseItem(*clauseItem);
+    hasTrailingComma = false;
+
+    if (check(TokenKind::Comma)) {
+      assert(check(TokenKind::Comma));
+      hasTrailingComma = true;
+    }
+  }
+
+  if (hasTrailingComma)
+    where.setTrailingComma();
+
+  return where;
 }
 
 llvm::Expected<ast::ConstParam> Parser::parseConstParam() {
@@ -368,7 +480,62 @@ llvm::Expected<ast::ConstParam> Parser::parseConstParam() {
   return param;
 }
 
-llvm::Expected<ast::LifetimeParam> Parser::parseLifetimeParam() {}
+llvm::Expected<ast::LifetimeBounds> Parser::parseLifetimeBounds() {
+  Location loc = getLocation();
+
+  LifetimeBounds bounds = {loc};
+
+  if (!checkLifetime())
+    return bounds;
+
+  bool trailingPlus = true;
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      // abort
+    } else if (!checkLifetime()) {
+      llvm::Expected<ast::Lifetime> life = parseLifetime();
+      if (auto e = life.takeError()) {
+        llvm::errs() << "failed to parse life time in life time bounds: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      bounds.setLifetime(*life);
+
+      xxx
+    }
+  }
+
+  return bounds;
+}
+
+llvm::Expected<ast::LifetimeParam> Parser::parseLifetimeParam() {
+  Location loc = getLocation();
+
+  LifetimeParam param = {loc};
+
+  llvm::Expected<ast::Lifetime> lifeTime = parseLifetime();
+  if (auto e = lifeTime.takeError()) {
+    llvm::errs() << "failed to parse Lifetime in lifetime param: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  param.setLifetime(*lifeTime);
+
+  if (!check(TokenKind::Colon))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse : token in lifetime param");
+  assert(eat(TokenKind::Colon));
+
+  llvm::Expected<ast::LifetimeBounds> bounds = parseLifetimeBounds();
+  if (auto e = bounds.takeError()) {
+    llvm::errs() << "failed to parse LifetimeBounds in lifetime param: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  param.setBounds(*bounds);
+
+  return param;
+}
 
 llvm::Expected<ast::TypeParam> Parser::parseTypeParam() {
   Location loc = getLocation();
@@ -392,6 +559,7 @@ llvm::Expected<ast::TypeParam> Parser::parseTypeParam() {
       exit(EXIT_FAILURE);
     }
     param.setBounds(*bounds);
+    xxx;
     // FIXME
   }
 }

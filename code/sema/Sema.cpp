@@ -44,9 +44,7 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
     resolver.resolveCrate(crate);
   }
 
-  {
-    TimeTraceScope scope("type inference");
-  }
+  { TimeTraceScope scope("type inference"); }
 
   { TimeTraceScope scope("trait solving"); }
 
@@ -57,6 +55,8 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
   { TimeTraceScope scope("drops"); }
 
   { TimeTraceScope scope("closure captures"); }
+
+    { TimeTraceScope scope("constant evaluation"); }
 
   for (const auto &item : crate->getItems()) {
     const auto &visItem = item->getVisItem();

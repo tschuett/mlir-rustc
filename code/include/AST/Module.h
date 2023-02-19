@@ -18,16 +18,16 @@ enum class ModuleKind { Module, ModuleTree };
 
 class Module : public VisItem {
   ModuleKind kind;
-  bool unsafe;
+  bool unsafe = false;
+  ;
   std::string identifier;
-  std::vector<std::shared_ptr<InnerAttribute>> innerAttributes;
+  std::vector<InnerAttribute> innerAttributes;
   std::vector<std::shared_ptr<Item>> items;
 
 public:
-  Module(rust_compiler::Location loc, std::optional<Visibility> vis, ModuleKind kind,
-         std::string_view modName)
-    : VisItem(loc, VisItemKind::Module, vis),
-        kind(kind){};
+  Module(rust_compiler::Location loc, std::optional<Visibility> vis,
+         ModuleKind kind, std::string_view modName)
+      : VisItem(loc, VisItemKind::Module, vis), kind(kind){};
 
   ModuleKind getModuleKind() const { return kind; }
   std::string_view getModuleName() const { return identifier; }
@@ -38,6 +38,14 @@ public:
 
   std::span<std::shared_ptr<Item>> getItems();
   void setItems(std::span<std::shared_ptr<Item>> items);
+
+  void setInnerAttributes(std::span<ast::InnerAttribute> in) {
+    innerAttributes = {in.begin(), in.end()};
+  }
+  void setItem(std::span<std::shared_ptr<ast::Item>> it) {
+    items = {it.begin(), it.end()};
+  }
+  void setUnsafe() { unsafe = true; }
 };
 
 } // namespace rust_compiler::ast

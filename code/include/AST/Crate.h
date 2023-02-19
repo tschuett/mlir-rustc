@@ -16,7 +16,7 @@ namespace rust_compiler::ast {
 
 /// A crate AST object - holds all the data for a single compilation unit
 class Crate {
-  std::vector<std::shared_ptr<InnerAttribute>> inner_attrs;
+  std::vector<InnerAttribute> innerAttributes;
   // dodgy spacing required here
   /* TODO: is it better to have a vector of items here or a module (implicit
    * top-level one)? */
@@ -38,6 +38,12 @@ public:
   std::string_view getCrateName() const;
 
   basic::CrateNum getCrateNum() const { return crateNum; }
+
+  void setInnerAttributes(std::span<InnerAttribute> attr) {
+    innerAttributes = {attr.begin(), attr.end()};
+  }
+
+  void addItem(std::shared_ptr<Item> it) { items.push_back(it); }
 };
 
 } // namespace rust_compiler::ast

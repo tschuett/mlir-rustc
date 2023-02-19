@@ -2,8 +2,8 @@
 
 #include "AST/Abi.h"
 #include "AST/AssociatedItem.h"
-#include "AST/LifetimeWhereClauseItem.h"
-#include "AST/TypeBoundWhereClauseItem.h"
+#include "AST/LifetimeBounds.h"
+#include "AST/Lifetime.h"
 #include "AST/ConstParam.h"
 #include "AST/Crate.h"
 #include "AST/EnumItem.h"
@@ -15,6 +15,7 @@
 #include "AST/FunctionParameters.h"
 #include "AST/GenericParam.h"
 #include "AST/LifetimeParam.h"
+#include "AST/LifetimeWhereClauseItem.h"
 #include "AST/MatchArm.h"
 #include "AST/MatchArmGuard.h"
 #include "AST/MatchArms.h"
@@ -26,6 +27,7 @@
 #include "AST/SelfParam.h"
 #include "AST/Statements.h"
 #include "AST/TypeAlias.h"
+#include "AST/TypeBoundWhereClauseItem.h"
 #include "AST/TypeParam.h"
 #include "AST/Types/QualifiedPathType.h"
 #include "AST/Types/TraitBound.h"
@@ -160,7 +162,6 @@ public:
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseTupleType();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
   parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType();
-  llvm::Expected<std::vector<std::shared_ptr<ast::Item>>> parseItems();
   // only for types !!!
 
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
@@ -170,7 +171,7 @@ public:
   PathKind testTypePathOrSimplePath();
 
   llvm::Expected<std::shared_ptr<ast::Crate>>
-  parseCrateModule(std::string_view crateName);
+  parseCrateModule(std::string_view crateName, basic::CrateNum crateNum);
 
   // Patterns
   llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> parsePattern();
@@ -265,8 +266,7 @@ public:
       parseCompoundAssignmentExpression(std::shared_ptr<ast::Expression>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
   parseQualifiedPathInExpression();
-  llvm::Expected<std::shared_ptr<ast::Expression>>
-  parseLiteralExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseLiteralExpression();
 
   llvm::Expected<ast::MatchArms> parseMatchArms();
   llvm::Expected<ast::MatchArm> parseMatchArm();
@@ -276,10 +276,13 @@ public:
   llvm::Expected<ast::GenericArgs> parseGenericArgs();
   llvm::Expected<ast::GenericParams> parseGenericParams();
   llvm::Expected<ast::WhereClause> parseWhereClause();
+  llvm::Expected<std::shared_ptr<ast::WhereClauseItem>> parseWhereClauseItem();
   llvm::Expected<ast::types::ForLifetimes> parseForLifetimes();
 
+  llvm::Expected<ast::Lifetime> parseLifetime();
+  llvm::Expected<ast::LifetimeBounds> parseLifetimeBounds();
   llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
-  parseLifetimeWhereClasueItem();
+  parseLifetimeWhereClauseItem();
   llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
   parseTypeBoundWhereClauseItem();
 
@@ -336,6 +339,9 @@ private:
 
   CheckPoint getCheckPoint();
   void recover(const CheckPoint &cp);
+
+  bool checkWhereClauseItem();
+  bool checkLifetime();
 };
 
 } // namespace rust_compiler::parser
