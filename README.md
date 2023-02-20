@@ -29,7 +29,6 @@
 - [ ] Closures (nested regions)
 - [ ] visibility
 - [ ] visibility checks in inliner
-- [ ] desugaring: AST -> HIR -> MIR
 - [x] location in Lexer
 - [ ] convert ModuleBuilder to CrateBuilder for code generation
 - [ ] unsafe checker
