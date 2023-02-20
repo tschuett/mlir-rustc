@@ -109,7 +109,7 @@ enum class TokenKind {
   AndEq,
   ShlEq,
   CaretEq,
-  ShrEq, OrEq
+  ShrEq, OrEq, FatArrow
 };
 
 class Token {

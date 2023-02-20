@@ -12,6 +12,8 @@ class MatchArmGuard : public Node {
 
 public:
   MatchArmGuard(Location loc) : Node(loc){};
+
+  void setGuard(std::shared_ptr<Expression> g) { guard = g; }
 };
 
 } // namespace rust_compiler::ast

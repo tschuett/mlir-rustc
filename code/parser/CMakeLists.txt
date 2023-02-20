@@ -7,10 +7,7 @@ add_library(parser
            Expression.cpp
            Enumeration.cpp
            Closure.cpp
-           Types.cpp
            Statement.cpp
-           Item.cpp
-           MatchExpression.cpp
            Struct.cpp
            Pattern.cpp
            BareFunctionType.cpp
@@ -24,6 +21,9 @@ add_library(parser
            TypeNoBounds.cpp
            Statements.cpp
            Loops.cpp
+           Types.cpp
+           Item.cpp
+           MatchExpression.cpp
            )
 
 

@@ -3,6 +3,7 @@
 #include "AST/Abi.h"
 #include "AST/AssociatedItem.h"
 #include "AST/AttrInput.h"
+#include "AST/ClosureParameters.h"
 #include "AST/ConstParam.h"
 #include "AST/Crate.h"
 #include "AST/EnumItem.h"
@@ -32,8 +33,10 @@
 #include "AST/TypeAlias.h"
 #include "AST/TypeBoundWhereClauseItem.h"
 #include "AST/TypeParam.h"
+#include "AST/Types/BareFunctionType.h"
 #include "AST/Types/QualifiedPathType.h"
 #include "AST/Types/TraitBound.h"
+#include "AST/Types/TypeParamBound.h"
 #include "AST/Types/TypeParamBounds.h"
 #include "AST/Types/TypePathFnInputs.h"
 #include "AST/UseTree.h"
@@ -145,9 +148,14 @@ public:
   llvm::Expected<ast::types::TypePathFn> parseTypePathFn();
   llvm::Expected<ast::types::TypePathFnInputs> parseTypePathFnInputs();
 
-  llvm::Expected<ast::types::TraitBound> parseTraitBound();
+  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> parseTraitBound();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
   parseBareFunctionType();
+  llvm::Expected<ast::types::FunctionTypeQualifiers>
+  parseFunctionTypeQualifiers();
+  llvm::Expected<ast::types::BareFunctionReturnType>
+  parseBareFunctionReturnType();
+
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
   parseRawPointerType();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseNeverType();
@@ -292,7 +300,7 @@ public:
 
   llvm::Expected<ast::MatchArms> parseMatchArms();
   llvm::Expected<ast::MatchArm> parseMatchArm();
-  llvm::Expected<ast::MatchArmGuard> parseMatchGuard();
+  llvm::Expected<ast::MatchArmGuard> parseMatchArmGuard();
   llvm::Expected<ast::GenericParam> parseGenericParam();
 
   llvm::Expected<ast::GenericArgs> parseGenericArgs();
@@ -301,7 +309,8 @@ public:
   llvm::Expected<std::shared_ptr<ast::WhereClauseItem>> parseWhereClauseItem();
   llvm::Expected<ast::types::ForLifetimes> parseForLifetimes();
 
-  llvm::Expected<ast::Lifetime> parseLifetime();
+  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> parseLifetime();
+  llvm::Expected<ast::Lifetime> parseLifetimeAsLifetime();
   llvm::Expected<ast::LifetimeBounds> parseLifetimeBounds();
   llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
   parseLifetimeWhereClauseItem();
@@ -321,7 +330,8 @@ public:
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseTypedSelf();
 
   llvm::Expected<ast::types::TypeParamBounds> parseTypeParamBounds();
-  llvm::Expected<ast::types::TypeParamBound> parseTypeParamBound();
+  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>>
+  parseTypeParamBound();
 
   llvm::Expected<ast::SimplePath> parseSimplePath();
 
@@ -335,6 +345,14 @@ public:
   llvm::Expected<ast::Attr> parseAttr();
 
   llvm::Expected<ast::TupleFields> parseTupleFields();
+
+  llvm::Expected<ast::ClosureParameters> parseClosureParameters();
+  llvm::Expected<ast::ClosureParam> parseClosureParam();
+
+  llvm::Expected<ast::types::FunctionParametersMaybeNamedVariadic>
+  parseFunctionParametersMaybeNamedVariadic();
+
+  llvm::Expected<ast::types::MaybeNamedParam> parseMaybeNamedParam();
 
 private:
   bool check(lexer::TokenKind token);
@@ -374,6 +392,9 @@ private:
 
   bool checkWhereClauseItem();
   bool checkLifetime();
+
+  bool checkExpressionWithBlock();
+  bool checkExpressionWithoutBlock();
 };
 
 } // namespace rust_compiler::parser

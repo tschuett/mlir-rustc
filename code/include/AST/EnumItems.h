@@ -15,6 +15,10 @@ public:
   EnumItems(Location loc) : Node(loc) {}
 
   bool hasTrailingComma() const { return trailingComma; }
+
+  void addItem(const EnumItem &it) { items.push_back(it); }
+
+  void setTrailingComma() { trailingComma = true; }
 };
 
 } // namespace rust_compiler::ast

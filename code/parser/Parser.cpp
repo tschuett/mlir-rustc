@@ -292,7 +292,7 @@ Parser::parseLifetimeWhereClauseItem() {
   Location loc = getLocation();
   LifetimeWhereClauseItem item = {loc};
 
-  llvm::Expected<ast::Lifetime> lifetime = parseLifetime();
+  llvm::Expected<ast::Lifetime> lifetime = parseLifetimeAsLifetime();
   if (auto e = lifetime.takeError()) {
     llvm::errs() << "failed to parse lifetime in LifetimeWhereClauseItem: "
                  << toString(std::move(e)) << "\n";
@@ -494,7 +494,7 @@ llvm::Expected<ast::LifetimeBounds> Parser::parseLifetimeBounds() {
     if (check(TokenKind::Eof)) {
       // abort
     } else if (!checkLifetime()) {
-      llvm::Expected<ast::Lifetime> life = parseLifetime();
+      llvm::Expected<ast::Lifetime> life = parseLifetimeAsLifetime();
       if (auto e = life.takeError()) {
         llvm::errs() << "failed to parse life time in life time bounds: "
                      << toString(std::move(e)) << "\n";
@@ -520,7 +520,7 @@ llvm::Expected<ast::LifetimeParam> Parser::parseLifetimeParam() {
 
   LifetimeParam param = {loc};
 
-  llvm::Expected<ast::Lifetime> lifeTime = parseLifetime();
+  llvm::Expected<ast::Lifetime> lifeTime = parseLifetimeAsLifetime();
   if (auto e = lifeTime.takeError()) {
     llvm::errs() << "failed to parse Lifetime in lifetime param: "
                  << toString(std::move(e)) << "\n";

@@ -247,17 +247,32 @@ llvm::Expected<ast::EnumItems> Parser::parseEnumItems() {
   }
   items.addItem(*first);
 
-  while(true) {
+  while (true) {
     if (check(TokenKind::Eof)) {
       // abort
-    } else if (check(TokenKind::Comma)) {
-    } else if (check(TokenKind::BraceOpen)) {
-    } else if (check(TokenKind::ParenOpen)) {
-    } else if (check(TokenKind::Eq)) {
+    } else if (check(TokenKind::BraceClose)) {
+      // done
+      return items;
+    } else if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
+      // done with trailing
+      items.setTrailingComma();
+      return items;
+    } else if (check(TokenKind::ParenOpen) || check(TokenKind::Eq) ||
+               check(TokenKind::BraceOpen)) {
+      llvm::Expected<ast::EnumItem> item = parseEnumItem();
+      if (auto e = item.takeError()) {
+        llvm::errs() << "failed to parse enum item in enum items: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      items.addItem(*item);
     } else {
-      // ?
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse enum items ");
     }
   }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse enum items");
 }
 
 } // namespace rust_compiler::parser

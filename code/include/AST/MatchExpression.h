@@ -16,14 +16,19 @@ class MatchExpression : public ExpressionWithBlock {
   Scrutinee scrutinee;
   std::vector<InnerAttribute> innerAttributes;
 
-  std::unique_ptr<MatchArms> matchArms;
+  MatchArms matchArms;
 
 public:
   MatchExpression(Location loc)
       : ExpressionWithBlock(loc, ExpressionWithBlockKind::MatchExpression),
-        scrutinee(loc) {}
+        scrutinee(loc), matchArms(loc) {}
 
-  void setScrutinee(Scrutinee);
+  void setScrutinee(const Scrutinee &scru) { scrutinee = scru; }
+  void setInnerAttributes(std::span<InnerAttribute> inner) {
+    innerAttributes = {inner.begin(), inner.end()};
+  }
+
+  void setMatchArms(const MatchArms &ma) { matchArms = ma; }
 };
 
 } // namespace rust_compiler::ast

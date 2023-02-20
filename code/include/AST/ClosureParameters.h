@@ -13,6 +13,8 @@ public:
   ClosureParameters(Location loc) : Node(loc) {}
 
   bool isTrailingComma() const { return trailingComma; }
+
+  void addParam(const ClosureParam& cp) { parameters.push_back(cp); }
 };
 
 } // namespace rust_compiler::ast

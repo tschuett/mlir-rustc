@@ -6,11 +6,12 @@
 #include "AST/VisItem.h"
 
 #include <optional>
+#include <vector>
 
 namespace rust_compiler::ast {
 
 class ExternBlock : public VisItem {
-  bool unsafe;
+  bool unsafe = false;
   std::optional<Abi> abi;
   std::vector<InnerAttribute> innerAttributes;
   std::vector<ExternalItem> externalItems;
@@ -20,6 +21,13 @@ public:
       : VisItem(loc, VisItemKind::ExternBlock, vis) {}
 
   bool isUnsafe() const { return unsafe; };
+  void setUnsafe() { unsafe = true; }
+
+  void setAbi(const Abi &ab) { abi = ab; }
+
+  void setInnerAttributes(std::span<InnerAttribute> inner) {
+    innerAttributes = {inner.begin(), inner.end()};
+  }
 };
 
 } // namespace rust_compiler::ast

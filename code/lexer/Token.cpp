@@ -243,6 +243,9 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::INTEGER_LITERAL: {
     return std::string("integer literal");
   }
+  case TokenKind::FatArrow: {
+    return std::string("=>");
+  }
   }
 }
 

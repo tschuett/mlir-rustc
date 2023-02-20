@@ -7,7 +7,11 @@
 #include "AST/TupleStruct.h"
 #include "AST/Union.h"
 #include "Lexer/KeyWords.h"
+#include "Lexer/Token.h"
 #include "Parser/Parser.h"
+#include "llvm/Support/Error.h"
+
+#include <optional>
 
 using namespace llvm;
 using namespace rust_compiler::ast;
@@ -20,7 +24,91 @@ llvm::Expected<ast::ExternalItem> Parser::parseExternalItem() {
 
   ExternalItem impl = {loc};
 
-  assert(false);
+  xxx revisit ParenOpen ParenClose
+
+  if (checkOuterAttribute()) {
+    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+        parseOuterAttributes();
+    if (auto e = outer.takeError()) {
+      llvm::errs() << "failed to parse outer attributes in external item : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    impl.setOuterAttributes(*outer);
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_PUB)) {
+    llvm::Expected<ast::Visibility> vis = parseVisibility();
+    if (auto e = vis.takeError()) {
+      llvm::errs() << "failed to parse visibility in external item : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    if (checkKeyWord(KeyWordKind::KW_STATIC)) {
+      llvm::Expected<std::shared_ptr<ast::VisItem>> stat =
+          parseStaticItem(*vis);
+      if (auto e = stat.takeError()) {
+        llvm::errs() << "failed to parse static item in external item : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      impl.setStaticItem(*stat);
+      return impl;
+    } else if (checkKeyWord(KeyWordKind::KW_CONST) ||
+               checkKeyWord(KeyWordKind::KW_ASYNC) ||
+               checkKeyWord(KeyWordKind::KW_EXTERN) ||
+               checkKeyWord(KeyWordKind::KW_FN) ||
+               checkKeyWord(KeyWordKind::KW_UNSAFE)) {
+      llvm::Expected<std::shared_ptr<ast::VisItem>> fn = parseFunction(*vis);
+      if (auto e = fn.takeError()) {
+        llvm::errs() << "failed to parse function in external item : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      impl.setFunction(*fn);
+      return impl;
+    } else {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse external item");
+    }
+  } else if (checkKeyWord(KeyWordKind::KW_STATIC)) {
+    llvm::Expected<std::shared_ptr<ast::VisItem>> stat =
+        parseStaticItem(std::nullopt);
+    if (auto e = stat.takeError()) {
+      llvm::errs() << "failed to parse static item in external item : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    impl.setStaticItem(*stat);
+    return impl;
+  } else if (checkKeyWord(KeyWordKind::KW_CONST) ||
+             checkKeyWord(KeyWordKind::KW_ASYNC) ||
+             checkKeyWord(KeyWordKind::KW_EXTERN) ||
+             checkKeyWord(KeyWordKind::KW_FN) ||
+             checkKeyWord(KeyWordKind::KW_UNSAFE)) {
+    llvm::Expected<std::shared_ptr<ast::VisItem>> fn =
+        parseFunction(std::nullopt);
+    if (auto e = fn.takeError()) {
+      llvm::errs() << "failed to parse function in external item : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    impl.setFunction(*fn);
+    return impl;
+  } else if (check(TokenKind::PathSep) || checkSimplePathSegment()) {
+    // Macro
+    llvm::Expected<std::shared_ptr<ast::Expression>> macro =
+        parseMacroInvocationExpression();
+    if (auto e = macro.takeError()) {
+      llvm::errs() << "failed to parse MacroInvocation in external item : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    impl.setMacroInvocation(*macro);
+    return impl;
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse external item");
 }
 
 llvm::Expected<std::shared_ptr<ast::VisItem>>
@@ -31,7 +119,7 @@ Parser::parseExternBlock(std::optional<ast::Visibility> vis) {
 
   if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
     assert(eatKeyWord(KeyWordKind::KW_UNSAFE));
-    impl.setUnsafe()
+    impl.setUnsafe();
   }
 
   if (!checkKeyWord(KeyWordKind::KW_EXTERN))
@@ -40,7 +128,7 @@ Parser::parseExternBlock(std::optional<ast::Visibility> vis) {
   assert(eatKeyWord(KeyWordKind::KW_EXTERN));
 
   llvm::Expected<ast::Abi> abi = parseAbi();
-  if (auto e = genericParams.takeError()) {
+  if (auto e = abi.takeError()) {
     llvm::errs() << "failed to parse abi in extern block : "
                  << toString(std::move(e)) << "\n";
     exit(EXIT_FAILURE);
@@ -50,28 +138,45 @@ Parser::parseExternBlock(std::optional<ast::Visibility> vis) {
   if (!check(TokenKind::BraceOpen))
     return createStringError(inconvertibleErrorCode(),
                              "failed to parse { token in extern block");
-  assert(eat(TokenKin::BraceOpen));
+  assert(eat(TokenKind::BraceOpen));
 
-  llvm::Expected<std::vector<ast::InnerAttribute>> innerAttributes =
-      parseInnerAttributes();
-  if (auto e = innerAttributes.takeError()) {
-    llvm::errs() << "failed to parse inner attributes in extern block : "
-                 << toString(std::move(e)) << "\n";
-    exit(EXIT_FAILURE);
+  if (checkInnerAttribute()) {
+    llvm::Expected<std::vector<ast::InnerAttribute>> innerAttributes =
+        parseInnerAttributes();
+    if (auto e = innerAttributes.takeError()) {
+      llvm::errs() << "failed to parse inner attributes in extern block : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    impl.setInnerAttributes(*innerAttributes);
   }
-  impl.setInnerAttributes(*innerAttributes);
 
-  assert(false);
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      // abort
+    } else if (check(TokenKind::BraceClose)) {
+      // done
+      assert(eat(TokenKind::BraceClose));
+      return std::make_shared<ExternBlock>(impl);
+    } else if (checkOuterAttribute()) {
+    } else if (check(TokenKind::ParenOpen)) {
+    } else {
+      // error
+    }
+  }
+
+  xxx;
+  // ExternItems until }
 }
 
 llvm::Expected<std::shared_ptr<ast::VisItem>>
 Parser::parseImplementation(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
-  InherentImpl inherentImpl = {loc, vis};
-  TraitImpl traitImpl = {loc, vis};
+//  InherentImpl inherentImpl = {loc, vis};
+//  TraitImpl traitImpl = {loc, vis};
 
-  assert(false);
+  //assert(false);
 }
 
 llvm::Expected<std::shared_ptr<ast::VisItem>>

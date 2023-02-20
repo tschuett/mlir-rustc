@@ -2,6 +2,8 @@
 #include "AST/Types/InferredType.h"
 #include "AST/Types/NeverType.h"
 #include "AST/Types/SliceType.h"
+#include "AST/Types/TypeParamBound.h"
+#include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
 using namespace rust_compiler::lexer;
@@ -37,26 +39,31 @@ llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseImplType() {
   Location loc = getLocation();
 
+  CheckPoint cp = getCheckPoint();
+
   if (!checkKeyWord(KeyWordKind::KW_IMPL)) {
     return createStringError(inconvertibleErrorCode(),
                              "failed to parse impl keyword in impl trait");
   }
   assert(eatKeyWord(KeyWordKind::KW_IMPL));
 
+  if (check(TokenKind::LIFETIME_OR_LABEL)) {
+  }
   // FIXME
 }
 
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTraitObjectType() {
-  Location loc = getLocation();
 
-  bool dyn = false;
+  CheckPoint cp = getCheckPoint();
 
   if (checkKeyWord(KeyWordKind::KW_DYN)) {
     assert(eatKeyWord(KeyWordKind::KW_DYN));
-    dyn = true;
   }
 
+  if (checkLifetime()) {
+  } else if (check(TokenKind::) {
+  }
   // FIXME
 }
 
@@ -143,10 +150,65 @@ Parser::parseNeverType() {
 
 llvm::Expected<ast::GenericArgs> Parser::parseGenericArgs() { assert(false); }
 
-llvm::Expected<ast::types::TypeParamBound> Parser::parseTypeParamBound() {
+llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>>
+Parser::parseTypeParamBound() {
   Location loc = getLocation();
 
-  // TypeParamBound bound = {};
+  if (check(TokenKind::ParenOpen)) {
+    llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> trait =
+        parseTraitBound();
+    if (auto e = trait.takeError()) {
+      llvm::errs() << "failed to parse trait bound in type param bound : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    return *trait;
+  } else if (check(TokenKind::QMark)) {
+    llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> trait =
+        parseTraitBound();
+    if (auto e = trait.takeError()) {
+      llvm::errs() << "failed to parse trait bound in type param bound : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    return *trait;
+  } else if (checkKeyWord(KeyWordKind::KW_FOR)) {
+    llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> trait =
+        parseTraitBound();
+    if (auto e = trait.takeError()) {
+      llvm::errs() << "failed to parse trait bound in type param bound : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    return *trait;
+  } else if (check(TokenKind::DoubleColon)) {
+    llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> trait =
+        parseTraitBound();
+    if (auto e = trait.takeError()) {
+      llvm::errs() << "failed to parse trait bound in type param bound : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    return *trait;
+  } else if (checkPathIdentSegment()) {
+    llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> trait =
+        parseTraitBound();
+    if (auto e = trait.takeError()) {
+      llvm::errs() << "failed to parse trait bound in type param bound : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    return *trait;
+  }
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> life =
+      parseLifetime();
+  if (auto e = life.takeError()) {
+    llvm::errs() << "failed to parse lifetime in type param bound : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  return *life;
 }
 
 llvm::Expected<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
@@ -154,13 +216,24 @@ llvm::Expected<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
 
   TypeParamBounds bounds = {loc};
 
-  llvm::Expected<ast::types::TypeParamBound> first = parseTypeParamBound();
+  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> first =
+      parseTypeParamBound();
   if (auto e = first.takeError()) {
     llvm::errs() << "failed to parse  type param bound in type param bounds : "
                  << toString(std::move(e)) << "\n";
     exit(EXIT_FAILURE);
   }
   bounds.addTypeParamBound(*first);
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      // abort
+    } else if (check(TokenKind::Plus)) {
+    } else if (!check(TokenKind::Plus)) {
+      // done
+    } else {
+    }
+  }
 
   // FIXME
 }
@@ -254,14 +327,17 @@ llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
 
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseType() {
+  if (checkKeyWord(KeyWordKind::KW_IMPL))
+    return parseImplType();
+
+  if (checkKeyWord(KeyWordKind::KW_DYN))
+    return parseTraitObjectType();
+
   if (check(TokenKind::Star))
     return parseRawPointerType();
 
   if (check(TokenKind::SquareOpen))
     return parseArrayOrSliceType();
-
-  if (checkKeyWord(KeyWordKind::KW_IMPL))
-    return parseImplType();
 
   if (check(TokenKind::Not))
     return parseNeverType();
@@ -287,17 +363,7 @@ Parser::parseType() {
   if (checkKeyWord(KeyWordKind::KW_FN))
     return parseBareFunctionType();
 
-  if (checkKeyWord(KeyWordKind::KW_DYN))
-    return parseTraitObjectType();
-
-  if (check(TokenKind::QMark))
-    return parseTraitObjectType();
+  return parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType();
 }
 
 } // namespace rust_compiler::parser
-
-/*
-  TypePath or MacroInvocation
-  TraitObjectType
-  BareFunctionType with ForLifetimes
- */
