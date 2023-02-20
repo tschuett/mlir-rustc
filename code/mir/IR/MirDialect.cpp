@@ -8,6 +8,7 @@
 
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/WithColor.h>
+#include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/BlockAndValueMapping.h>
 #include <mlir/IR/Builders.h>
 #include <mlir/IR/BuiltinTypes.h>
@@ -190,17 +191,17 @@ mlir::LogicalResult StructAccessOp::verify() {
   return mlir::success();
 }
 
-/// Fold struct constants.
-OpFoldResult StructConstantOp::fold(FoldAdaptor adaptor) { return getValue(); }
-
-/// Fold simple struct access operations that access into a constant.
-OpFoldResult StructAccessOp::fold(FoldAdaptor adaptor) {
-  auto structAttr = adaptor.getInput().dyn_cast_or_null<mlir::ArrayAttr>();
-  if (!structAttr)
-    return nullptr;
-
-  size_t elementIndex = getIndex();
-  return structAttr[elementIndex];
-}
+///// Fold struct constants.
+//OpFoldResult StructConstantOp::fold(FoldAdaptor adaptor) { return getValue(); }
+//
+///// Fold simple struct access operations that access into a constant.
+//OpFoldResult StructAccessOp::fold(FoldAdaptor adaptor) {
+//  auto structAttr = adaptor.getInput().dyn_cast_or_null<mlir::ArrayAttr>();
+//  if (!structAttr)
+//    return nullptr;
+//
+//  size_t elementIndex = getIndex();
+//  return structAttr[elementIndex];
+//}
 
 } // namespace rust_compiler::Mir

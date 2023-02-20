@@ -118,11 +118,11 @@ def StructAccessOp : Mir_Op<"struct_access", [Pure]> {
     OpBuilder<(ins "mlir::Value":$input, "size_t":$index)>
   ];
 
-  // Indicate that additional verification for this operation is necessary.
-  let hasVerifier = 1;
-
-  // Set the folder bit so that we can fold constant accesses.
-  let hasFolder = 1;
+//  // Indicate that additional verification for this operation is necessary.
+//  let hasVerifier = 1;
+//
+//  // Set the folder bit so that we can fold constant accesses.
+//  let hasFolder = 1;
 }
 
 //===----------------------------------------------------------------------===//
@@ -149,8 +149,8 @@ def StructConstantOp : Mir_Op<"struct_constant", [ConstantLike, Pure]> {
   let assemblyFormat = "$value attr-dict `:` type($output)";
 
   // Indicate that additional verification for this operation is necessary.
-  let hasVerifier = 1;
-  let hasFolder = 1;
+//  let hasVerifier = 1;
+//  let hasFolder = 1;
 }
 
 //===----------------------------------------------------------------------===//
@@ -226,7 +226,7 @@ def VTEntryOp : Mir_Op<"vt_entry", [HasParent<"VTableOp">]> {
 
   let arguments = (ins StrAttr:$method, SymbolRefAttr:$proc);
 
-  let hasCustomAssemblyFormat = 1;
+  //let hasCustomAssemblyFormat = 1;
 
   let extraClassDeclaration = [{
     static constexpr llvm::StringRef getMethodAttrNameStr() { return "method"; }
