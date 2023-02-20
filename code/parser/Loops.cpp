@@ -12,8 +12,8 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parseLoopExpression() {
-}
+//llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parseLoopExpression() {
+//}
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseIteratorLoopExpression() {

@@ -112,9 +112,17 @@ public:
   parseStruct(std::optional<ast::Visibility> vis);
   llvm::Expected<ast::StructFields> parseStructFields();
   llvm::Expected<ast::StructField> parseStructField();
+  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  parseStructStruct(std::optional<ast::Visibility> vis);
+  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  parseTupleStruct(std::optional<ast::Visibility> vis);
 
   llvm::Expected<std::shared_ptr<ast::VisItem>>
   parseImplementation(std::optional<ast::Visibility> vis);
+  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  parseInherentImpl(std::optional<ast::Visibility> vis);
+  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  parseTraitImpl(std::optional<ast::Visibility> vis);
 
   llvm::Expected<std::vector<ast::OuterAttribute>> parseOuterAttributes();
   llvm::Expected<std::vector<ast::InnerAttribute>> parseInnerAttributes();

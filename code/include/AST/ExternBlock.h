@@ -28,6 +28,8 @@ public:
   void setInnerAttributes(std::span<InnerAttribute> inner) {
     innerAttributes = {inner.begin(), inner.end()};
   }
+
+  void addItem(const ExternalItem &ex) { externalItems.push_back(ex); }
 };
 
 } // namespace rust_compiler::ast

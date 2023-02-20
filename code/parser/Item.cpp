@@ -24,8 +24,6 @@ llvm::Expected<ast::ExternalItem> Parser::parseExternalItem() {
 
   ExternalItem impl = {loc};
 
-  xxx revisit ParenOpen ParenClose
-
   if (checkOuterAttribute()) {
     llvm::Expected<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
@@ -158,25 +156,62 @@ Parser::parseExternBlock(std::optional<ast::Visibility> vis) {
       // done
       assert(eat(TokenKind::BraceClose));
       return std::make_shared<ExternBlock>(impl);
-    } else if (checkOuterAttribute()) {
-    } else if (check(TokenKind::ParenOpen)) {
     } else {
-      // error
+      llvm::Expected<ast::ExternalItem> item = parseExternalItem();
+      if (auto e = item.takeError()) {
+        llvm::errs() << "failed to parse external item in extern block : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      impl.addItem(*item);
     }
   }
 
-  xxx;
-  // ExternItems until }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse  extern block");
 }
 
 llvm::Expected<std::shared_ptr<ast::VisItem>>
 Parser::parseImplementation(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
-//  InherentImpl inherentImpl = {loc, vis};
-//  TraitImpl traitImpl = {loc, vis};
+  CheckPoint cp = getCheckPoint();
 
-  //assert(false);
+  if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
+    recover(cp);
+    return parseTraitImpl(vis);
+  }
+
+  if (!checkKeyWord(KeyWordKind::KW_IMPL))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse impl keyword in implementation");
+
+  assert(eatKeyWord(KeyWordKind::KW_IMPL));
+
+  if (check(TokenKind::Lt)) {
+    llvm::Expected<ast::GenericParams> generic = parseGenericParams();
+    if (auto e = generic.takeError()) {
+      llvm::errs() << "failed to parse  generic params in implementation : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  if (check(TokenKind::Not)) {
+    recover(cp);
+    return parseTraitImpl(vis);
+  }
+
+  llvm::Expected<std::shared_ptr<ast::types::TypePath>> path = parseTypePath();
+  if (path) {
+    if (checkKeyWord(KeyWordKind::KW_FOR)) {
+      recover(cp);
+      return parseTraitImpl(vis);
+    }
+  }
+
+  recover(cp);
+  return parseInherentImpl(vis);
 }
 
 llvm::Expected<std::shared_ptr<ast::VisItem>>
@@ -462,10 +497,7 @@ Parser::parseUnion(std::optional<ast::Visibility> vis) {
 
 llvm::Expected<std::shared_ptr<ast::VisItem>>
 Parser::parseStruct(std::optional<ast::Visibility> vis) {
-  Location loc = getLocation();
-
-  class StructStruct stru = {loc, vis};
-  class TupleStruct tupleStru = {loc, vis};
+  CheckPoint cp = getCheckPoint();
 
   if (!checkKeyWord(KeyWordKind::KW_STRUCT))
     return createStringError(inconvertibleErrorCode(),
@@ -477,11 +509,6 @@ Parser::parseStruct(std::optional<ast::Visibility> vis) {
     return createStringError(inconvertibleErrorCode(),
                              "failed to parse identifier in struct");
   }
-
-  Token tok = getToken();
-  stru.setIdentifier(tok.getIdentifier());
-  tupleStru.setIdentifier(tok.getIdentifier());
-
   assert(check(TokenKind::Identifier));
 
   if (check(TokenKind::Lt)) {
@@ -491,8 +518,6 @@ Parser::parseStruct(std::optional<ast::Visibility> vis) {
                    << toString(std::move(e)) << "\n";
       exit(EXIT_FAILURE);
     }
-    stru.setGenericParams(*genericParams);
-    tupleStru.setGenericParams(*genericParams);
   }
 
   if (checkKeyWord(KeyWordKind::KW_WHERE)) {
@@ -502,20 +527,22 @@ Parser::parseStruct(std::optional<ast::Visibility> vis) {
                    << toString(std::move(e)) << "\n";
       exit(EXIT_FAILURE);
     }
-    stru.setWhereClause(*whereClause);
+    recover(cp);
+    return parseStructStruct(vis);
   }
 
-  if (check(TokenKind::BraceOpen) && check(TokenKind::BraceClose, 1)) {
-    // StructStruct
-  } else if (check(TokenKind::BraceOpen)) {
-    // StructStruct
-  } else if (check(TokenKind::ParenOpen)) {
-    // TupleStruct
-  } else if (check(TokenKind::Semi)) {
-    // StructStruct
+  if (check(TokenKind::Semi)) {
+    recover(cp);
+    return parseStructStruct(vis);
   }
 
-  // FIXME
+  if (check(TokenKind::BraceOpen)) {
+    recover(cp);
+    return parseStructStruct(vis);
+  }
+
+  recover(cp);
+  return parseTupleStruct(vis);
 }
 
 } // namespace rust_compiler::parser

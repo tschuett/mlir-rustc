@@ -1,5 +1,6 @@
 add_library(parser
            Parser.cpp
+           UseTree.cpp
            Util.cpp
            Function.cpp
            Attributes.cpp
@@ -19,11 +20,11 @@ add_library(parser
            TypeNoBounds.cpp
            Statements.cpp
            Loops.cpp
-           Types.cpp
            Item.cpp
-           MatchExpression.cpp
            UseDeclaration.cpp
            Trait.cpp
+           Types.cpp
+           MatchExpression.cpp
            )
 
 
