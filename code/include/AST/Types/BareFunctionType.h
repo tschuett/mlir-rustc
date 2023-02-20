@@ -120,6 +120,9 @@ public:
   void setReturnType(const ast::types::BareFunctionReturnType &ret) {
     returnType = ret;
   }
+  void setParameters(const FunctionParametersMaybeNamedVariadic &par) {
+    params = par;
+  }
 };
 
 } // namespace rust_compiler::ast::types

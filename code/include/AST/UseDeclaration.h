@@ -1,24 +1,21 @@
 #pragma once
 
+#include "AST/UseTree.h"
 #include "AST/VisItem.h"
 
 #include <memory>
 
-namespace rust_compiler::ast::use_tree {
-class UseTree;
-}
-
 namespace rust_compiler::ast {
 
 class UseDeclaration : public VisItem {
-  std::shared_ptr<use_tree::UseTree> tree;
+  use_tree::UseTree tree;
 
 public:
   UseDeclaration(rust_compiler::Location location,
                  std::optional<Visibility> vis)
-      : VisItem(location, VisItemKind::UseDeclaration, vis){};
+      : VisItem(location, VisItemKind::UseDeclaration, vis), tree{location} {};
 
-  void setComponent(std::shared_ptr<use_tree::UseTree> tree);
+  void setTree(const use_tree::UseTree &tre) { tree = tre; }
 };
 
 } // namespace rust_compiler::ast

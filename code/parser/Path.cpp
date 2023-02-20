@@ -6,6 +6,7 @@
 #include "AST/Types/TypePathSegment.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
+#include "llvm/Support/Error.h"
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
@@ -186,9 +187,35 @@ llvm::Expected<std::shared_ptr<ast::types::TypePath>> Parser::parseTypePath() {
   class TypePath path = {loc};
 
   if (check(TokenKind::PathSep)) {
-    path.setTrailing();
+    path.setLeading();
     assert(eat(TokenKind::PathSep));
   }
+
+  llvm::Expected<ast::types::TypePathSegment> first = parseTypePathSegment();
+  if (auto e = first.takeError()) {
+    llvm::errs() << "failed to parse type path segment  in type path: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  path.addSegment(*first);
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+    } else if (check(TokenKind::PathSep)) {
+      assert(eat(TokenKind::PathSep));
+      llvm::Expected<ast::types::TypePathSegment> next = parseTypePathSegment();
+      if (auto e = next.takeError()) {
+        llvm::errs() << "failed to parse type path segment  in type path: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      path.addSegment(*next);
+    } else {
+      return std::make_shared<ast::types::TypePath>(path);
+    }
+  }
+
+  return std::make_shared<ast::types::TypePath>(path);
 }
 
 llvm::Expected<ast::SimplePath> Parser::parseSimplePath() {

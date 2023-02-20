@@ -135,6 +135,7 @@ public:
   llvm::Expected<ast::SelfParam> parseSelfParam();
 
   llvm::Expected<ast::Statements> parseStatements();
+  llvm::Expected<std::shared_ptr<ast::Statement>> parseStatement();
 
   // Types
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
@@ -295,6 +296,8 @@ public:
   llvm::Expected<std::shared_ptr<ast::Expression>>
   parsePredicatePatternLoopExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>>
+  parsePredicateLoopExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>>
   parseInfiniteLoopExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>> parsePatternLoopExpression();
 
@@ -395,6 +398,7 @@ private:
 
   bool checkExpressionWithBlock();
   bool checkExpressionWithoutBlock();
+  bool checkStatement();
 };
 
 } // namespace rust_compiler::parser

@@ -13,19 +13,37 @@ llvm::Expected<ast::Statements> Parser::parseStatements() {
 
   Statements stmts = {loc};
 
-  xxx
-
-      llvm::Expected<std::shared_ptr<ast::Expression>>
-          woBlock = parseExpressionWithoutBlock();
-  if (auto e = woBlock.takeError()) {
-    llvm::errs() << "failed to parse expression without block" << std::move(e)
-                 << "\n";
-    exit(EXIT_FAILURE);
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse statements: eof");
+    } else if (check(TokenKind::BraceClose)) {
+      // done
+      return stmts;
+    } else if (checkStatement()) {
+      llvm::Expected<std::shared_ptr<ast::Statement>> stmt = parseStatement();
+      if (auto e = stmt.takeError()) {
+        llvm::errs() << "failed to parse statement in statements"
+                     << std::move(e) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      stmts.addStmt(*stmt);
+    } else if (checkExpressionWithoutBlock()) {
+      llvm::Expected<std::shared_ptr<ast::Expression>> woBlock =
+          parseExpressionWithoutBlock();
+      if (auto e = woBlock.takeError()) {
+        llvm::errs() << "failed to parse expression without block in statements"
+                     << std::move(e) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      stmts.setTrailing(*woBlock);
+    } else {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse statements");
+    }
   }
-  Statements stmts = {loc};
-  stmts.setTrailing(woBlock);
 
-  return std::make_shared<Statements>(stmts);
+  return stmts;
 }
 
 } // namespace rust_compiler::parser

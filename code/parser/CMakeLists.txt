@@ -11,12 +11,10 @@ add_library(parser
            Struct.cpp
            Pattern.cpp
            BareFunctionType.cpp
-           UseDeclaration.cpp
            Path.cpp
            Pointer.cpp
            QualifiedPathType.cpp
            RawPointerType.cpp
-           Trait.cpp
            Tuple.cpp
            TypeNoBounds.cpp
            Statements.cpp
@@ -24,6 +22,8 @@ add_library(parser
            Types.cpp
            Item.cpp
            MatchExpression.cpp
+           UseDeclaration.cpp
+           Trait.cpp
            )
 
 

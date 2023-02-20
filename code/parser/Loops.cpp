@@ -57,7 +57,7 @@ Parser::parseIteratorLoopExpression() {
     exit(EXIT_FAILURE);
   }
 
-  it.setBlock(*block);
+  it.setBody(*block);
 
   return std::make_shared<IteratorLoopExpression>(it);
 }
@@ -105,7 +105,7 @@ Parser::parsePredicatePatternLoopExpression() {
     exit(EXIT_FAILURE);
   }
 
-  pat.setBlock(*block);
+  pat.setBody(*block);
 
   return std::make_shared<PredicatePatternLoopExpression>(pat);
 }
@@ -129,13 +129,14 @@ Parser::parseInfiniteLoopExpression() {
     exit(EXIT_FAILURE);
   }
 
-  infini.setBlock(*block);
+  infini.setBody(*block);
 
   return std::make_shared<InfiniteLoopExpression>(infini);
 }
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parsePredicateLoopExpression() {
+  Location loc = getLocation();
 
   PredicateLoopExpression pred = {loc};
 
@@ -161,7 +162,7 @@ Parser::parsePredicateLoopExpression() {
     exit(EXIT_FAILURE);
   }
 
-  pred.setBlock(*block);
+  pred.setBody(*block);
 
   return std::make_shared<PredicateLoopExpression>(pred);
 }

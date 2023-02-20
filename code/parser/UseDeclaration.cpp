@@ -22,6 +22,17 @@ Parser::parseUseDeclaration(std::optional<ast::Visibility> vis) {
     return createStringError(inconvertibleErrorCode(),
                              "failed to parse use keyword in use declarion");
   }
+
+  llvm::Expected<ast::use_tree::UseTree> tree = parseUseTree();
+  if (auto e = tree.takeError()) {
+    llvm::errs() << "failed to use tree in use declaration: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  use.setTree(*tree);
+
+  return std::make_shared<UseDeclaration>(use);
 }
 
 llvm::Expected<ast::use_tree::UseTree> Parser::parseUseTree() {

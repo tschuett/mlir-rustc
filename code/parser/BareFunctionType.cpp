@@ -163,8 +163,20 @@ Parser::parseBareFunctionType() {
     }
     return std::make_shared<BareFunctionType>(bare);
   } else {
-    xxx
+    llvm::Expected<FunctionParametersMaybeNamedVariadic> varadic =
+        parseFunctionParametersMaybeNamedVariadic();
+    if (auto e = varadic.takeError()) {
+      llvm::errs() << "failed to parse function parameters maybe named "
+                      "variadic  in bare "
+                      "function type : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    bare.setParameters(*varadic);
+    return std::make_shared<BareFunctionType>(bare);
   }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse bare function type");
 }
 
 } // namespace rust_compiler::parser

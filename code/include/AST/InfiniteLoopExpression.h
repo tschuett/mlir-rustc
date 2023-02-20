@@ -8,13 +8,15 @@
 namespace rust_compiler::ast {
 
 class InfiniteLoopExpression final : public LoopExpression {
-  std::shared_ptr<BlockExpression> body;
+  std::shared_ptr<Expression> body;
 
 public:
   InfiniteLoopExpression(Location loc)
       : LoopExpression(loc, LoopExpressionKind::InfiniteLoopExpression){};
 
-  std::shared_ptr<BlockExpression> getBody() const;
+  std::shared_ptr<Expression> getBody() const { return body; }
+
+  void setBody(std::shared_ptr<Expression> bod) { body = bod; }
 };
 
 } // namespace rust_compiler::ast

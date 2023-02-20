@@ -1,6 +1,5 @@
 #pragma once
 
-#include "AST/BlockExpression.h"
 #include "AST/LoopExpression.h"
 
 #include <memory>
@@ -9,17 +8,17 @@ namespace rust_compiler::ast {
 
 class PredicateLoopExpression final : public LoopExpression {
   std::shared_ptr<ast::Expression> condition;
-  std::shared_ptr<ast::BlockExpression> block;
+  std::shared_ptr<ast::Expression> block;
 
 public:
   PredicateLoopExpression(Location loc)
       : LoopExpression(loc, LoopExpressionKind::PredicateLoopExpression) {}
 
   void setCondition(std::shared_ptr<ast::Expression>);
-  void setBody(std::shared_ptr<ast::BlockExpression>);
+  void setBody(std::shared_ptr<ast::Expression>);
 
-  std::shared_ptr<ast::Expression> getCondition() const;
-  std::shared_ptr<ast::BlockExpression> getBody() const;
+  std::shared_ptr<ast::Expression> getCondition() const { return condition; }
+  std::shared_ptr<ast::Expression> getBody() const { return block; }
 };
 
 } // namespace rust_compiler::ast
