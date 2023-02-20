@@ -31,6 +31,10 @@ public:
   void setVisibility(const Visibility &vis) { visibility = vis; }
 
   void setIdentifier(std::string_view i) { identifier = i; }
+
+  void setEnumItemTuple(const EnumItemTuple &tu) { item = tu; }
+  void setEnumItemStruct(const EnumItemStruct &st) { item = st; }
+  void setEnumItemDiscriminant(const EnumItemDiscriminant &dis) { item = dis; }
 };
 
 } // namespace rust_compiler::ast

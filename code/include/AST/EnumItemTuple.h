@@ -13,6 +13,8 @@ class EnumItemTuple : public Node {
 
 public:
   EnumItemTuple(Location loc) : Node(loc) {}
+
+  void setTupleFields(const TupleFields &tf) { fields = tf; }
 };
 
 } // namespace rust_compiler::ast

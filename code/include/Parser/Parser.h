@@ -334,6 +334,8 @@ public:
   llvm::Expected<ast::Abi> parseAbi();
   llvm::Expected<ast::Attr> parseAttr();
 
+  llvm::Expected<ast::TupleFields> parseTupleFields();
+
 private:
   bool check(lexer::TokenKind token);
   bool check(lexer::TokenKind token, size_t offset);

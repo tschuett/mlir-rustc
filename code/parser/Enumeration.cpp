@@ -1,5 +1,6 @@
-#include "AST/EnumItemDiscriminant.h"
 #include "AST/Enumeration.h"
+
+#include "AST/EnumItemDiscriminant.h"
 #include "AST/EnumItemStruct.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
@@ -47,15 +48,41 @@ llvm::Expected<ast::EnumItem> Parser::parseEnumItem() {
   item.setIdentifier(tok.getIdentifier());
   assert(eat(TokenKind::Identifier));
 
-  if (check(TokenKind::ParenOpen)) {
-
-  } else if (check(TokenKind::BraceOpen)) {
+  if (check(TokenKind::BraceOpen)) {
+    // Struct
+    llvm::Expected<ast::EnumItemStruct> struc = parseEnumItemStruct();
+    if (auto e = struc.takeError()) {
+      llvm::errs() << "failed to parse enum item struct in enum item: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    item.setEnumItemStruct(*struc);
   } else if (check(TokenKind::Eq)) {
+    // Dis
+    llvm::Expected<ast::EnumItemDiscriminant> dis = parseEnumItemDiscriminant();
+    if (auto e = dis.takeError()) {
+      llvm::errs() << "failed to parse enum item discriminant in enum item: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    item.setEnumItemDiscriminant(*dis);
+  } else if (check(TokenKind::ParenOpen)) {
+    // Tupl
+    llvm::Expected<ast::EnumItemTuple> tupl = parseEnumItemTuple();
+    if (auto e = tupl.takeError()) {
+      llvm::errs() << "failed to parse enum item tuple in enum item: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    item.setEnumItemTuple(*tupl);
+  } else if (check(TokenKind::Comma)) {
+    // done?
   } else {
+    // done ?
   }
-}
 
-llvm::Expected<ast::EnumItems> Parser::parseEnumItems() {}
+  return item;
+}
 
 llvm::Expected<std::shared_ptr<ast::VisItem>>
 Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
@@ -125,11 +152,35 @@ Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
   return std::make_shared<Enumeration>(enu);
 }
 
-llvm::Expected<ast::EnumItemTuple>
-Parser::parseEnumItemTuple() {}
+llvm::Expected<ast::EnumItemTuple> Parser::parseEnumItemTuple() {
+  Location loc = getLocation();
 
-llvm::Expected<ast::EnumItemStruct>
-Parser::parseEnumItemStruct() {
+  EnumItemTuple tup = {loc};
+
+  if (!check(TokenKind::ParenOpen))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ( token in enum item tuple");
+  assert(eat(TokenKind::ParenOpen));
+
+  llvm::Expected<ast::TupleFields> fields = parseTupleFields();
+  if (auto e = fields.takeError()) {
+    llvm::errs()
+        << "failed to parse tuple  fields expression in enum item tuple: "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  tup.setTupleFields(*fields);
+
+  if (!check(TokenKind::ParenClose)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ) token in enum item tuple");
+  }
+  assert(eat(TokenKind::ParenClose));
+
+  return tup;
+}
+
+llvm::Expected<ast::EnumItemStruct> Parser::parseEnumItemStruct() {
   Location loc = getLocation();
 
   EnumItemStruct str = {loc};
@@ -160,8 +211,7 @@ Parser::parseEnumItemStruct() {
   return str;
 }
 
-llvm::Expected<ast::EnumItemDiscriminant>
-Parser::parseEnumItemDiscriminant() {
+llvm::Expected<ast::EnumItemDiscriminant> Parser::parseEnumItemDiscriminant() {
   Location loc = getLocation();
 
   EnumItemDiscriminant dis = {loc};
@@ -182,6 +232,32 @@ Parser::parseEnumItemDiscriminant() {
   dis.setExpression(*expr);
 
   return dis;
+}
+
+llvm::Expected<ast::EnumItems> Parser::parseEnumItems() {
+  Location loc = getLocation();
+
+  EnumItems items = {loc};
+
+  llvm::Expected<ast::EnumItem> first = parseEnumItem();
+  if (auto e = first.takeError()) {
+    llvm::errs() << "failed to parse enum teim in enum items: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  items.addItem(*first);
+
+  while(true) {
+    if (check(TokenKind::Eof)) {
+      // abort
+    } else if (check(TokenKind::Comma)) {
+    } else if (check(TokenKind::BraceOpen)) {
+    } else if (check(TokenKind::ParenOpen)) {
+    } else if (check(TokenKind::Eq)) {
+    } else {
+      // ?
+    }
+  }
 }
 
 } // namespace rust_compiler::parser
