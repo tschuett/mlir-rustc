@@ -6,6 +6,7 @@ namespace rust_compiler::ast::types {
 
 enum class TypeNoBoundsKind {
   ParenthesisedType,
+  ImplTraitType,
   ImplTraitTypeOneBound,
   TraitObjectTypeOneBound,
   TypePath,

@@ -1,9 +1,11 @@
 #include "AST/MatchExpression.h"
 
+#include "AST/Expression.h"
 #include "AST/Scrutinee.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
+#include "llvm/Support/Error.h"
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
@@ -87,14 +89,66 @@ llvm::Expected<ast::MatchArms> Parser::parseMatchArms() {
   }
   assert(eat(TokenKind::FatArrow));
 
-  while (true) {
-    if (check(TokenKind::Eof)) {
-    } else if (check(TokenKind::BraceClose)) {
-    } else if (checkOuterAttribute()) {
-    }
+  llvm::Expected<std::shared_ptr<Expression>> expr = parseExpression();
+  if (auto e = expr.takeError()) {
+    llvm::errs() << "failed to parse expression in match arms: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
   }
 
-  xxx;
+  arms.addArm(*arm, *expr);
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      // abort
+        return createStringError(inconvertibleErrorCode(),
+                                 "failed to parse match arms: eof");
+    } else if (check(TokenKind::BraceClose)) {
+      // done
+      return arms;
+    } else if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
+      // done
+      return arms;
+    } else {
+      llvm::Expected<ast::MatchArm> arm = parseMatchArm();
+      if (auto e = arm.takeError()) {
+        llvm::errs() << "failed to parse match arm in match arms: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+
+      if (!check(TokenKind::FatArrow)) {
+        return createStringError(inconvertibleErrorCode(),
+                                 "failed to parse fat arrow in match arms");
+      }
+      assert(eat(TokenKind::FatArrow));
+
+      llvm::Expected<std::shared_ptr<Expression>> expr = parseExpression();
+      if (auto e = expr.takeError()) {
+        llvm::errs() << "failed to parse expression in match arms: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+
+      arms.addArm(*arm, *expr);
+
+      if ((*expr)->getExpressionKind() ==
+          ExpressionKind::ExpressionWithoutBlock) {
+        if (!check(TokenKind::Comma)) {
+          return createStringError(
+              inconvertibleErrorCode(),
+              "failed to parse , after parse expression without "
+              "block in match arms");
+        }
+        assert(eat(TokenKind::Comma));
+      } else {
+        if (check(TokenKind::Comma))
+          assert(eat(TokenKind::Comma));
+      }
+    }
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse match arms");
 }
 
 llvm::Expected<std::shared_ptr<ast::Expression>>

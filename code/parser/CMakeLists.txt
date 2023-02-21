@@ -23,8 +23,8 @@ add_library(parser
            Item.cpp
            UseDeclaration.cpp
            Trait.cpp
-           Types.cpp
            MatchExpression.cpp
+           Types.cpp
            )
 
 

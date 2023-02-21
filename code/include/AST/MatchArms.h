@@ -9,8 +9,14 @@
 namespace rust_compiler::ast {
 
 class MatchArms : public Node {
+  std::vector<std::pair<MatchArm, std::shared_ptr<Expression>>> arms;
+
 public:
   MatchArms(Location loc) : Node(loc){};
+
+  void addArm(const MatchArm &arm, std::shared_ptr<Expression> e) {
+    arms.push_back({arm, e});
+  }
 };
 
 } // namespace rust_compiler::ast
