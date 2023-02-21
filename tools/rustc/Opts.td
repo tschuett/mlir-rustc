@@ -16,6 +16,9 @@ multiclass Eq<string name, string help> {
 def help : Flag<["--"], "help">, HelpText<"Display this help">;
 def version : Flag<["--"], "version">, HelpText<"Display the version">;
 
+def syntaxonly : Flag<["--"], "fsyntax-only">, HelpText<"Only process syntax">;
+def withsema : Flag<["--"], "fwith-sema">, HelpText<"with sema">;
+
 
 def edition_EQ : Joined<["--"], "edition=">,
   HelpText<"Rust edition">;

@@ -60,6 +60,11 @@ def SCCPPass : Pass<"SCCP", "mlir::ModuleOp"> {
   let description = [{Wegman, Mark N and Zadeck, F Kenneth}];
 }
 
+def HirLICMPass : Pass<"SCCP", "mlir::func::FuncOp"> {
+  let summary = "LICM on Hir loops";
+  let description = [Loop-Invariant Computation and Code Motion on Hir Loops];
+}
+
 
 // eleminate Mir: how?
 

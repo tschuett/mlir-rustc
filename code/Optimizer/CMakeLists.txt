@@ -10,6 +10,7 @@ add_library(optimizer
            ComputeKnownBits.cpp
            DeadStoreElimination.cpp
            SCCP.cpp
+           HirLICM.cpp
            )
 #           SCCPPass.cpp
 

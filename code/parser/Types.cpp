@@ -288,6 +288,7 @@ llvm::Expected<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
     }
   }
 
+  xxx;
   // FIXME
 }
 
@@ -338,30 +339,43 @@ PathKind Parser::testTypePathOrSimplePath() {
 
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
     parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType() {
+  CheckPoint qp = getCheckPoint();
+
   if (checkKeyWord(KeyWordKind::KW_FOR)) {
     llvm::Expected<ForLifetimes> forLifetimes = parseForLifetimes();
-    // check error
+    if (auto e = forLifetimes.takeError()) {
+      llvm::errs() << "failed to parse for lifetime in ... : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
 
     if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
-      // BareFunctionType
+      recover(qp);
+      return parseBareFunctionType();
     } else if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
-      // BareFunctionType
+      recover(qp);
+      return parseBareFunctionType();
     } else if (checkKeyWord(KeyWordKind::KW_FN)) {
-      // BareFunctionType
+      recover(qp);
+      return parseBareFunctionType();
     } else if (check(TokenKind::PathSep)) {
       // TraitObjectType
     }
   } else { // not for
     if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
-      // BareFunctionType
+      recover(qp);
+      return parseBareFunctionType();
     } else if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
-      // BareFunctionType
+      recover(qp);
+      return parseBareFunctionType();
     } else if (checkKeyWord(KeyWordKind::KW_FN)) {
-      // BareFunctionType
+      recover(qp);
+      return parseBareFunctionType();
     } else if (check(TokenKind::PathSep)) {
       // TraitObjectType: TypePath
       // TypePath: TypePath
       // MacroInvocation: SimplePath
+    } else if () {
     }
     // BareFunctionType or TraitObjectType
   }
