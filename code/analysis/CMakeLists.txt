@@ -7,6 +7,7 @@ add_library(analysis
            AANoop.cpp
            MemorySSANodes.cpp
            Abstractelement.cpp
+           Loops.cpp
            )
 
 target_include_directories(analysis PRIVATE  ../include)

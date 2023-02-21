@@ -9,8 +9,9 @@ add_library(optimizer
            DeadCodeElimination.cpp
            ComputeKnownBits.cpp
            DeadStoreElimination.cpp
-           Combiner.cpp
+           SCCP.cpp
            )
+#           SCCPPass.cpp
 
 
 target_include_directories(optimizer PRIVATE  ../include)
