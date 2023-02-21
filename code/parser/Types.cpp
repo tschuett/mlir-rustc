@@ -1,4 +1,5 @@
 #include "AST/Types/ArrayType.h"
+#include "AST/Types/ImplTraitType.h"
 #include "AST/Types/InferredType.h"
 #include "AST/Types/NeverType.h"
 #include "AST/Types/SliceType.h"
@@ -47,13 +48,40 @@ Parser::parseImplType() {
   }
   assert(eatKeyWord(KeyWordKind::KW_IMPL));
 
-  if (check(TokenKind::LIFETIME_OR_LABEL)) {
+  while (true) {
+    if (check(TokenKind::LIFETIME_OR_LABEL)) {
+      // TypeParamBounds
+      recover(cp);
+      return parseImplTraitType();
+    } else if (check(TokenKind::LIFETIME_TOKEN) &&
+               checkStaticOrUnderscore()) { // 'static or '_ FIXME
+      // TypeParamBound
+      recover(cp);
+      return parseImplTraitType();
+    } else if (check(TokenKind::QMark) || checkKeyWord(KeyWordKind::KW_FOR) ||
+               check(TokenKind::DoubleColon) || checkPathIdentSegment()) {
+      // TraitBound
+      llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> bound =
+          parseTraitBound();
+      if (auto e = bound.takeError()) {
+        llvm::errs() << "failed to parse trait bound in impl type : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      if (check(TokenKind::Plus)) {
+        recover(cp);
+        return parseImplTraitType();
+      } else {
+        recover(cp);
+        return parseImplTraitTypeOneBound();
+      }
+    }
   }
-  // FIXME
 }
 
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTraitObjectType() {
+  Location loc = getLocation();
 
   CheckPoint cp = getCheckPoint();
 
@@ -61,10 +89,35 @@ Parser::parseTraitObjectType() {
     assert(eatKeyWord(KeyWordKind::KW_DYN));
   }
 
-  if (checkLifetime()) {
-  } else if (check(TokenKind::) {
+  while (true) {
+    if (check(TokenKind::LIFETIME_OR_LABEL)) {
+      // TypeParamBounds
+      recover(cp);
+      return parseTraitObjectType();
+    } else if (check(TokenKind::LIFETIME_TOKEN) &&
+               checkStaticOrUnderscore()) { // 'static or '_ FIXME
+      // TypeParamBound
+      recover(cp);
+      return parseTraitObjectType();
+    } else if (check(TokenKind::QMark) || checkKeyWord(KeyWordKind::KW_FOR) ||
+               check(TokenKind::DoubleColon) || checkPathIdentSegment()) {
+      // TraitBound
+      llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> bound =
+          parseTraitBound();
+      if (auto e = bound.takeError()) {
+        llvm::errs() << "failed to parse trait bound in impl type : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      if (check(TokenKind::Plus)) {
+        recover(cp);
+        return parseTraitObjectType();
+      } else {
+        recover(cp);
+        return parseTraitObjectTypeOneBound();
+      }
+    }
   }
-  // FIXME
 }
 
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>

@@ -166,6 +166,14 @@ public:
   parseBareFunctionReturnType();
 
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseTraitObjectTypeOneBound();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseImplTraitTypeOneBound();
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseImplTraitType();
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
   parseRawPointerType();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseNeverType();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
@@ -407,6 +415,7 @@ private:
   bool checkExpressionWithBlock();
   bool checkExpressionWithoutBlock();
   bool checkStatement();
+  bool checkStaticOrUnderscore();
 };
 
 } // namespace rust_compiler::parser

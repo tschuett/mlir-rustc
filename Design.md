@@ -37,3 +37,6 @@ https://github.com/powerboat9/gccrs/tree/master/gcc/testsuite/rust/execute/tortu
 
 
 https://discourse.llvm.org/t/playing-around-with-a-c-dialect-and-wondering-about-how-high-level-it-should-be/1103
+
+
+https://llvm.org/docs/LoopTerminology.html
