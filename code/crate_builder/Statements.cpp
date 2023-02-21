@@ -1,5 +1,7 @@
 #include "CrateBuilder/CrateBuilder.h"
 
+#include "Hir/HirOps.h"
+
 namespace rust_compiler::crate_builder {
 
 mlir::Value
@@ -11,7 +13,7 @@ CrateBuilder::emitStatements(ast::Statements stmts) {
   if (stmts.hasTrailing())
     return emitExpressionWithoutBlock(stmts.getTrailing());
 
-  return Unit;
+  return builder.create<UnitConstantOp>();
 }
 
 } // namespace rust_compiler::crate_builder

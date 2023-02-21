@@ -360,7 +360,7 @@ def StructConstantOp : Hir_Op<"struct_constant", [ConstantLike, Pure]> {
 // StringConstantOp
 //===----------------------------------------------------------------------===//
 
-def StringtConstantOp : Hir_Op<"string_constant", [ConstantLike, Pure]> {
+def StringConstantOp : Hir_Op<"string_constant", [ConstantLike, Pure]> {
   let summary = "string constant";
   let description = [{
     Constant operation turns a literal string value into an SSA value. The data
@@ -377,6 +377,27 @@ def StringtConstantOp : Hir_Op<"string_constant", [ConstantLike, Pure]> {
   let results = (outs Hir_StringType:$output);
 
   let assemblyFormat = "$value attr-dict `:` type($output)";
+}
+
+//===----------------------------------------------------------------------===//
+// UnitConstantOp
+//===----------------------------------------------------------------------===//
+
+def UnitConstantOp : Hir_Op<"unit_constant", [ConstantLike, Pure]> {
+  let summary = "unit constant";
+  let description = [{
+    Constant operation turns a unit value into an SSA value. For example:
+
+    ```mlir
+      %0 = hir.unit_constant [
+      ] : !hir.unit_constant
+    ```
+  }];
+
+  //let arguments = (ins Builtin_StringAttr:$value);
+  let results = (outs NoneType:$output);
+
+  let assemblyFormat = "attr-dict `:` type($output)";
 }
 
 #endif
