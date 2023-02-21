@@ -3,6 +3,8 @@
 #include "Hir/HirOpsInterfaces.h"
 
 #include "Hir/HirStruct.h"
+#include "Hir/HirEnum.h"
+#include "Hir/HirString.h"
 
 #include <mlir/IR/FunctionInterfaces.h>
 #include <mlir/IR/OpImplementation.h>

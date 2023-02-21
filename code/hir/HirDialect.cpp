@@ -3,6 +3,7 @@
 #include "Hir/HirEnum.h"
 #include "Hir/HirInterfaces.h"
 #include "Hir/HirOps.h"
+#include "Hir/HirString.h"
 #include "Hir/HirStruct.h"
 
 #include <llvm/Support/Debug.h>
@@ -32,7 +33,7 @@ void HirDialect::initialize() {
 #include "Hir/HirOps.cpp.inc"
       >();
   //  addInterfaces<MirInlinerInterface>();
-  addTypes<StructType, EnumType>();
+  addTypes<StructType, EnumType, StringType>();
 }
 
 } // namespace rust_compiler::hir

@@ -264,33 +264,33 @@ Parser::parseTypeParamBound() {
   return *life;
 }
 
-llvm::Expected<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
-  Location loc = getLocation();
-
-  TypeParamBounds bounds = {loc};
-
-  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> first =
-      parseTypeParamBound();
-  if (auto e = first.takeError()) {
-    llvm::errs() << "failed to parse  type param bound in type param bounds : "
-                 << toString(std::move(e)) << "\n";
-    exit(EXIT_FAILURE);
-  }
-  bounds.addTypeParamBound(*first);
-
-  while (true) {
-    if (check(TokenKind::Eof)) {
-      // abort
-    } else if (check(TokenKind::Plus)) {
-    } else if (!check(TokenKind::Plus)) {
-      // done
-    } else {
-    }
-  }
-
-  xxx;
-  // FIXME
-}
+//llvm::Expected<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
+//  Location loc = getLocation();
+//
+//  TypeParamBounds bounds = {loc};
+//
+//  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> first =
+//      parseTypeParamBound();
+//  if (auto e = first.takeError()) {
+//    llvm::errs() << "failed to parse  type param bound in type param bounds : "
+//                 << toString(std::move(e)) << "\n";
+//    exit(EXIT_FAILURE);
+//  }
+//  bounds.addTypeParamBound(*first);
+//
+//  while (true) {
+//    if (check(TokenKind::Eof)) {
+//      // abort
+//    } else if (check(TokenKind::Plus)) {
+//    } else if (!check(TokenKind::Plus)) {
+//      // done
+//    } else {
+//    }
+//  }
+//
+//  xxx;
+//  // FIXME
+//}
 
 PathKind Parser::testTypePathOrSimplePath() {
   if (check(TokenKind::PathSep)) {
@@ -337,60 +337,63 @@ PathKind Parser::testTypePathOrSimplePath() {
 
 // eof
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
-    parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType() {
-  CheckPoint qp = getCheckPoint();
-
-  if (checkKeyWord(KeyWordKind::KW_FOR)) {
-    llvm::Expected<ForLifetimes> forLifetimes = parseForLifetimes();
-    if (auto e = forLifetimes.takeError()) {
-      llvm::errs() << "failed to parse for lifetime in ... : "
-                   << toString(std::move(e)) << "\n";
-      exit(EXIT_FAILURE);
-    }
-
-    if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
-      recover(qp);
-      return parseBareFunctionType();
-    } else if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
-      recover(qp);
-      return parseBareFunctionType();
-    } else if (checkKeyWord(KeyWordKind::KW_FN)) {
-      recover(qp);
-      return parseBareFunctionType();
-    } else if (check(TokenKind::PathSep)) {
-      // TraitObjectType
-    }
-  } else { // not for
-    if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
-      recover(qp);
-      return parseBareFunctionType();
-    } else if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
-      recover(qp);
-      return parseBareFunctionType();
-    } else if (checkKeyWord(KeyWordKind::KW_FN)) {
-      recover(qp);
-      return parseBareFunctionType();
-    } else if (check(TokenKind::PathSep)) {
-      // TraitObjectType: TypePath
-      // TypePath: TypePath
-      // MacroInvocation: SimplePath
-    } else if () {
-    }
-    // BareFunctionType or TraitObjectType
-  }
-  // else if (check(TokenKind::ParenOpen)) {
-  //   // ParenType or TupleType or TraitObjectType
-  //   //    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> types
-  //   =
-  //   //       parseType();
-  // }
-  // else if (check(TokenKind::PathSeq)) {
-  //   // SimplePath in MacroInvocation
-  //   // TypePath
-  //   // Or TraitObjectType
-  // }
-}
+//llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
+//    parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType() {
+//  CheckPoint qp = getCheckPoint();
+//
+//  if (checkKeyWord(KeyWordKind::KW_FOR)) {
+//    llvm::Expected<ForLifetimes> forLifetimes = parseForLifetimes();
+//    if (auto e = forLifetimes.takeError()) {
+//      llvm::errs() << "failed to parse for lifetime in ... : "
+//                   << toString(std::move(e)) << "\n";
+//      exit(EXIT_FAILURE);
+//    }
+//
+//    if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
+//      recover(qp);
+//      return parseBareFunctionType();
+//    } else if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
+//      recover(qp);
+//      return parseBareFunctionType();
+//    } else if (checkKeyWord(KeyWordKind::KW_FN)) {
+//      recover(qp);
+//      return parseBareFunctionType();
+//    } else if (check(TokenKind::PathSep)) {
+//      // TraitObjectType
+//      // TypePath
+//      // MacroInvocation
+//    } else if (check(TokenKind::)) {
+//    }
+//  } else { // not for
+//    if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
+//      recover(qp);
+//      return parseBareFunctionType();
+//    } else if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
+//      recover(qp);
+//      return parseBareFunctionType();
+//    } else if (checkKeyWord(KeyWordKind::KW_FN)) {
+//      recover(qp);
+//      return parseBareFunctionType();
+//    } else if (check(TokenKind::PathSep)) {
+//      // TraitObjectType: TypePath
+//      // TypePath: TypePath
+//      // MacroInvocation: SimplePath
+//    } else if () {
+//    }
+//    // BareFunctionType or TraitObjectType
+//  }
+//  // else if (check(TokenKind::ParenOpen)) {
+//  //   // ParenType or TupleType or TraitObjectType
+//  //   //    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> types
+//  //   =
+//  //   //       parseType();
+//  // }
+//  // else if (check(TokenKind::PathSeq)) {
+//  //   // SimplePath in MacroInvocation
+//  //   // TypePath
+//  //   // Or TraitObjectType
+//  // }
+//}
 
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseType() {
