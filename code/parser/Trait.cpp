@@ -30,8 +30,7 @@ Parser::parseTrait(std::optional<ast::Visibility> vis) {
     return createStringError(inconvertibleErrorCode(),
                              "failed to parse identifier token in trait");
   }
-  Token tok = getToken();
-  trait.setIdentifier(tok.getIdentifier());
+  trait.setIdentifier(getToken().getIdentifier());
   assert(eat(TokenKind::Identifier));
 
   if (check(TokenKind::Lt)) {
@@ -91,6 +90,36 @@ Parser::parseTrait(std::optional<ast::Visibility> vis) {
   }
 
   // FIXME
+  // xxx;
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      // abort
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse trait: eof");
+    } else if (check(TokenKind::BraceClose)) {
+      // done
+      assert(eat(TokenKind::BraceClose));
+      return std::make_shared<Trait>(trait);
+    } else {
+      llvm::Expected<std::shared_ptr<ast::AssociatedItem>> asso =
+          parseAssociatedItem();
+      if (auto e = asso.takeError()) {
+        llvm::errs() << "failed to parse associated item in trait: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      trait.addItem(*asso);
+    }
+  }
+
+  if (!check(TokenKind::BraceClose)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse } token in trait");
+  }
+  assert(eat(TokenKind::BraceClose));
+
+  return std::make_shared<Trait>(trait);
 }
 
 } // namespace rust_compiler::parser

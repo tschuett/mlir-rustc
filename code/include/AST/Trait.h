@@ -10,6 +10,7 @@
 #include "AST/WhereClause.h"
 #include "Location.h"
 
+#include <memory>
 #include <optional>
 #include <span>
 #include <string>
@@ -42,6 +43,10 @@ public:
   void setWhere(const WhereClause &w) { whereClause = w; }
 
   void setInner(std::vector<InnerAttribute> &inn) { innerAttributes = inn; }
+
+  void addItem(std::shared_ptr<AssociatedItem> item) {
+    associatedItem.push_back(item);
+  }
 };
 
 } // namespace rust_compiler::ast
