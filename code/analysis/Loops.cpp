@@ -7,10 +7,10 @@
 
 namespace rust_compiler::analysis {
 
-llvm::Expected<LoopInfo> detectLoop(mlir::func::FuncOp *f) {
-  for (auto &block : f->getBody()) {
-
-  }
-}
+//llvm::Expected<LoopInfo> detectLoop(mlir::func::FuncOp *f) {
+///  for (auto &block : f->getBody()) {
+///
+///  }
+//}
 
 } // namespace rust_compiler::analysis

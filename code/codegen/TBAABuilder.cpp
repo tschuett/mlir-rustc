@@ -14,7 +14,7 @@ std::string TBAABuilder::getNewTBAANodeName(llvm::StringRef basename) {
 TBAABuilder::TBAABuilder(mlir::ModuleOp module) {
   // Create TBAA MetadataOp with the root and basic type descriptors.
   Location loc = module.getLoc();
-  MLIRContext *context = module.getContext();
+  //MLIRContext *context = module.getContext();
   OpBuilder builder(module.getBody(), module.getBody()->end());
   tbaaMetaOp = builder.create<MetadataOp>(loc, tbaaMetaOpName);
   builder.setInsertionPointToStart(&tbaaMetaOp.getBody().front());

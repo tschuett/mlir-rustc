@@ -62,7 +62,7 @@ def SCCPPass : Pass<"SCCP", "mlir::ModuleOp"> {
 
 def HirLICMPass : Pass<"SCCP", "mlir::func::FuncOp"> {
   let summary = "LICM on Hir loops";
-  let description = [Loop-Invariant Computation and Code Motion on Hir Loops];
+  let description = "Loop-Invariant Computation and Code Motion on Hir Loops";
 }
 
 

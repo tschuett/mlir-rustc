@@ -8,7 +8,7 @@
 #include <mlir/IR/Operation.h>
 
 
-using namespace rust_compiler::analysis;
+//using namespace rust_compiler::analysis;
 
 namespace rust_compiler::optimizer {
 #define GEN_PASS_DEF_HIRLICMPASS

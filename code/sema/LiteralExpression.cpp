@@ -10,7 +10,7 @@ namespace rust_compiler::sema {
 void Sema::analyzeLiteralExpression(
     std::shared_ptr<ast::LiteralExpression> lit) {
 
-  NodeId nodeId = getNodeId(lit);
+  //  NodeId nodeId = getNodeId(lit);
 
   switch (lit->getLiteralKind()) {
   case LiteralExpressionKind::CharLiteral: {
@@ -23,6 +23,12 @@ void Sema::analyzeLiteralExpression(
     break;
   }
   case LiteralExpressionKind::RawByteStringLiteral: {
+    break;
+  }
+  case LiteralExpressionKind::ByteLiteral: {
+    break;
+  }
+  case LiteralExpressionKind::ByteStringLiteral: {
     break;
   }
   case LiteralExpressionKind::IntegerLiteral: {

@@ -24,11 +24,11 @@ void Sema::analyzeStatements(ast::Statements stmts) {
           std::static_pointer_cast<ast::ExpressionStatement>(stmt));
       return;
     }
-      //    case ast::StatementKind::MacroInvocationSemi: {
-      //      analyzeMacroInvocationSemi(
-      //          std::static_pointer_cast<ast::MacroInvocationSemi>(stmt));
-      //      return;
-      //    }
+    case ast::StatementKind::MacroInvocationSemi: {
+      analyzeMacroInvocationSemi(
+          std::static_pointer_cast<ast::MacroInvocationSemi>(stmt));
+      return;
+    }
     }
   }
 }

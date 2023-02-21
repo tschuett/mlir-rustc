@@ -30,7 +30,7 @@ void AttributerPass::runOnOperation() {
 
   attr.setup();
 
-  mlir::LogicalResult result = attr.run();
+  //mlir::LogicalResult result = attr.run();
 
   // mlir::ModuleOp module = getOperation();
   //  module.walk([&](mlir::func::FuncOp *f) {

@@ -329,7 +329,7 @@ The top level IR is the AST (abstract syntax tree).
 
 \begin{itemize}
 \item Hir: AST-like IR. It models the AST closely, i.e., structured control flow, ...
-\item Mir: similar but with alloca
+\item Mir: similar but with alloca, without loopexpressions. iterators?
 \item Lir: branches
 \end{itemize}
 
@@ -345,6 +345,8 @@ OpenMP, SYCL~\cite{mlirsycl}, OpenACC, CUDA, ..+
 \subsection{MemorySSA}
 
 \subsection{Attributer}
+
+\subsection{LICM at Hir}
 
 
 \section{Patterns}
@@ -378,6 +380,10 @@ https://reviews.llvm.org/D144094
 \subsection{Closure}
 
 \subsection{Optional}
+
+\subsection{Nested module offload}
+
+\url{https://docs.google.com/document/d/1ivYDSn_5ChTeiZ7TiO64WC_jYJnGwAUiT9Ngi9cAdFU/edit#heading=h.vzkwe9fb6eb}
 
 
 \section{Evaluation\label{sec.evaluation} --- TO BE DONE}

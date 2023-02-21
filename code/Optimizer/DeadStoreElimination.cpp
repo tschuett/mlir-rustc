@@ -28,7 +28,7 @@ public:
 void DeadStoreEliminationPass::runOnOperation() {
   mlir::ModuleOp module = getOperation();
 
-  MemorySSA &memorySSA = getAnalysis<MemorySSA>();
+  //MemorySSA &memorySSA = getAnalysis<MemorySSA>();
   module.walk([&](mlir::func::FuncOp f) {
   });
   //  isAsync() -> rewrite

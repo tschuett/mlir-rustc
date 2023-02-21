@@ -47,16 +47,6 @@ public:
   void rewrite(Operation *op, PatternRewriter &rewriter) const override;
 };
 
-class CondBranchToBranchPattern : public RewritePattern {
-public:
-  CondBranchToBranchPattern(mlir::PatternBenefit _benefit, MLIRContext *context)
-      : RewritePattern(rust_compiler::Mir::MutBorrowOp::getOperationName(),
-                       _benefit, context) {}
-
-  LogicalResult matchAndRewrite(Operation *op,
-                                PatternRewriter &rewriter) const override;
-};
-
 class RewritePass
     : public rust_compiler::optimizer::impl::RewritePassBase<RewritePass> {
 public:
@@ -102,37 +92,6 @@ void EliminateMutBorrowPattern::rewrite(Operation *op,
   rewriter.eraseOp(op);
 }
 
-LogicalResult
-CondBranchToBranchPattern::matchAndRewrite(Operation *op,
-                                           PatternRewriter &rewriter) const {
-  llvm::outs() << "tryCondBranchToBranchPattern"
-               << "\n";
-  if (CondBranchOp cond =
-          mlir::dyn_cast<rust_compiler::Mir::CondBranchOp>(op)) {
-    mlir::TypedValue<::mlir::IntegerType> condition = cond.getCondition();
-    if (rust_compiler::Mir::ConstantOp constOp =
-            mlir::dyn_cast<rust_compiler::Mir::ConstantOp>(
-                condition.getDefiningOp())) {
-      mlir::TypedAttr val = constOp.getValue();
-      if (IntegerAttr intAttr = mlir::dyn_cast<IntegerAttr>(val)) {
-        uint64_t constant = intAttr.getUInt();
-        if (constant == 0) {
-          rewriter.eraseOp(constOp);
-          rewriter.replaceOpWithNewOp<rust_compiler::Mir::BranchOp>(
-              op, cond.getFalseDest(), cond.getFalseOperands());
-          return success();
-          //     // FIXME
-        } else if (constant == 1) {
-          rewriter.eraseOp(constOp);
-          rewriter.replaceOpWithNewOp<rust_compiler::Mir::BranchOp>(
-              op, cond.getTrueDest(), cond.getTrueOperands());
-          return success();
-        }
-      }
-    }
-  }
-  return failure();
-}
 
 llvm::StringRef RewritePass::getDescription() const { return "test pass"; }
 
@@ -143,7 +102,6 @@ LogicalResult RewritePass::initialize(MLIRContext *context) {
 
   rewritePatterns.add<EliminateBorrowPattern>(PatternBenefit(1), context);
   rewritePatterns.add<EliminateMutBorrowPattern>(PatternBenefit(1), context);
-  rewritePatterns.add<CondBranchToBranchPattern>(PatternBenefit(1), context);
 
   frozenPatterns = FrozenRewritePatternSet(std::move(rewritePatterns));
 

@@ -1,12 +1,20 @@
 #include "ItemVisitor.h"
 
 #include "AST/BlockExpression.h"
+#include "AST/Enumeration.h"
 #include "AST/ExternBlock.h"
+#include "AST/ExternCrate.h"
 #include "AST/Implementation.h"
 #include "AST/InherentImpl.h"
 #include "AST/Statements.h"
+#include "AST/Struct.h"
 #include "AST/Trait.h"
 #include "AST/TraitImpl.h"
+#include "AST/TypeAlias.h"
+#include "AST/UseDeclaration.h"
+#include "AST/Union.h"
+#include "AST/ConstantItem.h"
+#include "AST/StaticItem.h"
 
 #include <memory>
 
@@ -23,6 +31,15 @@ void visitStatements(ast::Statements stmts, ItemVisitor *visitor);
 void visitAssociatedItem(ast::AssociatedItem assoItem, ItemVisitor *visitor);
 
 void visitFunction(std::shared_ptr<ast::Function> fun, ItemVisitor *visitor);
+void visitStruct(std::shared_ptr<ast::Struct> fun, ItemVisitor *visitor);
+void visitEnumeration(std::shared_ptr<ast::Enumeration> fun,
+                      ItemVisitor *visitor);
+void visitTypeAlias(std::shared_ptr<ast::TypeAlias> fun, ItemVisitor *visitor);
+void visitUseDeclaration(std::shared_ptr<ast::UseDeclaration> fun, ItemVisitor *visitor);
+void visitExternCrate(std::shared_ptr<ast::ExternCrate> fun, ItemVisitor *visitor);
+void visitUnion(std::shared_ptr<ast::Union> fun, ItemVisitor *visitor);
+void visitConstantItem(std::shared_ptr<ast::ConstantItem> fun, ItemVisitor *visitor);
+void visitStaticItem(std::shared_ptr<ast::StaticItem> fun, ItemVisitor *visitor);
 
 ///
 
@@ -147,6 +164,39 @@ void visitVisItem(std::shared_ptr<ast::VisItem> visItem, ItemVisitor *visitor) {
   }
   case VisItemKind::Trait: {
     visitTrait(std::static_pointer_cast<Trait>(visItem), visitor);
+    break;
+  }
+  case VisItemKind::TypeAlias: {
+    visitTypeAlias(std::static_pointer_cast<TypeAlias>(visItem), visitor);
+    break;
+  }
+  case VisItemKind::UseDeclaration: {
+    visitUseDeclaration(std::static_pointer_cast<UseDeclaration>(visItem),
+                        visitor);
+    break;
+  }
+  case VisItemKind::ExternCrate: {
+    visitExternCrate(std::static_pointer_cast<ExternCrate>(visItem), visitor);
+    break;
+  }
+  case VisItemKind::Struct: {
+    visitStruct(std::static_pointer_cast<Struct>(visItem), visitor);
+    break;
+  }
+  case VisItemKind::Enumeration: {
+    visitEnumeration(std::static_pointer_cast<Enumeration>(visItem), visitor);
+    break;
+  }
+  case VisItemKind::Union: {
+    visitUnion(std::static_pointer_cast<Union>(visItem), visitor);
+    break;
+  }
+  case VisItemKind::ConstantItem: {
+    visitConstantItem(std::static_pointer_cast<ConstantItem>(visItem), visitor);
+    break;
+  }
+  case VisItemKind::StaticItem: {
+    visitStaticItem(std::static_pointer_cast<StaticItem>(visItem), visitor);
     break;
   }
   }

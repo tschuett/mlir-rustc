@@ -26,6 +26,8 @@ public:
 
   Rib(RibKind kind) : kind(kind) {}
 
+  RibKind getKind() const { return kind; }
+
 private:
   std::map<std::string, basic::NodeId> bindings;
   RibKind kind;
@@ -53,6 +55,10 @@ class Segment {
 class Import {
 public:
   enum class ImportKind { Single, Glob, ExternCrate, MacroUse, MacroExport };
+
+  ImportKind getKind() const { return kind; }
+
+  basic::NodeId getNodeId() const { return nodeId; }
 
 private:
   ImportKind kind;

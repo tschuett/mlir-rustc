@@ -9,7 +9,9 @@ CrateBuilder::emitStatements(ast::Statements stmts) {
     emitStatement(stmt);
 
   if (stmts.hasTrailing())
-    emitExpressionWithoutBlock(stmts.getTrailing());
+    return emitExpressionWithoutBlock(stmts.getTrailing());
+
+  return Unit;
 }
 
 } // namespace rust_compiler::crate_builder

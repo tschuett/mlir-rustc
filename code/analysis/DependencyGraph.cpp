@@ -11,7 +11,7 @@ void DepdendencyGraph::addDependency(const DependencyGraphNode *FromAA,
   } else {
     std::set<const DependencyGraphNode *> empty;
     empty.insert(ToAA);
-    auto pair = dependendencies.insert({FromAA, empty});
+    /*auto pair =*/ dependendencies.insert({FromAA, empty});
   }
 }
 

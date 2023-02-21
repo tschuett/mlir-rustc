@@ -15,7 +15,7 @@ ScopedCanonicalPathScope::~ScopedCanonicalPathScope() {
   parent->deregisterScope(this);
 }
 
-CanonicalPath ScopedCanonicalPath::getCurrentPath() const {}
+  //CanonicalPath ScopedCanonicalPath::getCurrentPath() const {}
 
 void ScopedCanonicalPath::registerScope(ScopedCanonicalPathScope *scope,
                                         basic::NodeId nodeId,
