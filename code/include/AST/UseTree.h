@@ -3,80 +3,43 @@
 #include "AST/AST.h"
 #include "AST/SimplePath.h"
 
+#include <optional>
+#include <vector>
+#include <string>
+#include <string_view>
+
 namespace rust_compiler::ast::use_tree {
 
+enum class UseTreeKind {
+  Glob,
+  Recursive,
+  Path,
+  Rebinding,
+};
+
 class UseTree : public Node {
+  std::optional<SimplePath> path;
+  std::vector<UseTree> trees;
+
+  bool doubleColon = false;
+  bool underscore = false;
+  std::string identifier;
+
+  UseTreeKind kind;
+
 public:
   explicit UseTree(Location loc) : Node(loc) {}
-};
 
-/// SimplePath
-class SimplePathNode : public UseTree {
-  SimplePath path;
+  void setPath(const SimplePath &p) { path = p; }
+  void setKind(UseTreeKind _kind) { kind = _kind; }
+  void setDoubleColon() { doubleColon = true; }
+  void addTree(const UseTree &tree) {
+    trees.push_back(tree);
+    kind = UseTreeKind::Recursive;
+  }
 
-public:
-  explicit SimplePathNode(Location loc) : UseTree(loc), path(loc) {}
-
-  void setSimplePath(SimplePath path);
-};
-
-/// { ... }
-class PathList : public UseTree {
-  std::vector<std::shared_ptr<UseTree>> elements;
-
-public:
-  explicit PathList(Location loc) : UseTree(loc) {}
-
-
-  void addTree(std::shared_ptr<UseTree> tree);
-};
-
-class Star : public UseTree {
-public:
-  explicit Star(Location loc) : UseTree(loc) {}
-
-};
-
-/// :: *
-class DoubleColonStar : public UseTree {
-public:
-  explicit DoubleColonStar(Location loc) : UseTree(loc) {}
-
-};
-
-/// SimplePath :: *
-class SimplePathDoubleColonStar : public UseTree {
-public:
-  explicit SimplePathDoubleColonStar(Location loc) : UseTree(loc) {}
-
-  void setPath(SimplePath path);
-};
-
-/// SimplePath :: { ... };
-class SimplePathDoubleColonWithPathList : public UseTree {
-  PathList list;
-
-public:
-  explicit SimplePathDoubleColonWithPathList(Location loc) : UseTree(loc), list(loc) {}
-
-  void setPathList(PathList list);
-};
-
-/// :: { ... }
-class DoubleColonWithPathList : public UseTree {
-  PathList list;
-
-public:
-  explicit DoubleColonWithPathList(Location loc) : UseTree(loc), list(loc) {}
-
-  // void append(SimplePath path);
-};
-
-/// foo as bar
-class Rebinding : public UseTree {
-public:
-  explicit Rebinding(Location loc) : UseTree(loc) {}
-
+  void setIdentifier(std::string_view id) { identifier = id; }
+  void setUnderscore() { underscore = true;}
 };
 
 } // namespace rust_compiler::ast::use_tree
