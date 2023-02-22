@@ -19,7 +19,10 @@ class SelfParam : public Node {
 public:
   SelfParam(Location loc) : Node(loc) {}
 
-  void setSelf(SelfParamKind kind, std::shared_ptr<ast::SelfParam> self);
+  void setSelf(SelfParamKind _kind, std::shared_ptr<ast::SelfParam> _self) {
+    kind = _kind;
+    self = _self;
+  }
 
   void setOuterAttributes(std::span<OuterAttribute> outerAttribute) {
     outerAttributes = {outerAttribute.begin(), outerAttribute.end()};

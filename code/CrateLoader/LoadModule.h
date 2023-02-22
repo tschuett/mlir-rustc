@@ -11,7 +11,7 @@ namespace rust_compiler::crate_loader {
 
 std::shared_ptr<ast::Crate>
 loadRootModule(llvm::SmallVectorImpl<char> &libPath,
-               std::string_view crateName);
+               std::string_view crateName, basic::CrateNum crateNum);
 
 std::shared_ptr<ast::Module> loadModule(llvm::SmallVectorImpl<char> &libPath,
                                         std::string_view fileName,

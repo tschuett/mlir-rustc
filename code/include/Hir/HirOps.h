@@ -9,14 +9,10 @@
 #include <mlir/Interfaces/InferTypeOpInterface.h>
 
 #include <mlir/Dialect/Func/IR/FuncOps.h>
-//#include <mlir/IR/FunctionInterfaces.h>
 #include <mlir/IR/OpImplementation.h>
 #include <mlir/IR/Operation.h>
 #include <mlir/IR/Region.h>
 #include <mlir/IR/ValueRange.h>
-//#include <mlir/Interfaces/CallInterfaces.h>
-//#include <mlir/Interfaces/ControlFlowInterfaces.h>
-//#include <mlir/Interfaces/LoopLikeInterface.h>
 #include <mlir/Interfaces/SideEffectInterfaces.h>
 #include <mlir/Rewrite/FrozenRewritePatternSet.h>
 #include <mlir/Transforms/GreedyPatternRewriteDriver.h>

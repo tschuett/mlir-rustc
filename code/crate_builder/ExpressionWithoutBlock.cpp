@@ -33,11 +33,11 @@ mlir::Value CrateBuilder::emitExpressionWithoutBlock(
     break;
   }
   case ast::ExpressionWithoutBlockKind::AwaitExpression: {
-    std::shared_ptr<ast::AwaitExpression> await =
-        std::static_pointer_cast<ast::AwaitExpression>(withOut);
-    mlir::Value body = emitExpression(await->getBody());
-    //    return builder.create<hir::AwaitOp>(getLocation(await->getLocation()),
-    //    ,body);
+//    std::shared_ptr<ast::AwaitExpression> await =
+//        std::static_pointer_cast<ast::AwaitExpression>(withOut);
+//    mlir::Value body = emitExpression(await->getBody());
+//    return builder.create<hir::AwaitOp>(getLocation(await->getLocation()), 
+//                                        body);
     break;
   }
   case ast::ExpressionWithoutBlockKind::IndexExpression: {
@@ -94,10 +94,10 @@ mlir::Value CrateBuilder::emitExpressionWithoutBlock(
   }
 }
 
-mlir::Value
-CrateBuilder::emitCallExpression(std::shared_ptr<ast::CallExpression> expr) {}
-
-mlir::Value CrateBuilder::emitMethodCallExpression(
-    std::shared_ptr<ast::MethodCallExpression> expr) {}
+//mlir::Value
+//CrateBuilder::emitCallExpression(std::shared_ptr<ast::CallExpression> expr) {}
+//
+//mlir::Value CrateBuilder::emitMethodCallExpression(
+//    std::shared_ptr<ast::MethodCallExpression> expr) {}
 
 } // namespace rust_compiler::crate_builder

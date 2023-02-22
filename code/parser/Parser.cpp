@@ -46,6 +46,21 @@ bool Parser::checkSimplePathSegment() {
   return false;
 }
 
+bool Parser::checkLiteral() {
+  return check(TokenKind::CHAR_LITERAL) || check(TokenKind::STRING_LITERAL) ||
+         check(TokenKind::RAW_STRING_LITERAL) ||
+         check(TokenKind::BYTE_LITERAL) ||
+         check(TokenKind::BYTE_STRING_LITERAL) ||
+         check(TokenKind::RAW_BYTE_STRING_LITERAL) ||
+         check(TokenKind::INTEGER_LITERAL) || check(TokenKind::FLOAT_LITERAL) ||
+         checkKeyWord(KeyWordKind::KW_TRUE) ||
+         checkKeyWord(KeyWordKind::KW_FALSE);
+}
+
+CheckPoint Parser::getCheckPoint() { return CheckPoint(offset); }
+
+void Parser::recover(const CheckPoint &cp) { offset = cp.readOffset(); }
+
 bool Parser::checkOuterAttribute() {
   if (check(TokenKind::Hash) && check(TokenKind::SquareOpen, 1))
     return true;

@@ -14,7 +14,8 @@ namespace rust_compiler::crate_loader {
 
 std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
                                       std::string_view crateName,
-                                      basic::Edition edition) {
+                                      basic::CrateNum crateNum,
+                                      basic::Edition edition, LoadMode mode) {
 
   //  std::shared_ptr<ast::Crate> crate = std::make_shared<ast::Crate>(
   //      crateName, mappings::Mappings::get()->getCrateNum(crateName));
@@ -29,11 +30,13 @@ std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
     exit(EXIT_FAILURE);
   }
 
-  std::shared_ptr<ast::Crate> crate = loadRootModule(libFile, crateName);
+  std::shared_ptr<ast::Crate> crate =
+      loadRootModule(libFile, crateName, crateNum);
 
   // FIXME load and merge tree
 
-  sema::analyzeSemantics(crate);
+  if (mode == LoadMode::WithSema)
+    sema::analyzeSemantics(crate);
 
   return crate;
 }

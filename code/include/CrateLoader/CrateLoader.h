@@ -8,8 +8,11 @@
 
 namespace rust_compiler::crate_loader {
 
+enum class LoadMode { SyntaxOnly, WithSema };
+
 std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
                                       std::string_view crateName,
-                                      basic::Edition edition);
+                                      basic::CrateNum crateNum,
+                                      basic::Edition edition, LoadMode mode);
 
-}
+} // namespace rust_compiler::crate_loader

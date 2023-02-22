@@ -98,8 +98,13 @@ private:
                  const adt::CanonicalPath &path);
 
   std::vector<Import> determinedImports;
+
+//  std::map<adt::CanonicalPath,
+//           std::pair<std::shared_ptr<ast::Module>, basic::NodeId>>
+//      modules;
 };
 
 } // namespace rust_compiler::sema::resolver
 
 // FIXME: Scoped
+// FIXME: store canonical paths

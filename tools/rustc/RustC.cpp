@@ -1,5 +1,6 @@
 #include "Basic/Edition.h"
 #include "CrateBuilder.h"
+#include "CrateLoader/CrateLoader.h"
 #include "Toml/Toml.h"
 #include "llvm/Option/ArgList.h"
 #include "llvm/Option/OptTable.h"
@@ -15,6 +16,7 @@
 using namespace llvm;
 using namespace rust_compiler;
 using namespace rust_compiler::toml;
+using namespace rust_compiler::crate_loader;
 
 namespace {
 using namespace llvm::opt;
@@ -91,10 +93,16 @@ int main(int argc, char **argv) {
   if (const llvm::opt::Arg *A = Args.getLastArg(OPT_crate_EQ)) {
     crateName = A->getValue();
   } else {
-    errs() << "the crate name is missing" << "\n";
+    errs() << "the crate name is missing"
+           << "\n";
     exit(EXIT_FAILURE);
   }
 
-  rust_compiler::rustc::buildCrate(*path, *crateName,
-                                   basic::Edition::Edition2024);
+  LoadMode mode = crate_loader::LoadMode::WithSema;
+
+  if (const llvm::opt::Arg *A = Args.getLastArg(OPT_syntaxonly))
+    mode = crate_loader::LoadMode::SyntaxOnly;
+
+  rust_compiler::rustc::buildCrate(*path, *crateName, 1,
+                                   basic::Edition::Edition2024, mode);
 }

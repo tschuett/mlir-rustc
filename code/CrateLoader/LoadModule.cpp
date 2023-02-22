@@ -14,9 +14,9 @@ using namespace llvm;
 
 namespace rust_compiler::crate_loader {
 
-std::shared_ptr<ast::Crate>
-loadRootModule(llvm::SmallVectorImpl<char> &libPath,
-               std::string_view crateName) {
+std::shared_ptr<ast::Crate> loadRootModule(llvm::SmallVectorImpl<char> &libPath,
+                                           std::string_view crateName,
+                                           basic::CrateNum crateNum) {
 
   if (not llvm::sys::fs::exists(libPath)) {
     llvm::outs() << "file: " << libPath << "does not exits"
@@ -38,7 +38,8 @@ loadRootModule(llvm::SmallVectorImpl<char> &libPath,
 
   Parser parser = {ts};
 
-  llvm::Expected<std::shared_ptr<ast::Crate>> crate = parser.parseCrateModule(crateName);
+  llvm::Expected<std::shared_ptr<ast::Crate>> crate =
+      parser.parseCrateModule(crateName, crateNum);
 
   if (auto E = crate.takeError()) {
     errs() << "Failed to parse crate module " << toString(std::move(E)) << "\n";

@@ -4,7 +4,6 @@
 include "mlir/IR/SymbolInterfaces.td"
 include "mlir/Interfaces/CallInterfaces.td"
 include "mlir/Interfaces/ControlFlowInterfaces.td"
-include "mlir/Interfaces/InferTypeOpInterface.td"
 include "mlir/Interfaces/LoopLikeInterface.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 
@@ -16,7 +15,7 @@ def Hir_Dialect : Dialect {
     Top-level dialect for Hir.
 
     This dialect tries to represent the HIR dialect of not rustc.
-
+    It tries to closely model the source language.
   }];
 
   let extraClassDeclaration = [{

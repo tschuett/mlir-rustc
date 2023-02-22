@@ -12,6 +12,11 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::sema::resolver {
 
+void Resolver::addModule(std::shared_ptr<ast::Module> mod, basic::NodeId nodeId,
+                         const adt::CanonicalPath &path) {
+  modules.insert_or_assign(nodeId, mod);
+}
+
 void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
   for (auto &item : crate->getItems()) {
     switch (item->getItemKind()) {
@@ -33,8 +38,9 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem) {
     std::shared_ptr<ast::Module> mod =
         std::static_pointer_cast<Module>(visItem);
     basic::NodeId modNodeId = getNextNodeId();
-    ScopedCanonicalPathScope scope = {&scopedPath, modNodeId, mod->getModuleName()};
-    //setName(nodeId, scopedPath.getCurrentPath());
+    ScopedCanonicalPathScope scope = {&scopedPath, modNodeId,
+                                      mod->getModuleName()};
+    // setName(nodeId, scopedPath.getCurrentPath());
     addModule(mod, modNodeId, scopedPath.getCurrentPath());
     break;
   }
@@ -55,7 +61,7 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem) {
     break;
   }
   case VisItemKind::Struct: {
-    //setName(nodeId, canonicalPath);
+    // setName(nodeId, canonicalPath);
     break;
   }
   case VisItemKind::Enumeration: {
@@ -108,6 +114,10 @@ void Resolver::resolveImplementation(
 void Resolver::resolveMacroItem(std::shared_ptr<ast::MacroItem>) {}
 
 basic::NodeId Resolver::getNextNodeId() { return ++nodeId; }
+
+void Resolver::resolveInherentImpl(std::shared_ptr<ast::InherentImpl>) {}
+
+void Resolver::resolveTraitImpl(std::shared_ptr<ast::TraitImpl>) {}
 
 } // namespace rust_compiler::sema::resolver
 
