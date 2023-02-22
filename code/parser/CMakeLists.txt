@@ -25,6 +25,7 @@ add_library(parser
            Trait.cpp
            MatchExpression.cpp
            Types.cpp
+           ArithmeticOrLogicalExpression.cpp
            )
 
 

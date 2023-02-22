@@ -21,12 +21,13 @@ class LetStatement final : public Statement {
   std::optional<std::shared_ptr<ast::Expression>> elseExpr;
 
   std::vector<LetStatementParam> var;
-  bool filledVars = false;
 
 public:
   LetStatement(Location loc) : Statement(loc, StatementKind::LetStatement){};
 
-  void setOuterAttributes(std::span<OuterAttribute> out);
+  void setOuterAttributes(std::span<OuterAttribute> out) {
+    outerAttributes = {out.begin(), out.end()};
+  }
 
   void setPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat);
   void setType(std::shared_ptr<ast::types::TypeExpression> type);
@@ -34,8 +35,6 @@ public:
   void setElseExpr(std::shared_ptr<ast::Expression> exp) { elseExpr = exp; }
 
   std::shared_ptr<ast::patterns::PatternNoTopAlt> getPattern();
-
-private:
 };
 
 } // namespace rust_compiler::ast
