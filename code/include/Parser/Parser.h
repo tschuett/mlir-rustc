@@ -381,6 +381,8 @@ public:
 
   llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprField();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprStruct();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprTuple();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprUnit();
 
   llvm::Expected<std::shared_ptr<ast::PathExpression>> parsePathInExpression();
 

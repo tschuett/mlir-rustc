@@ -15,6 +15,8 @@ public:
   }
 
   std::shared_ptr<Expression> getLHS() const { return expr; };
+
+  void setLhs(std::shared_ptr<Expression> l) { expr = l; }
 };
 
 } // namespace rust_compiler::ast

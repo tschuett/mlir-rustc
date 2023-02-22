@@ -1,4 +1,6 @@
 #include "Hir/HirOps.h"
+#include "Hir/HirDialect.h"
+#include "Mir/MirDialect.h"
 #include "Optimizer/Passes.h"
 #include "mlir/Support/LLVM.h"
 
@@ -9,7 +11,10 @@
 #include <mlir/Interfaces/SideEffectInterfaces.h>
 #include <mlir/Transforms/DialectConversion.h>
 
+#include <mlir/Dialect/Arith/IR/Arith.h>
+
 using namespace rust_compiler::hir;
+using namespace rust_compiler::Mir;
 
 namespace rust_compiler::optimizer {
 #define GEN_PASS_DEF_CONVERTHIRTOMIRPASS
@@ -30,4 +35,7 @@ void ConvertHirToMirPass::runOnOperation() {
   mlir::ModuleOp m = getOperation();
 
    mlir::ConversionTarget target(getContext());
+
+   target.addIllegalDialect<HirDialect>();
+   target.addLegalDialect<MirDialect>();
 }

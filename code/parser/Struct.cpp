@@ -11,13 +11,7 @@ Parser::parseStructExpression() {
 
   CheckPoint cp = getCheckPoint();
 
-  if (checkIntegerLiteral() && check(TokenKind::Colon, 1)) {
-    return parseStructExprField();
-  } else if (checkIdentifier() && check(TokenKind::Colon, 1)) {
-    return parseStructExprField();
-  } else if (checkOuterAttribute()) {
-    return parseStructExprField();
-  } else if (check(TokenKind::PathSep) || checkPathIdentSegment()) {
+  if (check(TokenKind::PathSep) || checkPathIdentSegment()) {
     llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
         parsePathInExpression();
     if (auto e = path.takeError()) {
@@ -26,17 +20,22 @@ Parser::parseStructExpression() {
           << toString(std::move(e)) << "\n";
       exit(EXIT_FAILURE);
     }
+
     if (check(TokenKind::BraceOpen)) {
       recover(cp);
       return parseStructExprStruct();
-    } else if () {
+    } else if (check(TokenKind::ParenOpen)) {
+      recover(cp);
+      return parseStructExprTuple();
+    } else {
+      recover(cp);
+      return parseStructExprUnit();
     }
-    xxx
   }
-}
 
-  // FIXME only IDENTIFIER in StructExprField
-  // FIXME ( in StructExprTuple
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse struct expression");
+}
 
 llvm::Expected<ast::StructFields> Parser::parseStructFields() {
   Location loc = getLocation();

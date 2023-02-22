@@ -2,8 +2,10 @@
 #include "AST/AwaitExpression.h"
 #include "AST/BorrowExpression.h"
 #include "AST/BreakExpression.h"
+#include "AST/CompoundAssignmentExpression.h"
 #include "AST/ContinueExpression.h"
 #include "AST/DereferenceExpression.h"
+#include "AST/ErrorPropagationExpression.h"
 #include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
 #include "AST/LiteralExpression.h"
@@ -25,6 +27,63 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseCompoundAssignmentExpression(std::shared_ptr<ast::Expression> e) {
+  Location loc = getLocation();
+  CompoundAssignmentExpression comp = {loc};
+
+  if (check(TokenKind::PlusEq))
+    comp.setKind(CompoundAssignmentExpressionKind::Add);
+  else if (check(TokenKind::MinusEq))
+    comp.setKind(CompoundAssignmentExpressionKind::Sub);
+  else if (check(TokenKind::StarEq))
+    comp.setKind(CompoundAssignmentExpressionKind::Mul);
+  else if (check(TokenKind::SlashEq))
+    comp.setKind(CompoundAssignmentExpressionKind::Div);
+  else if (check(TokenKind::PercentEq))
+    comp.setKind(CompoundAssignmentExpressionKind::Rem);
+  else if (check(TokenKind::CaretEq))
+    comp.setKind(CompoundAssignmentExpressionKind::Xor);
+  else if (check(TokenKind::AndEq))
+    comp.setKind(CompoundAssignmentExpressionKind::And);
+  else if (check(TokenKind::OrEq))
+    comp.setKind(CompoundAssignmentExpressionKind::Or);
+  else if (check(TokenKind::ShlEq))
+    comp.setKind(CompoundAssignmentExpressionKind::Shl);
+  else if (check(TokenKind::ShrEq))
+    comp.setKind(CompoundAssignmentExpressionKind::Shr);
+  else {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse token in compound assignment expression");
+  }
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+  if (auto e = expr.takeError()) {
+    llvm::errs() << "failed to parse expression in compound assignment expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  comp.setRhs(*expr);
+
+  return std::make_shared<CompoundAssignmentExpression>(comp);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseErrorPropagationExpression(std::shared_ptr<ast::Expression> er) {
+  Location loc = getLocation();
+  ErrorPropagationExpression ep = {loc};
+
+  if (!check(TokenKind::QMark)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ? token in await expression");
+  }
+  assert(eat(TokenKind::QMark));
+
+  ep.setLhs(er);
+
+  return std::make_shared<ErrorPropagationExpression>(ep);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseAwaitExpression(std::shared_ptr<ast::Expression> e) {
   Location loc = getLocation();
   AwaitExpression a = {loc};
@@ -36,8 +95,9 @@ Parser::parseAwaitExpression(std::shared_ptr<ast::Expression> e) {
   assert(eat(TokenKind::Dot));
 
   if (!checkKeyWord(KeyWordKind::KW_AWAIT)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse await keyword in await expression");
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse await keyword in await expression");
   }
   assert(eatKeyWord(KeyWordKind::KW_AWAIT));
 

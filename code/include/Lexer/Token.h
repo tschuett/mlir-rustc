@@ -105,6 +105,7 @@ enum class TokenKind {
   StarEq,
   PlusEq,
   MinusEq,
+  SlashEq,
   PercentEq,
   AndEq,
   ShlEq,
