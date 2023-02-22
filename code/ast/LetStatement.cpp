@@ -6,8 +6,6 @@
 
 namespace rust_compiler::ast {
 
-bool LetStatement::containsBreakExpression() { return false; }
-
 void LetStatement::setPattern(
     std::shared_ptr<ast::patterns::PatternNoTopAlt> _pat) {
   pat = _pat;
@@ -24,18 +22,5 @@ void LetStatement::setExpression(std::shared_ptr<ast::Expression> _expr) {
 std::shared_ptr<ast::patterns::PatternNoTopAlt> LetStatement::getPattern() {
   return pat;
 }
-
-//std::span<LetStatementParam> LetStatement::getVarDecls() {
-//  if (not filledVars) {
-//    std::vector<std::string> lits = pat->getLiterals();
-//    for (std::string &li : lits) {
-//      LetStatementParam param = {location};
-//      param.setName(li);
-//      // param.setType();
-//      var.push_back(param);
-//    }
-//  }
-//  return var;
-//}
 
 } // namespace rust_compiler::ast

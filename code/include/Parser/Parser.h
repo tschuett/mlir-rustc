@@ -78,6 +78,7 @@ public:
   llvm::Expected<ast::use_tree::UseTree> parseUseTree();
 
   llvm::Expected<std::shared_ptr<ast::Item>> parseItem();
+  llvm::Expected<std::shared_ptr<ast::MacroItem>> parseMacroItem();
 
   llvm::Expected<std::shared_ptr<ast::VisItem>> parseVisItem();
 
@@ -344,6 +345,9 @@ public:
 
   // statements
   llvm::Expected<std::shared_ptr<ast::Statement>> parseLetStatement();
+  llvm::Expected<std::shared_ptr<ast::Statement>> parseItemDeclaration();
+  llvm::Expected<std::shared_ptr<ast::Statement>> parseExpressionStatement();
+  llvm::Expected<std::shared_ptr<ast::Statement>> parseMacroInvocationSemiStatement();
 
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseShorthandSelf();
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseTypedSelf();
@@ -416,6 +420,8 @@ private:
   bool checkExpressionWithoutBlock();
   bool checkStatement();
   bool checkStaticOrUnderscore();
+  bool checkVisItem();
+  bool checkMacroItem();
 };
 
 } // namespace rust_compiler::parser

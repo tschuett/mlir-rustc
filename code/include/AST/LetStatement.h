@@ -1,13 +1,11 @@
 #pragma once
 
 #include "AST/Expression.h"
-#include "AST/BlockExpression.h"
 #include "AST/LetStatementParam.h"
+#include "AST/OuterAttribute.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Statement.h"
 #include "AST/Types/TypeExpression.h"
-#include "AST/Types/Types.h"
-#include "AST/OuterAttribute.h"
 
 #include <mlir/IR/Location.h>
 #include <span>
@@ -20,7 +18,7 @@ class LetStatement final : public Statement {
   std::shared_ptr<ast::patterns::PatternNoTopAlt> pat;
   std::optional<std::shared_ptr<ast::types::TypeExpression>> type;
   std::optional<std::shared_ptr<ast::Expression>> expr;
-  std::optional<std::shared_ptr<ast::BlockExpression>> elseExpr;
+  std::optional<std::shared_ptr<ast::Expression>> elseExpr;
 
   std::vector<LetStatementParam> var;
   bool filledVars = false;
@@ -33,11 +31,7 @@ public:
   void setPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat);
   void setType(std::shared_ptr<ast::types::TypeExpression> type);
   void setExpression(std::shared_ptr<ast::Expression> expr);
-  void setElseExpr(std::shared_ptr<ast::Expression> expr);
-
-  //std::span<LetStatementParam> getVarDecls();
-
-  bool containsBreakExpression() override;
+  void setElseExpr(std::shared_ptr<ast::Expression> exp) { elseExpr = exp; }
 
   std::shared_ptr<ast::patterns::PatternNoTopAlt> getPattern();
 
