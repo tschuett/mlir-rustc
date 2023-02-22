@@ -24,6 +24,7 @@
 #include "AST/MatchArmGuard.h"
 #include "AST/MatchArms.h"
 #include "AST/OuterAttribute.h"
+#include "AST/PathExprSegment.h"
 #include "AST/PathExpression.h"
 #include "AST/Patterns/Pattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
@@ -155,6 +156,8 @@ public:
 
   llvm::Expected<ast::types::TypePathSegment> parseTypePathSegment();
   llvm::Expected<ast::PathIdentSegment> parsePathIdentSegment();
+
+  llvm::Expected<ast::PathExprSegment> parsePathExprSegment();
 
   llvm::Expected<ast::types::TypePathFn> parseTypePathFn();
   llvm::Expected<ast::types::TypePathFnInputs> parseTypePathFnInputs();
@@ -317,7 +320,8 @@ public:
   parsePredicateLoopExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>>
   parseInfiniteLoopExpression();
-  llvm::Expected<std::shared_ptr<ast::Expression>> parsePatternLoopExpression();
+  // llvm::Expected<std::shared_ptr<ast::Expression>>
+  // parsePatternLoopExpression();
 
   llvm::Expected<ast::MatchArms> parseMatchArms();
   llvm::Expected<ast::MatchArm> parseMatchArm();

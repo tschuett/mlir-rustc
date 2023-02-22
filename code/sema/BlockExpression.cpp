@@ -1,6 +1,7 @@
 #include "AST/ExpressionStatement.h"
 #include "AST/LetStatement.h"
 #include "AST/MacroInvocationSemi.h"
+#include "AST/MacroInvocationSemiStatement.h"
 #include "AST/Statement.h"
 #include "Sema/Sema.h"
 
@@ -25,8 +26,8 @@ void Sema::analyzeStatements(ast::Statements stmts) {
       return;
     }
     case ast::StatementKind::MacroInvocationSemi: {
-      analyzeMacroInvocationSemi(
-          std::static_pointer_cast<ast::MacroInvocationSemi>(stmt));
+      analyzeMacroInvocationSemiStatement(
+          std::static_pointer_cast<ast::MacroInvocationSemiStatement>(stmt));
       return;
     }
     }

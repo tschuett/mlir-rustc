@@ -30,7 +30,7 @@ int processMLIR(mlir::MLIRContext &context,
 
 
 
-  pm.addPass(createConvertHirToMirPass());
+  pm.addPass(optimizer::createConvertHirToMirPass());
   // Mir
 
   // Lir

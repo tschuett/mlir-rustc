@@ -12,6 +12,7 @@
 #include "AST/MatchExpression.h"
 #include "AST/NegationExpression.h"
 #include "AST/ReturnExpression.h"
+#include "AST/TupleIndexingExpression.h"
 #include "AST/UnsafeBlockExpression.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
@@ -25,6 +26,27 @@ using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+//llvm::Expected<std::shared_ptr<ast::Expression>>
+//Parser::parseTupleIndexingExpression(std::shared_ptr<ast::Expression> e) {
+//  Location loc = getLocation();
+//  TupleIndexingExpression tuple = {loc};
+//
+//  if (!check(TokenKind::Dot))
+//    return createStringError(
+//        inconvertibleErrorCode(),
+//        "failed to parse dot token in tuple indexing expression");
+//  assert(eat(TokenKind::Dot));
+//
+//  if (!check(TokenKind::INTEGER_LITERAL))
+//    return createStringError(
+//        inconvertibleErrorCode(),
+//        "failed to parse integer literal token in tuple indexing expression");
+//
+//  tuple.setIndex(getToken().IntegerLiteral());
+//
+//  assert(eat(TokenKind::Dot));
+//}
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseCompoundAssignmentExpression(std::shared_ptr<ast::Expression> e) {
@@ -52,14 +74,16 @@ Parser::parseCompoundAssignmentExpression(std::shared_ptr<ast::Expression> e) {
   else if (check(TokenKind::ShrEq))
     comp.setKind(CompoundAssignmentExpressionKind::Shr);
   else {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse token in compound assignment expression");
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse token in compound assignment expression");
   }
 
   llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
   if (auto e = expr.takeError()) {
-    llvm::errs() << "failed to parse expression in compound assignment expression: "
-                 << toString(std::move(e)) << "\n";
+    llvm::errs()
+        << "failed to parse expression in compound assignment expression: "
+        << toString(std::move(e)) << "\n";
     exit(EXIT_FAILURE);
   }
   comp.setRhs(*expr);
@@ -552,7 +576,7 @@ Parser::parseExpressionWithBlock() {
 
   if (checkKeyWord(KeyWordKind::KW_WHILE) &&
       !checkKeyWord(KeyWordKind::KW_LET, 1))
-    return parsePatternLoopExpression();
+    return parsePredicatePatternLoopExpression();
 
   if (checkKeyWord(KeyWordKind::KW_FOR))
     return parseIteratorLoopExpression();

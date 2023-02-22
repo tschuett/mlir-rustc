@@ -11,6 +11,7 @@
 #include "AST/LiteralExpression.h"
 #include "AST/LoopExpression.h"
 #include "AST/MacroInvocationSemi.h"
+#include "AST/MacroInvocationSemiStatement.h"
 #include "AST/MatchArmGuard.h"
 #include "AST/MethodCallExpression.h"
 #include "AST/Statements.h"
@@ -43,6 +44,8 @@ private:
   analyzeExpressionStatement(std::shared_ptr<ast::ExpressionStatement> expr);
   void
   analyzeMacroInvocationSemi(std::shared_ptr<ast::MacroInvocationSemi> macro);
+  void analyzeMacroInvocationSemiStatement(
+      std::shared_ptr<ast::MacroInvocationSemiStatement> macro);
   void analyzeExpression(std::shared_ptr<ast::Expression> let);
   void
   analyzeExpressionWithBlock(std::shared_ptr<ast::ExpressionWithBlock> let);

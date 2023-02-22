@@ -1,4 +1,6 @@
+#include "AST/PathExprSegment.h"
 #include "AST/PathIdentSegment.h"
+#include "AST/PathInExpression.h"
 #include "AST/SimplePath.h"
 #include "AST/Types/QualifiedPathInType.h"
 #include "AST/Types/TypeExpression.h"
@@ -14,6 +16,74 @@ using namespace rust_compiler::ast::types;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<ast::PathExprSegment> Parser::parsePathExprSegment() {
+  Location loc = getLocation();
+  PathExprSegment seg = {loc};
+
+  llvm::Expected<ast::PathIdentSegment> first = parsePathIdentSegment();
+  if (auto e = first.takeError()) {
+    llvm::errs() << "failed to parse path ident segment in path expr segment: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  seg.addIdentSegment(*first);
+
+  if (check(TokenKind::PathSep)) {
+    assert(eat(TokenKind::PathSep));
+    llvm::Expected<ast::GenericArgs> args = parseGenericArgs();
+    if (auto e = args.takeError()) {
+      llvm::errs() << "failed to parse generic args in path expr segment: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    seg.addGenerics(*args);
+  }
+
+  return seg;
+}
+
+llvm::Expected<std::shared_ptr<ast::PathExpression>>
+Parser::parsePathInExpression() {
+  Location loc = getLocation();
+  PathInExpression path = {loc};
+
+  if (check(TokenKind::PathSep)) {
+    path.setLeadingPathSep();
+    assert(eat(TokenKind::PathSep));
+  }
+
+  llvm::Expected<ast::PathExprSegment> first = parsePathExprSegment();
+  if (auto e = first.takeError()) {
+    llvm::errs() << "failed to parse path expr segment in path in expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  path.addSegment(*first);
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse path in expression: eof");
+    } else if (check(TokenKind::PathSep)) {
+      assert(eat(TokenKind::PathSep));
+      llvm::Expected<ast::PathExprSegment> next = parsePathExprSegment();
+      if (auto e = next.takeError()) {
+        llvm::errs()
+            << "failed to parse path expr segment in path in expression: "
+            << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      path.addSegment(*next);
+    } else {
+      // done
+      return std::make_shared<PathInExpression>(path);
+    }
+  }
+
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse path in expression");
+}
 
 llvm::Expected<ast::PathIdentSegment> Parser::parsePathIdentSegment() {
   Location loc = getLocation();

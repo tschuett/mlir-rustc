@@ -7,11 +7,11 @@
 
 namespace rust_compiler::ast {
 
-class MacroInvocationSemi : public Statement {
+class MacroInvocationSemi : public MacroItem {
 
 public:
   MacroInvocationSemi(Location loc)
-    : Statement(loc, StatementKind::MacroInvocationSemi) {}
+      : MacroItem(loc, MacroItemKind::MacroInvocationSemi) {}
 };
 
 } // namespace rust_compiler::ast

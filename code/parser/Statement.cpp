@@ -1,8 +1,11 @@
 #include "AST/ItemDeclaration.h"
 #include "AST/LetStatement.h"
+#include "AST/MacroInvocationSemi.h"
 #include "Lexer/KeyWords.h"
+#include "Lexer/Token.h"
 #include "Parser/Parser.h"
-#include "llvm/Support/raw_ostream.h"
+#include <llvm/Support/raw_ostream.h>
+#include "AST/MacroInvocationSemiStatement.h"
 
 #include <cstdlib>
 
@@ -11,6 +14,41 @@ using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::Statement>>
+Parser::parseMacroInvocationSemiStatement() {
+  Location loc = getLocation();
+
+  MacroInvocationSemiStatement stmt = {loc};
+
+  llvm::Expected<ast::SimplePath> path = parseSimplePath();
+  if (auto e = path.takeError()) {
+    llvm::errs()
+        << "failed to parse simple path in macro invocation semi statement: "
+        << std::move(e) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  stmt.setPath(*path);
+
+  if (!check(TokenKind::Not)) {
+    llvm::errs()
+        << "failed to parse ! token in macro invocation semi statement: "
+        << "\n";
+    exit(EXIT_FAILURE);
+  }
+  assert(eat(TokenKind::Not));
+
+  llvm::Expected<ast::DelimTokenTree> tree = parseDelimTokenTree();
+  if (auto e = tree.takeError()) {
+    llvm::errs()
+        << "failed to parse delim token tree  macro invocation semi statement: "
+        << std::move(e) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  stmt.setTree(*tree);
+
+  return std::make_shared<MacroInvocationSemiStatement>(stmt);
+}
 
 llvm::Expected<std::shared_ptr<ast::Statement>> Parser::parseLetStatement() {
   Location loc = getLocation();
