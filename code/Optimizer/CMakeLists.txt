@@ -11,6 +11,7 @@ add_library(optimizer
            DeadStoreElimination.cpp
            SCCP.cpp
            HirLICM.cpp
+           ConvertHirToMir.cpp
            )
 #           SCCPPass.cpp
 

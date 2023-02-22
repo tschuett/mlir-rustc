@@ -4,6 +4,7 @@
 #include "AST/Types/NeverType.h"
 #include "AST/Types/SliceType.h"
 #include "AST/Types/TypeParamBound.h"
+#include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
@@ -264,33 +265,50 @@ Parser::parseTypeParamBound() {
   return *life;
 }
 
-//llvm::Expected<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
-//  Location loc = getLocation();
-//
-//  TypeParamBounds bounds = {loc};
-//
-//  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> first =
-//      parseTypeParamBound();
-//  if (auto e = first.takeError()) {
-//    llvm::errs() << "failed to parse  type param bound in type param bounds : "
-//                 << toString(std::move(e)) << "\n";
-//    exit(EXIT_FAILURE);
-//  }
-//  bounds.addTypeParamBound(*first);
-//
-//  while (true) {
-//    if (check(TokenKind::Eof)) {
-//      // abort
-//    } else if (check(TokenKind::Plus)) {
-//    } else if (!check(TokenKind::Plus)) {
-//      // done
-//    } else {
-//    }
-//  }
-//
-//  xxx;
-//  // FIXME
-//}
+llvm::Expected<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
+  Location loc = getLocation();
+
+  TypeParamBounds bounds = {loc};
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> first =
+      parseTypeParamBound();
+  if (auto e = first.takeError()) {
+    llvm::errs() << "failed to parse  type param bound in type param bounds :"
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  bounds.addTypeParamBound(*first);
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      // abort
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse type param bounds: eof");
+    } else if (!check(TokenKind::Plus)) {
+      assert(eat(TokenKind::Plus));
+      if (checkTypeParamBound()) {
+        llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> type =
+            parseTypeParamBound();
+        if (auto e = first.takeError()) {
+          llvm::errs()
+              << "failed to parse  type param bound in type param bounds :"
+              << toString(std::move(e)) << "\n";
+          exit(EXIT_FAILURE);
+        }
+        bounds.addTypeParamBound(*type);
+      } else {
+        bounds.setTrailingPlus();
+        return bounds;
+      }
+    } else {
+      // done
+      return bounds;
+    }
+  }
+
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse type param bounds");
+}
 
 PathKind Parser::testTypePathOrSimplePath() {
   if (check(TokenKind::PathSep)) {
@@ -337,63 +355,65 @@ PathKind Parser::testTypePathOrSimplePath() {
 
 // eof
 
-//llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
-//    parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType() {
-//  CheckPoint qp = getCheckPoint();
+// llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
+//     parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType()
+//     {
+//   CheckPoint qp = getCheckPoint();
 //
-//  if (checkKeyWord(KeyWordKind::KW_FOR)) {
-//    llvm::Expected<ForLifetimes> forLifetimes = parseForLifetimes();
-//    if (auto e = forLifetimes.takeError()) {
-//      llvm::errs() << "failed to parse for lifetime in ... : "
-//                   << toString(std::move(e)) << "\n";
-//      exit(EXIT_FAILURE);
-//    }
+//   if (checkKeyWord(KeyWordKind::KW_FOR)) {
+//     llvm::Expected<ForLifetimes> forLifetimes = parseForLifetimes();
+//     if (auto e = forLifetimes.takeError()) {
+//       llvm::errs() << "failed to parse for lifetime in ... : "
+//                    << toString(std::move(e)) << "\n";
+//       exit(EXIT_FAILURE);
+//     }
 //
-//    if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
-//      recover(qp);
-//      return parseBareFunctionType();
-//    } else if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
-//      recover(qp);
-//      return parseBareFunctionType();
-//    } else if (checkKeyWord(KeyWordKind::KW_FN)) {
-//      recover(qp);
-//      return parseBareFunctionType();
-//    } else if (check(TokenKind::PathSep)) {
-//      // TraitObjectType
-//      // TypePath
-//      // MacroInvocation
-//    } else if (check(TokenKind::)) {
-//    }
-//  } else { // not for
-//    if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
-//      recover(qp);
-//      return parseBareFunctionType();
-//    } else if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
-//      recover(qp);
-//      return parseBareFunctionType();
-//    } else if (checkKeyWord(KeyWordKind::KW_FN)) {
-//      recover(qp);
-//      return parseBareFunctionType();
-//    } else if (check(TokenKind::PathSep)) {
-//      // TraitObjectType: TypePath
-//      // TypePath: TypePath
-//      // MacroInvocation: SimplePath
-//    } else if () {
-//    }
-//    // BareFunctionType or TraitObjectType
-//  }
-//  // else if (check(TokenKind::ParenOpen)) {
-//  //   // ParenType or TupleType or TraitObjectType
-//  //   //    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> types
-//  //   =
-//  //   //       parseType();
-//  // }
-//  // else if (check(TokenKind::PathSeq)) {
-//  //   // SimplePath in MacroInvocation
-//  //   // TypePath
-//  //   // Or TraitObjectType
-//  // }
-//}
+//     if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
+//       recover(qp);
+//       return parseBareFunctionType();
+//     } else if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
+//       recover(qp);
+//       return parseBareFunctionType();
+//     } else if (checkKeyWord(KeyWordKind::KW_FN)) {
+//       recover(qp);
+//       return parseBareFunctionType();
+//     } else if (check(TokenKind::PathSep)) {
+//       // TraitObjectType
+//       // TypePath
+//       // MacroInvocation
+//     } else if (check(TokenKind::)) {
+//     }
+//   } else { // not for
+//     if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
+//       recover(qp);
+//       return parseBareFunctionType();
+//     } else if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
+//       recover(qp);
+//       return parseBareFunctionType();
+//     } else if (checkKeyWord(KeyWordKind::KW_FN)) {
+//       recover(qp);
+//       return parseBareFunctionType();
+//     } else if (check(TokenKind::PathSep)) {
+//       // TraitObjectType: TypePath
+//       // TypePath: TypePath
+//       // MacroInvocation: SimplePath
+//     } else if () {
+//     }
+//     // BareFunctionType or TraitObjectType
+//   }
+//   // else if (check(TokenKind::ParenOpen)) {
+//   //   // ParenType or TupleType or TraitObjectType
+//   //   //    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+//   types
+//   //   =
+//   //   //       parseType();
+//   // }
+//   // else if (check(TokenKind::PathSeq)) {
+//   //   // SimplePath in MacroInvocation
+//   //   // TypePath
+//   //   // Or TraitObjectType
+//   // }
+// }
 
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseType() {
@@ -434,6 +454,74 @@ Parser::parseType() {
     return parseBareFunctionType();
 
   return parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType();
+}
+
+llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>>
+Parser::parseTraitBound() {
+  Location loc = getLocation();
+  TraitBound tr = {loc};
+
+  if (check(TokenKind::ParenOpen)) {
+    tr.setHasParenthesis();
+    assert(eat(TokenKind::ParenOpen));
+    if (check(TokenKind::QMark)) {
+      assert(eat(TokenKind::QMark));
+      tr.setHasQuestionMark();
+    }
+    if (checkKeyWord(KeyWordKind::KW_FOR)) {
+      llvm::Expected<ast::types::ForLifetimes> forL = parseForLifetimes();
+      if (auto e = forL.takeError()) {
+        llvm::errs() << "failed to parse ForLifetimes in trait bound : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      tr.setForLifetimes(*forL);
+    }
+    llvm::Expected<std::shared_ptr<ast::types::TypePath>> path =
+        parseTypePath();
+    if (auto e = path.takeError()) {
+      llvm::errs() << "failed to parse type path in trait bound : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    tr.setTypePath(*path);
+    if (!check(TokenKind::ParenClose))
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse trait bound ;missing ): ");
+    assert(eat(TokenKind::ParenClose));
+    return std::make_shared<TraitBound>(tr);
+  } else if (!check(TokenKind::ParenOpen)) {
+    if (check(TokenKind::QMark)) {
+      assert(eat(TokenKind::QMark));
+      tr.setHasQuestionMark();
+    }
+
+    if (checkKeyWord(KeyWordKind::KW_FOR)) {
+      llvm::Expected<ast::types::ForLifetimes> forL = parseForLifetimes();
+      if (auto e = forL.takeError()) {
+        llvm::errs() << "failed to parse ForLifetimes in trait bound : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      tr.setForLifetimes(*forL);
+    }
+
+    llvm::Expected<std::shared_ptr<ast::types::TypePath>> path =
+        parseTypePath();
+    if (auto e = path.takeError()) {
+      llvm::errs() << "failed to parse type path in trait bound : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    tr.setTypePath(*path);
+    return std::make_shared<TraitBound>(tr);
+  } else {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse trait bound: ");
+  }
+
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse trait bound: ");
 }
 
 } // namespace rust_compiler::parser

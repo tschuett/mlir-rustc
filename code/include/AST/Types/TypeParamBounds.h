@@ -3,15 +3,15 @@
 #include "AST/AST.h"
 #include "AST/Types/TypeParamBound.h"
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 namespace rust_compiler::ast::types {
 
 class TypeParamBounds : public Node {
 
   std::vector<std::shared_ptr<TypeParamBound>> typeParamBounds;
-  bool trailingPlus;
+  bool trailingPlus = false;
 
 public:
   TypeParamBounds(Location loc) : Node(loc) {}
@@ -21,6 +21,8 @@ public:
   }
 
   bool isTrailingPlus() const { return trailingPlus; }
+
+  void setTrailingPlus() { trailingPlus = true; }
 };
 
 } // namespace rust_compiler::ast::types

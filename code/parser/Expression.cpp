@@ -1,4 +1,5 @@
 #include "AST/AsyncBlockExpression.h"
+#include "AST/AwaitExpression.h"
 #include "AST/BorrowExpression.h"
 #include "AST/BreakExpression.h"
 #include "AST/ContinueExpression.h"
@@ -22,6 +23,28 @@ using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseAwaitExpression(std::shared_ptr<ast::Expression> e) {
+  Location loc = getLocation();
+  AwaitExpression a = {loc};
+
+  if (!check(TokenKind::Dot)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse : token in await expression");
+  }
+  assert(eat(TokenKind::Dot));
+
+  if (!checkKeyWord(KeyWordKind::KW_AWAIT)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse await keyword in await expression");
+  }
+  assert(eatKeyWord(KeyWordKind::KW_AWAIT));
+
+  a.setLhs(e);
+
+  return std::make_shared<AwaitExpression>(a);
+}
 
 llvm::Expected<ast::Scrutinee> Parser::parseScrutinee() {
   Location loc = getLocation();

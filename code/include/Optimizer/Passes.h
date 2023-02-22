@@ -38,6 +38,9 @@ namespace rust_compiler::optimizer {
 #define GEN_PASS_DECL_HIRLICMPASS
 #include "Optimizer/Passes.h.inc"
 
+#define GEN_PASS_DECL_CONVERTHIRTOMIRPASS
+#include "Optimizer/Passes.h.inc"
+
 // declarative passes
 #define GEN_PASS_REGISTRATION
 #include "Optimizer/Passes.h.inc"

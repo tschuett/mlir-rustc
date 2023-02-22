@@ -26,7 +26,11 @@ def ErrorPropagationOp : Hir_Op<"question_mark", []> {
   let regions = (region AnyRegion:$region);
 }
 
-def WhileLoopOp : Hir_Op<"while",
+//===----------------------------------------------------------------------===//
+// PredicateLoopExpression
+//===----------------------------------------------------------------------===//
+
+def PredicateLoopExpressionOp : Hir_Op<"while",
   []> {
   let summary = "a Rust while op.";
 
@@ -34,10 +38,21 @@ def WhileLoopOp : Hir_Op<"while",
   Rust PredicateLoopExpressionn
   }];
 
-  let arguments = (ins AnyType:$rhs);
+  let arguments = (ins
+    I1:$rhs
+  );
+
+  let extraClassDeclaration = [{
+    mlir::Value getConditionValue() { return getRhs(); }
+  }];
+
 
   let regions = (region AnyRegion:$region);
 }
+
+//===----------------------------------------------------------------------===//
+// InfiniteLoopExpression
+//===----------------------------------------------------------------------===//
 
 def InfiniteLoopOp : Hir_Op<"loop",
   []> {

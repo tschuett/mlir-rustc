@@ -7,31 +7,27 @@
 #include <mlir/IR/Dominance.h>
 #include <mlir/IR/Operation.h>
 #include <mlir/Interfaces/SideEffectInterfaces.h>
+#include <mlir/Transforms/DialectConversion.h>
 
 using namespace rust_compiler::hir;
 
 namespace rust_compiler::optimizer {
-#define GEN_PASS_DEF_HIRLICMPASS
+#define GEN_PASS_DEF_CONVERTHIRTOMIRPASS
 #include "Optimizer/Passes.h.inc"
 } // namespace rust_compiler::optimizer
 
 namespace {
-class HirLICMPass
-    : public rust_compiler::optimizer::impl::HirLICMPassBase<HirLICMPass> {
+class ConvertHirToMirPass
+    : public rust_compiler::optimizer::impl::ConvertHirToMirPassBase<
+          ConvertHirToMirPass> {
 public:
   void runOnOperation() override;
 };
 
 } // namespace
 
-void HirLICMPass::runOnOperation() {
-  mlir::func::FuncOp f = getOperation();
-  for (auto &block : f.getBody()) {
-    for (auto& op: block) {
-      if (const auto& infi = mlir::dyn_cast<InfiniteLoopOp>(op)) {
-      } else if (auto whil = mlir::dyn_cast<PredicateLoopExpressionOp>(op)) {
-        (void)whil.getConditionValue();
-      }
-    }
-  }
+void ConvertHirToMirPass::runOnOperation() {
+  mlir::ModuleOp m = getOperation();
+
+   mlir::ConversionTarget target(getContext());
 }

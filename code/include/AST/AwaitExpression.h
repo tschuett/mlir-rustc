@@ -10,11 +10,11 @@ class AwaitExpression : public ExpressionWithoutBlock {
   std::shared_ptr<Expression> lhs;
 
 public:
-  AwaitExpression(Location loc, std::shared_ptr<Expression> lhs)
+  AwaitExpression(Location loc)
       : ExpressionWithoutBlock(loc,
-                               ExpressionWithoutBlockKind::AwaitExpression),
-        lhs(lhs) {}
+                               ExpressionWithoutBlockKind::AwaitExpression) {}
 
+  void setLhs(std::shared_ptr<Expression> lh) { lhs = lh; }
   std::shared_ptr<Expression> getBody() const;
 };
 

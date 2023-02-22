@@ -28,6 +28,9 @@ int processMLIR(mlir::MLIRContext &context,
 
   // Hir
 
+
+
+  pm.addPass(createConvertHirToMirPass());
   // Mir
 
   // Lir

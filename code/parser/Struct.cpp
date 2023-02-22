@@ -6,6 +6,38 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseStructExpression() {
+
+  CheckPoint cp = getCheckPoint();
+
+  if (checkIntegerLiteral() && check(TokenKind::Colon, 1)) {
+    return parseStructExprField();
+  } else if (checkIdentifier() && check(TokenKind::Colon, 1)) {
+    return parseStructExprField();
+  } else if (checkOuterAttribute()) {
+    return parseStructExprField();
+  } else if (check(TokenKind::PathSep) || checkPathIdentSegment()) {
+    llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
+        parsePathInExpression();
+    if (auto e = path.takeError()) {
+      llvm::errs()
+          << "failed to parse path in expression in struct expression : "
+          << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    if (check(TokenKind::BraceOpen)) {
+      recover(cp);
+      return parseStructExprStruct();
+    } else if () {
+    }
+    xxx
+  }
+}
+
+  // FIXME only IDENTIFIER in StructExprField
+  // FIXME ( in StructExprTuple
+
 llvm::Expected<ast::StructFields> Parser::parseStructFields() {
   Location loc = getLocation();
   StructFields sfs = {loc};

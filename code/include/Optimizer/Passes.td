@@ -66,5 +66,13 @@ def HirLICMPass : Pass<"SCCP", "mlir::func::FuncOp"> {
 }
 
 
+def ConvertHirToMirPass : Pass<"SCCP", "mlir::ModuleOp"> {
+  let summary = "Hir -> Mir";
+  let description = "Convert Hir to Mir dialect";
+  let dependentDialects = ["::HirDialect", "::mlir::arith::ArithDialect"];
+}
+
+
+
 // eleminate Mir: how?
 

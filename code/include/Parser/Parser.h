@@ -24,6 +24,7 @@
 #include "AST/MatchArmGuard.h"
 #include "AST/MatchArms.h"
 #include "AST/OuterAttribute.h"
+#include "AST/PathExpression.h"
 #include "AST/Patterns/Pattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/SlicePatternItems.h"
@@ -347,7 +348,8 @@ public:
   llvm::Expected<std::shared_ptr<ast::Statement>> parseLetStatement();
   llvm::Expected<std::shared_ptr<ast::Statement>> parseItemDeclaration();
   llvm::Expected<std::shared_ptr<ast::Statement>> parseExpressionStatement();
-  llvm::Expected<std::shared_ptr<ast::Statement>> parseMacroInvocationSemiStatement();
+  llvm::Expected<std::shared_ptr<ast::Statement>>
+  parseMacroInvocationSemiStatement();
 
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseShorthandSelf();
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseTypedSelf();
@@ -376,6 +378,11 @@ public:
   parseFunctionParametersMaybeNamedVariadic();
 
   llvm::Expected<ast::types::MaybeNamedParam> parseMaybeNamedParam();
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprField();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprStruct();
+
+  llvm::Expected<std::shared_ptr<ast::PathExpression>> parsePathInExpression();
 
 private:
   bool check(lexer::TokenKind token);
@@ -422,6 +429,9 @@ private:
   bool checkStaticOrUnderscore();
   bool checkVisItem();
   bool checkMacroItem();
+  bool checkTypeParamBound();
+  bool checkIdentifier();
+  bool checkIntegerLiteral();
 };
 
 } // namespace rust_compiler::parser
