@@ -7,10 +7,7 @@
 
 namespace rust_compiler::ast {
 
-enum LazyBooleanExpressionKind {
-  Or,
-  And
-};
+enum LazyBooleanExpressionKind { Or, And };
 
 class LazyBooleanExpression final : public OperatorExpression {
   LazyBooleanExpressionKind kind;
@@ -18,12 +15,14 @@ class LazyBooleanExpression final : public OperatorExpression {
   std::shared_ptr<Expression> right;
 
 public:
-  LazyBooleanExpression(rust_compiler::Location loc,
-                        LazyBooleanExpressionKind kind,
-                        std::shared_ptr<Expression> left,
-                        std::shared_ptr<Expression> right)
-      : OperatorExpression(loc, OperatorExpressionKind::LazyBooleanExpression),
-        kind(kind), left(left), right(right) {}
+  LazyBooleanExpression(rust_compiler::Location loc)
+      : OperatorExpression(loc, OperatorExpressionKind::LazyBooleanExpression) {
+  }
+
+  void setKind(LazyBooleanExpressionKind l) { kind = l; }
+
+  void setLhs(std::shared_ptr<Expression> e) { left = e; }
+  void setRhs(std::shared_ptr<Expression> e) { right = e; }
 
   LazyBooleanExpressionKind getKind() const { return kind; }
 

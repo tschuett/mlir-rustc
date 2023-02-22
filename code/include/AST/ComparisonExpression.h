@@ -22,12 +22,12 @@ class ComparisonExpression final : public OperatorExpression {
   std::shared_ptr<Expression> right;
 
 public:
-  ComparisonExpression(rust_compiler::Location loc,
-                       ComparisonExpressionKind kind,
-                       std::shared_ptr<Expression> left,
-                       std::shared_ptr<Expression> right)
-      : OperatorExpression(loc, OperatorExpressionKind::ComparisonExpression),
-        kind(kind), left(left), right(right) {}
+  ComparisonExpression(rust_compiler::Location loc)
+      : OperatorExpression(loc, OperatorExpressionKind::ComparisonExpression) {}
+
+  void setKind(ComparisonExpressionKind k) { kind = k; }
+  void setLhs(std::shared_ptr<Expression> e) { left = e; }
+  void setRhs(std::shared_ptr<Expression> e) { right = e; }
 
   ComparisonExpressionKind getKind() const { return kind; }
 

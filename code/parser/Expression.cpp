@@ -2,6 +2,7 @@
 #include "AST/AwaitExpression.h"
 #include "AST/BorrowExpression.h"
 #include "AST/BreakExpression.h"
+#include "AST/ComparisonExpression.h"
 #include "AST/CompoundAssignmentExpression.h"
 #include "AST/ContinueExpression.h"
 #include "AST/DereferenceExpression.h"
@@ -9,6 +10,7 @@
 #include "AST/GroupedExpression.h"
 #include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
+#include "AST/LazyBooleanExpression.h"
 #include "AST/LiteralExpression.h"
 #include "AST/MatchExpression.h"
 #include "AST/NegationExpression.h"
@@ -30,6 +32,68 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseLazyBooleanExpression(std::shared_ptr<ast::Expression> e) {
+  Location loc = getLocation();
+  LazyBooleanExpression laz = {loc};
+
+  laz.setLhs(e);
+
+  if (check(TokenKind::OrOr)) {
+    laz.setKind(LazyBooleanExpressionKind::Or);
+  } else if (check(TokenKind::OrOr)) {
+    laz.setKind(LazyBooleanExpressionKind::And);
+  } else {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse kind in lazy boolena expression");
+  }
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> first = parseExpression();
+  if (auto e = first.takeError()) {
+    llvm::errs() << "failed to parse expression in lazy boolean expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  laz.setRhs(*first);
+
+  return std::make_shared<LazyBooleanExpression>(laz);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseComparisonExpression(std::shared_ptr<ast::Expression> lhs) {
+  Location loc = getLocation();
+  ComparisonExpression comp = {loc};
+
+  comp.setLhs(lhs);
+
+  if (check(TokenKind::EqEq)) {
+    comp.setKind(ComparisonExpressionKind::Equal);
+  } else if (check(TokenKind::Ne)) {
+    comp.setKind(ComparisonExpressionKind::NotEqual);
+  } else if (check(TokenKind::Gt)) {
+    comp.setKind(ComparisonExpressionKind::GreaterThan);
+  } else if (check(TokenKind::Lt)) {
+    comp.setKind(ComparisonExpressionKind::LessThan);
+  } else if (check(TokenKind::Ge)) {
+    comp.setKind(ComparisonExpressionKind::GreaterThan);
+  } else if (check(TokenKind::Le)) {
+    comp.setKind(ComparisonExpressionKind::LessThan);
+  } else {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse kind in comparison expression");
+  }
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> first = parseExpression();
+  if (auto e = first.takeError()) {
+    llvm::errs() << "failed to parse expression in comparison expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  comp.setRhs(*first);
+
+  return std::make_shared<ComparisonExpression>(comp);
+}
+
 llvm::Expected<TupleElements> Parser::parseTupleElements() {
   Location loc = getLocation();
   TupleElements tuple = {loc};
@@ -44,7 +108,7 @@ llvm::Expected<TupleElements> Parser::parseTupleElements() {
 
   if (!check(TokenKind::Comma))
     return createStringError(inconvertibleErrorCode(),
-                             "failed to parse x token in tuple elements");
+                             "failed to parse comma token in tuple elements");
   assert(eat(TokenKind::Comma));
 
   while (true) {
@@ -61,9 +125,15 @@ llvm::Expected<TupleElements> Parser::parseTupleElements() {
         exit(EXIT_FAILURE);
       }
       tuple.addElement(*next);
+      if (check(TokenKind::ParenClose))
+        continue;
+      if (!check(TokenKind::Comma))
+        return createStringError(
+            inconvertibleErrorCode(),
+            "failed to parse comma token in tuple elements");
+      assert(eat(TokenKind::Comma));
     }
   }
-  xxx; comma
   return createStringError(inconvertibleErrorCode(),
                            "failed to parse tuple elements");
 }
