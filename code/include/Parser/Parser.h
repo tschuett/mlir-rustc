@@ -32,6 +32,7 @@
 #include "AST/Scrutinee.h"
 #include "AST/SelfParam.h"
 #include "AST/Statements.h"
+#include "AST/TupleElements.h"
 #include "AST/TypeAlias.h"
 #include "AST/TypeBoundWhereClauseItem.h"
 #include "AST/TypeParam.h"
@@ -49,6 +50,8 @@
 #include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
 #include "Location.h"
+#include "AST/Patterns/StructPattern.h"
+#include "AST/Patterns/StructPatternElements.h"
 
 #include <llvm/Support/Error.h>
 #include <string_view>
@@ -255,8 +258,12 @@ public:
   llvm::Expected<std::shared_ptr<ast::Expression>>
   parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpression();
 
+  llvm::Expected<ast::TupleElements> parseTupleElements();
+
   llvm::Expected<std::shared_ptr<ast::Expression>> parseExpressionWithPostfix();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseTupleExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> parseGroupedExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseBlockExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>>
   parseExpressionWithoutBlock();
@@ -389,6 +396,8 @@ public:
   llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprUnit();
 
   llvm::Expected<std::shared_ptr<ast::PathExpression>> parsePathInExpression();
+
+  llvm::Expected<ast::patterns::StructPatternElements> parseStructPatternElements();
 
 private:
   bool check(lexer::TokenKind token);

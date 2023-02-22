@@ -16,6 +16,8 @@ public:
   TupleElements(Location loc) : Node(loc) {}
 
   bool hasTrailingComma() const { return trailingComma; };
+
+  void addElement(std::shared_ptr<Expression> e) { elements.push_back(e); }
 };
 
 } // namespace rust_compiler::ast

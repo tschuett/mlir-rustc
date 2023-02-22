@@ -15,8 +15,9 @@ public:
       : ExpressionWithoutBlock(loc,
                                ExpressionWithoutBlockKind::TupleExpression){};
 
+  void setElements(const TupleElements& el) {
+    elements = el;
+  }
 };
 
 } // namespace rust_compiler::ast
-
-// FIXME LIFETIME_OR_LABEL

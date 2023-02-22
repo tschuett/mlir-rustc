@@ -1,4 +1,5 @@
 #include "AST/Patterns/ReferencePattern.h"
+#include "AST/Patterns/StructPattern.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
@@ -10,6 +11,50 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 /// https://doc.rust-lang.org/reference/patterns.html
+
+llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+Parser::parseStructPattern() {
+  Location loc = getLocation();
+
+  StructPattern pat = {loc};
+
+  llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
+      parsePathInExpression();
+  if (auto e = path.takeError()) {
+    llvm::errs() << "failed to parse path in expression in struct pattern : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  pat.setPath(*path);
+
+  if (!check(lexer::TokenKind::BraceOpen)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse struct pattern");
+  }
+  assert(eat(TokenKind::BraceOpen));
+
+  if (check(TokenKind::BraceClose)) {
+    assert(eat(TokenKind::BraceClose));
+    return std::make_shared<StructPattern>(pat);
+  }
+
+  llvm::Expected<StructPatternElements> pattern = parseStructPatternElements();
+  if (auto e = pattern.takeError()) {
+    llvm::errs()
+        << "failed to parse struct pattern elements in struct pattern : "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  pat.setElements(*pattern);
+
+  if (!check(lexer::TokenKind::BraceClose)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse struct pattern");
+  }
+  assert(eat(TokenKind::BraceClose));
+
+  return std::make_shared<StructPattern>(pat);
+}
 
 llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseReferencePattern() {

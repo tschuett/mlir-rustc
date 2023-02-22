@@ -6,12 +6,15 @@
 #include "AST/ContinueExpression.h"
 #include "AST/DereferenceExpression.h"
 #include "AST/ErrorPropagationExpression.h"
+#include "AST/GroupedExpression.h"
 #include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
 #include "AST/LiteralExpression.h"
 #include "AST/MatchExpression.h"
 #include "AST/NegationExpression.h"
 #include "AST/ReturnExpression.h"
+#include "AST/TupleElements.h"
+#include "AST/TupleExpression.h"
 #include "AST/TupleIndexingExpression.h"
 #include "AST/UnsafeBlockExpression.h"
 #include "Lexer/KeyWords.h"
@@ -27,26 +30,148 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
-//llvm::Expected<std::shared_ptr<ast::Expression>>
-//Parser::parseTupleIndexingExpression(std::shared_ptr<ast::Expression> e) {
-//  Location loc = getLocation();
-//  TupleIndexingExpression tuple = {loc};
+llvm::Expected<TupleElements> Parser::parseTupleElements() {
+  Location loc = getLocation();
+  TupleElements tuple = {loc};
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> first = parseExpression();
+  if (auto e = first.takeError()) {
+    llvm::errs() << "failed to parse expression in tuple elements: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  tuple.addElement(*first);
+
+  if (!check(TokenKind::Comma))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse x token in tuple elements");
+  assert(eat(TokenKind::Comma));
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse tuple elements: eof");
+    } else if (check(TokenKind::ParenClose)) {
+      return tuple;
+    } else {
+      llvm::Expected<std::shared_ptr<ast::Expression>> next = parseExpression();
+      if (auto e = next.takeError()) {
+        llvm::errs() << "failed to parse expression in tuple elements: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      tuple.addElement(*next);
+    }
+  }
+  xxx; comma
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse tuple elements");
+}
+
+// FIXME Comma
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseTupleExpression() {
+  Location loc = getLocation();
+  TupleExpression tuple = {loc};
+
+  if (!check(TokenKind::ParenOpen))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ( token in tuple expression");
+  assert(eat(TokenKind::ParenOpen));
+
+  llvm::Expected<TupleElements> tupleEl = parseTupleElements();
+  if (auto e = tupleEl.takeError()) {
+    llvm::errs() << "failed to parse tuple elements in tuple expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  tuple.setElements(*tupleEl);
+
+  if (!check(TokenKind::ParenClose)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ) token in tuple expression");
+    assert(eat(TokenKind::ParenOpen));
+  }
+
+  return std::make_shared<TupleExpression>(tuple);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseGroupedExpression() {
+  Location loc = getLocation();
+  GroupedExpression group = {loc};
+
+  if (!check(TokenKind::ParenOpen))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ( token in grouped expression");
+  assert(eat(TokenKind::ParenOpen));
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> first = parseExpression();
+  if (auto e = first.takeError()) {
+    llvm::errs() << "failed to parse expression in grouped expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  group.setExpression(*first);
+
+  if (!check(TokenKind::ParenClose)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ) token in grouped expression");
+    assert(eat(TokenKind::ParenOpen));
+  }
+
+  return std::make_shared<GroupedExpression>(group);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseGroupedOrTupleExpression() {
+  Location loc = getLocation();
+  CheckPoint cp = getCheckPoint();
+
+  if (!check(TokenKind::ParenOpen))
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse ( token in grouped or tuple expression");
+  assert(eat(TokenKind::ParenOpen));
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> first = parseExpression();
+  if (auto e = first.takeError()) {
+    llvm::errs()
+        << "failed to parse expression in grouped or tuple expression: "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  if (check(TokenKind::ParenClose)) {
+    recover(cp);
+    return parseGroupedExpression();
+  }
+
+  return parseTupleExpression();
+}
+
+// llvm::Expected<std::shared_ptr<ast::Expression>>
+// Parser::parseTupleIndexingExpression(std::shared_ptr<ast::Expression> e) {
+//   Location loc = getLocation();
+//   TupleIndexingExpression tuple = {loc};
 //
-//  if (!check(TokenKind::Dot))
-//    return createStringError(
-//        inconvertibleErrorCode(),
-//        "failed to parse dot token in tuple indexing expression");
-//  assert(eat(TokenKind::Dot));
+//   if (!check(TokenKind::Dot))
+//     return createStringError(
+//         inconvertibleErrorCode(),
+//         "failed to parse dot token in tuple indexing expression");
+//   assert(eat(TokenKind::Dot));
 //
-//  if (!check(TokenKind::INTEGER_LITERAL))
-//    return createStringError(
-//        inconvertibleErrorCode(),
-//        "failed to parse integer literal token in tuple indexing expression");
+//   if (!check(TokenKind::INTEGER_LITERAL))
+//     return createStringError(
+//         inconvertibleErrorCode(),
+//         "failed to parse integer literal token in tuple indexing
+//         expression");
 //
-//  tuple.setIndex(getToken().IntegerLiteral());
+//   tuple.setIndex(getToken().IntegerLiteral());
 //
-//  assert(eat(TokenKind::Dot));
-//}
+//   assert(eat(TokenKind::Dot));
+// }
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseCompoundAssignmentExpression(std::shared_ptr<ast::Expression> e) {

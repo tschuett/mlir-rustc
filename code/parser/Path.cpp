@@ -1,6 +1,7 @@
 #include "AST/PathExprSegment.h"
 #include "AST/PathIdentSegment.h"
 #include "AST/PathInExpression.h"
+#include "AST/QualifiedPathInExpression.h"
 #include "AST/SimplePath.h"
 #include "AST/Types/QualifiedPathInType.h"
 #include "AST/Types/TypeExpression.h"
@@ -376,7 +377,7 @@ Parser::parseQualifiedPathInType() {
         << toString(std::move(e)) << "\n";
     exit(EXIT_FAILURE);
   }
-  qual.append(*seg);
+  qual.setSegment(*seg);
 
   if (!check(TokenKind::PathSep)) {
     return std::make_shared<QualifiedPathInType>(qual);
@@ -384,23 +385,24 @@ Parser::parseQualifiedPathInType() {
 
   while (true) {
     if (check(TokenKind::PathSep)) {
-      llvm::Expected<ast::types::QualifiedPathType> seg =
-          parseQualifiedPathType();
+      assert(eat(TokenKind::PathSep));
+      llvm::Expected<ast::types::TypePathSegment> seg = parseTypePathSegment();
       if (auto e = seg.takeError()) {
-        llvm::errs() << "failed to parse qualified path type  in qualified "
+        llvm::errs() << "failed to parse type path segment in qualified "
                         "path in type: "
                      << toString(std::move(e)) << "\n";
         exit(EXIT_FAILURE);
       }
       qual.append(*seg);
-    } else if (check(TokenKind::PathSep)) {
-      continue;
     } else if (check(TokenKind::Eof)) {
-      // abort
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse qualified pth in type: eof");
     } else {
       return std::make_shared<QualifiedPathInType>(qual);
     }
   }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse qualified pth in type");
 }
 
 } // namespace rust_compiler::parser
