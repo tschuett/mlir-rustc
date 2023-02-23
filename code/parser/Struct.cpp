@@ -1,4 +1,7 @@
 #include "AST/Patterns/StructPatternElements.h"
+#include "AST/StructExprStruct.h"
+#include "AST/StructExprTuple.h"
+#include "AST/StructExprUnit.h"
 #include "AST/StructStruct.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
@@ -12,6 +15,128 @@ using namespace rust_compiler::lexer;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parseStructExprUnit() {
+  Location loc = getLocation();
+  StructExprUnit unit = {loc};
+
+  llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
+      parsePathInExpression();
+  if (auto e = path.takeError()) {
+    llvm::errs() << "failed to parse path in expression in struct expr unit : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  unit.setPath(*path);
+
+  return std::make_shared<StructExprUnit>(unit);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseStructExprTuple() {
+  Location loc = getLocation();
+
+  StructExprTuple tuple = {loc};
+
+  llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
+      parsePathInExpression();
+  if (auto e = path.takeError()) {
+    llvm::errs() << "failed to parse path in expression in struct expr tuple : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  tuple.setPath(*path);
+
+  if (!check(TokenKind::ParenOpen))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ( token struct expr tuple");
+  assert(eat(TokenKind::ParenOpen));
+
+  if (check(TokenKind::ParenClose)) {
+  } else {
+    while (true) {
+      llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+      if (auto e = expr.takeError()) {
+        llvm::errs() << "failed to parse expression in struct expr tuple: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      tuple.addExpression(*expr);
+      if (check(TokenKind::Eof)) {
+        return createStringError(inconvertibleErrorCode(),
+                                 "failed to parse struct expr tuple: eof");
+      } else if (check(TokenKind::ParenClose)) {
+        assert(eat(TokenKind::ParenClose));
+        // done
+        return std::make_shared<StructExprTuple>(tuple);
+      } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
+        assert(eat(TokenKind::Comma));
+        assert(eat(TokenKind::ParenClose));
+        tuple.setTrailingComma();
+        // done
+        return std::make_shared<StructExprTuple>(tuple);
+      } else if (check(TokenKind::Comma) && !check(TokenKind::ParenClose, 1)) {
+        assert(eat(TokenKind::Comma));
+        llvm::Expected<std::shared_ptr<ast::Expression>> expr =
+            parseExpression();
+        if (auto e = expr.takeError()) {
+          llvm::errs() << "failed to parse expression in struct expr tuple: "
+                       << toString(std::move(e)) << "\n";
+          exit(EXIT_FAILURE);
+        }
+        tuple.addExpression(*expr);
+      } else {
+        return createStringError(inconvertibleErrorCode(),
+                                 "failed to parse struct expr tuple");
+      }
+    }
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse struct expr tuple");
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseStructExprStruct() {
+  Location loc = getLocation();
+
+  StructExprStruct str = {loc};
+
+  llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
+      parsePathInExpression();
+  if (auto e = path.takeError()) {
+    llvm::errs()
+        << "failed to parse path in expression in struct expr struct : "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  str.setPath(*path);
+
+  if (!check(TokenKind::BraceOpen))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse { token struct expr struct");
+  assert(eat(TokenKind::BraceOpen));
+
+  if (check(TokenKind::DotDot)) {
+    llvm::Expected<ast::StructBase> base = parseStructBase();
+    if (auto e = base.takeError()) {
+      llvm::errs() << "failed to parse struct base in struct expr struct : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    str.setBase(*base);
+  } else {
+    llvm::Expected<ast::StructExprFields> fields = parseStructExprFields();
+    if (auto e = fields.takeError()) {
+      llvm::errs()
+          << "failed to parse struct expr fields in struct expr struct : "
+          << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    str.setFields(*fields);
+  }
+
+  return std::make_shared<StructExprStruct>(str);
+}
 
 llvm::Expected<std::shared_ptr<ast::VisItem>>
 Parser::parseStructStruct(std::optional<ast::Visibility> vis) {

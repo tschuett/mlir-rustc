@@ -3,6 +3,7 @@
 #include "AST/AwaitExpression.h"
 #include "AST/BorrowExpression.h"
 #include "AST/BreakExpression.h"
+#include "AST/CallExpression.h"
 #include "AST/CallParams.h"
 #include "AST/ComparisonExpression.h"
 #include "AST/CompoundAssignmentExpression.h"
@@ -37,6 +38,66 @@ using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseCallExpression(std::shared_ptr<ast::Expression> e) {
+  Location loc = getLocation();
+  CallExpression call = {loc};
+
+  call.setFunction(e);
+
+  if (!check(TokenKind::ParenOpen)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ( token in call expression");
+  }
+  assert(eat(TokenKind::ParenOpen));
+
+  if (check(TokenKind::ParenClose)) {
+    assert(eat(TokenKind::ParenClose));
+    return std::make_shared<CallExpression>(call);
+  }
+
+  llvm::Expected<ast::CallParams> params = parseCallParams();
+  if (auto e = params.takeError()) {
+    llvm::errs() << "failed to parse call params in call expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  call.setParams(*params);
+
+  if (!check(TokenKind::ParenClose)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ) token in call expression");
+  }
+  assert(eat(TokenKind::ParenClose));
+
+  return std::make_shared<CallExpression>(call);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseTupleIndexingExpression(std::shared_ptr<ast::Expression> lhs) {
+  Location loc = getLocation();
+  TupleIndexingExpression tuple = {loc};
+
+  tuple.setTuple(lhs);
+
+  if (!check(TokenKind::Dot)) {
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse . token in tuple indexing expression");
+  }
+  assert(eat(TokenKind::Dot));
+
+  if (!check(TokenKind::INTEGER_LITERAL)) {
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse INTEGER_LITERAL token in tuple indexing expression");
+  }
+  tuple.setIndex(getToken().getLiteral());
+  assert(eat(TokenKind::INTEGER_LITERAL));
+
+  return std::make_shared<TupleIndexingExpression>(tuple);
+}
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseFieldExpression(std::shared_ptr<ast::Expression> l) {

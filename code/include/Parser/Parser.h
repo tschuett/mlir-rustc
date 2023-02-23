@@ -3,6 +3,7 @@
 #include "AST/Abi.h"
 #include "AST/AssociatedItem.h"
 #include "AST/AttrInput.h"
+#include "AST/CallParams.h"
 #include "AST/ClosureParameters.h"
 #include "AST/ConstParam.h"
 #include "AST/Crate.h"
@@ -31,9 +32,11 @@
 #include "AST/Patterns/SlicePatternItems.h"
 #include "AST/Patterns/StructPattern.h"
 #include "AST/Patterns/StructPatternElements.h"
+#include "AST/Patterns/TupleStructItems.h"
 #include "AST/Scrutinee.h"
 #include "AST/SelfParam.h"
 #include "AST/Statements.h"
+#include "AST/StructExprFields.h"
 #include "AST/TupleElements.h"
 #include "AST/TypeAlias.h"
 #include "AST/TypeBoundWhereClauseItem.h"
@@ -48,7 +51,6 @@
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
 #include "AST/WhereClauseItem.h"
-#include "AST/CallParams.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
@@ -384,6 +386,7 @@ public:
   llvm::Expected<ast::Attr> parseAttr();
 
   llvm::Expected<ast::TupleFields> parseTupleFields();
+  llvm::Expected<ast::TupleField> parseTupleField();
 
   llvm::Expected<ast::ClosureParameters> parseClosureParameters();
   llvm::Expected<ast::ClosureParam> parseClosureParam();
@@ -392,11 +395,13 @@ public:
   parseFunctionParametersMaybeNamedVariadic();
 
   llvm::Expected<ast::types::MaybeNamedParam> parseMaybeNamedParam();
+  llvm::Expected<ast::StructExprFields> parseStructExprFields();
 
   llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprField();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprStruct();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprTuple();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprUnit();
+  llvm::Expected<ast::StructBase> parseStructBase();
 
   llvm::Expected<std::shared_ptr<ast::PathExpression>> parsePathInExpression();
 
@@ -404,6 +409,8 @@ public:
   parseStructPatternElements();
   llvm::Expected<ast::patterns::StructPatternFields> parseStructPatternFields();
   llvm::Expected<ast::patterns::StructPatternField> parseStructPatternField();
+
+  llvm::Expected<ast::patterns::TupleStructItems> parseTupleStructItems();
 
 private:
   bool check(lexer::TokenKind token);

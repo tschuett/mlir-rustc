@@ -13,7 +13,7 @@ enum class PatternWithoutRangeKind {
   RestPattern,
   ReferencePattern,
   StructPattern,
-  TupleStructPatern,
+  TupleStructPattern,
   TuplePattern,
   GroupedPattern,
   SlicePattern,

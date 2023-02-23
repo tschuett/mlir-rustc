@@ -18,6 +18,9 @@ public:
                                ExpressionWithoutBlockKind::CallExpression) {}
 
   std::shared_ptr<Expression> getFunction() const;
+
+  void setFunction(std::shared_ptr<Expression> f) { function = f; }
+  void setParams(const CallParams &p) { callParameter = p; }
 };
 
 } // namespace rust_compiler::ast

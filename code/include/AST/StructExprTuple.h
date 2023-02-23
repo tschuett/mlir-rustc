@@ -10,15 +10,18 @@
 namespace rust_compiler::ast {
 
 class StructExprTuple : public StructExpression {
-  PathInExpression path;
+  std::shared_ptr<PathExpression> path;
   std::vector<std::shared_ptr<Expression>> exprs;
 
   bool trailingComma;
-  bool trailingBracket;
 
 public:
   StructExprTuple(Location loc)
       : StructExpression(loc, StructExpressionKind::StructExprTuple) {}
+
+  void setPath(std::shared_ptr<PathExpression> p) { path = p; };
+  void setTrailingComma() { trailingComma = true; }
+  void addExpression(std::shared_ptr<Expression> e) { exprs.push_back(e); }
 };
 
 } // namespace rust_compiler::ast

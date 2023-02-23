@@ -35,7 +35,7 @@ void Sema::analyzeLetStatement(std::shared_ptr<ast::LetStatement> let) {
     case PatternWithoutRangeKind::StructPattern: {
       break;
     }
-    case PatternWithoutRangeKind::TupleStructPatern: {
+    case PatternWithoutRangeKind::TupleStructPattern: {
       break;
     }
     case PatternWithoutRangeKind::TuplePattern: {

@@ -4,16 +4,18 @@
 #include "AST/StructExpression.h"
 
 #include <memory>
-#include <vector>
 
 namespace rust_compiler::ast {
 
 class StructExprUnit : public StructExpression {
-  PathInExpression path;
+  std::shared_ptr<PathExpression> path;
 
 public:
   StructExprUnit(Location loc)
-      : StructExpression(loc, StructExpressionKind::StructExprUnit) {}
+      : StructExpression(loc, StructExpressionKind::StructExprUnit) {
+  }
+
+  void setPath(std::shared_ptr<PathExpression> p) { path = p; }
 };
 
 } // namespace rust_compiler::ast

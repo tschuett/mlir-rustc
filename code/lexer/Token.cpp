@@ -3,18 +3,18 @@
 namespace rust_compiler::lexer {
 
 bool Token::isUseToken() const {
-  return kind == TokenKind::Keyword && id == "use";
+  return kind == TokenKind::Keyword && storage == "use";
 }
 
 bool Token::isPubToken() const {
-  return kind == TokenKind::Keyword && id == "pub";
+  return kind == TokenKind::Keyword && storage == "pub";
 }
 
 bool Token::isIdentifier() const { return kind == TokenKind::Identifier; }
 
 bool Token::isDoubleColon() const { return kind == TokenKind::DoubleColon; }
 
-bool Token::isAs() const { return kind == TokenKind::Keyword && id == "as"; }
+bool Token::isAs() const { return kind == TokenKind::Keyword && storage == "as"; }
 
 std::string Token2String(TokenKind kind) {
   switch (kind) {

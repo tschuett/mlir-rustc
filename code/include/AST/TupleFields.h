@@ -15,6 +15,8 @@ public:
   TupleFields(Location loc) : Node(loc) {}
 
   bool hasTrailingComma() const { return trailingComma; }
+
+  void addField(const TupleField &t) { fields.push_back(t); }
 };
 
 } // namespace rust_compiler::ast

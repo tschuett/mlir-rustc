@@ -1,5 +1,7 @@
 #include "AST/Patterns/ReferencePattern.h"
 #include "AST/Patterns/StructPattern.h"
+#include "AST/Patterns/StructPatternElements.h"
+#include "AST/Patterns/TupleStructPattern.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
@@ -13,33 +15,129 @@ namespace rust_compiler::parser {
 
 /// https://doc.rust-lang.org/reference/patterns.html
 
-//llvm::Expected<ast::patterns::StructPatternField>
-//Parser::parseStructPatternField() {
-//  Location loc = getLocation();
+llvm::Expected<ast::patterns::StructPatternField>
+Parser::parseStructPatternField() {
+  Location loc = getLocation();
+
+  StructPatternField field = {loc};
+
+  if (checkOuterAttribute()) {
+    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+        parseOuterAttributes();
+    if (auto e = outer.takeError()) {
+      llvm::errs()
+          << "failed to parse outer attributes in struct pattern field : "
+          << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    field.setOuterAttributes(*outer);
+  }
+
+  if (check(TokenKind::INTEGER_LITERAL) && check(TokenKind::Colon)) {
+    field.setTupleIndex(getToken().getLiteral());
+    assert(eat(TokenKind::INTEGER_LITERAL));
+    assert(eat(TokenKind::Colon));
+    llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> patterns =
+        parsePattern();
+    if (auto e = patterns.takeError()) {
+      llvm::errs() << "failed to parse pattern in struct pattern field : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    field.setPattern(*patterns);
+    field.setKind(StructPatternFieldKind::TupleIndex);
+    return field;
+  } else if (checkIdentifier() && check(TokenKind::Colon)) {
+    field.setIdentifier(getToken().getIdentifier());
+    assert(eat(TokenKind::Identifier));
+    assert(eat(TokenKind::Colon));
+    llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> patterns =
+        parsePattern();
+    if (auto e = patterns.takeError()) {
+      llvm::errs() << "failed to parse pattern in struct pattern field : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    field.setPattern(*patterns);
+    field.setKind(StructPatternFieldKind::Identifier);
+    return field;
+  } else if (checkKeyWord(KeyWordKind::KW_REF) ||
+             checkKeyWord(KeyWordKind::KW_MUT) || checkIdentifier()) {
+    if (checkKeyWord(KeyWordKind::KW_REF)) {
+      field.setRef();
+      assert(eatKeyWord(KeyWordKind::KW_REF));
+    }
+    if (checkKeyWord(KeyWordKind::KW_MUT)) {
+      field.setMut();
+      assert(eatKeyWord(KeyWordKind::KW_MUT));
+    }
+    if (!checkIdentifier())
+      return createStringError(
+          inconvertibleErrorCode(),
+          "failed to parse identifier token in struct pattern field");
+    field.setIdentifier(getToken().getIdentifier());
+    field.setKind(StructPatternFieldKind::RefMut);
+    assert(eat(TokenKind::Identifier));
+    return field;
+  } else {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse struct pattern field");
+  }
+
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse struct pattern field");
+}
+
+// llvm::Expected<ast::patterns::StructPatternElements>
+// Parser::parseStructPatternElements() {
+//   Location loc = getLocation();
+//   StructPatternElements elements = {loc};
 //
-//  StructPatternField field = {loc};
 //
-//  if (checkOuterAttribute()) {
-//    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
-//        parseOuterAttributes();
-//    if (auto e = outer.takeError()) {
-//      llvm::errs()
-//          << "failed to parse outer attributes in struct pattern field : "
-//          << toString(std::move(e)) << "\n";
-//      exit(EXIT_FAILURE);
-//    }
-//    field.setOuterAttributes(*outer);
-//  }
-//
-//  if (check(TokenKind::INTEGER_LITERAL) && check(TokenKind::Colon)) {
-//  } else if (checkIdentifier() && check(TokenKind::Colon)) {
-//  } else if (checkKeyWord(KeyWordKind::KW_REF) ||
-//             checkKeyWord(KeyWordKind::KW_MUT) || checkIdentifier()) {
-//  } else {
-//  }
-//
-//  xxx;
-//}
+// }
+
+llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+Parser::parseTupleStructPattern() {
+  Location loc = getLocation();
+  TupleStructPattern pat = {loc};
+
+  llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
+      parsePathInExpression();
+  if (auto e = path.takeError()) {
+    llvm::errs()
+        << "failed to parse path in expression in tuple struct pattern : "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  pat.setPath(*path);
+
+  if (!check(TokenKind::ParenOpen))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse tuple struct pattern");
+  assert(eat(TokenKind::ParenOpen));
+
+  if (check(TokenKind::ParenClose)) {
+    assert(eat(TokenKind::ParenClose));
+    return std::make_shared<TupleStructPattern>(pat);
+  }
+
+  llvm::Expected<ast::patterns::TupleStructItems> items =
+      parseTupleStructItems();
+  if (auto e = items.takeError()) {
+    llvm::errs()
+        << "failed to parse tuple struct items in tuple struct pattern : "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  pat.setItems(*items);
+
+  if (!check(TokenKind::ParenClose))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse tuple struct pattern");
+  assert(eat(TokenKind::ParenClose));
+
+  return std::make_shared<TupleStructPattern>(pat);
+}
 
 llvm::Expected<ast::patterns::StructPatternFields>
 Parser::parseStructPatternFields() {
@@ -82,40 +180,40 @@ Parser::parseStructPatternFields() {
                            "failed to parse struct pattern fields");
 }
 
-//llvm::Expected<ast::patterns::StructPatternElements>
-//Parser::parseStructPatternElements() {
-//  Location loc = getLocation();
-//  StructPatternElements el = {loc};
+// llvm::Expected<ast::patterns::StructPatternElements>
+// Parser::parseStructPatternElements() {
+//   Location loc = getLocation();
+//   StructPatternElements el = {loc};
 //
-//  CheckPoint cp = getCheckPoint();
+//   CheckPoint cp = getCheckPoint();
 //
-//  if (checkOuterAttribute()) {
-//    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
-//        parseOuterAttributes();
-//    if (auto e = outer.takeError()) {
-//      llvm::errs() << "failed to parse outer attribute in struct "
-//                      "pattern elements : "
-//                   << toString(std::move(e)) << "\n";
-//      exit(EXIT_FAILURE);
-//    }
-//    if (check(TokenKind::DotDot)) {
-//    } else if (check(TokenKind::INTEGER_LITERAL) &&
-//               check(TokenKind::Colon, 1)) {
-//    } else if (checkIdentifier() && check(TokenKind::Colon, 1)) {
-//    } else if (checkIdentifier()) {
-//    } else if (checkKeyWord(KeyWordKind::KW_REF)) {
-//    } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
-//    }
-//  } else if (check(TokenKind::DotDot)) {
-//  } else if (check(TokenKind::INTEGER_LITERAL)) {
-//  } else if (checkIdentifier() && check(TokenKind::Colon, 1)) {
-//  } else if (checkIdentifier()) {
-//  } else if (checkKeyWord(KeyWordKind::KW_REF)) {
-//  } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
-//  }
+//   if (checkOuterAttribute()) {
+//     llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+//         parseOuterAttributes();
+//     if (auto e = outer.takeError()) {
+//       llvm::errs() << "failed to parse outer attribute in struct "
+//                       "pattern elements : "
+//                    << toString(std::move(e)) << "\n";
+//       exit(EXIT_FAILURE);
+//     }
+//     if (check(TokenKind::DotDot)) {
+//     } else if (check(TokenKind::INTEGER_LITERAL) &&
+//                check(TokenKind::Colon, 1)) {
+//     } else if (checkIdentifier() && check(TokenKind::Colon, 1)) {
+//     } else if (checkIdentifier()) {
+//     } else if (checkKeyWord(KeyWordKind::KW_REF)) {
+//     } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
+//     }
+//   } else if (check(TokenKind::DotDot)) {
+//   } else if (check(TokenKind::INTEGER_LITERAL)) {
+//   } else if (checkIdentifier() && check(TokenKind::Colon, 1)) {
+//   } else if (checkIdentifier()) {
+//   } else if (checkKeyWord(KeyWordKind::KW_REF)) {
+//   } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
+//   }
 //
-//  xxx;
-//}
+//   xxx;
+// }
 
 llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseStructPattern() {

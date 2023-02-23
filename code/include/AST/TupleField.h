@@ -8,6 +8,7 @@
 #include <memory>
 #include <optional>
 #include <vector>
+#include <span>
 
 namespace rust_compiler::ast {
 
@@ -18,6 +19,14 @@ class TupleField : public Node {
 
 public:
   TupleField(Location loc) : Node(loc) {}
+
+  void setOuterAttributes(std::span<OuterAttribute> o) {
+    outerAttributes = {o.begin(), o.end()};
+  }
+
+  void setVisibility(const Visibility &vis) { visibility = vis; }
+
+  void setType(std::shared_ptr<ast::types::TypeExpression> t) { type = t; }
 };
 
 } // namespace rust_compiler::ast

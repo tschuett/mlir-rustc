@@ -13,7 +13,7 @@ class StructExprFields : public Node {
 
   std::optional<StructBase> base;
 
-  bool trailingComma;
+  //bool trailingComma;
 
 public:
   StructExprFields(Location loc) : Node(loc) {}

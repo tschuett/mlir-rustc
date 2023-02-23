@@ -11,12 +11,16 @@
 namespace rust_compiler::ast {
 
 class StructExprStruct : public StructExpression {
-  PathInExpression path;
+  std::shared_ptr<PathExpression> path;
   std::optional<std::variant<StructExprFields, StructBase>> expr;
 
 public:
   StructExprStruct(Location loc)
-      : StructExpression(loc, StructExpressionKind::StructExprStruct) {}
+    : StructExpression(loc, StructExpressionKind::StructExprStruct) {}
+
+  void setPath(std::shared_ptr<PathExpression> p) { path = p; }
+  void setBase(const StructBase &b) { expr = b; }
+  void setFields(const StructExprFields &f) { expr = f; }
 };
 
 } // namespace rust_compiler::ast
