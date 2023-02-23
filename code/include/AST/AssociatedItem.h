@@ -1,71 +1,38 @@
 #pragma once
 
+#include "AST/AST.h"
 #include "AST/ConstantItem.h"
+#include "AST/Function.h"
 #include "AST/MacroInvocation.h"
 #include "AST/OuterAttribute.h"
 #include "AST/TypeAlias.h"
-#include "AST/AST.h"
-#include "AST/Function.h"
 
+#include <memory>
 #include <optional>
+#include <span>
 #include <vector>
 
 namespace rust_compiler::ast {
 
-enum class AssociatedItemKind {
-  MacroInvocation,
-  TypeAlias,
-  ConstantItem,
-  Function
-};
-
 class AssociatedItem : public Node {
-  std::vector<OuterAttribute> outerAtributes;
-  AssociatedItemKind kind;
+  std::vector<OuterAttribute> outerAttributes;
+  std::shared_ptr<ast::MacroItem> macroItem;
+  std::shared_ptr<ast::VisItem> typeAlias;
+  std::shared_ptr<ast::VisItem> constantItem;
+  std::shared_ptr<ast::VisItem> function;
+  std::optional<Visibility> visibility;
 
 public:
-  AssociatedItem(Location loc,
-                 AssociatedItemKind kind)
-      : Node(loc), kind(kind) {}
+  AssociatedItem(Location loc) : Node(loc) {}
 
-  AssociatedItemKind getKind() const;
-};
-
-class AssociatedItemMacroInvocation : public AssociatedItem {
-  MacroInvocation macroInvocation;
-
-public:
-  AssociatedItemMacroInvocation(Location loc, std::optional<Visibility> vis)
-      : AssociatedItem(loc, AssociatedItemKind::MacroInvocation),
-        macroInvocation(loc) {}
-};
-
-class AssociatedItemTypeAlias : public AssociatedItem {
-  TypeAlias typeAlias;
-
-public:
-  AssociatedItemTypeAlias(Location loc, std::optional<Visibility> vis)
-      : AssociatedItem(loc, AssociatedItemKind::TypeAlias),
-        typeAlias(loc, vis) {}
-};
-
-class AssociatedItemConstantItem : public AssociatedItem {
-  ConstantItem constantItem;
-
-public:
-  AssociatedItemConstantItem(Location loc, std::optional<Visibility> vis)
-      : AssociatedItem(loc, AssociatedItemKind::ConstantItem),
-        constantItem(loc, vis) {}
-};
-
-class AssociatedItemFunction : public AssociatedItem {
-  std::shared_ptr<Function> function;
-
-public:
-  AssociatedItemFunction(Location loc)
-      : AssociatedItem(loc, AssociatedItemKind::Function) {}
-
-  std::shared_ptr<Function> getFunction() const;
+  void setOuterAttributes(std::span<OuterAttribute> o) {
+    outerAttributes = {o.begin(), o.end()};
+  }
+  void setConstantItem(std::shared_ptr<ast::VisItem> co) { constantItem = co; }
+  void setTypeAlias(std::shared_ptr<ast::VisItem> type) { type = typeAlias; }
+  void setFunction(std::shared_ptr<ast::VisItem> f) { function = f; }
+  void setVisiblity(Visibility vi) { visibility = vi; }
+  void setMacroItem(std::shared_ptr<ast::MacroItem> m) { macroItem = m; }
 };
 
 } // namespace rust_compiler::ast

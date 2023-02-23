@@ -367,6 +367,9 @@ public:
   llvm::Expected<std::shared_ptr<ast::Statement>>
   parseMacroInvocationSemiStatement();
 
+  llvm::Expected<std::shared_ptr<ast::MacroItem>>
+  parseMacroInvocationSemiMacroItem();
+
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseShorthandSelf();
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseTypedSelf();
 

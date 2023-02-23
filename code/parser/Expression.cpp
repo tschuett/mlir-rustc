@@ -25,6 +25,7 @@
 #include "AST/TupleExpression.h"
 #include "AST/TupleIndexingExpression.h"
 #include "AST/TypeCastExpression.h"
+#include "AST/UnderScoreExpression.h"
 #include "AST/UnsafeBlockExpression.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
@@ -38,6 +39,20 @@ using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseUnderScoreExpression() {
+  Location loc = getLocation();
+  UnderScoreExpression under = {loc};
+
+  if (!check(TokenKind::Underscore))
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse _ token in underscore expression");
+  assert(eat(TokenKind::Underscore));
+
+  return std::make_shared<UnderScoreExpression>(under);
+}
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseCallExpression(std::shared_ptr<ast::Expression> e) {

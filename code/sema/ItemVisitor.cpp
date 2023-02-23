@@ -94,23 +94,6 @@ void visitImplementation(std::shared_ptr<ast::Implementation> impl,
 
 void visitAssociatedItem(std::shared_ptr<ast::AssociatedItem> assoItem,
                          ItemVisitor *visitor) {
-  switch (assoItem->getKind()) {
-  case AssociatedItemKind::MacroInvocation: {
-    break;
-  }
-  case AssociatedItemKind::TypeAlias: {
-    break;
-  }
-  case AssociatedItemKind::ConstantItem: {
-    break;
-  }
-  case AssociatedItemKind::Function: {
-    visitFunction(std::static_pointer_cast<AssociatedItemFunction>(assoItem)
-                      ->getFunction(),
-                  visitor);
-    break;
-  }
-  }
 }
 
 void visitTrait(std::shared_ptr<ast::Trait> trait, ItemVisitor *visitor) {

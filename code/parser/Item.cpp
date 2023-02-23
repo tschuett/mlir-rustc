@@ -1,3 +1,4 @@
+#include "AST/AssociatedItem.h"
 #include "AST/ConstantItem.h"
 #include "AST/ExternBlock.h"
 #include "AST/Implementation.h"
@@ -18,6 +19,120 @@ using namespace rust_compiler::ast;
 using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::AssociatedItem>>
+Parser::parseAssociatedItem() {
+  Location loc = getLocation();
+  AssociatedItem item = {loc};
+
+  if (checkOuterAttribute()) {
+    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+        parseOuterAttributes();
+    if (auto e = outer.takeError()) {
+      llvm::errs() << "failed to parse outer attributes in associated item : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    item.setOuterAttributes(*outer);
+  }
+
+  if (check(TokenKind::PathSep) || checkSimplePathSegment()) {
+    llvm::Expected<std::shared_ptr<ast::MacroItem>> macroItem =
+        parseMacroInvocationSemiMacroItem();
+    if (auto e = macroItem.takeError()) {
+      llvm::errs() << "failed to parse outer attributes in associated item : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    item.setMacroItem(*macroItem);
+  } else if (checkKeyWord(KeyWordKind::KW_PUB)) {
+    llvm::Expected<ast::Visibility> vis = parseVisibility();
+    if (auto e = vis.takeError()) {
+      llvm::errs() << "failed to parse visiblity in associated item : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    item.setVisiblity(*vis);
+    if (checkKeyWord(KeyWordKind::KW_TYPE)) {
+      // TypeAlias
+      llvm::Expected<std::shared_ptr<ast::VisItem>> typeAlias =
+          parseTypeAlias(*vis);
+      if (auto e = typeAlias.takeError()) {
+        llvm::errs() << "failed to parse type alias in associated item : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      item.setTypeAlias(*typeAlias);
+    } else if (checkKeyWord(KeyWordKind::KW_CONST) &&
+               check(TokenKind::Colon, 2)) {
+      // ConstantItem
+      llvm::Expected<std::shared_ptr<ast::VisItem>> constantItem =
+          parseConstantItem(*vis);
+      if (auto e = constantItem.takeError()) {
+        llvm::errs() << "failed to parse constant item in associated item : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      item.setConstantItem(*constantItem);
+    } else if (checkKeyWord(KeyWordKind::KW_CONST) ||
+               checkKeyWord(KeyWordKind::KW_ASYNC) ||
+               checkKeyWord(KeyWordKind::KW_UNSAFE) ||
+               checkKeyWord(KeyWordKind::KW_EXTERN) ||
+               checkKeyWord(KeyWordKind::KW_FN)) {
+      // fun
+      llvm::Expected<std::shared_ptr<ast::VisItem>> fun = parseFunction(*vis);
+      if (auto e = fun.takeError()) {
+        llvm::errs() << "failed to parse function in associated item : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      item.setFunction(*fun);
+    } else {
+      // error
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse associated item");
+    }
+  } else if (checkKeyWord(KeyWordKind::KW_TYPE)) {
+    // type alias
+    llvm::Expected<std::shared_ptr<ast::VisItem>> typeAlias =
+        parseTypeAlias(std::nullopt);
+    if (auto e = typeAlias.takeError()) {
+      llvm::errs() << "failed to parse type alias in associated item : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    item.setTypeAlias(*typeAlias);
+  } else if (checkKeyWord(KeyWordKind::KW_CONST) &&
+             check(TokenKind::Colon, 2)) {
+    // constant item
+    llvm::Expected<std::shared_ptr<ast::VisItem>> constantItem =
+        parseConstantItem(std::nullopt);
+    if (auto e = constantItem.takeError()) {
+      llvm::errs() << "failed to parse constant item in associated item : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    item.setConstantItem(*constantItem);
+  } else if (checkKeyWord(KeyWordKind::KW_CONST) ||
+             checkKeyWord(KeyWordKind::KW_ASYNC) ||
+             checkKeyWord(KeyWordKind::KW_UNSAFE) ||
+             checkKeyWord(KeyWordKind::KW_EXTERN) ||
+             checkKeyWord(KeyWordKind::KW_FN)) {
+    // fun
+    llvm::Expected<std::shared_ptr<ast::VisItem>> fun = parseFunction(std::nullopt);
+    if (auto e = fun.takeError()) {
+      llvm::errs() << "failed to parse function in associated item : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    item.setFunction(*fun);
+  } else {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse associated item");
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse associated item");
+}
 
 llvm::Expected<ast::ExternalItem> Parser::parseExternalItem() {
   Location loc = getLocation();

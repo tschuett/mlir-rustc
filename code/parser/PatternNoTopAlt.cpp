@@ -1,6 +1,7 @@
 #include "AST/Patterns/ReferencePattern.h"
 #include "AST/Patterns/StructPattern.h"
 #include "AST/Patterns/StructPatternElements.h"
+#include "AST/Patterns/TupleStructItems.h"
 #include "AST/Patterns/TupleStructPattern.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
@@ -14,6 +15,74 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 /// https://doc.rust-lang.org/reference/patterns.html
+
+ llvm::Expected<ast::patterns::StructPatternElements>
+ Parser::parseStructPatternElements() {
+   Location loc = getLocation();
+   StructPatternElements elements = {loc};
+
+   CheckPoint cp = getCheckPoint();
+
+   if (checkOuterAttribute()) {
+     llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+         parseOuterAttributes();
+     if (auto e = outer.takeError()) {
+       llvm::errs()
+           << "failed to parse outer attributes in struct pattern elements : "
+           << toString(std::move(e)) << "\n";
+       exit(EXIT_FAILURE);
+     }
+   }
+
+   if (check(TokenKind::DotDot)) {
+     // StructPatternEtCetera
+   } else {
+   }
+   xxx;
+ }
+
+llvm::Expected<ast::patterns::TupleStructItems>
+Parser::parseTupleStructItems() {
+  Location loc = getLocation();
+  TupleStructItems items = {loc};
+
+  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> pattern =
+      parsePattern();
+  if (auto e = pattern.takeError()) {
+    llvm::errs() << "failed to parse pattern in tuple struct item : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  items.addPattern(*pattern);
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse tuple struct items field: eof");
+    } else if (check(TokenKind::ParenClose)) {
+      return items;
+    } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose)) {
+      items.setTrailingComma();
+      assert(eat(TokenKind::Comma));
+      return items;
+    } else if (check(TokenKind::Comma) && !check(TokenKind::ParenClose)) {
+      assert(eat(TokenKind::Comma));
+      llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> pattern =
+          parsePattern();
+      if (auto e = pattern.takeError()) {
+        llvm::errs() << "failed to parse pattern in tuple struct item : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      items.addPattern(*pattern);
+    } else {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse tuple struct items field");
+    }
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse tuple struct items field");
+}
 
 llvm::Expected<ast::patterns::StructPatternField>
 Parser::parseStructPatternField() {
@@ -87,14 +156,6 @@ Parser::parseStructPatternField() {
   return createStringError(inconvertibleErrorCode(),
                            "failed to parse struct pattern field");
 }
-
-// llvm::Expected<ast::patterns::StructPatternElements>
-// Parser::parseStructPatternElements() {
-//   Location loc = getLocation();
-//   StructPatternElements elements = {loc};
-//
-//
-// }
 
 llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseTupleStructPattern() {
