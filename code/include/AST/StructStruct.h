@@ -21,7 +21,8 @@ public:
 
   void setWhereClause(const WhereClause &wc) { whereClause = wc; }
   void setGenericParams(const GenericParams &gp) { genericParams = gp; }
-  void setIdentifier(std::string_view id) { identifier = id; }
+  void setName(std::string_view id) { identifier = id; }
+  void setFields(const StructFields &sf) { structFields = sf; }
 };
 
 } // namespace rust_compiler::ast

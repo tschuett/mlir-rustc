@@ -29,6 +29,8 @@
 #include "AST/Patterns/Pattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/SlicePatternItems.h"
+#include "AST/Patterns/StructPattern.h"
+#include "AST/Patterns/StructPatternElements.h"
 #include "AST/Scrutinee.h"
 #include "AST/SelfParam.h"
 #include "AST/Statements.h"
@@ -46,12 +48,11 @@
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
 #include "AST/WhereClauseItem.h"
+#include "AST/CallParams.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
 #include "Location.h"
-#include "AST/Patterns/StructPattern.h"
-#include "AST/Patterns/StructPatternElements.h"
 
 #include <llvm/Support/Error.h>
 #include <string_view>
@@ -284,7 +285,7 @@ public:
   llvm::Expected<std::shared_ptr<ast::Expression>>
       parseAwaitExpression(std::shared_ptr<ast::Expression>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
-      parseIndexingExpression(std::shared_ptr<ast::Expression>);
+      parseIndexExpression(std::shared_ptr<ast::Expression>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
       parseFieldExpression(std::shared_ptr<ast::Expression>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
@@ -317,6 +318,8 @@ public:
   llvm::Expected<std::shared_ptr<ast::Expression>>
   parseQualifiedPathInExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseLiteralExpression();
+
+  llvm::Expected<ast::CallParams> parseCallParams();
 
   llvm::Expected<std::shared_ptr<ast::Expression>> parseLoopExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>>
@@ -397,7 +400,10 @@ public:
 
   llvm::Expected<std::shared_ptr<ast::PathExpression>> parsePathInExpression();
 
-  llvm::Expected<ast::patterns::StructPatternElements> parseStructPatternElements();
+  llvm::Expected<ast::patterns::StructPatternElements>
+  parseStructPatternElements();
+  llvm::Expected<ast::patterns::StructPatternFields> parseStructPatternFields();
+  llvm::Expected<ast::patterns::StructPatternField> parseStructPatternField();
 
 private:
   bool check(lexer::TokenKind token);

@@ -1,23 +1,29 @@
+#include "AST/AssignmentExpression.h"
 #include "AST/AsyncBlockExpression.h"
 #include "AST/AwaitExpression.h"
 #include "AST/BorrowExpression.h"
 #include "AST/BreakExpression.h"
+#include "AST/CallParams.h"
 #include "AST/ComparisonExpression.h"
 #include "AST/CompoundAssignmentExpression.h"
 #include "AST/ContinueExpression.h"
 #include "AST/DereferenceExpression.h"
 #include "AST/ErrorPropagationExpression.h"
+#include "AST/FieldExpression.h"
 #include "AST/GroupedExpression.h"
 #include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
+#include "AST/IndexEpression.h"
 #include "AST/LazyBooleanExpression.h"
 #include "AST/LiteralExpression.h"
 #include "AST/MatchExpression.h"
+#include "AST/MethodCallExpression.h"
 #include "AST/NegationExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/TupleElements.h"
 #include "AST/TupleExpression.h"
 #include "AST/TupleIndexingExpression.h"
+#include "AST/TypeCastExpression.h"
 #include "AST/UnsafeBlockExpression.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
@@ -33,6 +39,199 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseFieldExpression(std::shared_ptr<ast::Expression> l) {
+  Location loc = getLocation();
+  FieldExpression field = {loc};
+
+  field.setLeft(l);
+
+  if (!check(TokenKind::Dot))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse . token in field expression");
+  assert(eat(TokenKind::Dot));
+
+  if (!checkIdentifier())
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse identifier token in field expression");
+
+  field.setIdentifier(getToken().getIdentifier());
+
+  assert(eat(TokenKind::Identifier));
+
+  return std::make_shared<FieldExpression>(field);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseIndexExpression(std::shared_ptr<ast::Expression> left) {
+  Location loc = getLocation();
+  IndexExpression idx = {loc};
+
+  idx.setLeft(left);
+
+  if (!check(TokenKind::SquareOpen))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse [ token in index expression");
+  assert(eat(TokenKind::SquareOpen));
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+  if (auto e = expr.takeError()) {
+    llvm::errs() << "failed to parse expression in index expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  idx.setRight(*expr);
+
+  if (!check(TokenKind::SquareClose))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ] token in index expression");
+  assert(eat(TokenKind::SquareClose));
+
+  return std::make_shared<IndexExpression>(idx);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseTypeCastExpression(std::shared_ptr<ast::Expression> lhs) {
+  Location loc = getLocation();
+  TypeCastExpression ty = {loc};
+
+  ty.setLeft(lhs);
+
+  if (!checkKeyWord(KeyWordKind::KW_AS))
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse as keyword in type cast expression");
+  assert(eatKeyWord(KeyWordKind::KW_AS));
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> noBounds =
+      parseTypeNoBounds();
+  if (auto e = noBounds.takeError()) {
+    llvm::errs() << "failed to parse type no bpunds in assignment expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  ty.setType(*noBounds);
+
+  return std::make_shared<TypeCastExpression>(ty);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseAssignmentExpression(std::shared_ptr<ast::Expression> lhs) {
+  Location loc = getLocation();
+  AssignmentExpression ass = {loc};
+
+  ass.setLeft(lhs);
+
+  if (!check(TokenKind::Eq))
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse = token in assignment expression");
+  assert(eat(TokenKind::Eq));
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+  if (auto e = expr.takeError()) {
+    llvm::errs() << "failed to parse expression in assignment expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  ass.setRight(*expr);
+
+  return std::make_shared<AssignmentExpression>(ass);
+}
+
+llvm::Expected<ast::CallParams> Parser::parseCallParams() {
+  Location loc = getLocation();
+  CallParams param = {loc};
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+  if (auto e = expr.takeError()) {
+    llvm::errs() << "failed to parse expression in call params: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  param.addParam(*expr);
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse call params: eof");
+    } else if (check(TokenKind::ParenClose)) {
+      return param;
+    } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
+      assert(eat(TokenKind::Comma));
+      return param;
+    } else if (check(TokenKind::Comma) && !check(TokenKind::ParenClose, 1)) {
+      assert(eat(TokenKind::Comma));
+      llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+      if (auto e = expr.takeError()) {
+        llvm::errs() << "failed to parse expression in call params: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      param.addParam(*expr);
+    } else {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse call params");
+    }
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse call params");
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseMethodCallExpression(std::shared_ptr<ast::Expression> receiver) {
+  Location loc = getLocation();
+  MethodCallExpression call = {loc};
+
+  call.setReceiver(receiver);
+
+  if (!check(TokenKind::Dot)) {
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse . token in method call expression");
+  }
+  assert(eat(TokenKind::Dot));
+
+  llvm::Expected<ast::PathExprSegment> segment = parsePathExprSegment();
+  if (auto e = segment.takeError()) {
+    llvm::errs()
+        << "failed to parse path expr segment in method call expression: "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  call.setSegment(*segment);
+
+  if (!check(TokenKind::ParenOpen)) {
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse ( token in method call expression");
+  }
+  assert(eat(TokenKind::ParenOpen));
+
+  if (check(TokenKind::ParenClose)) {
+    assert(eat(TokenKind::ParenClose));
+    return std::make_shared<MethodCallExpression>(call);
+  } else if (check(TokenKind::ParenClose)) {
+    llvm::Expected<ast::CallParams> params = parseCallParams();
+    if (auto e = params.takeError()) {
+      llvm::errs() << "failed to parse call param in method call expression: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    call.setCallParams(*params);
+    if (!check(TokenKind::ParenClose))
+      return createStringError(
+          inconvertibleErrorCode(),
+          "failed to parse ) token in method call expression");
+    assert(eat(TokenKind::ParenClose));
+
+    return std::make_shared<MethodCallExpression>(call);
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse method call expression");
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseLazyBooleanExpression(std::shared_ptr<ast::Expression> e) {
   Location loc = getLocation();
   LazyBooleanExpression laz = {loc};
@@ -45,7 +244,7 @@ Parser::parseLazyBooleanExpression(std::shared_ptr<ast::Expression> e) {
     laz.setKind(LazyBooleanExpressionKind::And);
   } else {
     return createStringError(inconvertibleErrorCode(),
-                             "failed to parse kind in lazy boolena expression");
+                             "failed to parse kind in lazy boolean expression");
   }
 
   llvm::Expected<std::shared_ptr<ast::Expression>> first = parseExpression();
@@ -1028,7 +1227,7 @@ Parser::parseExpressionWithPostfix() {
   if (check(TokenKind::Dot) && checkKeyWord(KeyWordKind::KW_AWAIT, 1)) {
     return parseAwaitExpression(*left);
   } else if (check(TokenKind::SquareOpen)) {
-    return parseIndexingExpression(*left);
+    return parseIndexExpression(*left);
   } else if (check(TokenKind::ParenOpen)) {
     return parseCallExpression(*left);
   } else if (check(TokenKind::QMark)) {

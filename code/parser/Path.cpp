@@ -18,6 +18,44 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseQualifiedPathInExpression() {
+  Location loc = getLocation();
+
+  QualifiedPathInExpression expr = {loc};
+
+  llvm::Expected<ast::types::QualifiedPathType> path = parseQualifiedPathType();
+  if (auto e = path.takeError()) {
+    llvm::errs() << "failed to parse qualified path type in qualified path in "
+                    "expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  expr.setType(*path);
+
+  while (true) {
+    if (check(TokenKind::PathSep)) {
+      assert(eat(TokenKind::PathSep));
+      llvm::Expected<ast::PathExprSegment> segment = parsePathExprSegment();
+      if (auto e = segment.takeError()) {
+        llvm::errs()
+            << "failed to parse path expr segment in qualified path in "
+               "expression: "
+            << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      expr.addSegment(*segment);
+    } else if (check(TokenKind::Eof)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse qualified path in expression");
+    } else {
+      return std::make_shared<QualifiedPathInExpression>(expr);
+    }
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse qualified path in expression");
+}
+
 llvm::Expected<ast::PathExprSegment> Parser::parsePathExprSegment() {
   Location loc = getLocation();
   PathExprSegment seg = {loc};

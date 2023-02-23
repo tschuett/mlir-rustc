@@ -1,10 +1,76 @@
+#include "AST/Patterns/StructPatternElements.h"
+#include "AST/StructStruct.h"
+#include "Lexer/KeyWords.h"
+#include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <memory>
+
 using namespace rust_compiler::ast;
+using namespace rust_compiler::ast::patterns;
 using namespace rust_compiler::lexer;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::VisItem>>
+Parser::parseStructStruct(std::optional<ast::Visibility> vis) {
+  Location loc = getLocation();
+  class StructStruct str = {loc, vis};
+
+  if (!checkKeyWord(KeyWordKind::KW_STRUCT))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse struct struct");
+  assert(eatKeyWord(KeyWordKind::KW_STRUCT));
+
+  if (!checkIdentifier())
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse struct struct");
+
+  str.setName(getToken().getIdentifier());
+  assert(eat(TokenKind::Identifier));
+
+  if (check(TokenKind::Lt)) {
+    llvm::Expected<ast::GenericParams> params = parseGenericParams();
+    if (auto e = params.takeError()) {
+      llvm::errs() << "failed to parse generic params in struct struct : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    str.setGenericParams(*params);
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_STRUCT)) {
+    llvm::Expected<ast::WhereClause> where = parseWhereClause();
+    if (auto e = where.takeError()) {
+      llvm::errs() << "failed to parse where clause in struct struct : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    str.setWhereClause(*where);
+  }
+
+  if (check(TokenKind::Semi)) {
+    assert(eat(TokenKind::Semi));
+    return std::make_shared<class StructStruct>(str);
+  } else if (check(TokenKind::BraceOpen)) {
+    assert(eat(TokenKind::BraceOpen));
+    llvm::Expected<ast::StructFields> fields = parseStructFields();
+    if (auto e = fields.takeError()) {
+      llvm::errs() << "failed to parse struct fields in struct struct : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    str.setFields(*fields);
+    if (!check(TokenKind::BraceClose))
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse struct struct");
+    assert(eat(TokenKind::BraceClose));
+    return std::make_shared<class StructStruct>(str);
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse struct struct");
+}
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseStructExpression() {

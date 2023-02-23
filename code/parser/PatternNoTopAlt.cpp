@@ -1,5 +1,6 @@
 #include "AST/Patterns/ReferencePattern.h"
 #include "AST/Patterns/StructPattern.h"
+#include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
@@ -11,6 +12,110 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 /// https://doc.rust-lang.org/reference/patterns.html
+
+//llvm::Expected<ast::patterns::StructPatternField>
+//Parser::parseStructPatternField() {
+//  Location loc = getLocation();
+//
+//  StructPatternField field = {loc};
+//
+//  if (checkOuterAttribute()) {
+//    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+//        parseOuterAttributes();
+//    if (auto e = outer.takeError()) {
+//      llvm::errs()
+//          << "failed to parse outer attributes in struct pattern field : "
+//          << toString(std::move(e)) << "\n";
+//      exit(EXIT_FAILURE);
+//    }
+//    field.setOuterAttributes(*outer);
+//  }
+//
+//  if (check(TokenKind::INTEGER_LITERAL) && check(TokenKind::Colon)) {
+//  } else if (checkIdentifier() && check(TokenKind::Colon)) {
+//  } else if (checkKeyWord(KeyWordKind::KW_REF) ||
+//             checkKeyWord(KeyWordKind::KW_MUT) || checkIdentifier()) {
+//  } else {
+//  }
+//
+//  xxx;
+//}
+
+llvm::Expected<ast::patterns::StructPatternFields>
+Parser::parseStructPatternFields() {
+  Location loc = getLocation();
+
+  StructPatternFields fields = {loc};
+
+  llvm::Expected<ast::patterns::StructPatternField> first =
+      parseStructPatternField();
+  if (auto e = first.takeError()) {
+    llvm::errs()
+        << "failed to parse struct pattern field in struct pattern fields : "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  fields.addPattern(*first);
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse struct pattern fields: eof");
+    } else if (check(TokenKind::Comma)) {
+      assert(eat((TokenKind::Comma)));
+      llvm::Expected<ast::patterns::StructPatternField> next =
+          parseStructPatternField();
+      if (auto e = next.takeError()) {
+        llvm::errs() << "failed to parse struct pattern field in struct "
+                        "pattern fields : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      fields.addPattern(*next);
+    } else {
+      // done
+      return fields;
+    }
+  }
+
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse struct pattern fields");
+}
+
+//llvm::Expected<ast::patterns::StructPatternElements>
+//Parser::parseStructPatternElements() {
+//  Location loc = getLocation();
+//  StructPatternElements el = {loc};
+//
+//  CheckPoint cp = getCheckPoint();
+//
+//  if (checkOuterAttribute()) {
+//    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+//        parseOuterAttributes();
+//    if (auto e = outer.takeError()) {
+//      llvm::errs() << "failed to parse outer attribute in struct "
+//                      "pattern elements : "
+//                   << toString(std::move(e)) << "\n";
+//      exit(EXIT_FAILURE);
+//    }
+//    if (check(TokenKind::DotDot)) {
+//    } else if (check(TokenKind::INTEGER_LITERAL) &&
+//               check(TokenKind::Colon, 1)) {
+//    } else if (checkIdentifier() && check(TokenKind::Colon, 1)) {
+//    } else if (checkIdentifier()) {
+//    } else if (checkKeyWord(KeyWordKind::KW_REF)) {
+//    } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
+//    }
+//  } else if (check(TokenKind::DotDot)) {
+//  } else if (check(TokenKind::INTEGER_LITERAL)) {
+//  } else if (checkIdentifier() && check(TokenKind::Colon, 1)) {
+//  } else if (checkIdentifier()) {
+//  } else if (checkKeyWord(KeyWordKind::KW_REF)) {
+//  } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
+//  }
+//
+//  xxx;
+//}
 
 llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseStructPattern() {

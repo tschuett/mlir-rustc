@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 
 namespace rust_compiler::ast {
 
@@ -15,6 +16,9 @@ public:
   FieldExpression(Location loc)
       : ExpressionWithoutBlock(loc,
                                ExpressionWithoutBlockKind::FieldExpression) {}
+
+  void setLeft(std::shared_ptr<Expression> l) { expr = l; }
+  void setIdentifier(std::string_view s) { identifier = s; }
 };
 
 } // namespace rust_compiler::ast

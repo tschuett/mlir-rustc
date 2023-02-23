@@ -13,6 +13,8 @@ class CallParams : public Node {
 
 public:
   CallParams(Location loc) : Node(loc) {}
+
+  void addParam(std::shared_ptr<Expression> pa) { params.push_back(pa); }
 };
 
 } // namespace rust_compiler::ast

@@ -62,8 +62,8 @@ enum class TokenKind {
   Plus,
   Keyword,
   Not,
-  Integer,
-  Float,
+//  Integer,
+//  Float,
   Minus,
   Slash,
   Percent,
@@ -119,13 +119,13 @@ class Token {
   rust_compiler::Location loc;
   TokenKind kind;
   std::string id;
-  IntegerKind ik;
-  FloatKind fk;
+//  IntegerKind ik;
+//  FloatKind fk;
   KeyWordKind kw;
 
-  std::variant<int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t,
-               uint64_t, int128_t, uint128_t, float, double, std::string>
-      content;
+//  std::variant<int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t,
+//               uint64_t, int128_t, uint128_t, float, double, std::string>
+//      content;
 
 public:
   Token(rust_compiler::Location loc, TokenKind tk) : loc(loc), kind(tk){};
@@ -135,15 +135,15 @@ public:
   Token(rust_compiler::Location loc, KeyWordKind kw, std::string_view id)
       : loc(loc), kind(TokenKind::Keyword), id(id), kw(kw){};
 
-  Token(rust_compiler::Location loc, IntegerKind ik)
-      : loc(loc), kind(TokenKind::Integer), ik(ik){};
-
-  Token(rust_compiler::Location loc, FloatKind fk)
-      : loc(loc), kind(TokenKind::Float), fk(fk){};
+//  Token(rust_compiler::Location loc, IntegerKind ik)
+//      : loc(loc), kind(TokenKind::Integer), ik(ik){};
+//
+//  Token(rust_compiler::Location loc, FloatKind fk)
+//      : loc(loc), kind(TokenKind::Float), fk(fk){};
 
   TokenKind getKind() const { return kind; }
-  IntegerKind getIntegerKind() const { return ik; }
-  FloatKind getFloatKind() const { return fk; }
+  //  IntegerKind getIntegerKind() const { return ik; }
+  //FloatKind getFloatKind() const { return fk; }
   KeyWordKind getKeyWordKind() const { return kw; }
 
   bool isKeyWord() const { return kind == TokenKind::Keyword; }

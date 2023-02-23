@@ -108,12 +108,6 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::Not: {
     return std::string("!");
   }
-  case TokenKind::Float: {
-    return std::string("float");
-  }
-  case TokenKind::Integer: {
-    return std::string("integer");
-  }
   case TokenKind::Minus: {
     return std::string("-");
   }
@@ -245,6 +239,9 @@ std::string Token2String(TokenKind kind) {
   }
   case TokenKind::FatArrow: {
     return std::string("=>");
+  }
+  case TokenKind::SlashEq: {
+    return std::string("/=");
   }
   }
 }

@@ -21,6 +21,10 @@ class StructPatternField : public Node {
 
 public:
   StructPatternField(Location loc) : Node(loc) {}
+
+  void setOuterAttributes(std::span<OuterAttribute> o) {
+    outerAttributes = {o.begin(), o.end()};
+  }
 };
 
 class StructPatternFields : public Node {
@@ -28,6 +32,8 @@ class StructPatternFields : public Node {
 
 public:
   StructPatternFields(Location loc) : Node(loc) {}
+
+  void addPattern(const StructPatternField &f) { fields.push_back(f); }
 };
 
 class StructPatternElements : public Node {
