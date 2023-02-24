@@ -383,7 +383,7 @@ public:
 
   llvm::Expected<ast::DelimTokenTree> parseDelimTokenTree();
 
-  llvm::Expected<std::shared_ptr<ast::AssociatedItem>> parseAssociatedItem();
+  llvm::Expected<ast::AssociatedItem> parseAssociatedItem();
 
   llvm::Expected<ast::Abi> parseAbi();
   llvm::Expected<ast::Attr> parseAttr();
@@ -414,6 +414,9 @@ public:
   llvm::Expected<ast::patterns::StructPatternField> parseStructPatternField();
 
   llvm::Expected<ast::patterns::TupleStructItems> parseTupleStructItems();
+
+  llvm::Expected<ast::patterns::StructPatternEtCetera>
+  parseStructPatternEtCetera();
 
 private:
   bool check(lexer::TokenKind token);

@@ -20,8 +20,7 @@ using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<std::shared_ptr<ast::AssociatedItem>>
-Parser::parseAssociatedItem() {
+llvm::Expected<ast::AssociatedItem> Parser::parseAssociatedItem() {
   Location loc = getLocation();
   AssociatedItem item = {loc};
 
@@ -45,6 +44,7 @@ Parser::parseAssociatedItem() {
       exit(EXIT_FAILURE);
     }
     item.setMacroItem(*macroItem);
+    return item;
   } else if (checkKeyWord(KeyWordKind::KW_PUB)) {
     llvm::Expected<ast::Visibility> vis = parseVisibility();
     if (auto e = vis.takeError()) {
@@ -63,6 +63,7 @@ Parser::parseAssociatedItem() {
         exit(EXIT_FAILURE);
       }
       item.setTypeAlias(*typeAlias);
+      return item;
     } else if (checkKeyWord(KeyWordKind::KW_CONST) &&
                check(TokenKind::Colon, 2)) {
       // ConstantItem
@@ -74,6 +75,7 @@ Parser::parseAssociatedItem() {
         exit(EXIT_FAILURE);
       }
       item.setConstantItem(*constantItem);
+      return item;
     } else if (checkKeyWord(KeyWordKind::KW_CONST) ||
                checkKeyWord(KeyWordKind::KW_ASYNC) ||
                checkKeyWord(KeyWordKind::KW_UNSAFE) ||
@@ -87,6 +89,7 @@ Parser::parseAssociatedItem() {
         exit(EXIT_FAILURE);
       }
       item.setFunction(*fun);
+      return item;
     } else {
       // error
       return createStringError(inconvertibleErrorCode(),
@@ -102,6 +105,7 @@ Parser::parseAssociatedItem() {
       exit(EXIT_FAILURE);
     }
     item.setTypeAlias(*typeAlias);
+    return item;
   } else if (checkKeyWord(KeyWordKind::KW_CONST) &&
              check(TokenKind::Colon, 2)) {
     // constant item
@@ -113,19 +117,22 @@ Parser::parseAssociatedItem() {
       exit(EXIT_FAILURE);
     }
     item.setConstantItem(*constantItem);
+    return item;
   } else if (checkKeyWord(KeyWordKind::KW_CONST) ||
              checkKeyWord(KeyWordKind::KW_ASYNC) ||
              checkKeyWord(KeyWordKind::KW_UNSAFE) ||
              checkKeyWord(KeyWordKind::KW_EXTERN) ||
              checkKeyWord(KeyWordKind::KW_FN)) {
     // fun
-    llvm::Expected<std::shared_ptr<ast::VisItem>> fun = parseFunction(std::nullopt);
+    llvm::Expected<std::shared_ptr<ast::VisItem>> fun =
+        parseFunction(std::nullopt);
     if (auto e = fun.takeError()) {
       llvm::errs() << "failed to parse function in associated item : "
                    << toString(std::move(e)) << "\n";
       exit(EXIT_FAILURE);
     }
     item.setFunction(*fun);
+    return item;
   } else {
     return createStringError(inconvertibleErrorCode(),
                              "failed to parse associated item");

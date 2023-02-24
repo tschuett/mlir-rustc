@@ -57,9 +57,16 @@ public:
 };
 
 class StructPatternElements : public Node {
-
+  std::optional<StructPatternEtCetera> etCetera;
+  std::optional<StructPatternFields> fields;
 public:
   StructPatternElements(Location loc) : Node(loc) {}
+
+  void setEtCetera(const StructPatternEtCetera &et) {
+    etCetera = et;
+  }
+
+  void setFields(const StructPatternFields &f) { fields = f; }
 };
 
 } // namespace rust_compiler::ast::patterns

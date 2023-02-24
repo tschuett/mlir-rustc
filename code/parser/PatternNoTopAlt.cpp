@@ -16,30 +16,178 @@ namespace rust_compiler::parser {
 
 /// https://doc.rust-lang.org/reference/patterns.html
 
- llvm::Expected<ast::patterns::StructPatternElements>
- Parser::parseStructPatternElements() {
-   Location loc = getLocation();
-   StructPatternElements elements = {loc};
+llvm::Expected<ast::patterns::StructPatternElements>
+Parser::parseStructPatternElements() {
+  Location loc = getLocation();
+  StructPatternElements elements = {loc};
 
-   CheckPoint cp = getCheckPoint();
+  CheckPoint cp = getCheckPoint();
 
-   if (checkOuterAttribute()) {
-     llvm::Expected<std::vector<ast::OuterAttribute>> outer =
-         parseOuterAttributes();
-     if (auto e = outer.takeError()) {
-       llvm::errs()
-           << "failed to parse outer attributes in struct pattern elements : "
-           << toString(std::move(e)) << "\n";
-       exit(EXIT_FAILURE);
-     }
-   }
+  if (checkOuterAttribute()) {
+    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+        parseOuterAttributes();
+    if (auto e = outer.takeError()) {
+      llvm::errs()
+          << "failed to parse outer attributes in struct pattern elements : "
+          << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+  }
 
-   if (check(TokenKind::DotDot)) {
-     // StructPatternEtCetera
-   } else {
-   }
-   xxx;
- }
+  if (check(TokenKind::DotDot)) {
+    // StructPatternEtCetera
+    recover(cp);
+    llvm::Expected<ast::patterns::StructPatternEtCetera> etcetera =
+        parseStructPatternEtCetera();
+    if (auto e = etcetera.takeError()) {
+      llvm::errs() << "failed to parse struct pattern et cetera in struct "
+                      "pattern elements : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    elements.setEtCetera(*etcetera);
+    return elements;
+  } else if (check(TokenKind::INTEGER_LITERAL) && check(TokenKind::Colon, 1)) {
+    // StructPatternField
+    recover(cp);
+    llvm::Expected<ast::patterns::StructPatternFields> fields =
+        parseStructPatternFields();
+    if (auto e = fields.takeError()) {
+      llvm::errs() << "failed to parse struct pattern fields in struct pattern "
+                      "elements : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    elements.setFields(*fields);
+    if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
+      assert(eat(TokenKind::Comma));
+      // done
+    } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
+      assert(eat(TokenKind::Comma));
+      // StructPatterrnEtCetera
+      llvm::Expected<ast::patterns::StructPatternEtCetera> etcetera =
+          parseStructPatternEtCetera();
+      if (auto e = etcetera.takeError()) {
+        llvm::errs() << "failed to parse struct pattern et cetera in struct "
+                        "pattern elements : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      elements.setEtCetera(*etcetera);
+      return elements;
+    } else {
+      // error
+    }
+  } else if (checkIdentifier() && check(TokenKind::Colon, 1)) {
+    // StructPatternField
+    recover(cp);
+    llvm::Expected<ast::patterns::StructPatternFields> fields =
+        parseStructPatternFields();
+    if (auto e = fields.takeError()) {
+      llvm::errs() << "failed to parse struct pattern fields in struct pattern "
+                      "elements : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    elements.setFields(*fields);
+    if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
+      assert(eat(TokenKind::Comma));
+      // done
+    } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
+      assert(eat(TokenKind::Comma));
+      // StructPatterrnEtCetera
+      llvm::Expected<ast::patterns::StructPatternEtCetera> etcetera =
+          parseStructPatternEtCetera();
+      if (auto e = etcetera.takeError()) {
+        llvm::errs() << "failed to parse struct pattern et cetera in struct "
+                        "pattern elements : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      elements.setEtCetera(*etcetera);
+      return elements;
+    } else {
+      // error
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse struct pattern elements");
+    }
+  } else if (checkKeyWord(KeyWordKind::KW_REF) ||
+             checkKeyWord(KeyWordKind::KW_MUT)) {
+    // StructPatternField
+    // COPY && PASTE
+    recover(cp);
+    llvm::Expected<ast::patterns::StructPatternFields> fields =
+        parseStructPatternFields();
+    if (auto e = fields.takeError()) {
+      llvm::errs() << "failed to parse struct pattern fields in struct pattern "
+                      "elements : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    elements.setFields(*fields);
+    if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
+      assert(eat(TokenKind::Comma));
+      // done
+    } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
+      assert(eat(TokenKind::Comma));
+      // StructPatterrnEtCetera
+      llvm::Expected<ast::patterns::StructPatternEtCetera> etcetera =
+          parseStructPatternEtCetera();
+      if (auto e = etcetera.takeError()) {
+        llvm::errs() << "failed to parse struct pattern et cetera in struct "
+                        "pattern elements : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      elements.setEtCetera(*etcetera);
+      return elements;
+    } else {
+      // error
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse struct pattern elements");
+    }
+  } else if (checkIdentifier() && !check(TokenKind::Colon, 1)) {
+    // StructPatternField
+    // COPY && PASTE
+    recover(cp);
+    llvm::Expected<ast::patterns::StructPatternFields> fields =
+        parseStructPatternFields();
+    if (auto e = fields.takeError()) {
+      llvm::errs() << "failed to parse struct pattern fields in struct pattern "
+                      "elements : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    elements.setFields(*fields);
+    if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
+      assert(eat(TokenKind::Comma));
+      // done
+    } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
+      assert(eat(TokenKind::Comma));
+      // StructPatterrnEtCetera
+      llvm::Expected<ast::patterns::StructPatternEtCetera> etcetera =
+          parseStructPatternEtCetera();
+      if (auto e = etcetera.takeError()) {
+        llvm::errs() << "failed to parse struct pattern et cetera in struct "
+                        "pattern elements : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      elements.setEtCetera(*etcetera);
+      return elements;
+    } else {
+      // error
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse struct pattern elements");
+    }
+  } else {
+    // error
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse struct pattern elements");
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse struct pattern elements");
+}
 
 llvm::Expected<ast::patterns::TupleStructItems>
 Parser::parseTupleStructItems() {

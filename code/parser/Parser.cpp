@@ -14,6 +14,8 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
+bool Parser::checkIdentifier() { return check(TokenKind::Identifier); }
+
 /// IDENTIFIER | super | self | Self | crate | $crate
 bool Parser::checkPathIdentSegment() {
   if (check(TokenKind::Identifier))

@@ -27,7 +27,7 @@ class Trait : public VisItem {
   std::optional<WhereClause> whereClause;
 
   std::vector<InnerAttribute> innerAttributes;
-  std::vector<std::shared_ptr<AssociatedItem>> associatedItem;
+  std::vector<AssociatedItem> associatedItem;
 
 public:
   Trait(Location loc, std::optional<Visibility> vis)
@@ -44,7 +44,7 @@ public:
 
   void setInner(std::vector<InnerAttribute> &inn) { innerAttributes = inn; }
 
-  void addItem(std::shared_ptr<AssociatedItem> item) {
+  void addItem(const AssociatedItem& item) {
     associatedItem.push_back(item);
   }
 };
