@@ -19,14 +19,16 @@ enum RangeExpressionKind {
 
 class RangeExpression : public ExpressionWithoutBlock {
   RangeExpressionKind kind;
+  std::optional<std::shared_ptr<ast::Expression>> left;
 
 public:
-  RangeExpression(Location loc, RangeExpressionKind kind)
+  RangeExpression(Location loc)
       : ExpressionWithoutBlock(loc,
-                               ExpressionWithoutBlockKind::RangeExpression),
-        kind(kind) {}
+                               ExpressionWithoutBlockKind::RangeExpression) {}
 
   RangeExpressionKind getKind() const { return kind; };
+  void setKind(RangeExpressionKind k) { kind = k; }
+  void setLeft(std::shared_ptr<ast::Expression> l) { left = l; }
 };
 
 } // namespace rust_compiler::ast

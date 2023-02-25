@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/Abi.h"
+#include "AST/ArrayElements.h"
 #include "AST/AssociatedItem.h"
 #include "AST/AttrInput.h"
 #include "AST/CallParams.h"
@@ -36,6 +37,7 @@
 #include "AST/Scrutinee.h"
 #include "AST/SelfParam.h"
 #include "AST/Statements.h"
+#include "AST/StructExprField.h"
 #include "AST/StructExprFields.h"
 #include "AST/TupleElements.h"
 #include "AST/TypeAlias.h"
@@ -321,6 +323,8 @@ public:
   parseQualifiedPathInExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseLiteralExpression();
 
+  llvm::Expected<std::shared_ptr<ast::Expression>> parsePathExpression();
+
   llvm::Expected<ast::CallParams> parseCallParams();
 
   llvm::Expected<std::shared_ptr<ast::Expression>> parseLoopExpression();
@@ -368,7 +372,7 @@ public:
   parseMacroInvocationSemiStatement();
 
   llvm::Expected<std::shared_ptr<ast::MacroItem>>
-  parseMacroInvocationSemiMacroItem();
+  parseMacroInvocationSemiItem();
 
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseShorthandSelf();
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseTypedSelf();
@@ -400,7 +404,7 @@ public:
   llvm::Expected<ast::types::MaybeNamedParam> parseMaybeNamedParam();
   llvm::Expected<ast::StructExprFields> parseStructExprFields();
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprField();
+  llvm::Expected<ast::StructExprField> parseStructExprField();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprStruct();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprTuple();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprUnit();
@@ -418,6 +422,13 @@ public:
   llvm::Expected<ast::patterns::StructPatternEtCetera>
   parseStructPatternEtCetera();
 
+  llvm::Expected<ast::ArrayElements> parseArrayElements();
+
+  llvm::Expected<ast::types::FunctionParametersMaybeNamedVariadic>
+  parseMaybeNamedFunctionParameters();
+  llvm::Expected<ast::types::FunctionParametersMaybeNamedVariadic>
+  parseMaybeNamedFunctionParametersVariadic();
+
 private:
   bool check(lexer::TokenKind token);
   bool check(lexer::TokenKind token, size_t offset);
@@ -425,7 +436,7 @@ private:
   bool checkKeyWord(lexer::KeyWordKind keyword, size_t offset);
   bool checkInKeyWords(std::span<lexer::KeyWordKind> keywords);
 
-  bool checkOuterAttribute();
+  bool checkOuterAttribute(uint8_t offset = 0);
   bool checkInnerAttribute();
 
   bool checkLoopLabel();
@@ -466,6 +477,7 @@ private:
   bool checkTypeParamBound();
   bool checkIdentifier();
   bool checkIntegerLiteral();
+  bool checkMaybeNamedParamLeadingComma();
 };
 
 } // namespace rust_compiler::parser

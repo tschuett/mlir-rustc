@@ -16,6 +16,10 @@ class StructPatternEtCetera : public Node {
 
 public:
   StructPatternEtCetera(Location loc) : Node(loc) {}
+
+  void setOuterAttributes(std::span<OuterAttribute> o) {
+    outerAttributes = {o.begin(), o.end()};
+  };
 };
 
 enum class StructPatternFieldKind { TupleIndex, Identifier, RefMut };
@@ -59,12 +63,11 @@ public:
 class StructPatternElements : public Node {
   std::optional<StructPatternEtCetera> etCetera;
   std::optional<StructPatternFields> fields;
+
 public:
   StructPatternElements(Location loc) : Node(loc) {}
 
-  void setEtCetera(const StructPatternEtCetera &et) {
-    etCetera = et;
-  }
+  void setEtCetera(const StructPatternEtCetera &et) { etCetera = et; }
 
   void setFields(const StructPatternFields &f) { fields = f; }
 };

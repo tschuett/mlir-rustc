@@ -1,6 +1,5 @@
 #include "AST/ItemDeclaration.h"
 #include "AST/LetStatement.h"
-#include "AST/MacroInvocationSemi.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"

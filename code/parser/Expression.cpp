@@ -1,3 +1,5 @@
+#include "AST/ArrayElements.h"
+#include "AST/ArrayExpression.h"
 #include "AST/AssignmentExpression.h"
 #include "AST/AsyncBlockExpression.h"
 #include "AST/AwaitExpression.h"
@@ -20,6 +22,7 @@
 #include "AST/MatchExpression.h"
 #include "AST/MethodCallExpression.h"
 #include "AST/NegationExpression.h"
+#include "AST/RangeExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/TupleElements.h"
 #include "AST/TupleExpression.h"
@@ -33,12 +36,113 @@
 
 #include <cassert>
 #include <memory>
+#include <optional>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseRangeExpression(std::shared_ptr<ast::Expression>l) {
+  Location loc = getLocation();
+  RangeExpression range = {loc};
+
+  range.setLeft(l);
+
+  if (check(TokenKind::DotDot)) {
+  } else if (check(TokenKind::DotDotEq)) {
+    assert(check(TokenKind::DotDotEq));
+    range.setKind(RangeExpressionKind::RangeInclusiveExpr);
+  } else {
+    // error
+  }
+}
+
+llvm::Expected<ast::ArrayElements> Parser::parseArrayElements() {
+  Location loc = getLocation();
+  ArrayElements el = {loc};
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> first = parseExpression();
+  if (auto e = first.takeError()) {
+    llvm::errs() << "failed to parse expression in array elements: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  if (check(TokenKind::Semi)) {
+    assert(eat(TokenKind::Semi));
+    llvm::Expected<std::shared_ptr<ast::Expression>> second = parseExpression();
+    if (auto e = second.takeError()) {
+      llvm::errs() << "failed to parse expression in array elements: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    el.setKind(ArrayElementsKind::Repeated);
+    el.setValue(*first);
+    el.setCount(*second);
+    return el;
+  } else if (check(TokenKind::Comma) && check(TokenKind::SquareClose, 1)) {
+    assert(eat(TokenKind::Comma));
+    el.setKind(ArrayElementsKind::List);
+    el.addElement(*first);
+    return el;
+  } else {
+    while (true) {
+      if (check(TokenKind::Eof)) {
+        return createStringError(inconvertibleErrorCode(),
+                                 "failed to parse array elements: eof");
+      } else if (check(TokenKind::Comma) && check(TokenKind::SquareClose, 1)) {
+        assert(eat(TokenKind::Comma));
+        return el;
+      } else if (check(TokenKind::SquareClose)) {
+        return el;
+      } else if (check(TokenKind::Comma)) {
+        assert(eat(TokenKind::Comma));
+        llvm::Expected<std::shared_ptr<ast::Expression>> next =
+            parseExpression();
+        if (auto e = next.takeError()) {
+          llvm::errs() << "failed to parse expression in array elements: "
+                       << toString(std::move(e)) << "\n";
+          exit(EXIT_FAILURE);
+        }
+        el.addElement(*next);
+      }
+    }
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse array elements");
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseArrayExpression() {
+  Location loc = getLocation();
+  ArrayExpression array = {loc};
+
+  if (!check(TokenKind::SquareOpen))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse [ token in array elements");
+  assert(eat(TokenKind::SquareOpen));
+  if (check(TokenKind::SquareClose)) {
+    assert(eat(TokenKind::SquareClose));
+    return std::make_shared<ArrayExpression>(array);
+  }
+
+  llvm::Expected<ast::ArrayElements> elements = parseArrayElements();
+  if (auto e = elements.takeError()) {
+    llvm::errs() << "failed to parse array elements in array elements: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  array.setElements(*elements);
+
+  if (!check(TokenKind::SquareClose))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ] token in array elements");
+  assert(eat(TokenKind::SquareOpen));
+  return std::make_shared<ArrayExpression>(array);
+}
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseUnderScoreExpression() {

@@ -3,7 +3,8 @@
 #include "AST/AST.h"
 #include "AST/ConstantItem.h"
 #include "AST/Function.h"
-#include "AST/MacroInvocation.h"
+#include "AST/MacroInvocationSemiItem.h"
+#include "AST/MacroItem.h"
 #include "AST/OuterAttribute.h"
 #include "AST/TypeAlias.h"
 

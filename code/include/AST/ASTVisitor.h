@@ -56,9 +56,9 @@
 #include "AST/LifetimeParam.h"
 #include "AST/LiteralExpression.h"
 #include "AST/LoopExpression.h"
-#include "AST/MacroInvocation.h"
-#include "AST/MacroInvocationSemi.h"
-#include "AST/MacroItem.h"
+#include "AST/MacroInvocationSemiStatement.h"
+#include "AST/MacroInvocationSemiItem.h"
+#include "AST/MacroInvocationExpression.h"
 #include "AST/MatchExpression.h"
 #include "AST/MethodCallExpression.h"
 #include "AST/Module.h"
@@ -95,6 +95,7 @@
 #include "AST/UnsafeBlockExpression.h"
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
+#include "AST/MacroRulesDefinition.h"
 
 namespace rust_compiler::ast {
 
@@ -106,7 +107,8 @@ public:
 
   virtual void visit(Item &item) = 0;
   virtual void visit(VisItem &visItem) = 0;
-  virtual void visit(MacroItem &macroItem) = 0;
+  virtual void visit(MacroInvocationSemiItem &macroItem) = 0;
+  virtual void visit(MacroRulesDefinition &macroItem) = 0;
 
   // Attributes
   virtual void visit(OuterAttribute &outer) = 0;
@@ -180,7 +182,7 @@ public:
   // Statements
   virtual void visit(LetStatement &letStatement) = 0;
   virtual void visit(ExpressionStatement &expressionStatement) = 0;
-  virtual void visit(MacroInvocationSemi &macroInvocationSemi) = 0;
+  virtual void visit(MacroInvocationSemiStatement &macroInvocationSemi) = 0;
 
   // Expressions without Block
   virtual void visit(LiteralExpression &literalExpression) = 0;
@@ -201,7 +203,7 @@ public:
   virtual void visit(RangeExpression &indexExpression) = 0;
   virtual void visit(ReturnExpression &indexExpression) = 0;
   virtual void visit(UnderScoreExpression &indexExpression) = 0;
-  virtual void visit(MacroInvocation &indexExpression) = 0;
+  virtual void visit(MacroInvocationExpression &indexExpression) = 0;
 
   // Expressions with Block
   virtual void visit(BlockExpression &blockExpression) = 0;

@@ -1,3 +1,4 @@
+#include "AST/TupleStruct.h"
 #include "AST/Types/TupleType.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
@@ -9,6 +10,66 @@ using namespace rust_compiler::ast::types;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::VisItem>>
+Parser::parseTupleStruct(std::optional<ast::Visibility> vis) {
+  Location loc = getLocation();
+  class TupleStruct stru = {loc, vis};
+
+  if (!checkKeyWord(KeyWordKind::KW_STRUCT))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse struct keyword in tuple struct");
+  assert(eatKeyWord(KeyWordKind::KW_STRUCT));
+
+  if (!checkIdentifier())
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse struct keyword in tuple struct");
+  stru.setIdentifier(getToken().getIdentifier());
+  assert(eat(TokenKind::Identifier));
+
+  if (check(TokenKind::Lt)) {
+    llvm::Expected<ast::GenericParams> generic = parseGenericParams();
+    if (auto e = generic.takeError()) {
+      llvm::errs() << "failed to parse generic params  in tuple struct: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    stru.setGenericParams(*generic);
+  }
+
+  if (!check(TokenKind::ParenOpen))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ( token in tuple struct");
+  assert(eat(TokenKind::ParenOpen));
+
+  if (check(TokenKind::ParenClose)) {
+  } else if (!check(TokenKind::ParenClose)) {
+    llvm::Expected<ast::TupleFields> tupleFields = parseTupleFields();
+    if (auto e = tupleFields.takeError()) {
+      llvm::errs() << "failed to parse tuple fields  in tuple struct: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    stru.setTupleFields(*tupleFields);
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_WHERE)) {
+    llvm::Expected<ast::WhereClause> where = parseWhereClause();
+    if (auto e = where.takeError()) {
+      llvm::errs() << "failed to parse where clause  in tuple struct: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    stru.setWhereClause(*where);
+  }
+
+  if (!check(TokenKind::Semi))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ; token in tuple struct");
+  assert(eat(TokenKind::Semi));
+
+  return std::make_shared<class TupleStruct>(stru);
+}
 
 llvm::Expected<ast::TupleField> Parser::parseTupleField() {
   Location loc = getLocation();

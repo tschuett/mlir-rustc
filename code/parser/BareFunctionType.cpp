@@ -11,6 +11,157 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
+bool Parser::checkMaybeNamedParamLeadingComma() {
+  if (!check(TokenKind::Comma))
+    return false;
+
+  assert(eat(TokenKind::Comma));
+
+  if (checkOuterAttribute()) {
+    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+        parseOuterAttributes();
+    if (auto e = outer.takeError()) {
+      llvm::errs()
+          << "failed to parse outer attributes in maybe named function "
+             "parameters "
+             "maybe named variadic : "
+          << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    if (checkIdentifier() && check(TokenKind::Colon, 1))
+      return true;
+    if (check(TokenKind::Underscore) && check(TokenKind::Colon, 1))
+      return true;
+    if (check(TokenKind::Colon))
+      return true;
+    return false;
+  }
+
+  if (checkIdentifier() && check(TokenKind::Colon, 1))
+    return true;
+  if (check(TokenKind::Underscore) && check(TokenKind::Colon, 1))
+    return true;
+  if (check(TokenKind::Colon))
+    return true;
+
+  return false;
+}
+
+llvm::Expected<ast::types::FunctionParametersMaybeNamedVariadic>
+Parser::parseMaybeNamedFunctionParameters() {
+  Location loc = getLocation();
+  MaybeNamedFunctionParameters maybe = {loc};
+
+  llvm::Expected<ast::types::MaybeNamedParam> namedParam =
+      parseMaybeNamedParam();
+  if (auto e = namedParam.takeError()) {
+    llvm::errs() << "failed to parse maybe named param in maybe named function "
+                    "parameters "
+                    "maybe named variadic : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  maybe.addParameter(*namedParam);
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(
+          inconvertibleErrorCode(),
+          "failed to parse maybe named function parameters: eof");
+    } else if (check(TokenKind::ParenClose)) {
+      // done
+      return maybe;
+    } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
+      // done
+      assert(eat(TokenKind::Comma));
+      maybe.setTrailingComma();
+      return maybe;
+    } else if (check(TokenKind::Comma)) {
+      assert(eat(TokenKind::Comma));
+      llvm::Expected<ast::types::MaybeNamedParam> namedParam =
+          parseMaybeNamedParam();
+      if (auto e = namedParam.takeError()) {
+        llvm::errs()
+            << "failed to parse maybe named param in maybe named function "
+               "parameters "
+               "maybe named variadic : "
+            << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      maybe.addParameter(*namedParam);
+    } else {
+      return createStringError(
+          inconvertibleErrorCode(),
+          "failed to parse maybe named function parameters");
+    }
+  }
+  return createStringError(
+      inconvertibleErrorCode(),
+      "failed to parse maybe named function parameters: eof");
+}
+
+llvm::Expected<ast::types::FunctionParametersMaybeNamedVariadic>
+Parser::parseMaybeNamedFunctionParametersVariadic() {
+  Location loc = getLocation();
+  MaybeNamedFunctionParametersVariadic maybe = {loc};
+
+  llvm::Expected<ast::types::MaybeNamedParam> namedParam =
+      parseMaybeNamedParam();
+  if (auto e = namedParam.takeError()) {
+    llvm::errs() << "failed to parse maybe named param in maybe named function "
+                    "parameters "
+                    "maybe named variadic : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  maybe.addParameter(*namedParam);
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(
+          inconvertibleErrorCode(),
+          "failed to parse maybe named function parameters variadic: eof");
+    } else if (check(TokenKind::DotDotDot) && check(TokenKind::ParenClose, 1)) {
+      // done
+      assert(eat(TokenKind::DotDotDot));
+      return maybe;
+    } else if (check(TokenKind::Comma) && checkOuterAttribute(1)) {
+      assert(eat(TokenKind::Comma));
+      llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+          parseOuterAttributes();
+      if (auto e = outer.takeError()) {
+        llvm::errs()
+            << "failed to parse outer attributes in maybe named function "
+               "parameters "
+               "maybe named variadic : "
+            << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      maybe.setOuterAttributes(*outer);
+    } else if (check(TokenKind::Comma)) {
+      assert(eat(TokenKind::Comma));
+      llvm::Expected<ast::types::MaybeNamedParam> namedParam =
+          parseMaybeNamedParam();
+      if (auto e = namedParam.takeError()) {
+        llvm::errs()
+            << "failed to parse maybe named param in maybe named function "
+               "parameters "
+               "maybe named variadic : "
+            << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      maybe.addParameter(*namedParam);
+    } else {
+      return createStringError(
+          inconvertibleErrorCode(),
+          "failed to parse maybe named function parameters variadic");
+    }
+  }
+  return createStringError(
+      inconvertibleErrorCode(),
+      "failed to parse maybe named function parameters: eof");
+}
+
 llvm::Expected<ast::types::MaybeNamedParam> Parser::parseMaybeNamedParam() {
   Location loc = getLocation();
 
@@ -55,12 +206,53 @@ llvm::Expected<ast::types::MaybeNamedParam> Parser::parseMaybeNamedParam() {
   return param;
 }
 
-// llvm::Expected<ast::types::FunctionParametersMaybeNamedVariadic>
-// Parser::parseFunctionParametersMaybeNamedVariadic() {
-//   Location loc = getLocation();
-//
-//   FunctionParametersMaybeNamedVariadic maybe = {loc};
-// }
+llvm::Expected<ast::types::FunctionParametersMaybeNamedVariadic>
+Parser::parseFunctionParametersMaybeNamedVariadic() {
+  CheckPoint cp = getCheckPoint();
+
+  llvm::Expected<ast::types::MaybeNamedParam> namedParam =
+      parseMaybeNamedParam();
+  if (auto e = namedParam.takeError()) {
+    llvm::errs() << "failed to parse maybe named param in function parameters "
+                    "maybe named variadic : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(
+          inconvertibleErrorCode(),
+          "failed to parse in function parameters maybe named variadic: eof");
+    } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
+      recover(cp);
+      return parseMaybeNamedFunctionParameters();
+    } else if (check(TokenKind::ParenClose)) {
+      recover(cp);
+      return parseMaybeNamedFunctionParameters();
+    } else if (checkMaybeNamedParamLeadingComma()) {
+      assert(eat(TokenKind::Comma));
+      llvm::Expected<ast::types::MaybeNamedParam> namedParam =
+          parseMaybeNamedParam();
+      if (auto e = namedParam.takeError()) {
+        llvm::errs()
+            << "failed to parse maybe named param in function parameters "
+               "maybe named variadic : "
+            << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+    } else if (check(TokenKind::Comma) && checkOuterAttribute(1)) {
+      recover(cp);
+      return parseMaybeNamedFunctionParametersVariadic();
+    } else if (check(TokenKind::Comma) && check(TokenKind::DotDotDot, 1)) {
+      recover(cp);
+      return parseMaybeNamedFunctionParametersVariadic();
+    }
+  }
+  return createStringError(
+      inconvertibleErrorCode(),
+      "failed to parse in function parameters maybe named variadic");
+}
 
 llvm::Expected<ast::types::BareFunctionReturnType>
 Parser::parseBareFunctionReturnType() {

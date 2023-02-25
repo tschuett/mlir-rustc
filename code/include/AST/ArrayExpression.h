@@ -1,7 +1,7 @@
 #pragma once
 
-#include "AST/Expression.h"
 #include "AST/ArrayElements.h"
+#include "AST/Expression.h"
 
 #include <vector>
 
@@ -14,6 +14,8 @@ public:
   ArrayExpression(Location loc)
       : ExpressionWithoutBlock(loc,
                                ExpressionWithoutBlockKind::ArrayExpression) {}
+
+  void setElements(const ArrayElements &a) { elements = a; }
 };
 
 } // namespace rust_compiler::ast

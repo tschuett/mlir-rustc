@@ -1,3 +1,4 @@
+#include "AST/Patterns/PathPattern.h"
 #include "AST/Patterns/ReferencePattern.h"
 #include "AST/Patterns/StructPattern.h"
 #include "AST/Patterns/StructPatternElements.h"
@@ -15,6 +16,48 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 /// https://doc.rust-lang.org/reference/patterns.html
+
+llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+Parser::parsePathPattern() {
+  Location loc = getLocation();
+  PathPattern path = {loc};
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> pathExpr = parsePathExpression();
+  if (auto e = pathExpr.takeError()) {
+    llvm::errs() << "failed to parse path expression in path pattern : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  path.setPath(*pathExpr);
+
+  return std::make_shared<PathPattern>(path);
+}
+
+llvm::Expected<ast::patterns::StructPatternEtCetera>
+Parser::parseStructPatternEtCetera() {
+  Location loc = getLocation();
+  StructPatternEtCetera et = {loc};
+
+  if (checkOuterAttribute()) {
+    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+        parseOuterAttributes();
+    if (auto e = outer.takeError()) {
+      llvm::errs()
+          << "failed to parse outer attributes in struct pattern elements : "
+          << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    et.setOuterAttributes(*outer);
+  }
+
+  if (!check(TokenKind::DotDot))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse struct pattern etcetera");
+  assert(eat(TokenKind::DotDot));
+
+  return et;
+}
 
 llvm::Expected<ast::patterns::StructPatternElements>
 Parser::parseStructPatternElements() {
@@ -108,8 +151,8 @@ Parser::parseStructPatternElements() {
       return elements;
     } else {
       // error
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse struct pattern elements");
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse struct pattern elements");
     }
   } else if (checkKeyWord(KeyWordKind::KW_REF) ||
              checkKeyWord(KeyWordKind::KW_MUT)) {
@@ -143,8 +186,8 @@ Parser::parseStructPatternElements() {
       return elements;
     } else {
       // error
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse struct pattern elements");
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse struct pattern elements");
     }
   } else if (checkIdentifier() && !check(TokenKind::Colon, 1)) {
     // StructPatternField
@@ -177,8 +220,8 @@ Parser::parseStructPatternElements() {
       return elements;
     } else {
       // error
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse struct pattern elements");
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse struct pattern elements");
     }
   } else {
     // error

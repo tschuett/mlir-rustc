@@ -22,6 +22,8 @@ public:
 
   void setIdentifier(std::string_view id) { identifier = id; }
   void setGenericParams(const GenericParams &gp) { genericParms = gp; }
+  void setWhereClause(const WhereClause &w) { whereClause = w; }
+  void setTupleFields(const TupleFields& tp) { tupleFields = tp;}
 };
 
 } // namespace rust_compiler::ast

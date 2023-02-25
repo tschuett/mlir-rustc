@@ -1,6 +1,5 @@
 #include "AST/ExpressionStatement.h"
 #include "AST/LetStatement.h"
-#include "AST/MacroInvocationSemi.h"
 #include "AST/MacroInvocationSemiStatement.h"
 #include "AST/Statement.h"
 #include "Sema/Sema.h"

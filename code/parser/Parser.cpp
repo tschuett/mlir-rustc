@@ -16,6 +16,22 @@ namespace rust_compiler::parser {
 
 bool Parser::checkIdentifier() { return check(TokenKind::Identifier); }
 
+bool Parser::eatPathIdentSegment() {
+  if (check(TokenKind::Identifier))
+    return eat(TokenKind::Identifier);
+  if (checkKeyWord(KeyWordKind::KW_SUPER))
+    return eatKeyWord((KeyWordKind::KW_SUPER));
+  if (checkKeyWord(KeyWordKind::KW_SELFVALUE))
+    return eatKeyWord((KeyWordKind::KW_SELFVALUE));
+  if (checkKeyWord(KeyWordKind::KW_SELFTYPE))
+    return eatKeyWord((KeyWordKind::KW_SELFTYPE));
+  if (checkKeyWord(KeyWordKind::KW_CRATE))
+    return eatKeyWord((KeyWordKind::KW_CRATE));
+  if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE))
+    return eatKeyWord((KeyWordKind::KW_DOLLARCRATE));
+  return false;
+}
+
 /// IDENTIFIER | super | self | Self | crate | $crate
 bool Parser::checkPathIdentSegment() {
   if (check(TokenKind::Identifier))
@@ -63,8 +79,9 @@ CheckPoint Parser::getCheckPoint() { return CheckPoint(offset); }
 
 void Parser::recover(const CheckPoint &cp) { offset = cp.readOffset(); }
 
-bool Parser::checkOuterAttribute() {
-  if (check(TokenKind::Hash) && check(TokenKind::SquareOpen, 1))
+bool Parser::checkOuterAttribute(uint8_t offset) {
+  if (check(TokenKind::Hash, offset) &&
+      check(TokenKind::SquareOpen, offset + 1))
     return true;
   return false;
 }

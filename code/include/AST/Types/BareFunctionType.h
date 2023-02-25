@@ -50,7 +50,7 @@ public:
 class MaybeNamedFunctionParameters
     : public FunctionParametersMaybeNamedVariadic {
   std::vector<MaybeNamedParam> params;
-  bool trailingComma;
+  bool trailingComma = false;
 
 public:
   MaybeNamedFunctionParameters(Location loc)
@@ -59,12 +59,14 @@ public:
                      MaybeNamedFunctionParameters){};
 
   bool hasTrailingcomma() const { return trailingComma; }
+
+  void addParameter(const MaybeNamedParam &param) { params.push_back(param); }
+  void setTrailingComma() { trailingComma = true; }
 };
 
 class MaybeNamedFunctionParametersVariadic
     : public FunctionParametersMaybeNamedVariadic {
   std::vector<MaybeNamedParam> params;
-  bool trailingComma;
   std::vector<OuterAttribute> outerAttributes;
 
 public:
@@ -72,7 +74,11 @@ public:
       : FunctionParametersMaybeNamedVariadic(
             loc, FunctionParametersMaybeNamedVariadicKind::
                      MaybeNamedFunctionParametersVariadic) {}
-  bool hasTrailingcomma() const { return trailingComma; }
+
+  void addParameter(const MaybeNamedParam &param) { params.push_back(param); }
+  void setOuterAttributes(std::span<OuterAttribute> o) {
+    outerAttributes = {o.begin(), o.end()};
+  }
 };
 
 class BareFunctionReturnType : public Node {

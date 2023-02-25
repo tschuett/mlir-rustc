@@ -1,5 +1,6 @@
 #include "AST/Types/ArrayType.h"
 #include "AST/Types/ImplTraitType.h"
+#include "AST/Types/ImplTraitTypeOneBound.h"
 #include "AST/Types/InferredType.h"
 #include "AST/Types/NeverType.h"
 #include "AST/Types/SliceType.h"
@@ -14,6 +15,30 @@ using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+Parser::parseImplTraitTypeOneBound() {
+  Location loc = getLocation();
+  ImplTraitTypeOneBound one = {loc};
+
+  if (!checkKeyWord(KeyWordKind::KW_IMPL)) {
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse impl keyword in impl trait type one bound");
+  }
+  assert(eatKeyWord(KeyWordKind::KW_IMPL));
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> bound =
+      parseTraitBound();
+  if (auto e = bound.takeError()) {
+    llvm::errs() << "failed to parse trait bound in impl trait type one bound : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  one.setBound(*bound);
+
+  return std::make_shared<ImplTraitTypeOneBound>(one);
+}
 
 llvm::Expected<ast::types::ForLifetimes> Parser::parseForLifetimes() {
   Location loc = getLocation();

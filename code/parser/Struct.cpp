@@ -16,6 +16,132 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
+llvm::Expected<ast::StructExprField> Parser::parseStructExprField() {
+  Location loc = getLocation();
+  StructExprField field = {loc};
+
+  llvm::Expected<std::vector<ast::OuterAttribute>> outerAttributes =
+      parseOuterAttributes();
+  if (auto e = outerAttributes.takeError()) {
+    llvm::errs() << "failed to parse outer attributes in struct expr field : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  field.setOuterAttributes(*outerAttributes);
+
+  if (checkIdentifier() && check(TokenKind::Colon, 1)) {
+    field.setIdentifier(getToken().getIdentifier());
+    if (!check(TokenKind::Colon)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse : token in struct expr field");
+    }
+    assert(eat(TokenKind::Colon));
+    llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+    if (auto e = expr.takeError()) {
+      llvm::errs() << "failed to parse expression in struct expr field : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    field.setExpression(*expr);
+    return field;
+  } else if (check(TokenKind::INTEGER_LITERAL) && check(TokenKind::Colon, 1)) {
+    field.setTupleIndex(getToken().getLiteral());
+    // COPY & PASTE
+    if (!check(TokenKind::Colon)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse : token in struct expr field");
+    }
+    assert(eat(TokenKind::Colon));
+    llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+    if (auto e = expr.takeError()) {
+      llvm::errs() << "failed to parse expression in struct expr field : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    field.setExpression(*expr);
+    return field;
+  } else if (checkIdentifier()) {
+    field.setIdentifier(getToken().getIdentifier());
+    return field;
+  } else {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse struct expr field");
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse struct expr field");
+}
+
+llvm::Expected<ast::StructExprFields> Parser::parseStructExprFields() {
+  Location loc = getLocation();
+  StructExprFields fields = {loc};
+
+  llvm::Expected<StructExprField> first = parseStructExprField();
+  if (auto e = first.takeError()) {
+    llvm::errs() << "failed to parse struct expr field in struct expr fields : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  fields.addField(*first);
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse struct expr fields: eof");
+    } else if (check(TokenKind::BraceClose)) {
+      return fields;
+    } else if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
+      assert(eat(TokenKind::Comma));
+      fields.setTrailingcomma();
+      return fields;
+    } else if (check(TokenKind::Comma) && check(TokenKind::DotDot, 1)) {
+      assert(eat(TokenKind::Comma));
+      llvm::Expected<ast::StructBase> base = parseStructBase();
+      if (auto e = first.takeError()) {
+        llvm::errs() << "failed to parse struct base in struct expr fields : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      fields.setBase(*base);
+      return fields;
+    } else {
+      assert(eat(TokenKind::Comma));
+      llvm::Expected<StructExprField> field = parseStructExprField();
+      if (auto e = field.takeError()) {
+        llvm::errs()
+            << "failed to parse struct expr field in struct expr fields : "
+            << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      fields.addField(*field);
+    }
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse struct expr fields");
+}
+
+llvm::Expected<ast::StructBase> Parser::parseStructBase() {
+  Location loc = getLocation();
+  StructBase base = {loc};
+
+  if (!check(TokenKind::DotDot)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse .. token struct base");
+    assert(eat(TokenKind::ParenOpen));
+  }
+
+  llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
+      parsePathInExpression();
+
+  if (auto e = path.takeError()) {
+    llvm::errs() << "failed to parse path in expression in struct base : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  base.setPath(*path);
+
+  return base;
+}
+
 llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parseStructExprUnit() {
   Location loc = getLocation();
   StructExprUnit unit = {loc};

@@ -9,7 +9,6 @@ namespace rust_compiler::ast {
 
 enum class MacroItemKind {
   MacroInvocationSemi,
-  MacroInvocation,
   MacroRulesDefinition
 };
 

@@ -12,7 +12,7 @@
 #include "AST/Item.h"
 #include "AST/LazyBooleanExpression.h"
 #include "AST/LetStatement.h"
-#include "AST/MacroInvocationSemi.h"
+//#include "AST/MacroInvocationSemi.h"
 #include "AST/NegationExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/Statement.h"

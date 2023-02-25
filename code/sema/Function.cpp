@@ -1,6 +1,6 @@
 #include "AST/Function.h"
 
-#include "AST/MacroInvocation.h"
+#include "AST/MacroInvocationExpression.h"
 #include "Sema/Sema.h"
 
 using namespace rust_compiler::ast;
@@ -24,7 +24,7 @@ public:
   void visit(Item *);
   void visit(LetStatement *);
   void visit(ExpressionStatement *);
-  void visit(MacroInvocation *);
+  void visit(MacroInvocationExpression *);
   void visit(ReturnExpression *);
 
   void walk() {}
