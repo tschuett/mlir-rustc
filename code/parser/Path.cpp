@@ -18,6 +18,13 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
+llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parsePathExpression() {
+  if (check(TokenKind::Lt))
+    return parseQualifiedPathInExpression();
+
+  return parsePathInExpression();
+}
+
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseQualifiedPathInExpression() {
   Location loc = getLocation();

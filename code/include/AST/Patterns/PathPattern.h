@@ -2,7 +2,7 @@
 
 #include "AST/AST.h"
 #include "AST/Patterns/PatternWithoutRange.h"
-#include "AST/Expression.h"
+#include "AST/PathExpression.h"
 
 namespace rust_compiler::ast::patterns {
 

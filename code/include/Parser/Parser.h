@@ -243,7 +243,7 @@ public:
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parseIdentifierPattern();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
-  parsePathOrStructOrTuplePattern();
+  parsePathOrStructOrTupleStructPattern();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parseMacroInvocation();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
@@ -429,6 +429,9 @@ public:
   llvm::Expected<ast::types::FunctionParametersMaybeNamedVariadic>
   parseMaybeNamedFunctionParametersVariadic();
 
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseMacroInvocationType();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parsePathType();
 private:
   bool check(lexer::TokenKind token);
   bool check(lexer::TokenKind token, size_t offset);

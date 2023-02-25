@@ -1,3 +1,4 @@
+#include "AST/PathExpression.h"
 #include "AST/Patterns/PathPattern.h"
 #include "AST/Patterns/ReferencePattern.h"
 #include "AST/Patterns/StructPattern.h"
@@ -18,11 +19,47 @@ namespace rust_compiler::parser {
 /// https://doc.rust-lang.org/reference/patterns.html
 
 llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+Parser::parsePathOrStructOrTupleStructPattern() {
+  Location loc = getLocation();
+  CheckPoint cp = getCheckPoint();
+
+  //  // PathSep
+  //  if (check(TokenKind::PathSep))
+  //    assert(eat(TokenKind::PathSep));
+
+  if (check(TokenKind::Lt))
+    return parsePathPattern();
+
+  llvm::Expected<std::shared_ptr<ast::PathExpression>> pathIn =
+      parsePathInExpression();
+  if (auto e = pathIn.takeError()) {
+    llvm::errs() << "failed to parse path in expression in path or struct or "
+                    "tuple struct pattern : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  if (check(TokenKind::ParenOpen)) {
+    recover(cp);
+    return parseTupleStructPattern();
+  }
+  if (check(TokenKind::BraceOpen)) {
+    recover(cp);
+    return parseStructPattern();
+  } else {
+    PathPattern pat = {loc};
+    pat.setPath(*pathIn);
+    return std::make_shared<PathPattern>(pat);
+  }
+}
+
+llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parsePathPattern() {
   Location loc = getLocation();
   PathPattern path = {loc};
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> pathExpr = parsePathExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> pathExpr =
+      parsePathExpression();
   if (auto e = pathExpr.takeError()) {
     llvm::errs() << "failed to parse path expression in path pattern : "
                  << toString(std::move(e)) << "\n";
@@ -599,7 +636,7 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
     } else if (check(TokenKind::Lt)) {
       // GenericArgs
       recover(point);
-      return parsePathOrStructOrTuplePattern();
+      return parsePathOrStructOrTupleStructPattern();
     } else {
       // error
     }
