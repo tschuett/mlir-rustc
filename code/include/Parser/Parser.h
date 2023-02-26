@@ -22,6 +22,7 @@
 #include "AST/LifetimeParam.h"
 #include "AST/LifetimeWhereClauseItem.h"
 #include "AST/LoopExpression.h"
+#include "AST/MacroRulesDef.h"
 #include "AST/MatchArm.h"
 #include "AST/MatchArmGuard.h"
 #include "AST/MatchArms.h"
@@ -249,7 +250,7 @@ public:
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parsePathOrStructOrTupleStructPattern();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
-  parseMacroInvocation();
+  parseMacroInvocationPattern();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parsePathPattern();
 
@@ -378,6 +379,7 @@ public:
   llvm::Expected<std::shared_ptr<ast::MacroItem>>
   parseMacroInvocationSemiItem();
 
+  llvm::Expected<std::shared_ptr<ast::MacroItem>> parseMacroRulesDefinition();
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseShorthandSelf();
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseTypedSelf();
 
@@ -390,6 +392,7 @@ public:
   llvm::Expected<ast::AttrInput> parseAttrInput();
 
   llvm::Expected<ast::DelimTokenTree> parseDelimTokenTree();
+  llvm::Expected<ast::TokenTree> parseTokenTree();
 
   llvm::Expected<ast::AssociatedItem> parseAssociatedItem();
 
@@ -449,6 +452,16 @@ public:
 
   llvm::Expected<ast::patterns::TuplePatternItems> parseTuplePatternItems();
 
+  llvm::Expected<ast::MacroRulesDef> parseMacroRulesDef();
+  llvm::Expected<ast::MacroRules> parseMacroRules();
+  llvm::Expected<ast::MacroRule> parseMacroRule();
+  llvm::Expected<ast::MacroMatcher> parseMacroMatcher();
+  llvm::Expected<ast::MacroMatch> parseMacroMatch();
+  llvm::Expected<ast::MacroTranscriber> parseMacroTranscriber();
+  llvm::Expected<ast::MacroFragSpec> parseMacroFragSpec();
+  llvm::Expected<ast::MacroRepSep> parseMacroRepSep();
+  llvm::Expected<ast::MacroRepOp> parseMacroRepOp();
+
 private:
   bool check(lexer::TokenKind token);
   bool check(lexer::TokenKind token, size_t offset);
@@ -500,6 +513,8 @@ private:
   bool checkMaybeNamedParamLeadingComma();
 
   bool checkRangeTerminator();
+
+  bool checkDelimiters();
 };
 
 } // namespace rust_compiler::parser

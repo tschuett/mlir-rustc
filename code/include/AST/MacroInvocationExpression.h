@@ -14,7 +14,7 @@ public:
   MacroInvocationExpression(Location loc)
       : ExpressionWithoutBlock(loc,
                                ExpressionWithoutBlockKind::MacroInvocation),
-        simplePath(loc) {}
+    simplePath(loc), tree(loc) {}
 
   void setPath(const SimplePath &sp) { simplePath = sp; }
   void setTree(const DelimTokenTree &tr) { tree = tr; }

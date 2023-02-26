@@ -1,5 +1,7 @@
+#include "AST/MacroInvocationSemiStatement.h"
 #include "AST/PathExpression.h"
 #include "AST/Patterns/GroupedPattern.h"
+#include "AST/Patterns/MacroInvocationPattern.h"
 #include "AST/Patterns/PathPattern.h"
 #include "AST/Patterns/ReferencePattern.h"
 #include "AST/Patterns/StructPattern.h"
@@ -8,6 +10,7 @@
 #include "AST/Patterns/TuplePatternItems.h"
 #include "AST/Patterns/TupleStructItems.h"
 #include "AST/Patterns/TupleStructPattern.h"
+#include "AST/Patterns/WildcardPattern.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
@@ -20,6 +23,53 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 /// https://doc.rust-lang.org/reference/patterns.html
+
+llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+Parser::parseMacroInvocationPattern() {
+  Location loc = getLocation();
+  MacroInvocationPattern pattern = {loc};
+
+  llvm::Expected<ast::SimplePath> simplePath = parseSimplePath();
+  if (auto e = simplePath.takeError()) {
+    llvm::errs() << "failed to parse simple path in macro invocation pattern"
+                    " : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  pattern.setPath(*simplePath);
+
+  if (!check(TokenKind::Not)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse macro invocation pattern");
+  }
+  assert(eat(TokenKind::Not));
+
+  llvm::Expected<ast::DelimTokenTree> token = parseDelimTokenTree();
+  if (auto e = token.takeError()) {
+    llvm::errs()
+        << "failed to parse delim token tree in macro invocation pattern"
+           " : "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  pattern.setTree(*token);
+
+  return std::make_shared<MacroInvocationPattern>(pattern);
+}
+
+llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+Parser::parseWildCardPattern() {
+  Location loc = getLocation();
+  WildcardPattern pat = {loc};
+
+  if (check(TokenKind::Underscore)) {
+    assert(eat(TokenKind::Underscore));
+    return std::make_shared<WildcardPattern>(pat);
+  }
+
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse wild card pattern");
+}
 
 llvm::Expected<TuplePatternItems> Parser::parseTuplePatternItems() {
   Location loc = getLocation();
@@ -797,7 +847,7 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
       return parseTupleStructPattern();
     } else if (check(TokenKind::Not)) {
       recover(point);
-      return parseMacroInvocation();
+      return parseMacroInvocationPattern();
     } else if (check(TokenKind::DotDot)) {
       recover(point);
       return parseRangePattern();

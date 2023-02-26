@@ -13,7 +13,8 @@ class MacroInvocationSemiStatement : public Statement {
 
 public:
   MacroInvocationSemiStatement(Location loc)
-    : Statement(loc, StatementKind::MacroInvocationSemi), path(loc) {}
+      : Statement(loc, StatementKind::MacroInvocationSemi), path(loc),
+        tree(loc) {}
 
   void setPath(const SimplePath &sp) { path = sp; }
   void setTree(const DelimTokenTree &_tree) { tree = _tree; }

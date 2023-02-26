@@ -12,7 +12,8 @@ class MacroInvocationType : public TypeNoBounds {
 
 public:
   MacroInvocationType(Location loc)
-    : TypeNoBounds(loc, TypeNoBoundsKind::MacroInvocation), path(loc) {}
+      : TypeNoBounds(loc, TypeNoBoundsKind::MacroInvocation), path(loc),
+        tree(loc) {}
 
   void setPath(const SimplePath &p) { path = p; }
   void setTree(const DelimTokenTree &t) { tree = t; }

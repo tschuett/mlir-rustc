@@ -26,6 +26,8 @@ add_library(parser
            MatchExpression.cpp
            Types.cpp
            ArithmeticOrLogicalExpression.cpp
+           MacroRules.cpp
+           DelimTokenTree.cpp
            )
 
 

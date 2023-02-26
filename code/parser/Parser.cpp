@@ -14,6 +14,40 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
+bool Parser::checkDelimiters() {
+  if (check(TokenKind::BraceOpen)) {
+    return true;
+  } else if (check(TokenKind::BraceClose)) {
+    return true;
+  } else if (check(TokenKind::SquareOpen)) {
+    return true;
+  } else if (check(TokenKind::SquareClose)) {
+    return true;
+  } else if (check(TokenKind::ParenOpen)) {
+    return true;
+  } else if (check(TokenKind::ParenClose)) {
+    return true;
+  }
+
+  return false;
+}
+
+bool Parser::eatSimplePathSegment() {
+  if (check(TokenKind::Identifier))
+    return eat(TokenKind::Identifier);
+  if (checkKeyWord(KeyWordKind::KW_SUPER))
+    return eatKeyWord(KeyWordKind::KW_SUPER);
+  if (checkKeyWord(KeyWordKind::KW_SELFVALUE))
+    return eatKeyWord(KeyWordKind::KW_SELFVALUE);
+  if (checkKeyWord(KeyWordKind::KW_SELFTYPE))
+    return eatKeyWord(KeyWordKind::KW_SELFTYPE);
+  if (checkKeyWord(KeyWordKind::KW_CRATE))
+    return eatKeyWord(KeyWordKind::KW_CRATE);
+  if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE))
+    return eatKeyWord(KeyWordKind::KW_DOLLARCRATE);
+  return false;
+}
+
 bool Parser::checkIdentifier() { return check(TokenKind::Identifier); }
 
 bool Parser::eatPathIdentSegment() {

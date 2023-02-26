@@ -22,6 +22,13 @@ using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
+llvm::Expected<std::shared_ptr<ast::MacroItem>> Parser::parseMacroItem() {
+  if (checkKeyWord(KeyWordKind::KW_MACRO_RULES))
+    return parseMacroRulesDefinition();
+
+  return parseMacroInvocationSemiItem();
+}
+
 llvm::Expected<std::shared_ptr<ast::MacroItem>>
 Parser::parseMacroInvocationSemiItem() {
   Location loc = getLocation();

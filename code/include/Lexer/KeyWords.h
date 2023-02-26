@@ -61,7 +61,7 @@ enum class KeyWordKind {
   KW_YIELD,
   KW_TRY,
 
-  KW_DOLLARCRATE
+  KW_DOLLARCRATE, KW_MACRO_RULES
 };
 
 std::optional<std::string> KeyWord2String(KeyWordKind);

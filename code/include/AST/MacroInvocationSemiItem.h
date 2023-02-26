@@ -13,7 +13,7 @@ class MacroInvocationSemiItem : public MacroItem {
 
 public:
   MacroInvocationSemiItem(Location loc)
-    : MacroItem(loc, MacroItemKind::MacroInvocationSemi), simplePath(loc) {}
+    : MacroItem(loc, MacroItemKind::MacroInvocationSemi), simplePath(loc), tree(loc) {}
 
   void setPath(const SimplePath &s) { simplePath = s; }
   void setTree(const DelimTokenTree &t) { tree = t; }
