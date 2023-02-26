@@ -159,7 +159,7 @@ Parser::parseTupleOrGroupedPattern() {
 
     TuplePatternItems items = {loc};
     items.setRestPattern();
-    tuple.addItems(items);
+    tuple.setItems(items);
 
     return std::make_shared<TuplePattern>(tuple);
   }
@@ -186,7 +186,7 @@ Parser::parseTupleOrGroupedPattern() {
     items.setTrailingComma();
 
     TuplePattern tuple = {loc};
-    tuple.addItems(items);
+    tuple.setItems(items);
 
     return std::make_shared<TuplePattern>(tuple);
   } else if (check(TokenKind::Comma) && !check(TokenKind::ParenClose, 1)) {
@@ -213,12 +213,12 @@ Parser::parseTupleOrGroupedPattern() {
     if (check(TokenKind::ParenClose)) {
       // done
       TuplePattern pattern = {loc};
-      pattern.addItems(items);
+      pattern.setItems(items);
       return std::make_shared<TuplePattern>(pattern);
     } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
       assert(check(TokenKind::Comma));
       TuplePattern pattern = {loc};
-      pattern.addItems(items);
+      pattern.setItems(items);
       items.setTrailingComma();
       return std::make_shared<TuplePattern>(pattern);
     } else if (check(TokenKind::Comma)) {

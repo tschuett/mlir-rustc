@@ -39,6 +39,7 @@
 - [ ] type uniquing or equivalence?
 - [ ] iterators
 - [ ] .pcm
+- [ ] outer attributes on expressions
 
 # References
 

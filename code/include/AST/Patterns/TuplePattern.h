@@ -9,15 +9,14 @@
 namespace rust_compiler::ast::patterns {
 
 class TuplePattern : public PatternWithoutRange {
-  std::vector<TuplePatternItems> items;
+  TuplePatternItems items;
 
 public:
   TuplePattern(Location loc)
-      : PatternWithoutRange(loc, PatternWithoutRangeKind::TuplePattern) {}
+      : PatternWithoutRange(loc, PatternWithoutRangeKind::TuplePattern),
+        items(loc) {}
 
-  void addItems(const TuplePatternItems& its) {
-    items.push_back(its);
-  }
+  void setItems(const TuplePatternItems &its) { items = its; }
 };
 
 } // namespace rust_compiler::ast::patterns

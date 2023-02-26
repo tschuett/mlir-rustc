@@ -1,8 +1,11 @@
 #include "AST/PathExpression.h"
+#include "AST/Patterns/GroupedPattern.h"
 #include "AST/Patterns/PathPattern.h"
 #include "AST/Patterns/ReferencePattern.h"
 #include "AST/Patterns/StructPattern.h"
 #include "AST/Patterns/StructPatternElements.h"
+#include "AST/Patterns/TuplePattern.h"
+#include "AST/Patterns/TuplePatternItems.h"
 #include "AST/Patterns/TupleStructItems.h"
 #include "AST/Patterns/TupleStructPattern.h"
 #include "Lexer/KeyWords.h"
@@ -17,6 +20,179 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 /// https://doc.rust-lang.org/reference/patterns.html
+
+llvm::Expected<TuplePatternItems> Parser::parseTuplePatternItems() {
+  Location loc = getLocation();
+  TuplePatternItems items = {loc};
+
+  if (check(TokenKind::DotDot)) {
+    items.setRestPattern();
+    return items;
+  }
+
+  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> first =
+      parsePattern();
+  if (auto e = first.takeError()) {
+    llvm::errs() << "failed to parse pattern in tuple pattern items"
+                    "tuple struct pattern : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  items.addPattern(*first);
+
+  if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
+    items.setTrailingComma();
+    assert(eat(TokenKind::Comma));
+    return items;
+  } else if (check(TokenKind::ParenClose)) {
+    return items;
+  }
+
+  assert(eat(TokenKind::Comma));
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse tuple pattern items: eof");
+    } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
+      assert(eat(TokenKind::Comma));
+      return items;
+    } else if (check(TokenKind::ParenClose)) {
+      return items;
+    } else if (check(TokenKind::Comma)) {
+      assert(eat(TokenKind::Comma));
+    } else {
+      llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> next =
+          parsePattern();
+      if (auto e = next.takeError()) {
+        llvm::errs() << "failed to parse pattern in tuple pattern items"
+                        "tuple struct pattern : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      items.addPattern(*next);
+    }
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse tuple pattern items");
+}
+
+llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+Parser::parseTuplePattern() {
+  Location loc = getLocation();
+  TuplePattern tuple = {loc};
+
+  if (!check(TokenKind::ParenOpen))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ( token in tuple pattern");
+  assert(eat(TokenKind::ParenOpen));
+
+  llvm::Expected<TuplePatternItems> items = parseTuplePatternItems();
+  if (auto e = items.takeError()) {
+    llvm::errs() << "failed to parse tuple pattern items in tuple pattern "
+                    "tuple struct pattern : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  tuple.setItems(*items);
+
+  if (!check(TokenKind::ParenClose))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ) token in tuple pattern");
+  assert(eat(TokenKind::ParenOpen));
+
+  return std::make_shared<TuplePattern>(tuple);
+}
+
+llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+Parser::parseGroupedPattern() {
+  Location loc = getLocation();
+  GroupedPattern grouped = {loc};
+
+  if (!check(TokenKind::ParenOpen))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ( token in grouped pattern");
+  assert(eat(TokenKind::ParenOpen));
+
+  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> pattern =
+      parsePattern();
+  if (auto e = pattern.takeError()) {
+    llvm::errs() << "failed to parse pattern in grouped or tuple pattern "
+                    "tuple struct pattern : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  grouped.setPattern(*pattern);
+
+  if (!check(TokenKind::ParenClose))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ) token in grouped pattern");
+  assert(eat(TokenKind::ParenOpen));
+
+  return std::make_shared<GroupedPattern>(grouped);
+}
+
+llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+Parser::parseMacroInvocationOrPathOrStructOrTupleStructPattern() {
+
+  while (true) {
+  }
+}
+
+llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+Parser::parseGroupedOrTuplePattern() {
+  CheckPoint cp = getCheckPoint();
+
+  if (!check(TokenKind::ParenOpen))
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse ( token in grouped or tuple pattern");
+  assert(eat(TokenKind::ParenOpen));
+
+  if (check(TokenKind::DotDot)) {
+    recover(cp);
+    return parseTuplePattern();
+  }
+
+  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> pattern =
+      parsePattern();
+  if (auto e = pattern.takeError()) {
+    llvm::errs() << "failed to parse pattern in grouped or tuple pattern "
+                    "tuple struct pattern : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  if (check(TokenKind::ParenClose)) {
+    recover(cp);
+    return parseGroupedPattern();
+  }
+
+  return parseTuplePattern();
+}
+
+llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+Parser::parsePatternWithoutRange() {
+  //  CheckPoint cp = getCheckPoint();
+
+  if (checkLiteral()) {
+    return parseLiteralPattern();
+  } else if (check(TokenKind::Underscore)) {
+    return parseWildCardPattern();
+  } else if (check(TokenKind::DotDot)) {
+    return parseRestPattern();
+  } else if (check(TokenKind::And)) {
+    return parseReferencePattern();
+  } else if (check(TokenKind::AndAnd)) {
+    return parseReferencePattern();
+  } else if (check(TokenKind::SquareOpen)) {
+    return parseSlicePattern();
+  } else if (check(TokenKind::ParenOpen)) {
+    return parseGroupedOrTuplePattern();
+  }
+
+  return parseMacroInvocationOrPathOrStructOrTupleStructPattern();
+}
 
 llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parsePathOrStructOrTupleStructPattern() {
@@ -562,9 +738,7 @@ Parser::parseReferencePattern() {
   if (check(lexer::TokenKind::And)) {
     assert(eat(lexer::TokenKind::And));
     refer.setAnd();
-  }
-
-  if (check(lexer::TokenKind::AndAnd)) {
+  } else if (check(lexer::TokenKind::AndAnd)) {
     assert(eat(lexer::TokenKind::AndAnd));
     refer.setAndAnd();
   }
@@ -596,8 +770,8 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
   if (check(TokenKind::Identifier) && check(TokenKind::At, 1)) {
     return parseIdentifierPattern();
   } else if (check(TokenKind::Identifier) && !check(TokenKind::At, 1)) {
-    return parsePathPattern(); // Path patterns take precedence over identifier
-                               // patterns.
+    return parsePathPattern(); // Path patterns take precedence over
+                               // identifier patterns.
   }
 
   /*

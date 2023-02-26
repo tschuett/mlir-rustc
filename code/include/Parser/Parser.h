@@ -33,6 +33,7 @@
 #include "AST/Patterns/SlicePatternItems.h"
 #include "AST/Patterns/StructPattern.h"
 #include "AST/Patterns/StructPatternElements.h"
+#include "AST/Patterns/TuplePatternItems.h"
 #include "AST/Patterns/TupleStructItems.h"
 #include "AST/Scrutinee.h"
 #include "AST/SelfParam.h"
@@ -434,6 +435,19 @@ public:
 
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
   parseMacroInvocationType();
+
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseGroupedOrTuplePattern();
+
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseMacroInvocationOrPathOrStructOrTupleStructPattern();
+
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseTuplePattern();
+  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  parseGroupedPattern();
+
+  llvm::Expected<ast::patterns::TuplePatternItems> parseTuplePatternItems();
 
 private:
   bool check(lexer::TokenKind token);
