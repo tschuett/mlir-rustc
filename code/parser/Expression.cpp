@@ -44,20 +44,105 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
+bool Parser::checkRangeTerminator() {
+  if (check(TokenKind::Colon))
+    return true;
+  if (check(TokenKind::Semi))
+    return true;
+  if (check(TokenKind::ParenClose))
+    return true;
+  if (check(TokenKind::SquareClose))
+    return true;
+  if (check(TokenKind::BraceClose))
+    return true;
+  return false;
+  // heuristic :, or ; or ) or ] or )
+}
+
 llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseRangeExpression(std::shared_ptr<ast::Expression>l) {
+Parser::parseRangeExpression() {
+  Location loc = getLocation();
+  RangeExpression range = {loc};
+
+  if (check(TokenKind::DotDot)) {
+    assert(eat(TokenKind::DotDot));
+    if (checkRangeTerminator()) {
+      // done
+      range.setKind(RangeExpressionKind::RangeFullExpr);
+      return std::make_shared<RangeExpression>(range);
+    } else {
+      // parse
+      llvm::Expected<std::shared_ptr<ast::Expression>> right =
+          parseExpression();
+      if (auto e = right.takeError()) {
+        llvm::errs() << "failed to parse expression in range expression: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      range.setRight(*right);
+      range.setKind(RangeExpressionKind::RangeToExpr);
+      return std::make_shared<RangeExpression>(range);
+    }
+  } else if (check(TokenKind::DotDotEq)) {
+    assert(eat(TokenKind::DotDotEq));
+    // parse
+    llvm::Expected<std::shared_ptr<ast::Expression>> right = parseExpression();
+    if (auto e = right.takeError()) {
+      llvm::errs() << "failed to parse expression in range expression: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    range.setRight(*right);
+    range.setKind(RangeExpressionKind::RangeToInclusiveExpr);
+    return std::make_shared<RangeExpression>(range);
+  }
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> left = parseExpression();
+  if (auto e = left.takeError()) {
+    llvm::errs() << "failed to parse expression in range expression: "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  return parseRangeExpression(*left);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseRangeExpression(std::shared_ptr<ast::Expression> l) {
   Location loc = getLocation();
   RangeExpression range = {loc};
 
   range.setLeft(l);
 
   if (check(TokenKind::DotDot)) {
+    assert(check(TokenKind::DotDot));
+    if (checkRangeTerminator()) {
+      range.setKind(RangeExpressionKind::RangeFromExpr);
+      return std::make_shared<RangeExpression>(range);
+    } else {
+      llvm::Expected<std::shared_ptr<ast::Expression>> left = parseExpression();
+      if (auto e = left.takeError()) {
+        llvm::errs() << "failed to parse expression in range expression: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      range.setRight(*left);
+    }
+    range.setKind(RangeExpressionKind::RangeExpr);
+    return std::make_shared<RangeExpression>(range);
   } else if (check(TokenKind::DotDotEq)) {
     assert(check(TokenKind::DotDotEq));
     range.setKind(RangeExpressionKind::RangeInclusiveExpr);
-  } else {
-    // error
+    llvm::Expected<std::shared_ptr<ast::Expression>> left = parseExpression();
+    if (auto e = left.takeError()) {
+      llvm::errs() << "failed to parse expression in range expression: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    range.setRight(*left);
+    return std::make_shared<RangeExpression>(range);
   }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to range expression");
 }
 
 llvm::Expected<ast::ArrayElements> Parser::parseArrayElements() {

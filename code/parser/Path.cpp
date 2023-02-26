@@ -303,7 +303,7 @@ llvm::Expected<std::shared_ptr<ast::types::TypePath>> Parser::parseTypePath() {
   class TypePath path = {loc};
 
   if (check(TokenKind::PathSep)) {
-    path.setLeading();
+    path.setLeadingPathSep();
     assert(eat(TokenKind::PathSep));
   }
 

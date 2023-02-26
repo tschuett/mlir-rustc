@@ -11,13 +11,13 @@
 namespace rust_compiler::ast::types {
 
 class TypePath final : public TypeNoBounds {
-  bool leadingDoubleColon;
+  bool leadingDoubleColon = false;
   std::vector<TypePathSegment> typePathSegments;
 
 public:
   TypePath(Location loc) : TypeNoBounds(loc, TypeNoBoundsKind::TypePath) {}
 
-  void setLeading() { leadingDoubleColon = true; }
+  void setLeadingPathSep() { leadingDoubleColon = true; }
 
   void addSegment(const TypePathSegment &seg) {
     typePathSegments.push_back(seg);

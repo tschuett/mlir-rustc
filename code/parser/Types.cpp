@@ -3,8 +3,11 @@
 #include "AST/Types/ImplTraitTypeOneBound.h"
 #include "AST/Types/InferredType.h"
 #include "AST/Types/NeverType.h"
+#include "AST/Types/ParenthesizedType.h"
 #include "AST/Types/SliceType.h"
+#include "AST/Types/TraitObjectTypeOneBound.h"
 #include "AST/Types/TypeParamBound.h"
+#include "AST/Types/TypePath.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
@@ -15,6 +18,89 @@ using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+Parser::parseTraitObjectTypeOneBound() {
+  Location loc = getLocation();
+
+  TraitObjectTypeOneBound bound = {loc};
+
+  if (checkKeyWord(KeyWordKind::KW_DYN)) {
+    bound.setDyn();
+    assert(eatKeyWord(KeyWordKind::KW_DYN));
+  }
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> traitBound =
+      parseTraitBound();
+  if (auto e = traitBound.takeError()) {
+    llvm::errs()
+        << "failed to parse trait bound in trait object type one bound : "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  bound.setBound(*traitBound);
+
+  return std::make_shared<TraitObjectTypeOneBound>(bound);
+}
+
+llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+Parser::parseParenthesizedType() {
+  Location loc = getLocation();
+  ParenthesizedType parenType = {loc};
+
+  if (!check(TokenKind::ParenOpen))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ( token in parenthesized type");
+  assert(eat(TokenKind::ParenOpen));
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+      parseType();
+  if (auto e = type.takeError()) {
+    llvm::errs() << "failed to parse type in parenthesized type : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  parenType.setType(*type);
+
+  if (!check(TokenKind::ParenClose))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ) token in parenthesized type");
+  assert(eat(TokenKind::ParenClose));
+
+  return std::make_shared<ParenthesizedType>(parenType);
+}
+
+llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+Parser::parseTupleOrParensType() {
+  CheckPoint cp = getCheckPoint();
+
+  if (!check(TokenKind::ParenOpen))
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse ( token in tuple or parens type");
+  assert(eat(TokenKind::ParenOpen));
+
+  if (check(TokenKind::ParenClose)) {
+    assert(eat(TokenKind::ParenClose));
+    recover(cp);
+    return parseTupleType();
+  }
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+      parseType();
+  if (auto e = type.takeError()) {
+    llvm::errs() << "failed to parse type in tuple or parens type : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  if (check(TokenKind::ParenClose)) {
+    assert(eat(TokenKind::ParenClose));
+    recover(cp);
+    return parseParenthesizedType();
+  }
+
+  return parseTupleType();
+}
 
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
     parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType() {
@@ -46,7 +132,7 @@ llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
         return parseMacroInvocationType();
       } else if (!checkSimplePathSegment()) {
         recover(cp);
-        return parsePathType();
+        return parseTypePath();
       } else {
         recover(cp);
         return parseMacroInvocationType();
@@ -75,7 +161,7 @@ llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
     recover(cp);
     return parseTraitObjectType();
   } else {
-    while(true) {
+    while (true) {
       if (check(TokenKind::Eof)) {
       } else if (check(TokenKind::Plus)) {
         recover(cp);
@@ -86,13 +172,12 @@ llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
   }
   // FIXME: probably buggy
 }
-  /*
-    TypePath
-    MacroInvocation
-    TraitObject
-    done: BareFunctionType
-   */
-
+/*
+  TypePath
+  MacroInvocation
+  TraitObject
+  done: BareFunctionType
+ */
 
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseImplTraitTypeOneBound() {

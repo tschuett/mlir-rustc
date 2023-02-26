@@ -209,6 +209,9 @@ public:
   parseQualifiedPathInType();
   llvm::Expected<ast::types::QualifiedPathType> parseQualifiedPathType();
 
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseParenthesizedType();
+
   PathKind testTypePathOrSimplePath();
 
   llvm::Expected<std::shared_ptr<ast::Crate>>
@@ -431,7 +434,7 @@ public:
 
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
   parseMacroInvocationType();
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parsePathType();
+
 private:
   bool check(lexer::TokenKind token);
   bool check(lexer::TokenKind token, size_t offset);
@@ -481,6 +484,8 @@ private:
   bool checkIdentifier();
   bool checkIntegerLiteral();
   bool checkMaybeNamedParamLeadingComma();
+
+  bool checkRangeTerminator();
 };
 
 } // namespace rust_compiler::parser
