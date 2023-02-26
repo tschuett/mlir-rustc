@@ -15,6 +15,8 @@ class DelimTokenTree : public Node {
 
 public:
   DelimTokenTree(Location loc) : Node(loc){};
+
+  void addTree(const 
 };
 
 } // namespace rust_compiler::ast

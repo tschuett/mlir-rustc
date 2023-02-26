@@ -1,20 +1,23 @@
 #pragma once
 
 #include "AST/AST.h"
-#include "AST/DelimTokenTree.h"
 #include "Lexer/Token.h"
 
-#include <variant>
+#include <optional>
 
 namespace rust_compiler::ast {
 
 class DelimTokenTree;
 
 class TokenTree : public Node {
-  std::variant<lexer::Token, DelimTokenTree> contents;
+  std::optional<lexer::Token> token;
+  std::optional<DelimTokenTree> tree;
 
 public:
   TokenTree(Location loc) : Node(loc) {}
+
+  void setToken(const lexer::Token &t) { token = t; }
+  void setTree(const DelimTokenTree &delim) { tree = delim; }
 };
 
 } // namespace rust_compiler::ast
