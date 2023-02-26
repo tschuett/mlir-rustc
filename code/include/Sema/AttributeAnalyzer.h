@@ -3,6 +3,8 @@
 #include "AST/InnerAttribute.h"
 #include "AST/OuterAttribute.h"
 
+#include <llvm/ADT/StringRef.h>
+
 namespace rust_compiler::sema {
 
 enum BuiltinKind {

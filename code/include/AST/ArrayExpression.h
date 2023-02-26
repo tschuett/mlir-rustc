@@ -4,6 +4,7 @@
 #include "AST/Expression.h"
 
 #include <vector>
+#include <optional>
 
 namespace rust_compiler::ast {
 

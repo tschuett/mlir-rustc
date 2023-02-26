@@ -34,7 +34,7 @@ public:
 
   bool containsBreakExpression();
 
-  std::shared_ptr<ast::types::Type> getType();
+  //std::shared_ptr<ast::types::Type> getType();
 };
 
 } // namespace rust_compiler::ast

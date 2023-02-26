@@ -19,6 +19,7 @@
 #include "AST/IndexEpression.h"
 #include "AST/LazyBooleanExpression.h"
 #include "AST/LiteralExpression.h"
+#include "AST/MacroInvocationExpression.h"
 #include "AST/MatchExpression.h"
 #include "AST/MethodCallExpression.h"
 #include "AST/NegationExpression.h"
@@ -43,6 +44,72 @@ using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseLiteralExpression() {
+  Location loc = getLocation();
+  LiteralExpression lit = {loc};
+
+  if (check(TokenKind::CHAR_LITERAL))
+    lit.setKind(LiteralExpressionKind::CharLiteral);
+  else if (check(TokenKind::STRING_LITERAL))
+    lit.setKind(LiteralExpressionKind::StringLiteral);
+  else if (check(TokenKind::RAW_STRING_LITERAL))
+    lit.setKind(LiteralExpressionKind::RawStringLiteral);
+  else if (check(TokenKind::BYTE_LITERAL))
+    lit.setKind(LiteralExpressionKind::ByteLiteral);
+  else if (check(TokenKind::BYTE_STRING_LITERAL))
+    lit.setKind(LiteralExpressionKind::ByteStringLiteral);
+  else if (check(TokenKind::RAW_BYTE_STRING_LITERAL))
+    lit.setKind(LiteralExpressionKind::RawByteStringLiteral);
+  else if (check(TokenKind::INTEGER_LITERAL))
+    lit.setKind(LiteralExpressionKind::IntegerLiteral);
+  else if (check(TokenKind::FLOAT_LITERAL))
+    lit.setKind(LiteralExpressionKind::FloatLiteral);
+  else if (checkKeyWord(KeyWordKind::KW_TRUE))
+    lit.setKind(LiteralExpressionKind::True);
+  else if (checkKeyWord(KeyWordKind::KW_FALSE))
+    lit.setKind(LiteralExpressionKind::False);
+  else {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse literal  in literal expression");
+  }
+  lit.setStorage(getToken().getLiteral());
+
+  return std::make_shared<LiteralExpression>(lit);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseMacroInvocationExpression() {
+  Location loc = getLocation();
+  MacroInvocationExpression macro = {loc};
+
+  llvm::Expected<ast::SimplePath> path = parseSimplePath();
+  if (auto e = path.takeError()) {
+    llvm::errs()
+        << "failed to parse simple path in macro invocation expression : "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  macro.setPath(*path);
+
+  if (!check(TokenKind::Not))
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse ! token in macro invocation expression");
+  assert(eat(TokenKind::Not));
+
+  llvm::Expected<ast::DelimTokenTree> token = parseDelimTokenTree();
+  if (auto e = token.takeError()) {
+    llvm::errs()
+        << "failed to parse delimt token tree in macro invocation expression : "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  macro.setTree(*token);
+
+  return std::make_shared<MacroInvocationExpression>(macro);
+}
 
 bool Parser::checkRangeTerminator() {
   if (check(TokenKind::Colon))
@@ -1348,50 +1415,7 @@ Parser::parseExpressionWithoutBlock() {
   // FIXME attributes
 
   if (checkLiteral()) {
-    Location loc = getLocation();
-    Token tok = getToken();
-    std::string id = tok.getIdentifier();
-    if (check(TokenKind::CHAR_LITERAL)) {
-      assert(eat(TokenKind::CHAR_LITERAL));
-      return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::CharLiteral, id);
-    } else if (check(TokenKind::STRING_LITERAL)) {
-      assert(eat(TokenKind::STRING_LITERAL));
-      return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::StringLiteral, id);
-    } else if (check(TokenKind::RAW_STRING_LITERAL)) {
-      assert(eat(TokenKind::RAW_STRING_LITERAL));
-      return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::RawStringLiteral, id);
-    } else if (check(TokenKind::BYTE_LITERAL)) {
-      assert(eat(TokenKind::BYTE_LITERAL));
-      return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::ByteLiteral, id);
-    } else if (check(TokenKind::BYTE_STRING_LITERAL)) {
-      assert(eat(TokenKind::BYTE_STRING_LITERAL));
-      return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::ByteStringLiteral, id);
-    } else if (check(TokenKind::RAW_BYTE_STRING_LITERAL)) {
-      assert(eat(TokenKind::RAW_BYTE_STRING_LITERAL));
-      return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::RawByteStringLiteral, id);
-    } else if (check(TokenKind::INTEGER_LITERAL)) {
-      assert(eat(TokenKind::INTEGER_LITERAL));
-      return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::IntegerLiteral, id);
-    } else if (check(TokenKind::FLOAT_LITERAL)) {
-      assert(eat(TokenKind::FLOAT_LITERAL));
-      return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::FloatLiteral, id);
-    } else if (checkKeyWord(KeyWordKind::KW_TRUE)) {
-      assert(eatKeyWord(KeyWordKind::KW_TRUE));
-      return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::True, id);
-    } else if (checkKeyWord(KeyWordKind::KW_FALSE)) {
-      assert(eatKeyWord(KeyWordKind::KW_FALSE));
-      return std::make_shared<LiteralExpression>(
-          loc, LiteralExpressionKind::False, id);
-    }
+    return parseLiteralExpression();
   }
   if (check(TokenKind::And)) {
     return parseBorrowExpression();

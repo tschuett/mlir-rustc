@@ -25,15 +25,17 @@ class LiteralExpression final : public ExpressionWithoutBlock {
   std::string value;
 
 public:
-  LiteralExpression(Location loc, LiteralExpressionKind kind,
-                    std::string_view value)
+  LiteralExpression(Location loc)
       : ExpressionWithoutBlock(loc,
-                               ExpressionWithoutBlockKind::LiteralExpression),
-        kind(kind), value(value) {}
+                               ExpressionWithoutBlockKind::LiteralExpression) {}
 
   LiteralExpressionKind getLiteralKind() const { return kind; }
 
+  void setKind(LiteralExpressionKind k) { kind = k; }
+
   std::string getValue() const { return value; }
+
+  void setStorage(std::string_view s) { value = s; }
 };
 
 } // namespace rust_compiler::ast

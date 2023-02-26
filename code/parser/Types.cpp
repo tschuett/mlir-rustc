@@ -2,6 +2,7 @@
 #include "AST/Types/ImplTraitType.h"
 #include "AST/Types/ImplTraitTypeOneBound.h"
 #include "AST/Types/InferredType.h"
+#include "AST/Types/MacroInvocationType.h"
 #include "AST/Types/NeverType.h"
 #include "AST/Types/ParenthesizedType.h"
 #include "AST/Types/SliceType.h"
@@ -18,6 +19,59 @@ using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+Parser::parseImplTraitType() {
+  Location loc = getLocation();
+  ImplTraitType trait = {loc};
+
+  if (!checkKeyWord(KeyWordKind::KW_IMPL))
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse impl keyworkd in impl trait type");
+  assert(eatKeyWord(KeyWordKind::KW_IMPL));
+
+  llvm::Expected<ast::types::TypeParamBounds> bounds = parseTypeParamBounds();
+  if (auto e = bounds.takeError()) {
+    llvm::errs() << "failed to parse type param bounds in impl trait type : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  trait.setBounds(*bounds);
+
+  return std::make_shared<ImplTraitType>(trait);
+}
+
+llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+Parser::parseMacroInvocationType() {
+  Location loc = getLocation();
+  MacroInvocationType macro = {loc};
+
+  llvm::Expected<ast::SimplePath> path = parseSimplePath();
+  if (auto e = path.takeError()) {
+    llvm::errs() << "failed to parse simple path in macro invocation type : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  macro.setPath(*path);
+
+  if (!check(TokenKind::Not))
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse ! token in macro invocation type");
+  assert(eat(TokenKind::Not));
+
+  llvm::Expected<ast::DelimTokenTree> token = parseDelimTokenTree();
+  if (auto e = token.takeError()) {
+    llvm::errs()
+        << "failed to parse delimt token tree in macro invocation type : "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  macro.setTree(*token);
+
+  return std::make_shared<MacroInvocationType>(macro);
+}
 
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTraitObjectTypeOneBound() {
