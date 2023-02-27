@@ -16,6 +16,10 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
+bool Parser::checkLoopLabel() {
+  return (check(TokenKind::LIFETIME_OR_LABEL) && check(TokenKind::Colon, 1));
+}
+
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseLabelBlockExpression(std::optional<std::string> label) {
   Location loc = getLocation();

@@ -33,6 +33,7 @@
 #include "AST/UnsafeBlockExpression.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
+#include "Location.h"
 #include "Parser/Parser.h"
 
 #include <cassert>
@@ -44,6 +45,33 @@ using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+bool Parser::checkExpressionWithBlock() {
+  if (checkOuterAttribute()) {
+    llvm::Expected<std::vector<ast::OuterAttribute>> outerAttributes =
+        parseOuterAttributes();
+    if (auto e = outerAttributes.takeError()) {
+      llvm::errs() << "failed to parse outer attributes: "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_IF) &&
+      checkKeyWord(KeyWordKind::KW_LET, 1)) {
+    return true;
+  } else if (checkKeyWord(KeyWordKind::KW_IF)) {
+    return true;
+  } else if (checkKeyWord(KeyWordKind::KW_MATCH)) {
+    return true;
+  } else if (checkKeyWord(KeyWordKind::KW_UNSAFE) &&
+             check(TokenKind::BraceOpen, 1)) {
+  } else if (check(TokenKind::BraceOpen)) {
+    return true;
+  }
+
+  return false;
+}
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseLiteralExpression() {
@@ -99,7 +127,8 @@ Parser::parseMacroInvocationExpression() {
         "failed to parse ! token in macro invocation expression");
   assert(eat(TokenKind::Not));
 
-  llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> token = parseDelimTokenTree();
+  llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> token =
+      parseDelimTokenTree();
   if (auto e = token.takeError()) {
     llvm::errs()
         << "failed to parse delimt token tree in macro invocation expression : "
