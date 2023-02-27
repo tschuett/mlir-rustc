@@ -356,7 +356,7 @@ public:
   llvm::Expected<std::shared_ptr<ast::WhereClauseItem>> parseWhereClauseItem();
   llvm::Expected<ast::types::ForLifetimes> parseForLifetimes();
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> parseLifetime();
+  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> parseLifetimeAsTypeParamBound();
   llvm::Expected<ast::Lifetime> parseLifetimeAsLifetime();
   llvm::Expected<ast::LifetimeBounds> parseLifetimeBounds();
   llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
@@ -476,7 +476,7 @@ private:
   bool checkLoopLabel();
 
   bool checkLiteral();
-  bool checkLifetime(uint8_t offset);
+  bool checkLifetime(uint8_t offset = 0);
 
   /// super | self | Self | crate | $crate
   bool checkSuperSelf();
@@ -500,7 +500,7 @@ private:
   void recover(const CheckPoint &cp);
 
   bool checkWhereClauseItem();
-  bool checkLifetime();
+  //bool checkLifetime();
 
   bool checkExpressionWithBlock();
   bool checkExpressionWithoutBlock();

@@ -14,6 +14,15 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
+bool Parser::checkStaticOrUnderscore() {
+  if (checkKeyWord(KeyWordKind::KW_STATICLIFETIME))
+    return true;
+
+  if (check(TokenKind::LIFETIME_TOKEN) && getToken().getStorage() == "'_")
+    return true;
+  return false;
+}
+
 bool Parser::checkLifetime(uint8_t offset) {
   if (check(TokenKind::LIFETIME_OR_LABEL, offset)) {
     return true;

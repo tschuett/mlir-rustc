@@ -1,7 +1,9 @@
+#include "AST/Lifetime.h"
 #include "AST/Types/ArrayType.h"
 #include "AST/Types/ImplTraitType.h"
 #include "AST/Types/ImplTraitTypeOneBound.h"
 #include "AST/Types/InferredType.h"
+#include "AST/Types/Lifetime.h"
 #include "AST/Types/MacroInvocationType.h"
 #include "AST/Types/NeverType.h"
 #include "AST/Types/ParenthesizedType.h"
@@ -19,6 +21,26 @@ using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>>
+Parser::parseLifetimeAsTypeParamBound() {
+  Location loc = getLocation();
+  rust_compiler::ast::types::Lifetime lf = {loc};
+
+  if (check(TokenKind::LIFETIME_OR_LABEL)) {
+    lf.setLifetime(getToken().getStorage());
+  } else if (checkKeyWord(KeyWordKind::KW_STATICLIFETIME)) {
+    lf.setLifetime(getToken().getStorage());
+  } else if (check(TokenKind::LIFETIME_TOKEN) &&
+             getToken().getStorage() == "'_") {
+    lf.setLifetime(getToken().getStorage());
+  } else {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse lifetime");
+  }
+
+  return std::make_shared<rust_compiler::ast::types::Lifetime>(lf);
+}
 
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseImplTraitType() {
@@ -500,7 +522,7 @@ Parser::parseTypeParamBound() {
   }
 
   llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> life =
-      parseLifetime();
+      parseLifetimeAsTypeParamBound();
   if (auto e = life.takeError()) {
     llvm::errs() << "failed to parse lifetime in type param bound : "
                  << toString(std::move(e)) << "\n";
