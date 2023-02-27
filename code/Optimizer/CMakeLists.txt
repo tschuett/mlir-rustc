@@ -12,6 +12,7 @@ add_library(optimizer
            SCCP.cpp
            HirLICM.cpp
            ConvertHirToMir.cpp
+           Loop.cpp
            )
 #           SCCPPass.cpp
 
