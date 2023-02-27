@@ -1,10 +1,14 @@
 #include "AST/InfiniteLoopExpression.h"
 #include "AST/IteratorLoopExpression.h"
+#include "AST/LabelBlockExpression.h"
 #include "AST/PredicateLoopExpression.h"
 #include "AST/PredicatePatternLoopExpression.h"
+#include "Lexer/KeyWords.h"
+#include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
 #include <memory>
+#include <optional>
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::lexer;
@@ -12,14 +16,76 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
-//llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parseLoopExpression() {
-//}
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parseLabelBlockExpression(std::optional<std::string> label) {
+  Location loc = getLocation();
+  LabelBlockExpression bloc = {loc};
+
+  if (label)
+    bloc.setLabel(*label);
+
+  llvm::Expected<std::shared_ptr<ast::Expression>> block =
+      parseBlockExpression();
+  if (auto e = block.takeError()) {
+    llvm::errs()
+        << "failed to parse block expression in label block expression: "
+        << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  bloc.setBlock(*block);
+
+  return std::make_shared<LabelBlockExpression>(bloc);
+}
+
+llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parseLoopExpression() {
+  if (checkLoopLabel()) {
+    if (check(TokenKind::LIFETIME_OR_LABEL) && check(TokenKind::Colon, 1)) {
+      std::string label = getToken().getStorage();
+      assert(eat(TokenKind::LIFETIME_OR_LABEL));
+      assert(eat(TokenKind::Colon));
+
+      if (checkKeyWord(KeyWordKind::KW_LOOP)) {
+        return parseInfiniteLoopExpression(label);
+      } else if (checkKeyWord(KeyWordKind::KW_WHILE) &&
+                 checkKeyWord(KeyWordKind::KW_LET, 1)) {
+        return parsePredicatePatternLoopExpression(label);
+      } else if (checkKeyWord(KeyWordKind::KW_WHILE)) {
+        return parsePredicateLoopExpression(label);
+      } else if (checkKeyWord(KeyWordKind::KW_FOR)) {
+        return parseIteratorLoopExpression(label);
+      } else {
+        return parseLabelBlockExpression(label);
+      }
+      return createStringError(
+          inconvertibleErrorCode(),
+          "failed to parse loop expression with loop label");
+    }
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_LOOP)) {
+    return parseInfiniteLoopExpression(std::nullopt);
+  } else if (checkKeyWord(KeyWordKind::KW_WHILE) &&
+             checkKeyWord(KeyWordKind::KW_LET, 1)) {
+    return parsePredicatePatternLoopExpression(std::nullopt);
+  } else if (checkKeyWord(KeyWordKind::KW_WHILE)) {
+    return parsePredicateLoopExpression(std::nullopt);
+  } else if (checkKeyWord(KeyWordKind::KW_FOR)) {
+    return parseIteratorLoopExpression(std::nullopt);
+  } else {
+    return parseLabelBlockExpression(std::nullopt);
+  }
+  return createStringError(
+      inconvertibleErrorCode(),
+      "failed to parse loop expression without loop label");
+}
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseIteratorLoopExpression() {
+Parser::parseIteratorLoopExpression(std::optional<std::string> label) {
   Location loc = getLocation();
 
   IteratorLoopExpression it = {loc};
+  if (label)
+    it.setLabel(*label);
 
   if (!checkKeyWord(KeyWordKind::KW_FOR))
     return createStringError(inconvertibleErrorCode(),
@@ -63,10 +129,12 @@ Parser::parseIteratorLoopExpression() {
 }
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parsePredicatePatternLoopExpression() {
+Parser::parsePredicatePatternLoopExpression(std::optional<std::string> label) {
   Location loc = getLocation();
 
   PredicatePatternLoopExpression pat = {loc};
+  if (label)
+    pat.setLabel(*label);
 
   if (!checkKeyWord(KeyWordKind::KW_WHILE))
     return createStringError(inconvertibleErrorCode(),
@@ -111,10 +179,13 @@ Parser::parsePredicatePatternLoopExpression() {
 }
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseInfiniteLoopExpression() {
+Parser::parseInfiniteLoopExpression(std::optional<std::string> label) {
   Location loc = getLocation();
 
   InfiniteLoopExpression infini = {loc};
+
+  if (label)
+    infini.setLabel(*label);
 
   if (!checkKeyWord(KeyWordKind::KW_LOOP))
     return createStringError(inconvertibleErrorCode(),
@@ -135,10 +206,12 @@ Parser::parseInfiniteLoopExpression() {
 }
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parsePredicateLoopExpression() {
+Parser::parsePredicateLoopExpression(std::optional<std::string> label) {
   Location loc = getLocation();
 
   PredicateLoopExpression pred = {loc};
+  if (label)
+    pred.setLabel(*label);
 
   if (!checkKeyWord(KeyWordKind::KW_WHILE))
     return createStringError(inconvertibleErrorCode(),

@@ -15,6 +15,34 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
+bool Parser::checkStatement() {
+  if (checkOuterAttribute()) {
+    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+        parseOuterAttributes();
+    if (auto e = outer.takeError()) {
+      llvm::errs()
+          << "failed to parse outer attributes in check statement: "
+          << std::move(e) << "\n";
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  if (checkKeyWord(KeyWordKind::KW_LET))
+    return true;
+  if (checkExpressionWithBlock())
+    return true;
+  if (checkExpressionWithoutBlock())
+    return true;
+  if (checkSimplePathSegment())
+    return true;
+  if (checkVisItem())
+    return true;
+  if (checkMacroItem())
+    return true;
+
+  return false;
+}
+
 llvm::Expected<std::shared_ptr<ast::Statement>>
 Parser::parseMacroInvocationSemiStatement() {
   Location loc = getLocation();
@@ -180,7 +208,8 @@ llvm::Expected<std::shared_ptr<ast::Statement>> Parser::parseStatement() {
       exit(EXIT_FAILURE);
     }
     if (checkVisItem()) {
-      llvm::Expected<std::shared_ptr<ast::VisItem>> visItem = parseVisItem(*outer);
+      llvm::Expected<std::shared_ptr<ast::VisItem>> visItem =
+          parseVisItem(*outer);
       if (auto e = visItem.takeError()) {
         llvm::errs() << "failed to parse VisItem in statement: " << std::move(e)
                      << "\n";
@@ -213,7 +242,8 @@ llvm::Expected<std::shared_ptr<ast::Statement>> Parser::parseStatement() {
     // COPY & PASTE
     std::span<OuterAttribute> outer;
     if (checkVisItem()) {
-      llvm::Expected<std::shared_ptr<ast::VisItem>> visItem = parseVisItem(outer);
+      llvm::Expected<std::shared_ptr<ast::VisItem>> visItem =
+          parseVisItem(outer);
       if (auto e = visItem.takeError()) {
         llvm::errs() << "failed to parse VisItem in statement: " << std::move(e)
                      << "\n";

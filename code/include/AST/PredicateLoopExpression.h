@@ -3,13 +3,16 @@
 #include "AST/LoopExpression.h"
 
 #include <memory>
+#include <optional>
+#include <string>
+#include <string_view>
 
 namespace rust_compiler::ast {
 
 class PredicateLoopExpression final : public LoopExpression {
   std::shared_ptr<ast::Expression> condition;
   std::shared_ptr<ast::Expression> block;
-
+  std::optional<std::string> loopLabel;
 public:
   PredicateLoopExpression(Location loc)
       : LoopExpression(loc, LoopExpressionKind::PredicateLoopExpression) {}
@@ -19,6 +22,7 @@ public:
 
   std::shared_ptr<ast::Expression> getCondition() const { return condition; }
   std::shared_ptr<ast::Expression> getBody() const { return block; }
+  void setLabel(std::string_view lab) { loopLabel = lab; }
 };
 
 } // namespace rust_compiler::ast

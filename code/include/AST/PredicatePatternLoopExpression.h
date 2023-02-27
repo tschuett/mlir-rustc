@@ -7,6 +7,9 @@
 #include "AST/Scrutinee.h"
 
 #include <memory>
+#include <optional>
+#include <string>
+#include <string_view>
 
 namespace rust_compiler::ast {
 
@@ -14,6 +17,7 @@ class PredicatePatternLoopExpression final : public LoopExpression {
   std::shared_ptr<ast::Expression> body;
   std::shared_ptr<patterns::Pattern> pattern;
   Scrutinee scrutinee;
+  std::optional<std::string> loopLabel;
 
 public:
   PredicatePatternLoopExpression(Location loc)
@@ -30,6 +34,8 @@ public:
   void setPattern(std::shared_ptr<patterns::Pattern> pat) { pattern = pat; }
   void setScrutinee(const Scrutinee &expr) { scrutinee = expr; }
   void setBody(std::shared_ptr<Expression> bod) { body = bod; }
+
+  void setLabel(std::string_view lab) { loopLabel = lab; }
 };
 
 } // namespace rust_compiler::ast

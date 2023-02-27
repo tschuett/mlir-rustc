@@ -1294,18 +1294,18 @@ Parser::parseExpressionWithBlock() {
     return parseLoopExpression();
 
   if (checkKeyWord(KeyWordKind::KW_LOOP))
-    return parseInfiniteLoopExpression();
+    return parseInfiniteLoopExpression(std::nullopt);
 
   if (checkKeyWord(KeyWordKind::KW_WHILE) &&
       checkKeyWord(KeyWordKind::KW_LET, 1))
-    return parsePredicatePatternLoopExpression();
+    return parsePredicatePatternLoopExpression(std::nullopt);
 
   if (checkKeyWord(KeyWordKind::KW_WHILE) &&
       !checkKeyWord(KeyWordKind::KW_LET, 1))
-    return parsePredicatePatternLoopExpression();
+    return parsePredicatePatternLoopExpression(std::nullopt);
 
   if (checkKeyWord(KeyWordKind::KW_FOR))
-    return parseIteratorLoopExpression();
+    return parseIteratorLoopExpression(std::nullopt);
 
   /// FIXME
   return createStringError(inconvertibleErrorCode(),

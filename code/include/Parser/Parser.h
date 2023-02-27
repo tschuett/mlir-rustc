@@ -335,13 +335,15 @@ public:
 
   llvm::Expected<std::shared_ptr<ast::Expression>> parseLoopExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>>
-  parseIteratorLoopExpression();
+  parseIteratorLoopExpression(std::optional<std::string>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
-  parsePredicatePatternLoopExpression();
+  parsePredicatePatternLoopExpression(std::optional<std::string>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
-  parsePredicateLoopExpression();
+  parsePredicateLoopExpression(std::optional<std::string>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
-  parseInfiniteLoopExpression();
+  parseInfiniteLoopExpression(std::optional<std::string>);
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+  parseLabelBlockExpression(std::optional<std::string>);
   // llvm::Expected<std::shared_ptr<ast::Expression>>
   // parsePatternLoopExpression();
 
