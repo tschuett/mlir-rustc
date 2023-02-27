@@ -29,6 +29,7 @@ add_library(parser
            MacroRules.cpp
            DelimTokenTree.cpp
            ParseItem.cpp
+           VisItem.cpp
            )
 
 

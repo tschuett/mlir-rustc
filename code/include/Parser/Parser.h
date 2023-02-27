@@ -94,7 +94,7 @@ public:
   llvm::Expected<std::shared_ptr<ast::MacroItem>> parseMacroItem(std::span<ast::OuterAttribute>);
 
   llvm::Expected<std::shared_ptr<ast::VisItem>> parseVisItem(std::span<ast::OuterAttribute>);
-
+w
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern();
 
