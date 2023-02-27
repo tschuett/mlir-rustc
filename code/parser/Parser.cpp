@@ -3,6 +3,7 @@
 #include "AST/GenericParam.h"
 #include "AST/Module.h"
 #include "AST/Visiblity.h"
+#include "AST/WhereClause.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 
@@ -493,29 +494,37 @@ llvm::Expected<ast::WhereClause> Parser::parseWhereClause() {
 
   assert(eatKeyWord(KeyWordKind::KW_WHERE));
 
-  bool hasTrailingComma = false;
-
-  while (checkWhereClauseItem()) {
-    llvm::Expected<std::shared_ptr<ast::WhereClauseItem>> clauseItem =
-        parseWhereClauseItem();
-    if (auto e = clauseItem.takeError()) {
-      llvm::errs() << "failed to parse where clause item in where clause: "
-                   << toString(std::move(e)) << "\n";
-      exit(EXIT_FAILURE);
-    }
-    where.addWhereClauseItem(*clauseItem);
-    hasTrailingComma = false;
-
-    if (check(TokenKind::Comma)) {
-      assert(check(TokenKind::Comma));
-      hasTrailingComma = true;
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse where clause: eof");
+    } else if (check(TokenKind::BraceOpen)) {
+      return where;
+    } else if (check(TokenKind::Semi)) {
+      return where;
+    } else if (check(TokenKind::Comma) && check(TokenKind::BraceOpen, 1)) {
+      assert(eat(TokenKind::Comma));
+      where.setTrailingComma();
+      return where;
+    } else if (check(TokenKind::Comma) && check(TokenKind::Semi, 1)) {
+      assert(eat(TokenKind::Comma));
+      where.setTrailingComma();
+      return where;
+    } else if (check(TokenKind::Comma)) {
+      assert(eat(TokenKind::Comma));
+    } else {
+      llvm::Expected<std::shared_ptr<ast::WhereClauseItem>> clauseItem =
+          parseWhereClauseItem();
+      if (auto e = clauseItem.takeError()) {
+        llvm::errs() << "failed to parse where clause item in where clause: "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      where.addWhereClauseItem(*clauseItem);
     }
   }
-
-  if (hasTrailingComma)
-    where.setTrailingComma();
-
-  return where;
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse where clause");
 }
 
 llvm::Expected<ast::ConstParam> Parser::parseConstParam() {

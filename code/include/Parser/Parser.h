@@ -499,7 +499,7 @@ private:
   CheckPoint getCheckPoint();
   void recover(const CheckPoint &cp);
 
-  bool checkWhereClauseItem();
+  //bool checkWhereClauseItem();
   //bool checkLifetime();
 
   bool checkExpressionWithBlock();
