@@ -10,13 +10,13 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::sema {
 
-void AttributeAnalyzer::analyzeOuterAttribute(const ast::OuterAttribute &attr) {
+void AttributeAnalyzer::analyzeOuterAttribute(const OuterAttribute &attr) {
 //  SimplePath path = attr.getPath();
 //  if (path.getLength() == 1) {
 //  }
 }
 
-void AttributeAnalyzer::analyzeInnerAttribute(const ast::InnerAttribute &attr) {
+void AttributeAnalyzer::analyzeInnerAttribute(const InnerAttribute &attr) {
 //  SimplePath path = attr.getPath();
 //  if (path.getLength() == 1) {
 //  }
