@@ -72,6 +72,11 @@ def ConvertHirToMirPass : Pass<"SCCP", "mlir::ModuleOp"> {
   let dependentDialects = ["::HirDialect", "::mlir::arith::ArithDialect"];
 }
 
+def LoopPass : Pass<"Loop", "mlir::func::FuncOp"> {
+  let summary = "Fat loops";
+  let description = "Fat loop pass";
+}
+
 
 
 // eleminate Mir: how?
