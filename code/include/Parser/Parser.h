@@ -507,7 +507,8 @@ private:
   bool checkStaticOrUnderscore();
   bool checkVisItem();
   bool checkMacroItem();
-  bool checkTypeParamBound();
+  //bool checkTypeParamBound();
+  bool checkTraitBound();
   bool checkIdentifier();
   bool checkIntegerLiteral();
   bool checkMaybeNamedParamLeadingComma();

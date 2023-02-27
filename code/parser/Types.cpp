@@ -523,33 +523,36 @@ llvm::Expected<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
   }
   bounds.addTypeParamBound(*first);
 
+  // heuristic ; or , or { or >
   while (true) {
     if (check(TokenKind::Eof)) {
       // abort
       return createStringError(inconvertibleErrorCode(),
                                "failed to parse type param bounds: eof");
-    } else if (!check(TokenKind::Plus)) {
-      assert(eat(TokenKind::Plus));
-      if (checkTypeParamBound()) {
-        llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> type =
-            parseTypeParamBound();
-        if (auto e = first.takeError()) {
-          llvm::errs()
-              << "failed to parse  type param bound in type param bounds :"
-              << toString(std::move(e)) << "\n";
-          exit(EXIT_FAILURE);
-        }
-        bounds.addTypeParamBound(*type);
-      } else {
-        bounds.setTrailingPlus();
-        return bounds;
-      }
-    } else {
-      // done
+    } else if (check(TokenKind::Semi) || check(TokenKind::Comma) ||
+               check(TokenKind::BraceOpen) || check(TokenKind::Lt)) {
       return bounds;
+    } else if (check(TokenKind::Plus) &&
+               (check(TokenKind::Semi, 1) || check(TokenKind::Comma, 1) ||
+                check(TokenKind::BraceOpen, 1) || check(TokenKind::Lt, 1))) {
+      bounds.setTrailingPlus();
+      return bounds;
+    } else if (check(TokenKind::Plus)) {
+      assert(eat(TokenKind::Plus));
+      llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> type =
+          parseTypeParamBound();
+      if (auto e = first.takeError()) {
+        llvm::errs()
+            << "failed to parse  type param bound in type param bounds :"
+            << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      bounds.addTypeParamBound(*type);
+    } else {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse type param bounds");
     }
   }
-
   return createStringError(inconvertibleErrorCode(),
                            "failed to parse type param bounds");
 }
