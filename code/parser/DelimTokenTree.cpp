@@ -15,7 +15,7 @@ llvm::Expected<ast::TokenTree> Parser::parseTokenTree() {
   TokenTree tree = {loc};
 
   if (checkDelimiters()) {
-    llvm::Expected<ast::DelimTokenTree> delimTokenTree = parseDelimTokenTree();
+    llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> delimTokenTree = parseDelimTokenTree();
     if (auto e = delimTokenTree.takeError()) {
       llvm::errs() << "failed to parse delim token tree in token tree : "
                    << toString(std::move(e)) << "\n";
@@ -29,7 +29,8 @@ llvm::Expected<ast::TokenTree> Parser::parseTokenTree() {
   }
 }
 
-llvm::Expected<ast::DelimTokenTree> Parser::parseDelimTokenTree() {
+llvm::Expected<std::shared_ptr<ast::DelimTokenTree>>
+Parser::parseDelimTokenTree() {
   Location loc = getLocation();
   DelimTokenTree tree = {loc};
 
@@ -40,7 +41,7 @@ llvm::Expected<ast::DelimTokenTree> Parser::parseDelimTokenTree() {
         return createStringError(inconvertibleErrorCode(),
                                  "failed to parse delim token tree");
       } else if (check(TokenKind::ParenClose)) {
-        return tree;
+        return std::make_shared<DelimTokenTree>(tree);
       } else {
         llvm::Expected<ast::TokenTree> tokenTree = parseTokenTree();
         if (auto e = tokenTree.takeError()) {
@@ -58,7 +59,7 @@ llvm::Expected<ast::DelimTokenTree> Parser::parseDelimTokenTree() {
         return createStringError(inconvertibleErrorCode(),
                                  "failed to parse delim token tree");
       } else if (check(TokenKind::SquareClose)) {
-        return tree;
+        return std::make_shared<DelimTokenTree>(tree);
       } else {
         llvm::Expected<ast::TokenTree> tokenTree = parseTokenTree();
         if (auto e = tokenTree.takeError()) {
@@ -76,7 +77,7 @@ llvm::Expected<ast::DelimTokenTree> Parser::parseDelimTokenTree() {
         return createStringError(inconvertibleErrorCode(),
                                  "failed to parse delim token tree");
       } else if (check(TokenKind::BraceClose)) {
-        return tree;
+        return std::make_shared<DelimTokenTree>(tree);
       } else {
         llvm::Expected<ast::TokenTree> tokenTree = parseTokenTree();
         if (auto e = tokenTree.takeError()) {

@@ -3,15 +3,17 @@
 #include "AST/AST.h"
 #include "AST/DelimTokenTree.h"
 
+#include <memory>
+
 namespace rust_compiler::ast {
 
 class MacroTranscriber : public Node {
-  DelimTokenTree tree;
+  std::shared_ptr<DelimTokenTree> tree;
 
 public:
- MacroTranscriber(Location loc) : Node(loc), tree(loc) {}
+  MacroTranscriber(Location loc) : Node(loc) {}
 
-  void setTree(const DelimTokenTree &t) { tree = t; }
+  void setTree(std::shared_ptr<DelimTokenTree> t) { tree = t; }
 };
 
 } // namespace rust_compiler::ast

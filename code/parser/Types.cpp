@@ -61,7 +61,8 @@ Parser::parseMacroInvocationType() {
         "failed to parse ! token in macro invocation type");
   assert(eat(TokenKind::Not));
 
-  llvm::Expected<ast::DelimTokenTree> token = parseDelimTokenTree();
+  llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> token =
+      parseDelimTokenTree();
   if (auto e = token.takeError()) {
     llvm::errs()
         << "failed to parse delimt token tree in macro invocation type : "

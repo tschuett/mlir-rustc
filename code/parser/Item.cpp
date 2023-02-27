@@ -34,72 +34,75 @@ Parser::parseMacroInvocationSemiItem() {
   Location loc = getLocation();
   MacroInvocationSemiItem macro = {loc};
 
-  llvm::Expected<ast::SimplePath> simple = parseSimplePath();
-  if (auto e = simple.takeError()) {
+  llvm::Expected<ast::SimplePath> path = parseSimplePath();
+  if (auto e = path.takeError()) {
     llvm::errs()
-        << "failed to parse simple path in macro invocation semi item : "
-        << toString(std::move(e)) << "\n";
+        << "failed to parse simple path in macro invocation semi statement: "
+        << std::move(e) << "\n";
     exit(EXIT_FAILURE);
   }
-  macro.setPath(*simple);
+  macro.setPath(*path);
 
-  if (!check(TokenKind::Not))
-    return createStringError(
-        inconvertibleErrorCode(),
-        "failed to parse ! token in macro invoation semi macro item");
+  if (!check(TokenKind::Not)) {
+    llvm::errs()
+        << "failed to parse ! token in macro invocation semi statement: "
+        << "\n";
+    exit(EXIT_FAILURE);
+  }
   assert(eat(TokenKind::Not));
 
-  if (check(TokenKind::ParenOpen)) {
-    assert(eat(TokenKind::ParenOpen));
-    llvm::Expected<ast::DelimTokenTree> tree = parseDelimTokenTree();
-    if (auto e = simple.takeError()) {
-      llvm::errs()
-          << "failed to parse delim token tree in macro invocation semi item : "
-          << toString(std::move(e)) << "\n";
-      exit(EXIT_FAILURE);
-    }
-    macro.setTree(*tree);
-    if (!check(TokenKind::ParenClose))
+  while (true) {
+    if (check(TokenKind::Eof)) {
       return createStringError(
           inconvertibleErrorCode(),
-          "failed to parse ) token in macro invoation semi macro item");
-    assert(eat(TokenKind::ParenClose));
-    return std::make_shared<MacroInvocationSemiItem>(macro);
-  } else if (check(TokenKind::SquareOpen)) {
-    assert(eat(TokenKind::SquareOpen));
-    llvm::Expected<ast::DelimTokenTree> tree = parseDelimTokenTree();
-    if (auto e = simple.takeError()) {
-      llvm::errs()
-          << "failed to parse delim token tree in macro invocation semi item : "
-          << toString(std::move(e)) << "\n";
-      exit(EXIT_FAILURE);
+          "failed to parse macro invocation semi statement: eof");
+    } else if (check(TokenKind::ParenOpen)) {
+      macro.setKind(MacroInvocationSemiItemKind::Paren);
+      assert(eat(TokenKind::ParenOpen));
+    } else if (check(TokenKind::SquareOpen)) {
+      macro.setKind(MacroInvocationSemiItemKind::Square);
+      assert(eat(TokenKind::SquareOpen));
+    } else if (check(TokenKind::BraceOpen)) {
+      macro.setKind(MacroInvocationSemiItemKind::Brace);
+      assert(eat(TokenKind::BraceOpen));
+    } else if (check(TokenKind::ParenClose) && check(TokenKind::Semi, 1)) {
+      if (macro.getKind() != MacroInvocationSemiItemKind::Paren)
+        return createStringError(
+            inconvertibleErrorCode(),
+            "failed to parse macro invocation semi statement");
+      assert(eat(TokenKind::ParenClose));
+      assert(eat(TokenKind::Semi));
+      return std::make_shared<MacroInvocationSemiItem>(macro);
+    } else if (check(TokenKind::SquareClose) && check(TokenKind::Semi, 1)) {
+      if (macro.getKind() != MacroInvocationSemiItemKind::Square)
+        return createStringError(
+            inconvertibleErrorCode(),
+            "failed to parse macro invocation semi statement");
+      assert(eat(TokenKind::SquareClose));
+      assert(eat(TokenKind::Semi));
+      return std::make_shared<MacroInvocationSemiItem>(macro);
+    } else if (check(TokenKind::BraceClose)) {
+      if (macro.getKind() != MacroInvocationSemiItemKind::Brace)
+        return createStringError(
+            inconvertibleErrorCode(),
+            "failed to parse macro invocation semi statement");
+      assert(eat(TokenKind::BraceClose));
+      return std::make_shared<MacroInvocationSemiItem>(macro);
+    } else {
+      llvm::Expected<ast::TokenTree> tree = parseTokenTree();
+      if (auto e = tree.takeError()) {
+        llvm::errs() << "failed to parse token tree  macro invocation semi "
+                        "statement: "
+                     << std::move(e) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      macro.addTree(*tree);
     }
-    macro.setTree(*tree);
-    if (!check(TokenKind::SquareClose))
-      return createStringError(
-          inconvertibleErrorCode(),
-          "failed to parse ] token in macro invoation semi macro item");
-    assert(eat(TokenKind::ParenClose));
-    return std::make_shared<MacroInvocationSemiItem>(macro);
-  } else if (check(TokenKind::BraceOpen)) {
-    assert(eat(TokenKind::BraceOpen));
-    llvm::Expected<ast::DelimTokenTree> tree = parseDelimTokenTree();
-    if (auto e = simple.takeError()) {
-      llvm::errs()
-          << "failed to parse delim token tree in macro invocation semi item : "
-          << toString(std::move(e)) << "\n";
-      exit(EXIT_FAILURE);
-    }
-    macro.setTree(*tree);
-    if (!check(TokenKind::BraceClose))
-      return createStringError(
-          inconvertibleErrorCode(),
-          "failed to parse } token in macro invoation semi macro item");
-    assert(eat(TokenKind::ParenClose));
-    return std::make_shared<MacroInvocationSemiItem>(macro);
   }
+
   return createStringError(inconvertibleErrorCode(),
-                           "failed to parse  macro invoation semi macro item");
+                           "failed to parse macro invocation semi statement");
+
 }
 
 llvm::Expected<ast::AssociatedItem> Parser::parseAssociatedItem() {

@@ -1,12 +1,12 @@
 #include "AST/ItemDeclaration.h"
 #include "AST/LetStatement.h"
+#include "AST/MacroInvocationSemiStatement.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
-#include <llvm/Support/raw_ostream.h>
-#include "AST/MacroInvocationSemiStatement.h"
 
 #include <cstdlib>
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
@@ -37,16 +37,57 @@ Parser::parseMacroInvocationSemiStatement() {
   }
   assert(eat(TokenKind::Not));
 
-  llvm::Expected<ast::DelimTokenTree> tree = parseDelimTokenTree();
-  if (auto e = tree.takeError()) {
-    llvm::errs()
-        << "failed to parse delim token tree  macro invocation semi statement: "
-        << std::move(e) << "\n";
-    exit(EXIT_FAILURE);
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(
+          inconvertibleErrorCode(),
+          "failed to parse macro invocation semi statement: eof");
+    } else if (check(TokenKind::ParenOpen)) {
+      stmt.setKind(MacroInvocationSemiStatementKind::Paren);
+      assert(eat(TokenKind::ParenOpen));
+    } else if (check(TokenKind::SquareOpen)) {
+      stmt.setKind(MacroInvocationSemiStatementKind::Square);
+      assert(eat(TokenKind::SquareOpen));
+    } else if (check(TokenKind::BraceOpen)) {
+      stmt.setKind(MacroInvocationSemiStatementKind::Brace);
+      assert(eat(TokenKind::BraceOpen));
+    } else if (check(TokenKind::ParenClose) && check(TokenKind::Semi, 1)) {
+      if (stmt.getKind() != MacroInvocationSemiStatementKind::Paren)
+        return createStringError(
+            inconvertibleErrorCode(),
+            "failed to parse macro invocation semi statement");
+      assert(eat(TokenKind::ParenClose));
+      assert(eat(TokenKind::Semi));
+      return std::make_shared<MacroInvocationSemiStatement>(stmt);
+    } else if (check(TokenKind::SquareClose) && check(TokenKind::Semi, 1)) {
+      if (stmt.getKind() != MacroInvocationSemiStatementKind::Square)
+        return createStringError(
+            inconvertibleErrorCode(),
+            "failed to parse macro invocation semi statement");
+      assert(eat(TokenKind::SquareClose));
+      assert(eat(TokenKind::Semi));
+      return std::make_shared<MacroInvocationSemiStatement>(stmt);
+    } else if (check(TokenKind::BraceClose)) {
+      if (stmt.getKind() != MacroInvocationSemiStatementKind::Brace)
+        return createStringError(
+            inconvertibleErrorCode(),
+            "failed to parse macro invocation semi statement");
+      assert(eat(TokenKind::BraceClose));
+      return std::make_shared<MacroInvocationSemiStatement>(stmt);
+    } else {
+      llvm::Expected<ast::TokenTree> tree = parseTokenTree();
+      if (auto e = tree.takeError()) {
+        llvm::errs() << "failed to parse token tree  macro invocation semi "
+                        "statement: "
+                     << std::move(e) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      stmt.addTree(*tree);
+    }
   }
-  stmt.setTree(*tree);
 
-  return std::make_shared<MacroInvocationSemiStatement>(stmt);
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse macro invocation semi statement");
 }
 
 llvm::Expected<std::shared_ptr<ast::Statement>> Parser::parseLetStatement() {

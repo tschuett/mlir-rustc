@@ -8,15 +8,14 @@ namespace rust_compiler::ast::types {
 
 class MacroInvocationType : public TypeNoBounds {
   SimplePath path;
-  DelimTokenTree tree;
+  std::shared_ptr<DelimTokenTree> tree;
 
 public:
   MacroInvocationType(Location loc)
-      : TypeNoBounds(loc, TypeNoBoundsKind::MacroInvocation), path(loc),
-        tree(loc) {}
+      : TypeNoBounds(loc, TypeNoBoundsKind::MacroInvocation), path(loc) {}
 
   void setPath(const SimplePath &p) { path = p; }
-  void setTree(const DelimTokenTree &t) { tree = t; }
+  void setTree(std::shared_ptr<DelimTokenTree> t) { tree = t; }
 };
 
 } // namespace rust_compiler::ast::types

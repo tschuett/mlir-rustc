@@ -11,13 +11,13 @@ class DelimTokenTree;
 
 class TokenTree : public Node {
   std::optional<lexer::Token> token;
-  std::optional<DelimTokenTree> tree;
+  std::shared_ptr<DelimTokenTree> tree;
 
 public:
   TokenTree(Location loc) : Node(loc) {}
 
   void setToken(const lexer::Token &t) { token = t; }
-  void setTree(const DelimTokenTree &delim) { tree = delim; }
+  void setTree(std::shared_ptr<DelimTokenTree> delim) { tree = delim; }
 };
 
 } // namespace rust_compiler::ast

@@ -124,7 +124,7 @@ llvm::Expected<ast::AttrInput> Parser::parseAttrInput() {
     return input;
   }
 
-  llvm::Expected<ast::DelimTokenTree> tokenTree = parseDelimTokenTree();
+  llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> tokenTree = parseDelimTokenTree();
   if (auto e = tokenTree.takeError()) {
     llvm::errs() << "failed to parse token tree in AttrInput: "
                  << toString(std::move(e)) << "\n";

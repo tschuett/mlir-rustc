@@ -373,11 +373,11 @@ public:
   llvm::Expected<std::shared_ptr<ast::Statement>> parseLetStatement();
   llvm::Expected<std::shared_ptr<ast::Statement>> parseItemDeclaration();
   llvm::Expected<std::shared_ptr<ast::Statement>> parseExpressionStatement();
-//  llvm::Expected<std::shared_ptr<ast::Statement>>
-//  parseMacroInvocationSemiStatement();
+  llvm::Expected<std::shared_ptr<ast::Statement>>
+  parseMacroInvocationSemiStatement();
 
-  //llvm::Expected<std::shared_ptr<ast::MacroItem>>
-  //parseMacroInvocationSemiItem();
+  llvm::Expected<std::shared_ptr<ast::MacroItem>>
+  parseMacroInvocationSemiItem();
 
   llvm::Expected<std::shared_ptr<ast::MacroItem>> parseMacroRulesDefinition();
   llvm::Expected<std::shared_ptr<ast::SelfParam>> parseShorthandSelf();
@@ -391,7 +391,7 @@ public:
 
   llvm::Expected<ast::AttrInput> parseAttrInput();
 
-  llvm::Expected<ast::DelimTokenTree> parseDelimTokenTree();
+  llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> parseDelimTokenTree();
   llvm::Expected<ast::TokenTree> parseTokenTree();
 
   llvm::Expected<ast::AssociatedItem> parseAssociatedItem();
