@@ -14,6 +14,37 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
+bool Parser::checkLifetime(uint8_t offset) {
+  if (check(TokenKind::LIFETIME_OR_LABEL, offset)) {
+    return true;
+  } else if (checkKeyWord(KeyWordKind::KW_STATICLIFETIME, offset)) {
+    return true;
+  } else if (check(TokenKind::LIFETIME_TOKEN, offset) &&
+             getToken(offset).getStorage() == "'_") {
+    return true;
+  }
+  return false;
+}
+
+llvm::Expected<ast::Lifetime> Parser::parseLifetimeAsLifetime() {
+  Location loc = getLocation();
+  Lifetime lf = {loc};
+
+  if (check(TokenKind::LIFETIME_OR_LABEL)) {
+    lf.setLifetime(getToken().getStorage());
+  } else if (checkKeyWord(KeyWordKind::KW_STATICLIFETIME)) {
+    lf.setLifetime(getToken().getStorage());
+  } else if (check(TokenKind::LIFETIME_TOKEN) &&
+             getToken().getStorage() == "'_") {
+    lf.setLifetime(getToken().getStorage());
+  } else {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse lifetime");
+  }
+
+  return lf;
+}
+
 bool Parser::checkDelimiters() {
   if (check(TokenKind::BraceOpen)) {
     return true;
@@ -169,7 +200,7 @@ rust_compiler::Location Parser::getLocation() {
   return ts.getAt(offset).getLocation();
 }
 
-lexer::Token Parser::getToken() { return ts.getAt(offset); }
+lexer::Token Parser::getToken(uint8_t off) { return ts.getAt(offset + off); }
 
 llvm::Expected<std::shared_ptr<ast::VisItem>> Parser::parseVisItem() {
   std::optional<ast::Visibility> vis;

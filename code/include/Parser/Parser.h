@@ -60,6 +60,7 @@
 #include "Lexer/TokenStream.h"
 #include "Location.h"
 
+#include <_types/_uint8_t.h>
 #include <llvm/Support/Error.h>
 #include <string_view>
 
@@ -475,7 +476,7 @@ private:
   bool checkLoopLabel();
 
   bool checkLiteral();
-  bool checkLifetime(size_t offset);
+  bool checkLifetime(uint8_t offset);
 
   /// super | self | Self | crate | $crate
   bool checkSuperSelf();
@@ -493,7 +494,7 @@ private:
   bool eat(lexer::TokenKind token);
   bool eatKeyWord(lexer::KeyWordKind keyword);
 
-  lexer::Token getToken();
+  lexer::Token getToken(uint8_t = 0);
 
   CheckPoint getCheckPoint();
   void recover(const CheckPoint &cp);

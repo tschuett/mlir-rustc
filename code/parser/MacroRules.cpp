@@ -20,6 +20,20 @@ namespace rust_compiler::parser {
 llvm::Expected<ast::MacroMatch> Parser::parseMacroMatch() {
   Location loc = getLocation();
   MacroMatch match = {loc};
+
+  if (check(TokenKind::Dollar)) {
+      if (check(TokenKind::ParenOpen)) {
+        // MacroMatch
+      } else {
+      }
+  } else if (checkDelimiters()) {
+    // MacroMatcher
+  } else if (!checkDelimiters()) {
+    match.setToken(getToken());
+    return match;
+  }
+
+  // error
 }
 
 llvm::Expected<ast::MacroRepSep> Parser::parseMacroRepSep() {

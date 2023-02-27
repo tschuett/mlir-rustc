@@ -113,6 +113,7 @@ enum class TokenKind {
   ShrEq,
   OrEq,
   FatArrow,
+  Dollar
 };
 
 class Token {
@@ -164,6 +165,9 @@ public:
   rust_compiler::Location getLocation() const { return loc; }
 
   std::string getLiteral() const { return storage; }
+
+    std::string getStorage() const { return storage; }
+
 };
 
 std::string Token2String(TokenKind kind);
