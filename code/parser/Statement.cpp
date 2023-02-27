@@ -1,6 +1,7 @@
 #include "AST/ItemDeclaration.h"
 #include "AST/LetStatement.h"
 #include "AST/MacroInvocationSemiStatement.h"
+#include "AST/OuterAttributes.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
@@ -179,7 +180,7 @@ llvm::Expected<std::shared_ptr<ast::Statement>> Parser::parseStatement() {
       exit(EXIT_FAILURE);
     }
     if (checkVisItem()) {
-      llvm::Expected<std::shared_ptr<ast::VisItem>> visItem = parseVisItem();
+      llvm::Expected<std::shared_ptr<ast::VisItem>> visItem = parseVisItem(*outer);
       if (auto e = visItem.takeError()) {
         llvm::errs() << "failed to parse VisItem in statement: " << std::move(e)
                      << "\n";
@@ -191,7 +192,7 @@ llvm::Expected<std::shared_ptr<ast::Statement>> Parser::parseStatement() {
       return std::make_shared<ItemDeclaration>(item);
     } else if (checkMacroItem()) {
       llvm::Expected<std::shared_ptr<ast::MacroItem>> macroItem =
-          parseMacroItem();
+          parseMacroItem(*outer);
       if (auto e = macroItem.takeError()) {
         llvm::errs() << "failed to parse MacroItem in statement: "
                      << std::move(e) << "\n";
@@ -210,8 +211,9 @@ llvm::Expected<std::shared_ptr<ast::Statement>> Parser::parseStatement() {
     }
   } else { // no outer attributes
     // COPY & PASTE
+    std::span<OuterAttribute> outer;
     if (checkVisItem()) {
-      llvm::Expected<std::shared_ptr<ast::VisItem>> visItem = parseVisItem();
+      llvm::Expected<std::shared_ptr<ast::VisItem>> visItem = parseVisItem(outer);
       if (auto e = visItem.takeError()) {
         llvm::errs() << "failed to parse VisItem in statement: " << std::move(e)
                      << "\n";
@@ -222,7 +224,7 @@ llvm::Expected<std::shared_ptr<ast::Statement>> Parser::parseStatement() {
       return std::make_shared<ItemDeclaration>(item);
     } else if (checkMacroItem()) {
       llvm::Expected<std::shared_ptr<ast::MacroItem>> macroItem =
-          parseMacroItem();
+          parseMacroItem(outer);
       if (auto e = macroItem.takeError()) {
         llvm::errs() << "failed to parse MacroItem in statement: "
                      << std::move(e) << "\n";

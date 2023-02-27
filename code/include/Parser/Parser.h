@@ -91,9 +91,9 @@ public:
   llvm::Expected<ast::use_tree::UseTree> parseUseTree();
 
   llvm::Expected<std::shared_ptr<ast::Item>> parseItem();
-  llvm::Expected<std::shared_ptr<ast::MacroItem>> parseMacroItem();
+  llvm::Expected<std::shared_ptr<ast::MacroItem>> parseMacroItem(std::span<ast::OuterAttribute>);
 
-  llvm::Expected<std::shared_ptr<ast::VisItem>> parseVisItem();
+  llvm::Expected<std::shared_ptr<ast::VisItem>> parseVisItem(std::span<ast::OuterAttribute>);
 
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern();
@@ -507,6 +507,8 @@ private:
   bool checkStatement();
   bool checkStaticOrUnderscore();
   bool checkVisItem();
+
+  // precision could be improved
   bool checkMacroItem();
   //bool checkTypeParamBound();
   bool checkTraitBound();

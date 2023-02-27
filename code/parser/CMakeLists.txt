@@ -28,6 +28,7 @@ add_library(parser
            ArithmeticOrLogicalExpression.cpp
            MacroRules.cpp
            DelimTokenTree.cpp
+           ParseItem.cpp
            )
 
 

@@ -40,6 +40,7 @@
 - [ ] iterators
 - [ ] .pcm
 - [ ] outer attributes on expressions
+- [ ] outer attributes on item
 - [ ] macros
 
 # References

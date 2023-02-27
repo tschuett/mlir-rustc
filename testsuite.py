@@ -25,7 +25,7 @@ def test_syntax_only():
 
 
 def test_with_sema():
-    mypath = "testsuite/sema"
+    mypath = "testsuite/withsema"
     onlyfiles = [join(mypath, f)
                  for f in listdir(mypath) if isfile(join(mypath, f))]
     print(onlyfiles)

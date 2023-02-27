@@ -2,6 +2,7 @@
 
 #include "AST/GenericParam.h"
 #include "AST/Module.h"
+#include "AST/OuterAttribute.h"
 #include "AST/Visiblity.h"
 #include "AST/WhereClause.h"
 #include "Lexer/KeyWords.h"
@@ -14,6 +15,16 @@ using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
+
+bool Parser::checkMacroItem() {
+  if (checkKeyWord(KeyWordKind::KW_MACRO_RULES))
+    return true;
+
+  if (checkSimplePathSegment())
+    return true;
+
+  return false;
+}
 
 bool Parser::checkStaticOrUnderscore() {
   if (checkKeyWord(KeyWordKind::KW_STATICLIFETIME))
@@ -212,7 +223,8 @@ rust_compiler::Location Parser::getLocation() {
 
 lexer::Token Parser::getToken(uint8_t off) { return ts.getAt(offset + off); }
 
-llvm::Expected<std::shared_ptr<ast::VisItem>> Parser::parseVisItem() {
+llvm::Expected<std::shared_ptr<ast::VisItem>>
+Parser::parseVisItem(std::span<OuterAttribute>) {
   std::optional<ast::Visibility> vis;
 
   if (checkKeyWord(lexer::KeyWordKind::KW_PUB)) {

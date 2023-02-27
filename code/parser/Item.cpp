@@ -22,7 +22,8 @@ using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<std::shared_ptr<ast::MacroItem>> Parser::parseMacroItem() {
+llvm::Expected<std::shared_ptr<ast::MacroItem>>
+Parser::parseMacroItem(std::span<OuterAttribute>) {
   if (checkKeyWord(KeyWordKind::KW_MACRO_RULES))
     return parseMacroRulesDefinition();
 
@@ -102,7 +103,6 @@ Parser::parseMacroInvocationSemiItem() {
 
   return createStringError(inconvertibleErrorCode(),
                            "failed to parse macro invocation semi statement");
-
 }
 
 llvm::Expected<ast::AssociatedItem> Parser::parseAssociatedItem() {
