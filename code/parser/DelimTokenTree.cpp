@@ -15,18 +15,19 @@ llvm::Expected<ast::TokenTree> Parser::parseTokenTree() {
   TokenTree tree = {loc};
 
   if (checkDelimiters()) {
-    llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> delimTokenTree = parseDelimTokenTree();
+    llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> delimTokenTree =
+        parseDelimTokenTree();
     if (auto e = delimTokenTree.takeError()) {
       llvm::errs() << "failed to parse delim token tree in token tree : "
                    << toString(std::move(e)) << "\n";
       exit(EXIT_FAILURE);
     }
     tree.setTree(*delimTokenTree);
-  } else {
-    tree.setToken(getToken());
-    assert(eat(getToken().getKind()));
-    return tree;
   }
+
+  tree.setToken(getToken());
+  assert(eat(getToken().getKind()));
+  return tree;
 }
 
 llvm::Expected<std::shared_ptr<ast::DelimTokenTree>>
