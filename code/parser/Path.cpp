@@ -3,10 +3,12 @@
 #include "AST/PathInExpression.h"
 #include "AST/QualifiedPathInExpression.h"
 #include "AST/SimplePath.h"
+#include "AST/SimplePathSegment.h"
 #include "AST/Types/QualifiedPathInType.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypePath.h"
 #include "AST/Types/TypePathSegment.h"
+#include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 #include "llvm/Support/Error.h"
@@ -17,6 +19,36 @@ using namespace rust_compiler::ast::types;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+llvm::Expected<ast::SimplePathSegment> Parser::parseSimplePathSegment() {
+  Location loc = getLocation();
+  SimplePathSegment seg = {loc};
+
+  if (checkKeyWord(KeyWordKind::KW_SUPER)) {
+    seg.setKeyWord(KeyWordKind::KW_SUPER);
+    assert(eatKeyWord(KeyWordKind::KW_SUPER));
+    return seg;
+  } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
+    seg.setKeyWord(KeyWordKind::KW_SELFVALUE);
+    assert(eatKeyWord(KeyWordKind::KW_SELFVALUE));
+    return seg;
+  } else if (checkKeyWord(KeyWordKind::KW_CRATE)) {
+    seg.setKeyWord(KeyWordKind::KW_CRATE);
+    assert(eatKeyWord(KeyWordKind::KW_CRATE));
+    return seg;
+  } else if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE)) {
+    seg.setKeyWord(KeyWordKind::KW_DOLLARCRATE);
+    assert(eatKeyWord(KeyWordKind::KW_DOLLARCRATE));
+    return seg;
+  } else if (checkIdentifier()) {
+    assert(eat(TokenKind::Identifier));
+    seg.setIdentifier(getToken().getIdentifier());
+    return seg;
+  }
+
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse simple path segment");
+}
 
 llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parsePathExpression() {
   if (check(TokenKind::Lt))

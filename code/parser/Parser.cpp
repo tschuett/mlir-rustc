@@ -119,18 +119,18 @@ bool Parser::eatPathIdentSegment() {
 }
 
 /// IDENTIFIER | super | self | Self | crate | $crate
-bool Parser::checkPathIdentSegment() {
-  if (check(TokenKind::Identifier))
+bool Parser::checkPathIdentSegment(uint8_t offset) {
+  if (check(TokenKind::Identifier), offset)
     return true;
-  if (checkKeyWord(KeyWordKind::KW_SUPER))
+  if (checkKeyWord(KeyWordKind::KW_SUPER), offset)
     return true;
-  if (checkKeyWord(KeyWordKind::KW_SELFVALUE))
+  if (checkKeyWord(KeyWordKind::KW_SELFVALUE), offset)
     return true;
-  if (checkKeyWord(KeyWordKind::KW_SELFTYPE))
+  if (checkKeyWord(KeyWordKind::KW_SELFTYPE), offset)
     return true;
-  if (checkKeyWord(KeyWordKind::KW_CRATE))
+  if (checkKeyWord(KeyWordKind::KW_CRATE), offset)
     return true;
-  if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE))
+  if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE), offset)
     return true;
   return false;
 }
@@ -150,15 +150,17 @@ bool Parser::checkSimplePathSegment() {
   return false;
 }
 
-bool Parser::checkLiteral() {
-  return check(TokenKind::CHAR_LITERAL) || check(TokenKind::STRING_LITERAL) ||
-         check(TokenKind::RAW_STRING_LITERAL) ||
-         check(TokenKind::BYTE_LITERAL) ||
-         check(TokenKind::BYTE_STRING_LITERAL) ||
-         check(TokenKind::RAW_BYTE_STRING_LITERAL) ||
-         check(TokenKind::INTEGER_LITERAL) || check(TokenKind::FLOAT_LITERAL) ||
-         checkKeyWord(KeyWordKind::KW_TRUE) ||
-         checkKeyWord(KeyWordKind::KW_FALSE);
+bool Parser::checkLiteral(uint8_t offset) {
+  return check(TokenKind::CHAR_LITERAL, offset) ||
+         check(TokenKind::STRING_LITERAL, offset) ||
+         check(TokenKind::RAW_STRING_LITERAL, offset) ||
+         check(TokenKind::BYTE_LITERAL, offset) ||
+         check(TokenKind::BYTE_STRING_LITERAL, offset) ||
+         check(TokenKind::RAW_BYTE_STRING_LITERAL, offset) ||
+         check(TokenKind::INTEGER_LITERAL, offset) ||
+         check(TokenKind::FLOAT_LITERAL, offset) ||
+         checkKeyWord(KeyWordKind::KW_TRUE, offset) ||
+         checkKeyWord(KeyWordKind::KW_FALSE, offset);
 }
 
 CheckPoint Parser::getCheckPoint() { return CheckPoint(offset); }

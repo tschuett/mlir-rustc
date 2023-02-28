@@ -16,6 +16,8 @@
 #include "AST/FunctionParam.h"
 #include "AST/FunctionParamPattern.h"
 #include "AST/FunctionParameters.h"
+#include "AST/GenericArgsBinding.h"
+#include "AST/GenericArgsConst.h"
 #include "AST/GenericParam.h"
 #include "AST/Lifetime.h"
 #include "AST/LifetimeBounds.h"
@@ -91,10 +93,12 @@ public:
   llvm::Expected<ast::use_tree::UseTree> parseUseTree();
 
   llvm::Expected<std::shared_ptr<ast::Item>> parseItem();
-  llvm::Expected<std::shared_ptr<ast::MacroItem>> parseMacroItem(std::span<ast::OuterAttribute>);
+  llvm::Expected<std::shared_ptr<ast::MacroItem>>
+      parseMacroItem(std::span<ast::OuterAttribute>);
 
-  llvm::Expected<std::shared_ptr<ast::VisItem>> parseVisItem(std::span<ast::OuterAttribute>);
-w
+  llvm::Expected<std::shared_ptr<ast::VisItem>>
+      parseVisItem(std::span<ast::OuterAttribute>);
+
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern();
 
@@ -335,15 +339,15 @@ w
 
   llvm::Expected<std::shared_ptr<ast::Expression>> parseLoopExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>>
-  parseIteratorLoopExpression(std::optional<std::string>);
+      parseIteratorLoopExpression(std::optional<std::string>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
-  parsePredicatePatternLoopExpression(std::optional<std::string>);
+      parsePredicatePatternLoopExpression(std::optional<std::string>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
-  parsePredicateLoopExpression(std::optional<std::string>);
+      parsePredicateLoopExpression(std::optional<std::string>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
-  parseInfiniteLoopExpression(std::optional<std::string>);
+      parseInfiniteLoopExpression(std::optional<std::string>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
-  parseLabelBlockExpression(std::optional<std::string>);
+      parseLabelBlockExpression(std::optional<std::string>);
   // llvm::Expected<std::shared_ptr<ast::Expression>>
   // parsePatternLoopExpression();
 
@@ -353,12 +357,16 @@ w
   llvm::Expected<ast::GenericParam> parseGenericParam();
 
   llvm::Expected<ast::GenericArgs> parseGenericArgs();
+  llvm::Expected<ast::GenericArg> parseGenericArg(std::optional<ast::GenericArgKind> last);
   llvm::Expected<ast::GenericParams> parseGenericParams();
+  llvm::Expected<ast::GenericArgsConst> parseGenericArgsConst();
+  llvm::Expected<ast::GenericArgsBinding> parseGenericArgsBinding();
   llvm::Expected<ast::WhereClause> parseWhereClause();
   llvm::Expected<std::shared_ptr<ast::WhereClauseItem>> parseWhereClauseItem();
   llvm::Expected<ast::types::ForLifetimes> parseForLifetimes();
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> parseLifetimeAsTypeParamBound();
+  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>>
+  parseLifetimeAsTypeParamBound();
   llvm::Expected<ast::Lifetime> parseLifetimeAsLifetime();
   llvm::Expected<ast::LifetimeBounds> parseLifetimeBounds();
   llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
@@ -391,6 +399,7 @@ w
   parseTypeParamBound();
 
   llvm::Expected<ast::SimplePath> parseSimplePath();
+  llvm::Expected<ast::SimplePathSegment> parseSimplePathSegment();
 
   llvm::Expected<ast::AttrInput> parseAttrInput();
 
@@ -477,14 +486,14 @@ private:
 
   bool checkLoopLabel();
 
-  bool checkLiteral();
+  bool checkLiteral(uint8_t offset = 0);
   bool checkLifetime(uint8_t offset = 0);
 
   /// super | self | Self | crate | $crate
   bool checkSuperSelf();
 
   /// IDENTIFIER | super | self | Self | crate | $crate
-  bool checkPathIdentSegment();
+  bool checkPathIdentSegment(uint8_t offset = 0);
   bool eatPathIdentSegment();
 
   /// IDENTIFIER | super | self | crate | $crate
@@ -501,18 +510,19 @@ private:
   CheckPoint getCheckPoint();
   void recover(const CheckPoint &cp);
 
-  //bool checkWhereClauseItem();
-  //bool checkLifetime();
+  // bool checkWhereClauseItem();
+  // bool checkLifetime();
 
   bool checkExpressionWithBlock();
   bool checkExpressionWithoutBlock();
+  bool checkExpressionWithoutBlock(std::shared_ptr<ast::Expression>);
   bool checkStatement();
   bool checkStaticOrUnderscore();
   bool checkVisItem();
 
   // precision could be improved
   bool checkMacroItem();
-  //bool checkTypeParamBound();
+  // bool checkTypeParamBound();
   bool checkTraitBound();
   bool checkIdentifier();
   bool checkIntegerLiteral();
@@ -521,6 +531,9 @@ private:
   bool checkRangeTerminator();
 
   bool checkDelimiters();
+
+  bool checkPathOrStructOrMacro();
+  bool checkPathExprSegment(uint8_t offset = 0);
 };
 
 } // namespace rust_compiler::parser

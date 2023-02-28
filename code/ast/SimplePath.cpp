@@ -12,14 +12,5 @@ void SimplePath::addPathSegment(SimplePathSegment &seg) {
   segments.push_back(seg);
 }
 
-std::string SimplePath::toString() {
-  std::stringstream s;
-
-  for (SimplePathSegment &seg : segments) {
-    s << seg.getSegment() << "::";
-  }
-
-  return s.str();
-}
 
 } // namespace rust_compiler::ast

@@ -1,3 +1,7 @@
+#include "AST/GenericArg.h"
+#include "AST/GenericArgs.h"
+#include "AST/GenericArgsBinding.h"
+#include "AST/GenericArgsConst.h"
 #include "AST/Lifetime.h"
 #include "AST/Types/ArrayType.h"
 #include "AST/Types/ImplTraitType.h"
@@ -15,12 +19,107 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <optional>
+
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast::types;
 using namespace rust_compiler::ast;
 using namespace llvm;
 
 namespace rust_compiler::parser {
+
+bool Parser::checkPathExprSegment(uint8_t offset) {
+  if (!checkPathIdentSegment(offset))
+    return false;
+  if (check(TokenKind::PathSep, offset + 1))
+    return true;
+  return true;
+}
+
+llvm::Expected<ast::GenericArgsConst> Parser::parseGenericArgsConst() {
+  Location loc = getLocation();
+  GenericArgsConst cons = {loc};
+
+  if (check(TokenKind::BraceOpen)) {
+    // block
+    llvm::Expected<std::shared_ptr<ast::Expression>> block =
+        parseBlockExpression();
+    if (auto e = block.takeError()) {
+      llvm::errs()
+          << "failed to parse block expression in generic args const : "
+          << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    cons.setBlock(*block);
+  } else if (checkLiteral()) {
+    // literal
+    llvm::Expected<std::shared_ptr<ast::Expression>> literal =
+        parseLiteralExpression();
+    if (auto e = literal.takeError()) {
+      llvm::errs()
+          << "failed to parse literal expression in generic args const : "
+          << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    cons.setLiteral(*literal);
+  } else if (check(TokenKind::Minus) && checkLiteral(1)) {
+    assert(eat(TokenKind::Minus));
+    // minus literal
+    cons.setLeadingMinus();
+    llvm::Expected<std::shared_ptr<ast::Expression>> literal =
+        parseLiteralExpression();
+    if (auto e = literal.takeError()) {
+      llvm::errs()
+          << "failed to parse literal expression in generic args const : "
+          << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    cons.setLiteral(*literal);
+  } else if (checkSimplePathSegment()) {
+    // simple path segment
+    llvm::Expected<ast::SimplePathSegment> seg = parseSimplePathSegment();
+    if (auto e = seg.takeError()) {
+      llvm::errs()
+          << "failed to parse simple path segment in generic args const : "
+          << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    cons.setSegment(*seg);
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse generic args const");
+}
+
+llvm::Expected<ast::GenericArgsBinding> Parser::parseGenericArgsBinding() {
+  Location loc = getLocation();
+  GenericArgsBinding binding = {loc};
+
+  if (!check(TokenKind::Identifier)) {
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse generic args binding: identifier");
+  }
+  binding.setIdentifier(getToken().getIdentifier());
+  assert(eat(TokenKind::Identifier));
+
+  if (!check(TokenKind::Eq)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse generic args binding: =");
+  }
+  assert(eat(TokenKind::Eq));
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+      parseType();
+  if (auto e = type.takeError()) {
+    llvm::errs() << "failed to parse type expression in generic args binding : "
+                 << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  binding.setType(*type);
+
+  return binding;
+}
 
 llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>>
 Parser::parseLifetimeAsTypeParamBound() {
@@ -468,7 +567,134 @@ Parser::parseNeverType() {
                            "failed to parse never type");
 }
 
-llvm::Expected<ast::GenericArgs> Parser::parseGenericArgs() { assert(false); }
+llvm::Expected<ast::GenericArgs> Parser::parseGenericArgs() {
+  Location loc = getLocation();
+  GenericArgs args = {loc};
+
+  if (!check(TokenKind::Lt)) {
+    return createStringError(inconvertibleErrorCode(),
+                             "failed to parse generic args");
+  }
+  assert(eat(TokenKind::Lt));
+
+  if (check(TokenKind::Gt)) {
+    assert(eat(TokenKind::Gt));
+    return args;
+  }
+
+  std::optional<GenericArgKind> last = std::nullopt;
+
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse generic args: eof");
+    } else if (check(TokenKind::Gt)) {
+      assert(eat(TokenKind::Gt));
+      return args;
+    } else if (check(TokenKind::Comma) && check(TokenKind::Gt, 1)) {
+      assert(eat(TokenKind::Comma));
+      assert(eat(TokenKind::Gt));
+      args.setTrailingSemi();
+      return args;
+    } else {
+      llvm::Expected<ast::GenericArg> arg = parseGenericArg(last);
+      if (auto e = arg.takeError()) {
+        llvm::errs() << "failed to parse generic arg in generic args : "
+                     << toString(std::move(e)) << "\n";
+        exit(EXIT_FAILURE);
+      }
+      args.addArg(*arg);
+      last = arg->getKind();
+    }
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse generic args");
+}
+
+llvm::Expected<ast::GenericArg>
+Parser::parseGenericArg(std::optional<GenericArgKind> last) {
+  Location loc = getLocation();
+  GenericArg arg = {loc};
+
+  if (checkLifetime()) {
+    // lifetime
+    llvm::Expected<ast::Lifetime> life = parseLifetimeAsLifetime();
+    if (auto e = life.takeError()) {
+      llvm::errs() << "failed to parse lifetime in generic arg : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    arg.setLifetime(*life);
+    return arg;
+  } else if (checkIdentifier() && check(TokenKind::Eq, 1)) {
+    // binding
+    llvm::Expected<ast::GenericArgsBinding> bind = parseGenericArgsBinding();
+    if (auto e = bind.takeError()) {
+      llvm::errs() << "failed to parse generic args binding in generic arg : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    arg.setArgsBinding(*bind);
+    return arg;
+  } else if (checkLiteral()) {
+    llvm::Expected<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
+    if (auto e = constArgs.takeError()) {
+      llvm::errs() << "failed to parse generic args const in generic arg : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    arg.setArgsConst(*constArgs);
+    return arg;
+  } else if (check(TokenKind::Minus) && checkLiteral(1)) {
+    llvm::Expected<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
+    if (auto e = constArgs.takeError()) {
+      llvm::errs() << "failed to parse generic args const in generic arg : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    arg.setArgsConst(*constArgs);
+    return arg;
+  } else if (check(TokenKind::BraceOpen)) {
+    llvm::Expected<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
+    if (auto e = constArgs.takeError()) {
+      llvm::errs() << "failed to parse generic args const in generic arg : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    arg.setArgsConst(*constArgs);
+    return arg;
+  } else if (checkSimplePathSegment() && check(TokenKind::Comma, 1)) {
+    llvm::Expected<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
+    if (auto e = constArgs.takeError()) {
+      llvm::errs() << "failed to parse generic args const in generic arg : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    arg.setArgsConst(*constArgs);
+    return arg;
+  } else if (checkSimplePathSegment() && check(TokenKind::Lt, 1)) {
+    llvm::Expected<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
+    if (auto e = constArgs.takeError()) {
+      llvm::errs() << "failed to parse generic args const in generic arg : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    arg.setArgsConst(*constArgs);
+    return arg;
+  } else {
+    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+        parseType();
+    if (auto e = type.takeError()) {
+      llvm::errs() << "failed to parse type expression in generic arg : "
+                   << toString(std::move(e)) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    arg.setType(*type);
+    return arg;
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse generic arg");
+}
 
 llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>>
 Parser::parseTypeParamBound() {

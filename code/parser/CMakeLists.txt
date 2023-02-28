@@ -30,6 +30,7 @@ add_library(parser
            DelimTokenTree.cpp
            ParseItem.cpp
            VisItem.cpp
+           CheckExpressionWithoutBlock.cpp
            )
 
 

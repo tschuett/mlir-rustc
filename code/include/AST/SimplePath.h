@@ -16,10 +16,6 @@ public:
   explicit SimplePath(Location loc) : Node(loc) {}
   void setWithDoubleColon();
   void addPathSegment(SimplePathSegment &seg);
-
-  size_t getLength() const;
-
-  std::string toString();
 };
 
 } // namespace rust_compiler::ast
