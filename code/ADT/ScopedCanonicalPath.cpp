@@ -15,12 +15,27 @@ ScopedCanonicalPathScope::~ScopedCanonicalPathScope() {
   parent->deregisterScope(this);
 }
 
-  //CanonicalPath ScopedCanonicalPath::getCurrentPath() const {}
+CanonicalPath ScopedCanonicalPath::getCurrentPath() const {
+
+  std::vector<std::pair<basic::NodeId, std::string>> path;
+  std::stack<std::pair<basic::NodeId, std::string>> segs(segments);
+
+  // copy
+  while (!segs.empty()) {
+    path.push_back(segs.top());
+    segs.pop();
+  }
+
+  std::reverse(path.begin(), path.end());
+
+  return CanonicalPath(path, crateName);
+}
 
 void ScopedCanonicalPath::registerScope(ScopedCanonicalPathScope *scope,
                                         basic::NodeId nodeId,
                                         std::string_view segment) {
-  std::pair<basic::NodeId, std::string> p = std::make_pair(nodeId, std::string(segment));
+  std::pair<basic::NodeId, std::string> p =
+      std::make_pair(nodeId, std::string(segment));
   scopes.push(scope);
   segments.push(p);
   assert(false);

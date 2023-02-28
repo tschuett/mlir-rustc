@@ -69,6 +69,8 @@
 * https://github.com/LightningCreations/lccc
 * https://github.com/thepowersgang/mrustc
 * https://rustc-dev-guide.rust-lang.org/about-this-guide.html
+* https://spec.ferrocene.dev/index.html
+* https://github.com/Rust-GCC/gccrs
 
 ## MIR
 

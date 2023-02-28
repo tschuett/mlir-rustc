@@ -227,28 +227,28 @@ def VarDeclarationOp : Hir_Op<"vardeclare", []> {
 // VTable
 //===----------------------------------------------------------------------===//
 
-def Mir_MirEndOp : Hir_Op<"end", [Terminator]> {
+def Hir_HirEndOp : Hir_Op<"end", [Terminator]> {
   let summary = "the end instruction";
 
   let description = [{
-    The end terminator is a special terminator used inside various MIR
+    The end terminator is a special terminator used inside various HIR
     operations that have regions.  End is thus the custom invisible terminator
     for these operations.  It is implicit and need not appear in the textual
     representation.
   }];
 }
 
-def ImplicitMirTerminator : SingleBlockImplicitTerminator<"MirEndOp">;
+def ImplicitHirTerminator : SingleBlockImplicitTerminator<"HirEndOp">;
 
 
-def VTableOp: Hir_Op<"vtable", [IsolatedFromAbove, Symbol, ImplicitMirTerminator]> {
+def VTableOp: Hir_Op<"vtable", [IsolatedFromAbove, Symbol, ImplicitHirTerminator]> {
   let summary = "Vtable";
 
   let description = [{
    ```mlir
-      mir.vtable @_QDTMquuzTfoo {
-        mir.vt_entry method1, @_QFNMquuzTfooPmethod1AfooR
-        mir.vt_entry method2, @_QFNMquuzTfooPmethod2AfooII
+      hir.vtable @_QDTMquuzTfoo {
+        hir.vt_entry method1, @_QFNMquuzTfooPmethod1AfooR
+        hir.vt_entry method2, @_QFNMquuzTfooPmethod2AfooII
       }
     ```
   }];

@@ -188,7 +188,6 @@ def VTableOp: Mir_Op<"vtable", [IsolatedFromAbove, Symbol, ImplicitMirTerminator
   );
 
   let hasCustomAssemblyFormat = 1;
-  let hasVerifier = 1;
 
   let regions = (region AnyRegion:$region);
 

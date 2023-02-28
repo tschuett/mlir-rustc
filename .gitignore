@@ -121,3 +121,5 @@ docs/pdflatex18740.fls
 
 code/include/Hir/HirOpsInterfaces.cpp.inc
 code/include/Hir/HirOpsInterfaces.h.inc
+
+tools/rustc-opt/rustc-opt
