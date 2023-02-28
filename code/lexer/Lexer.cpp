@@ -344,25 +344,25 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
     std::string ws = tryLexWhiteSpace(code);
     code.remove_prefix(ws.size());
 
-//    for (auto &ik : IK) {
-//      if (code.starts_with(std::get<1>(ik))) {
-//        ts.append(Token(Location(fileName, lineNumber, columnNumber),
-//                        std::get<0>(ik)));
-//        code.remove_prefix(std::get<1>(ik).size());
-//        columnNumber += std::get<1>(ik).size();
-//        continue;
-//      }
-//    }
-//
-//    for (auto &fk : FK) {
-//      if (code.starts_with(std::get<1>(fk))) {
-//        ts.append(Token(Location(fileName, lineNumber, columnNumber),
-//                        std::get<0>(fk)));
-//        code.remove_prefix(std::get<1>(fk).size());
-//        columnNumber += std::get<1>(fk).size();
-//        continue;
-//      }
-//    }
+    //    for (auto &ik : IK) {
+    //      if (code.starts_with(std::get<1>(ik))) {
+    //        ts.append(Token(Location(fileName, lineNumber, columnNumber),
+    //                        std::get<0>(ik)));
+    //        code.remove_prefix(std::get<1>(ik).size());
+    //        columnNumber += std::get<1>(ik).size();
+    //        continue;
+    //      }
+    //    }
+    //
+    //    for (auto &fk : FK) {
+    //      if (code.starts_with(std::get<1>(fk))) {
+    //        ts.append(Token(Location(fileName, lineNumber, columnNumber),
+    //                        std::get<0>(fk)));
+    //        code.remove_prefix(std::get<1>(fk).size());
+    //        columnNumber += std::get<1>(fk).size();
+    //        continue;
+    //      }
+    //    }
 
     ws = tryLexWhiteSpace(code);
     code.remove_prefix(ws.size());
@@ -484,8 +484,8 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       code.remove_prefix(2);
       columnNumber += 2;
     } else if (code.starts_with("<")) {
-      ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::Le));
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Le));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("::")) {
@@ -619,7 +619,10 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
   llvm::outs() << "lexer: done"
                << "\n";
 
-  ts.print(50);
+  ts.append(
+      Token(Location(fileName, lineNumber, columnNumber), TokenKind::Eof));
+
+  //ts.print(50);
   return ts;
 }
 

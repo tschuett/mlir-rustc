@@ -38,7 +38,7 @@ TEST(LexerTest, CheckInteger) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecLiteral);
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::INTEGER_LITERAL);
 };
 
 TEST(LexerTest, CheckDecInteger) {
@@ -50,7 +50,7 @@ TEST(LexerTest, CheckDecInteger) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecLiteral);
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::INTEGER_LITERAL);
 };
 
 TEST(LexerTest, CheckDollarCrate) {
@@ -92,8 +92,8 @@ TEST(LexerTest, CheckIf) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  EXPECT_EQ(ts.getAsView()[3].getKind(), TokenKind::DecLiteral);
-  EXPECT_EQ(ts.getAsView()[7].getKind(), TokenKind::DecLiteral);
+  EXPECT_EQ(ts.getAsView()[3].getKind(), TokenKind::INTEGER_LITERAL);
+  EXPECT_EQ(ts.getAsView()[7].getKind(), TokenKind::INTEGER_LITERAL);
 
   EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::Keyword);
   EXPECT_EQ(ts.getAsView().front().getKeyWordKind(), KeyWordKind::KW_IF);
@@ -110,7 +110,7 @@ TEST(LexerTest, CheckIf1) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  EXPECT_EQ(ts.getAsView()[3].getKind(), TokenKind::DecLiteral);
+  EXPECT_EQ(ts.getAsView()[3].getKind(), TokenKind::INTEGER_LITERAL);
 
   EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::Keyword);
   EXPECT_EQ(ts.getAsView().front().getKeyWordKind(), KeyWordKind::KW_IF);
@@ -127,7 +127,7 @@ TEST(LexerTest, CheckFive) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecLiteral);
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::INTEGER_LITERAL);
 };
 
 TEST(LexerTest, CheckTen) {
@@ -141,7 +141,7 @@ TEST(LexerTest, CheckTen) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecLiteral);
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::INTEGER_LITERAL);
 };
 
 TEST(LexerTest, CheckHundred) {
@@ -155,7 +155,7 @@ TEST(LexerTest, CheckHundred) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecLiteral);
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::INTEGER_LITERAL);
 };
 
 TEST(LexerTest, CheckThousand) {
@@ -169,7 +169,7 @@ TEST(LexerTest, CheckThousand) {
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
-  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::DecLiteral);
+  EXPECT_EQ(ts.getAsView().front().getKind(), TokenKind::INTEGER_LITERAL);
 };
 
 TEST(LexerTest, CheckLoop) {

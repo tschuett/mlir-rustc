@@ -8,7 +8,7 @@
 
 namespace rust_compiler::crate_loader {
 
-enum class LoadMode { SyntaxOnly, WithSema };
+  enum class LoadMode { SyntaxOnly, WithSema, Compile };
 
 std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
                                       std::string_view crateName,

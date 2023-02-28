@@ -6,8 +6,6 @@ void TokenStream::append(Token tk) { tokens.push_back(tk); }
 
 std::span<Token> TokenStream::getAsView() { return std::span<Token>(tokens); }
 
-Token TokenStream::getAt(size_t at) { return tokens[at]; }
-
 void TokenStream::print(unsigned limit) {
   unsigned idx = 0;
 

@@ -155,6 +155,9 @@ Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
 llvm::Expected<ast::EnumItemTuple> Parser::parseEnumItemTuple() {
   Location loc = getLocation();
 
+  llvm::outs() << "parseEnumItemTuple"
+               << "\n";
+
   EnumItemTuple tup = {loc};
 
   if (!check(TokenKind::ParenOpen))
@@ -176,6 +179,9 @@ llvm::Expected<ast::EnumItemTuple> Parser::parseEnumItemTuple() {
                              "failed to parse ) token in enum item tuple");
   }
   assert(eat(TokenKind::ParenClose));
+
+  llvm::outs() << "parseEnumItemTuple: done"
+               << "\n";
 
   return tup;
 }
@@ -249,16 +255,19 @@ llvm::Expected<ast::EnumItems> Parser::parseEnumItems() {
 
   while (true) {
     if (check(TokenKind::Eof)) {
-      // abort
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse enum items: eof ");
     } else if (check(TokenKind::BraceClose)) {
       // done
       return items;
     } else if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
+      assert(eat(TokenKind::Comma));
       // done with trailing
       items.setTrailingComma();
       return items;
-    } else if (check(TokenKind::ParenOpen) || check(TokenKind::Eq) ||
-               check(TokenKind::BraceOpen)) {
+    } else if (check(TokenKind::Comma)) {
+      assert(eat(TokenKind::Comma));
+    } else {
       llvm::Expected<ast::EnumItem> item = parseEnumItem();
       if (auto e = item.takeError()) {
         llvm::errs() << "failed to parse enum item in enum items: "
@@ -266,9 +275,6 @@ llvm::Expected<ast::EnumItems> Parser::parseEnumItems() {
         exit(EXIT_FAILURE);
       }
       items.addItem(*item);
-    } else {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse enum items ");
     }
   }
   return createStringError(inconvertibleErrorCode(),

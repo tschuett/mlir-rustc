@@ -18,7 +18,10 @@ public:
 
   size_t getLength() const { return tokens.size(); }
 
-  Token getAt(size_t);
+  Token getAt(size_t at) {
+    assert(at < tokens.size());
+    return tokens[at];
+  }
 };
 
 } // namespace rust_compiler::lexer

@@ -22,23 +22,49 @@ std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
 
   llvm::SmallVector<char, 128> libFile{path.begin(), path.end()};
 
-  llvm::sys::path::append(libFile, "src");
-  llvm::sys::path::append(libFile, "lib.rs");
+  if (mode == LoadMode::SyntaxOnly) {
+    if (not llvm::sys::fs::exists(libFile)) {
+      llvm::errs() << "could not find file: " << libFile << "\n";
+      exit(EXIT_FAILURE);
+    }
 
-  if (not llvm::sys::fs::exists(libFile)) {
-    llvm::errs() << "could not find file: " << libFile << "\n";
-    exit(EXIT_FAILURE);
-  }
+    std::shared_ptr<ast::Crate> crate =
+        loadRootModule(libFile, crateName, crateNum);
 
-  std::shared_ptr<ast::Crate> crate =
-      loadRootModule(libFile, crateName, crateNum);
+    return crate;
 
-  // FIXME load and merge tree
+  } else if (mode == LoadMode::SyntaxOnly) {
+    if (not llvm::sys::fs::exists(libFile)) {
+      llvm::errs() << "could not find file: " << libFile << "\n";
+      exit(EXIT_FAILURE);
+    }
 
-  if (mode == LoadMode::WithSema)
+    std::shared_ptr<ast::Crate> crate =
+        loadRootModule(libFile, crateName, crateNum);
+
     sema::analyzeSemantics(crate);
 
-  return crate;
+    return crate;
+
+  } else {
+
+    llvm::sys::path::append(libFile, "src");
+    llvm::sys::path::append(libFile, "lib.rs");
+
+    if (not llvm::sys::fs::exists(libFile)) {
+      llvm::errs() << "could not find file: " << libFile << "\n";
+      exit(EXIT_FAILURE);
+    }
+
+    std::shared_ptr<ast::Crate> crate =
+        loadRootModule(libFile, crateName, crateNum);
+
+    // FIXME load and merge tree
+
+    sema::analyzeSemantics(crate);
+
+    return crate;
+  }
 }
 
 } // namespace rust_compiler::crate_loader

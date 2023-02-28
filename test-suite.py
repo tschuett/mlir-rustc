@@ -15,7 +15,7 @@ def test_syntax_only():
     for f in onlyfiles:
         try:
             return subprocess.run(["tools/rustc/rustc", "--fsyntax-only",
-                                   f], check=True, encoding="utf-8",
+                                   f"--path={f}"], check=True, encoding="utf-8",
                                   stdout=subprocess.PIPE).stdout.strip()
         except subprocess.CalledProcessError as error:
             print("rustc --fsyntax-only failed")
@@ -32,7 +32,7 @@ def test_with_sema():
     for f in onlyfiles:
         try:
             return subprocess.run(["tools/rustc/rustc", "--fwith-sema",
-                                   f], check=True, encoding="utf-8",
+                                   f"--path={f}"], check=True, encoding="utf-8",
                                   stdout=subprocess.PIPE).stdout.strip()
         except subprocess.CalledProcessError as error:
             print("rustc --fwith-sema failed")

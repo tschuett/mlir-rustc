@@ -31,6 +31,7 @@ add_library(parser
            ParseItem.cpp
            VisItem.cpp
            CheckExpressionWithoutBlock.cpp
+           ComplexType.cpp
            )
 
 

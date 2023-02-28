@@ -44,10 +44,9 @@ const llvm::opt::OptTable::Info InfoTable[] = {
 #undef OPTION
 };
 
-class RustCOptTable : public llvm::opt::OptTable {
+class RustCOptTable : public llvm::opt::GenericOptTable {
 public:
-  RustCOptTable() : OptTable(InfoTable) { setGroupedShortOptions(true); }
-  ArrayRef<StringLiteral> getPrefixesUnion() const override {}
+  RustCOptTable() : opt::GenericOptTable(InfoTable) {  }
 };
 
 } // namespace

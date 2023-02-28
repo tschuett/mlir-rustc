@@ -807,13 +807,13 @@ llvm::Expected<ast::GenericParams> Parser::parseGenericParams() {
         return createStringError(inconvertibleErrorCode(),
                                  "failed to parse generic params with eof");
       } else if (check(TokenKind::Gt)) {
+        assert(eat(TokenKind::Gt));
         return params;
       } else if (check(TokenKind::Comma) && check(TokenKind::Gt, 1)) {
         // done trailingComma
+        assert(eat(TokenKind::Comma));
+        assert(eat(TokenKind::Gt));
         params.setTrailingComma();
-        return params;
-      } else if (check(TokenKind::Gt)) {
-        // done
         return params;
       } else {
         llvm::Expected<ast::GenericParam> generic = parseGenericParam();

@@ -46,6 +46,9 @@ void buildCrate(std::string_view path, std::string_view crateName,
   std::shared_ptr<ast::Crate> crate =
       crate_loader::loadCrate(path, crateName, crateNum, edition, mode);
 
+  if (mode != LoadMode::Compile)
+    return;
+
   std::string fn = "lib.yaml";
   //
   std::error_code EC;
