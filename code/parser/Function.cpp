@@ -340,6 +340,9 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
 
   Function fun = {loc, vis};
 
+  llvm::outs() << "parseFunction"
+               << "\n";
+
   if (checkKeyWord(KeyWordKind::KW_CONST) ||
       checkKeyWord(KeyWordKind::KW_ASYNC) ||
       checkKeyWord(KeyWordKind::KW_UNSAFE) ||

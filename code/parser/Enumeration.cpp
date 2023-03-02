@@ -77,6 +77,7 @@ llvm::Expected<ast::EnumItem> Parser::parseEnumItem() {
     item.setEnumItemTuple(*tupl);
   } else if (check(TokenKind::Comma)) {
     // done?
+
   } else {
     // done ?
   }
@@ -89,6 +90,9 @@ Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
   Enumeration enu = {loc, vis};
+
+  llvm::outs() << "parseEnumeration"
+               << "\n";
 
   if (!checkKeyWord(lexer::KeyWordKind::KW_ENUM)) {
     return createStringError(inconvertibleErrorCode(),
@@ -155,15 +159,17 @@ Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
 llvm::Expected<ast::EnumItemTuple> Parser::parseEnumItemTuple() {
   Location loc = getLocation();
 
-  llvm::outs() << "parseEnumItemTuple"
-               << "\n";
-
   EnumItemTuple tup = {loc};
 
   if (!check(TokenKind::ParenOpen))
     return createStringError(inconvertibleErrorCode(),
                              "failed to parse ( token in enum item tuple");
   assert(eat(TokenKind::ParenOpen));
+
+  if (check(TokenKind::ParenClose)) {
+    assert(eat(TokenKind::ParenClose));
+    return tup;
+  }
 
   llvm::Expected<ast::TupleFields> fields = parseTupleFields();
   if (auto e = fields.takeError()) {
@@ -180,9 +186,6 @@ llvm::Expected<ast::EnumItemTuple> Parser::parseEnumItemTuple() {
   }
   assert(eat(TokenKind::ParenClose));
 
-  llvm::outs() << "parseEnumItemTuple: done"
-               << "\n";
-
   return tup;
 }
 
@@ -197,6 +200,11 @@ llvm::Expected<ast::EnumItemStruct> Parser::parseEnumItemStruct() {
         "failed to parse { token in enum item discriminant");
 
   assert(eat(TokenKind::BraceOpen));
+
+  if (check(TokenKind::BraceClose)) {
+    assert(eat(TokenKind::BraceClose));
+    return str;
+  }
 
   llvm::Expected<ast::StructFields> fields = parseStructFields();
   if (auto e = fields.takeError()) {

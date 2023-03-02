@@ -6,6 +6,7 @@
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include <memory>
 
@@ -179,6 +180,9 @@ Parser::parseStructExprTuple() {
   assert(eat(TokenKind::ParenOpen));
 
   if (check(TokenKind::ParenClose)) {
+    // empty
+    assert(eat(TokenKind::ParenClose));
+    return std::make_shared<StructExprTuple>(tuple);
   } else {
     while (true) {
       llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
@@ -188,6 +192,7 @@ Parser::parseStructExprTuple() {
         exit(EXIT_FAILURE);
       }
       tuple.addExpression(*expr);
+
       if (check(TokenKind::Eof)) {
         return createStringError(inconvertibleErrorCode(),
                                  "failed to parse struct expr tuple: eof");
@@ -348,6 +353,9 @@ Parser::parseStructExpression() {
       recover(cp);
       return parseStructExprUnit();
     }
+  } else {
+    llvm::outs() << "found no path in parseStructExpression"
+                 << "\n";
   }
 
   return createStringError(inconvertibleErrorCode(),

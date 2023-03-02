@@ -8,6 +8,7 @@
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 
+#include <string>
 #include <vector>
 
 using namespace llvm;
@@ -119,18 +120,18 @@ bool Parser::eatPathIdentSegment() {
 }
 
 /// IDENTIFIER | super | self | Self | crate | $crate
-bool Parser::checkPathIdentSegment(uint8_t offset) {
-  if (check(TokenKind::Identifier), offset)
+bool Parser::checkPathIdentSegment(uint8_t off) {
+  if (check(TokenKind::Identifier, off))
     return true;
-  if (checkKeyWord(KeyWordKind::KW_SUPER), offset)
+  if (checkKeyWord(KeyWordKind::KW_SUPER, off))
     return true;
-  if (checkKeyWord(KeyWordKind::KW_SELFVALUE), offset)
+  if (checkKeyWord(KeyWordKind::KW_SELFVALUE, off))
     return true;
-  if (checkKeyWord(KeyWordKind::KW_SELFTYPE), offset)
+  if (checkKeyWord(KeyWordKind::KW_SELFTYPE, off))
     return true;
-  if (checkKeyWord(KeyWordKind::KW_CRATE), offset)
+  if (checkKeyWord(KeyWordKind::KW_CRATE, off))
     return true;
-  if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE), offset)
+  if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE, off))
     return true;
   return false;
 }
@@ -150,26 +151,25 @@ bool Parser::checkSimplePathSegment() {
   return false;
 }
 
-bool Parser::checkLiteral(uint8_t offset) {
-  return check(TokenKind::CHAR_LITERAL, offset) ||
-         check(TokenKind::STRING_LITERAL, offset) ||
-         check(TokenKind::RAW_STRING_LITERAL, offset) ||
-         check(TokenKind::BYTE_LITERAL, offset) ||
-         check(TokenKind::BYTE_STRING_LITERAL, offset) ||
-         check(TokenKind::RAW_BYTE_STRING_LITERAL, offset) ||
-         check(TokenKind::INTEGER_LITERAL, offset) ||
-         check(TokenKind::FLOAT_LITERAL, offset) ||
-         checkKeyWord(KeyWordKind::KW_TRUE, offset) ||
-         checkKeyWord(KeyWordKind::KW_FALSE, offset);
+bool Parser::checkLiteral(uint8_t off) {
+  return check(TokenKind::CHAR_LITERAL, off) ||
+         check(TokenKind::STRING_LITERAL, off) ||
+         check(TokenKind::RAW_STRING_LITERAL, off) ||
+         check(TokenKind::BYTE_LITERAL, off) ||
+         check(TokenKind::BYTE_STRING_LITERAL, off) ||
+         check(TokenKind::RAW_BYTE_STRING_LITERAL, off) ||
+         check(TokenKind::INTEGER_LITERAL, off) ||
+         check(TokenKind::FLOAT_LITERAL, off) ||
+         checkKeyWord(KeyWordKind::KW_TRUE, off) ||
+         checkKeyWord(KeyWordKind::KW_FALSE, off);
 }
 
 CheckPoint Parser::getCheckPoint() { return CheckPoint(offset); }
 
 void Parser::recover(const CheckPoint &cp) { offset = cp.readOffset(); }
 
-bool Parser::checkOuterAttribute(uint8_t offset) {
-  if (check(TokenKind::Hash, offset) &&
-      check(TokenKind::SquareOpen, offset + 1))
+bool Parser::checkOuterAttribute(uint8_t off) {
+  if (check(TokenKind::Hash, off) && check(TokenKind::SquareOpen, off + 1))
     return true;
   return false;
 }

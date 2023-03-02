@@ -107,7 +107,7 @@ llvm::Expected<ast::PathExprSegment> Parser::parsePathExprSegment() {
   }
   seg.addIdentSegment(*first);
 
-  if (check(TokenKind::PathSep)) {
+  if (check(TokenKind::PathSep) && check(TokenKind::Lt, 1)) {
     assert(eat(TokenKind::PathSep));
     llvm::Expected<ast::GenericArgs> args = parseGenericArgs();
     if (auto e = args.takeError()) {

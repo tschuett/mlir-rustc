@@ -12,15 +12,10 @@ bool Token::isPubToken() const {
 
 bool Token::isIdentifier() const { return kind == TokenKind::Identifier; }
 
-bool Token::isDoubleColon() const { return kind == TokenKind::DoubleColon; }
-
 bool Token::isAs() const { return kind == TokenKind::Keyword && storage == "as"; }
 
 std::string Token2String(TokenKind kind) {
   switch (kind) {
-  case TokenKind::DoubleColon: {
-    return std::string("::");
-  }
   case TokenKind::Colon: {
     return std::string(":");
   }
@@ -242,6 +237,9 @@ std::string Token2String(TokenKind kind) {
   }
   case TokenKind::SlashEq: {
     return std::string("/=");
+  }
+  case TokenKind::Dollar: {
+    return std::string("?");
   }
   }
 }

@@ -270,14 +270,14 @@ Parser::parseTupleOrParensType() {
   }
 
   if (check(TokenKind::ParenClose)) {
-    assert(eat(TokenKind::ParenClose));
+    // assert(eat(TokenKind::ParenClose));
     recover(cp);
     return parseParenthesizedType();
   }
 
+  recover(cp);
   return parseTupleType();
 }
-
 
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseImplTraitTypeOneBound() {
@@ -349,7 +349,7 @@ Parser::parseImplType() {
       recover(cp);
       return parseImplTraitType();
     } else if (check(TokenKind::QMark) || checkKeyWord(KeyWordKind::KW_FOR) ||
-               check(TokenKind::DoubleColon) || checkPathIdentSegment()) {
+               check(TokenKind::PathSep) || checkPathIdentSegment()) {
       // TraitBound
       llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> bound =
           parseTraitBound();
@@ -390,7 +390,7 @@ Parser::parseTraitObjectType() {
       recover(cp);
       return parseTraitObjectType();
     } else if (check(TokenKind::QMark) || checkKeyWord(KeyWordKind::KW_FOR) ||
-               check(TokenKind::DoubleColon) || checkPathIdentSegment()) {
+               check(TokenKind::PathSep) || checkPathIdentSegment()) {
       // TraitBound
       llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> bound =
           parseTraitBound();
@@ -651,7 +651,7 @@ Parser::parseTypeParamBound() {
       exit(EXIT_FAILURE);
     }
     return *trait;
-  } else if (check(TokenKind::DoubleColon)) {
+  } else if (check(TokenKind::PathSep)) {
     llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> trait =
         parseTraitBound();
     if (auto e = trait.takeError()) {
@@ -836,9 +836,6 @@ PathKind Parser::testTypePathOrSimplePath() {
 
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseType() {
-
-  llvm::outs() << "parseType"
-               << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_IMPL))
     return parseImplType();

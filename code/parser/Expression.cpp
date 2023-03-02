@@ -35,6 +35,7 @@
 #include "Lexer/Token.h"
 #include "Location.h"
 #include "Parser/Parser.h"
+#include "llvm/Support/YAMLTraits.h"
 
 #include <cassert>
 #include <memory>
@@ -103,6 +104,8 @@ Parser::parseLiteralExpression() {
                              "failed to parse literal  in literal expression");
   }
   lit.setStorage(getToken().getLiteral());
+
+  assert(eat(getToken().getKind()));
 
   return std::make_shared<LiteralExpression>(lit);
 }
@@ -1429,6 +1432,7 @@ Parser::parseBlockExpression() {
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseExpressionWithoutBlock() {
+
   std::vector<ast::OuterAttribute> attributes;
   if (checkOuterAttribute()) {
     llvm::Expected<std::vector<ast::OuterAttribute>> outerAttributes =
@@ -1585,20 +1589,36 @@ Parser::parseExpressionWithPostfix() {
 
 llvm::Expected<std::shared_ptr<ast::Expression>> Parser::
     parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpression() {
-  Location loc = getLocation();
+  CheckPoint cp = getCheckPoint();
 
   while (true) {
+    llvm::outs() << "x" << Token2String(getToken().getKind()) << "x"
+                 << "\n";
     if (check(TokenKind::Eof)) {
       // abort
-    } else if (check(TokenKind::Eof)) {
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse "
+                               "PathInExpressionOrStructExprStructOrStructTuple"
+                               "UnitOrMacroInvocationExpression: eof");
+    } else if (checkPathIdentSegment()) {
+      assert(eatPathIdentSegment());
+    } else if (checkSimplePathSegment()) {
+      assert(eatSimplePathSegment());
     } else if (check(TokenKind::Not)) {
+      recover(cp);
       return parseMacroInvocationExpression();
     } else if (check(TokenKind::BraceOpen)) {
+      recover(cp);
       return parseStructExpression();
     } else if (check(TokenKind::ParenOpen)) {
+      recover(cp);
       return parseStructExpression();
+    } else if (check(TokenKind::PathSep)) {
+      assert(eat(TokenKind::PathSep));
     }
   }
 }
+
+// FIXME : generics
 
 } // namespace rust_compiler::parser

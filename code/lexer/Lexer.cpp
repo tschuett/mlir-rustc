@@ -483,14 +483,14 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
           Token(Location(fileName, lineNumber, columnNumber), TokenKind::Shl));
       code.remove_prefix(2);
       columnNumber += 2;
-    } else if (code.starts_with("<")) {
+    } else if (code.starts_with("<=")) {
       ts.append(
           Token(Location(fileName, lineNumber, columnNumber), TokenKind::Le));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("::")) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::DoubleColon));
+                      TokenKind::PathSep));
       code.remove_prefix(2);
       columnNumber += 2;
     } else if (code.starts_with(":")) {

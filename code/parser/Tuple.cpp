@@ -75,9 +75,6 @@ llvm::Expected<ast::TupleField> Parser::parseTupleField() {
   Location loc = getLocation();
   TupleField tuple = {loc};
 
-  llvm::outs() << "parseTupleField"
-               << "\n";
-
   if (checkOuterAttribute()) {
     llvm::Expected<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
@@ -99,9 +96,6 @@ llvm::Expected<ast::TupleField> Parser::parseTupleField() {
     tuple.setVisibility(*vis);
   }
 
-  llvm::outs() << "parseTupleField: type"
-               << "\n";
-
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
       parseType();
   if (auto e = type.takeError()) {
@@ -111,18 +105,12 @@ llvm::Expected<ast::TupleField> Parser::parseTupleField() {
   }
   tuple.setType(*type);
 
-  llvm::outs() << "parseTupleField: done"
-               << "\n";
-
   return tuple;
 }
 
 llvm::Expected<ast::TupleFields> Parser::parseTupleFields() {
   Location loc = getLocation();
   TupleFields tuple = {loc};
-
-  llvm::outs() << "parseTupleFields"
-               << "\n";
 
   llvm::Expected<ast::TupleField> first = parseTupleField();
   if (auto e = first.takeError()) {
@@ -133,8 +121,6 @@ llvm::Expected<ast::TupleFields> Parser::parseTupleFields() {
   tuple.addField(*first);
 
   while (true) {
-    llvm::outs() << "parseTupleFields: next round"
-                 << "\n";
     if (check(TokenKind::Eof)) {
       return createStringError(inconvertibleErrorCode(),
                                "failed to parse tuple fields: eof");

@@ -32,7 +32,6 @@ enum class IntegerKind {
 enum class FloatKind { F32, F64 };
 
 enum class TokenKind {
-  DoubleColon,
   Colon,
   RArrow,
   // LessThan,
@@ -156,7 +155,6 @@ public:
   bool isSelfToken() const;
   bool isSuperToken() const;
   bool isInToken() const;
-  bool isDoubleColon() const;
   bool isIdentifier() const;
   bool isAs() const;
 

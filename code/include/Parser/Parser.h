@@ -474,26 +474,28 @@ public:
   llvm::Expected<ast::MacroRepSep> parseMacroRepSep();
   llvm::Expected<ast::MacroRepOp> parseMacroRepOp();
 
+    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseTraitObjectTypeOrTypePathOrMacroInvocation();
+
 private:
   bool check(lexer::TokenKind token);
-  bool check(lexer::TokenKind token, size_t offset);
+  bool check(lexer::TokenKind token, size_t off);
   bool checkKeyWord(lexer::KeyWordKind keyword);
-  bool checkKeyWord(lexer::KeyWordKind keyword, size_t offset);
+  bool checkKeyWord(lexer::KeyWordKind keyword, size_t off);
   bool checkInKeyWords(std::span<lexer::KeyWordKind> keywords);
 
-  bool checkOuterAttribute(uint8_t offset = 0);
+  bool checkOuterAttribute(uint8_t off = 0);
   bool checkInnerAttribute();
 
   bool checkLoopLabel();
 
-  bool checkLiteral(uint8_t offset = 0);
-  bool checkLifetime(uint8_t offset = 0);
+  bool checkLiteral(uint8_t off = 0);
+  bool checkLifetime(uint8_t off = 0);
 
   /// super | self | Self | crate | $crate
   bool checkSuperSelf();
 
   /// IDENTIFIER | super | self | Self | crate | $crate
-  bool checkPathIdentSegment(uint8_t offset = 0);
+  bool checkPathIdentSegment(uint8_t off = 0);
   bool eatPathIdentSegment();
 
   /// IDENTIFIER | super | self | crate | $crate
@@ -505,7 +507,7 @@ private:
   bool eat(lexer::TokenKind token);
   bool eatKeyWord(lexer::KeyWordKind keyword);
 
-  lexer::Token getToken(uint8_t = 0);
+  lexer::Token getToken(uint8_t off = 0);
 
   CheckPoint getCheckPoint();
   void recover(const CheckPoint &cp);
@@ -533,7 +535,7 @@ private:
   bool checkDelimiters();
 
   bool checkPathOrStructOrMacro();
-  bool checkPathExprSegment(uint8_t offset = 0);
+  bool checkPathExprSegment(uint8_t off = 0);
 };
 
 } // namespace rust_compiler::parser

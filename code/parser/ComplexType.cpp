@@ -1,3 +1,5 @@
+#include "Lexer/KeyWords.h"
+#include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
 using namespace rust_compiler::ast;
@@ -7,14 +9,62 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
+/*
+  TraitObjectType: TypePath followed by ???
+  TypePath: TypePath
+  MacroInvocation: SimplePath followed by !
+ */
+
+llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
+  CheckPoint cp = getCheckPoint();
+
+  while (true) {
+    //llvm::outs() << lexer::Token2String(getToken().getKind()) << "\n";
+    if (check(TokenKind::Eof)) {
+      return createStringError(
+          inconvertibleErrorCode(),
+          "failed to parse "
+          "raitObjectTypeOrTypePathOrMacroInvocation: eof");
+    } else if (check(TokenKind::PathSep)) {
+      assert(eat(TokenKind::PathSep));
+    } else if (check(TokenKind::QMark)) {
+      recover(cp);
+      return parseTraitObjectType();
+    } else if (checkKeyWord(KeyWordKind::KW_FOR)) {
+      recover(cp);
+      return parseTraitObjectType();
+    } else if (check(TokenKind::Not)) {
+      recover(cp);
+      return parseMacroInvocationType();
+    } else if (check(TokenKind::ParenClose)) {
+      recover(cp);
+      return parseTypePath();
+    } else if (check(TokenKind::Lt)) {
+      recover(cp);
+      return parseTypePath();
+    } else if (check(TokenKind::Plus)) {
+      recover(cp);
+      return parseTraitObjectType();
+    } else if (checkSimplePathSegment()) {
+      assert(eatSimplePathSegment());
+    } else if (checkLifetime()) {
+      recover(cp);
+      return parseTraitObjectType();
+    } else if (checkPathIdentSegment()) {
+      assert(eatPathIdentSegment());
+    }
+  }
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse "
+                           "raitObjectTypeOrTypePathOrMacroInvocation");
+}
+
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
     parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType() {
   Location loc = getLocation();
   CheckPoint cp = getCheckPoint();
 
-  llvm::outs() << "parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObje"
-                  "ctTypeOrBareFunctionType"
-               << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_DYN)) {
     return parseTraitObjectType();
@@ -31,27 +81,7 @@ llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
   } else if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
     return parseBareFunctionType();
   } else if (check(TokenKind::PathSep)) {
-
-    while (true) {
-      if (check(TokenKind::Eof)) {
-        return createStringError(
-            inconvertibleErrorCode(),
-            "failed to parse "
-            "parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObje"
-            "ctTypeOrBareFunctionType: eof");
-      } else if (check(TokenKind::PathSep)) {
-        assert(eat(TokenKind::PathSep));
-      } else if (check(TokenKind::Not)) {
-        recover(cp);
-        return parseMacroInvocationType();
-      } else if (!checkSimplePathSegment()) {
-        recover(cp);
-        return parseTypePath();
-      } else {
-        recover(cp);
-        return parseMacroInvocationType();
-      }
-    }
+    return parseTraitObjectTypeOrTypePathOrMacroInvocation();
   } else if (checkKeyWord(KeyWordKind::KW_FOR)) {
     llvm::Expected<ast::types::ForLifetimes> forL = parseForLifetimes();
     if (auto e = forL.takeError()) {
@@ -75,28 +105,12 @@ llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
     recover(cp);
     return parseTraitObjectType();
   } else {
-    while (true) {
-      if (check(TokenKind::Eof)) {
-        return createStringError(
-            inconvertibleErrorCode(),
-            "failed to parse "
-            "parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObje"
-            "ctTypeOrBareFunctionType: eof");
-      } else if (check(TokenKind::Plus)) {
-        recover(cp);
-        return parseTraitObjectType();
-      } else if (check(TokenKind::Plus)) {
-        xxx
-      }
-    }
+    return parseTraitObjectTypeOrTypePathOrMacroInvocation();
   }
-  // FIXME: probably buggy
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse "
+                           "TupleOrParensTypeOrTypePathOrMacroInvocationOrTrait"
+                           "ObjectTypeOrBareFunctionType");
 }
-/*
-  TypePath
-  MacroInvocation
-  TraitObject
-  done: BareFunctionType
- */
 
-}
+} // namespace rust_compiler::parser
