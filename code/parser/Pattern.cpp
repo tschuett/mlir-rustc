@@ -1,7 +1,7 @@
-#include "AST/Patterns/RestPattern.h"
 #include "AST/Patterns/GroupedPattern.h"
 #include "AST/Patterns/LiteralPattern.h"
 #include "AST/Patterns/RangePattern.h"
+#include "AST/Patterns/RestPattern.h"
 #include "AST/Patterns/SlicePattern.h"
 #include "AST/Patterns/TuplePattern.h"
 #include "Lexer/Token.h"
@@ -72,19 +72,65 @@ Parser::parseLiteralPattern() {
   LiteralPattern pattern = {loc};
 
   if (checkKeyWord(KeyWordKind::KW_TRUE)) {
-    pattern.setTrue();
+    pattern.setKind(LiteralPatternKind::True, getToken().getStorage());
     assert(eatKeyWord(KeyWordKind::KW_TRUE));
     return std::make_shared<LiteralPattern>(pattern);
   } else if (checkKeyWord(KeyWordKind::KW_FALSE)) {
-    pattern.setFalse();
+    pattern.setKind(LiteralPatternKind::False, getToken().getStorage());
     assert(eatKeyWord(KeyWordKind::KW_FALSE));
     return std::make_shared<LiteralPattern>(pattern);
   } else if (check(TokenKind::CHAR_LITERAL)) {
-    pattern.setFalse();
-    assert(eatKeyWord(KeyWordKind::KW_FALSE));
+    pattern.setKind(LiteralPatternKind::CharLiteral, getToken().getStorage());
+    assert(eat(TokenKind::CHAR_LITERAL));
+    return std::make_shared<LiteralPattern>(pattern);
+  } else if (check(TokenKind::BYTE_LITERAL)) {
+    pattern.setKind(LiteralPatternKind::ByteLiteral, getToken().getStorage());
+    assert(eat(TokenKind::BYTE_LITERAL));
+    return std::make_shared<LiteralPattern>(pattern);
+  } else if (check(TokenKind::STRING_LITERAL)) {
+    pattern.setKind(LiteralPatternKind::StringLiteral, getToken().getStorage());
+    assert(eat(TokenKind::STRING_LITERAL));
+    return std::make_shared<LiteralPattern>(pattern);
+  } else if (check(TokenKind::RAW_STRING_LITERAL)) {
+    pattern.setKind(LiteralPatternKind::RawStringLiteral,
+                    getToken().getStorage());
+    assert(eat(TokenKind::RAW_STRING_LITERAL));
+    return std::make_shared<LiteralPattern>(pattern);
+  } else if (check(TokenKind::BYTE_STRING_LITERAL)) {
+    pattern.setKind(LiteralPatternKind::ByteStringLiteral,
+                    getToken().getStorage());
+    assert(eat(TokenKind::BYTE_STRING_LITERAL));
+    return std::make_shared<LiteralPattern>(pattern);
+  } else if (check(TokenKind::RAW_BYTE_STRING_LITERAL)) {
+    pattern.setKind(LiteralPatternKind::RawByteStringLiteral,
+                    getToken().getStorage());
+    assert(eat(TokenKind::RAW_BYTE_STRING_LITERAL));
+    return std::make_shared<LiteralPattern>(pattern);
+  } else if (check(TokenKind::INTEGER_LITERAL)) {
+    pattern.setKind(LiteralPatternKind::IntegerLiteral,
+                    getToken().getStorage());
+    assert(eat(TokenKind::INTEGER_LITERAL));
+    return std::make_shared<LiteralPattern>(pattern);
+  } else if (check(TokenKind::FLOAT_LITERAL)) {
+    pattern.setKind(LiteralPatternKind::FloatLiteral, getToken().getStorage());
+    assert(eat(TokenKind::FLOAT_LITERAL));
+    return std::make_shared<LiteralPattern>(pattern);
+  } else if (check(TokenKind::Minus) && check(TokenKind::INTEGER_LITERAL, 1)) {
+    pattern.setKind(LiteralPatternKind::IntegerLiteral,
+                    getToken().getStorage());
+    pattern.setLeadingMinus();
+    assert(eat(TokenKind::Minus));
+    assert(eat(TokenKind::INTEGER_LITERAL));
+    return std::make_shared<LiteralPattern>(pattern);
+  } else if (check(TokenKind::Minus) && check(TokenKind::FLOAT_LITERAL, 1)) {
+    pattern.setKind(LiteralPatternKind::FloatLiteral, getToken().getStorage());
+    pattern.setLeadingMinus();
+    assert(eat(TokenKind::Minus));
+    assert(eat(TokenKind::FLOAT_LITERAL));
     return std::make_shared<LiteralPattern>(pattern);
   }
-  exit(EXIT_FAILURE);
+  return createStringError(inconvertibleErrorCode(),
+                           "failed to parse literal pattern");
 }
 
 llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>

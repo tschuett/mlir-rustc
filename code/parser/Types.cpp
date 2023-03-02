@@ -837,6 +837,9 @@ PathKind Parser::testTypePathOrSimplePath() {
 llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseType() {
 
+  llvm::outs() << "parseType"
+               << "\n";
+
   if (checkKeyWord(KeyWordKind::KW_IMPL))
     return parseImplType();
 

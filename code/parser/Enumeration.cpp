@@ -91,9 +91,6 @@ Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
 
   Enumeration enu = {loc, vis};
 
-  llvm::outs() << "parseEnumeration"
-               << "\n";
-
   if (!checkKeyWord(lexer::KeyWordKind::KW_ENUM)) {
     return createStringError(inconvertibleErrorCode(),
                              "failed to parse enum keyword in enum ");

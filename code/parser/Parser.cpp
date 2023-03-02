@@ -17,6 +17,25 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::parser {
 
+bool Parser::checkPostFix() {
+  return check(TokenKind::QMark) || check(TokenKind::Plus) ||
+         check(TokenKind::Minus) || check(TokenKind::Star) ||
+         check(TokenKind::Slash) || check(TokenKind::Percent) ||
+         check(TokenKind::Or) || check(TokenKind::Caret) ||
+         check(TokenKind::Shl) || check(TokenKind::Shr) ||
+         check(TokenKind::EqEq) || check(TokenKind::Ne) ||
+         check(TokenKind::Gt) || check(TokenKind::Lt) || check(TokenKind::Ge) ||
+         check(TokenKind::Le) || check(TokenKind::OrOr) ||
+         check(TokenKind::AndAnd) || checkKeyWord(KeyWordKind::KW_AS) ||
+         check(TokenKind::PlusEq) || check(TokenKind::MinusEq) ||
+         check(TokenKind::StarEq) || check(TokenKind::SlashEq) ||
+         check(TokenKind::PercentEq) || check(TokenKind::AndEq) ||
+         check(TokenKind::AndEq) || check(TokenKind::OrEq) ||
+         check(TokenKind::ShlEq) || check(TokenKind::Dot) ||
+         check(TokenKind::SquareOpen) || check(TokenKind::DotDot) ||
+         check(TokenKind::DotDotEq) || check(TokenKind::ShrEq);
+}
+
 bool Parser::checkMacroItem() {
   if (checkKeyWord(KeyWordKind::KW_MACRO_RULES))
     return true;

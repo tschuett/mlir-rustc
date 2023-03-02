@@ -16,6 +16,7 @@
 #include "AST/FunctionParam.h"
 #include "AST/FunctionParamPattern.h"
 #include "AST/FunctionParameters.h"
+#include "AST/FunctionReturnType.h"
 #include "AST/GenericArgsBinding.h"
 #include "AST/GenericArgsConst.h"
 #include "AST/GenericParam.h"
@@ -62,7 +63,6 @@
 #include "Lexer/TokenStream.h"
 #include "Location.h"
 
-#include <_types/_uint8_t.h>
 #include <llvm/Support/Error.h>
 #include <string_view>
 
@@ -158,6 +158,7 @@ public:
   llvm::Expected<ast::FunctionParam> parseFunctionParam();
   llvm::Expected<ast::FunctionParameters> parseFunctionParameters();
   llvm::Expected<ast::FunctionParamPattern> parseFunctionParamPattern();
+  llvm::Expected<ast::FunctionReturnType> parseFunctionReturnType();
   llvm::Expected<ast::SelfParam> parseSelfParam();
 
   llvm::Expected<ast::Statements> parseStatements();
@@ -259,8 +260,8 @@ public:
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parsePathPattern();
 
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
-  parsePathInExpressionOrStructExprStructOrStructExprUnitOrMacroInvocation();
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+  parsePathInExpressionOrStructExprStructOrStructExprTupleOrStructExprUnitOrMacroInvocationOrExpressionWithPostfix();
   llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
   parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectType();
 
@@ -275,13 +276,20 @@ public:
 
   llvm::Expected<ast::TupleElements> parseTupleElements();
 
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+  parsePathInExpressionOrStructOrExpressionWithPostfix();
+
   llvm::Expected<std::shared_ptr<ast::Expression>> parseExpressionWithPostfix();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+  parseExpressionExceptStruct();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseTupleExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseGroupedExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseBlockExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>>
   parseExpressionWithoutBlock();
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+  parseExpressionWithoutBlockExceptStruct();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseExpressionWithBlock();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseClosureExpression();
   llvm::Expected<std::shared_ptr<ast::Expression>> parseReturnExpression();
@@ -357,7 +365,8 @@ public:
   llvm::Expected<ast::GenericParam> parseGenericParam();
 
   llvm::Expected<ast::GenericArgs> parseGenericArgs();
-  llvm::Expected<ast::GenericArg> parseGenericArg(std::optional<ast::GenericArgKind> last);
+  llvm::Expected<ast::GenericArg>
+  parseGenericArg(std::optional<ast::GenericArgKind> last);
   llvm::Expected<ast::GenericParams> parseGenericParams();
   llvm::Expected<ast::GenericArgsConst> parseGenericArgsConst();
   llvm::Expected<ast::GenericArgsBinding> parseGenericArgsBinding();
@@ -474,7 +483,11 @@ public:
   llvm::Expected<ast::MacroRepSep> parseMacroRepSep();
   llvm::Expected<ast::MacroRepOp> parseMacroRepOp();
 
-    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseTraitObjectTypeOrTypePathOrMacroInvocation();
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  parseTraitObjectTypeOrTypePathOrMacroInvocation();
+
+  llvm::Expected<std::shared_ptr<ast::Expression>>
+  parsePathInExpressionOrMacroInvocationExpression();
 
 private:
   bool check(lexer::TokenKind token);
@@ -536,6 +549,7 @@ private:
 
   bool checkPathOrStructOrMacro();
   bool checkPathExprSegment(uint8_t off = 0);
+  bool checkPostFix();
 };
 
 } // namespace rust_compiler::parser

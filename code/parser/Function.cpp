@@ -1,5 +1,6 @@
 #include "AST/FunctionParam.h"
 #include "AST/FunctionQualifiers.h"
+#include "AST/FunctionReturnType.h"
 #include "AST/SelfParam.h"
 #include "AST/ShorthandSelf.h"
 #include "AST/TypedSelf.h"
@@ -190,6 +191,8 @@ llvm::Expected<ast::FunctionParameters> Parser::parseFunctionParameters() {
       } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
         assert(eat(TokenKind::Comma));
         return parameters;
+      } else if (check(TokenKind::Comma)) {
+        assert(eat(TokenKind::Comma));
       } else {
         llvm::Expected<ast::FunctionParam> param = parseFunctionParam();
         if (auto e = param.takeError()) {
@@ -334,6 +337,28 @@ llvm::Expected<ast::FunctionQualifiers> Parser::parseFunctionQualifiers() {
   return qual;
 }
 
+llvm::Expected<ast::FunctionReturnType> Parser::parseFunctionReturnType() {
+  Location loc = getLocation();
+  FunctionReturnType t = {loc};
+
+  if (!check(TokenKind::RArrow)) {
+    return createStringError(
+        inconvertibleErrorCode(),
+        "failed to parse -> token in function return type");
+  }
+  assert(eat(TokenKind::RArrow));
+
+  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+      parseType();
+  if (auto e = type.takeError()) {
+    llvm::errs() << "failed to parse type: " << toString(std::move(e)) << "\n";
+    exit(EXIT_FAILURE);
+  }
+  t.setType(*type);
+
+  return t;
+}
+
 llvm::Expected<std::shared_ptr<ast::VisItem>>
 Parser::parseFunction(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
@@ -410,9 +435,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
 
   // return type
   if (check(TokenKind::RArrow)) {
-    assert(eat(TokenKind::RArrow));
-    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> returnType =
-        parseType();
+    llvm::Expected<FunctionReturnType> returnType = parseFunctionReturnType();
     if (auto e = returnType.takeError()) {
       llvm::errs() << "failed to parse fn return type: "
                    << toString(std::move(e)) << "\n";
@@ -435,6 +458,9 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
     assert(eat(TokenKind::Semi));
     return std::make_shared<ast::VisItem>(fun);
   }
+
+  llvm::outs() << "parseFunction: parse body"
+               << "\n";
 
   llvm::Expected<std::shared_ptr<ast::Expression>> body =
       parseBlockExpression();

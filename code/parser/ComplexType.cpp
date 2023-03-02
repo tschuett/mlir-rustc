@@ -53,6 +53,14 @@ Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
       return parseTraitObjectType();
     } else if (checkPathIdentSegment()) {
       assert(eatPathIdentSegment());
+    } else if (check(TokenKind::BraceOpen)) {
+      // terminator
+      recover(cp);
+      return parseTypePath();
+    } else if (check(TokenKind::Comma)) {
+      // terminator
+      recover(cp);
+      return parseTypePath();
     }
   }
   return createStringError(inconvertibleErrorCode(),
@@ -65,6 +73,9 @@ llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
   Location loc = getLocation();
   CheckPoint cp = getCheckPoint();
 
+  //llvm::outs() << "parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObje"
+  //                "ctTypeOrBareFunctionType"
+  //             << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_DYN)) {
     return parseTraitObjectType();

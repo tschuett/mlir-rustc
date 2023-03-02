@@ -1,5 +1,6 @@
 #include "AST/Statements.h"
 
+#include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
 using namespace rust_compiler::lexer;
@@ -13,7 +14,11 @@ llvm::Expected<ast::Statements> Parser::parseStatements() {
 
   Statements stmts = {loc};
 
+  llvm::outs() << "parseStatements"
+               << "\n";
+
   while (true) {
+    llvm::outs() << Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Eof)) {
       return createStringError(inconvertibleErrorCode(),
                                "failed to parse statements: eof");
@@ -21,6 +26,8 @@ llvm::Expected<ast::Statements> Parser::parseStatements() {
       // done
       return stmts;
     } else if (checkStatement()) {
+      llvm::outs() << "parseStatements: statement"
+                   << "\n";
       llvm::Expected<std::shared_ptr<ast::Statement>> stmt = parseStatement();
       if (auto e = stmt.takeError()) {
         llvm::errs() << "failed to parse statement in statements"
@@ -29,6 +36,8 @@ llvm::Expected<ast::Statements> Parser::parseStatements() {
       }
       stmts.addStmt(*stmt);
     } else if (checkExpressionWithoutBlock()) {
+      llvm::outs() << "parseStatements: wo block"
+                   << "\n";
       llvm::Expected<std::shared_ptr<ast::Expression>> woBlock =
           parseExpressionWithoutBlock();
       if (auto e = woBlock.takeError()) {

@@ -892,7 +892,8 @@ llvm::Expected<ast::Scrutinee> Parser::parseScrutinee() {
   Location loc = getLocation();
   Scrutinee scrut = {loc};
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> expr =
+      parseExpressionExceptStruct();
   if (auto e = expr.takeError()) {
     llvm::errs() << "failed to parse expression in scrutinee: "
                  << toString(std::move(e)) << "\n";
@@ -1016,6 +1017,7 @@ Parser::parseIfLetExpression() {
                  << toString(std::move(e)) << "\n";
     exit(EXIT_FAILURE);
   }
+
   ifLet.setPattern(*pattern);
 
   if (check(TokenKind::Eq)) {
@@ -1263,10 +1265,12 @@ Parser::parseReturnExpression() {
 
   ReturnExpression ret = {loc};
 
+  llvm::outs() << "parseReturnExpression"
+               << "\n";
+
   if (!checkKeyWord(KeyWordKind::KW_RETURN))
     return createStringError(inconvertibleErrorCode(),
                              "failed to parse return token");
-
   assert(eatKeyWord(KeyWordKind::KW_RETURN));
 
   if (check(TokenKind::Semi))
@@ -1280,6 +1284,9 @@ Parser::parseReturnExpression() {
   }
 
   ret.setTail(*expr);
+
+  llvm::outs() << "end of return expression: "
+               << Token2String(getToken().getKind()) << "\n";
 
   return std::make_shared<ReturnExpression>(ret);
 }
@@ -1347,6 +1354,9 @@ Parser::parseExpressionWithBlock() {
 llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parseExpression() {
   CheckPoint cp = getCheckPoint();
 
+  llvm::outs() << "parseExpression"
+               << "\n";
+
   if (checkOuterAttribute()) {
     llvm::Expected<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
@@ -1393,6 +1403,9 @@ Parser::parseBlockExpression() {
 
   BlockExpression bloc = {loc};
 
+  llvm::outs() << "parseBlockExpression"
+               << "\n";
+
   if (!check(TokenKind::BraceOpen)) {
     return createStringError(inconvertibleErrorCode(),
                              "failed to parse { in block expression");
@@ -1432,6 +1445,9 @@ Parser::parseBlockExpression() {
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
 Parser::parseExpressionWithoutBlock() {
+
+  llvm::outs() << "parseExpressionWithoutBlock"
+               << "\n";
 
   std::vector<ast::OuterAttribute> attributes;
   if (checkOuterAttribute()) {
@@ -1518,23 +1534,22 @@ Parser::parseExpressionWithoutBlock() {
     return parseUnderScoreExpression();
   }
 
-  if (check(TokenKind::PathSep)) {
-    /*
-      PathInExpression -> PathExpression, StructExprStruct, StructExprTuple,
-      StructExprUnit SimplePath -> MacroInvocation
-     */
-    return parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpression();
-  }
+  /*
+    PathInExpression -> PathExpression, StructExprStruct, StructExprTuple,
+    StructExprUnit SimplePath -> MacroInvocation
+    ExpressionWithPostFix
+   */
 
-  if (check(TokenKind::Identifier) || checkKeyWord(KeyWordKind::KW_SUPER) ||
+  if (check(TokenKind::PathSep) || check(TokenKind::Identifier) ||
+      checkKeyWord(KeyWordKind::KW_SUPER) ||
       checkKeyWord(KeyWordKind::KW_SELFVALUE) ||
       checkKeyWord(KeyWordKind::KW_CRATE) ||
       checkKeyWord(KeyWordKind::KW_SELFTYPE) ||
       checkKeyWord(KeyWordKind::KW_DOLLARCRATE)) {
-    return parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpression();
+    //    return
+    //    parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpressionOrExpressionWithPostfix();
+    return parsePathInExpressionOrStructExprStructOrStructExprTupleOrStructExprUnitOrMacroInvocationOrExpressionWithPostfix();
   }
-
-  return parseExpressionWithPostfix();
 }
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
@@ -1582,28 +1597,35 @@ Parser::parseExpressionWithPostfix() {
              check(TokenKind::CaretEq) || check(TokenKind::ShlEq) ||
              check(TokenKind::ShrEq)) {
     return parseCompoundAssignmentExpression(*left);
+  } else if (check(TokenKind::DotDot) || check(TokenKind::DotDotEq)) {
+    return parseRangeExpression(*left);
   }
 
-  return parseRangeExpression(*left);
+  return *left;
+
+  // FIXME  must be fallible
 }
 
 llvm::Expected<std::shared_ptr<ast::Expression>> Parser::
-    parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpression() {
+    parsePathInExpressionOrStructExprStructOrStructExprTupleOrStructExprUnitOrMacroInvocationOrExpressionWithPostfix() {
   CheckPoint cp = getCheckPoint();
 
   while (true) {
-    llvm::outs() << "x" << Token2String(getToken().getKind()) << "x"
-                 << "\n";
+    llvm::outs() << "parseXXX: " << Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Eof)) {
       // abort
       return createStringError(inconvertibleErrorCode(),
                                "failed to parse "
                                "PathInExpressionOrStructExprStructOrStructTuple"
                                "UnitOrMacroInvocationExpression: eof");
-    } else if (checkPathIdentSegment()) {
-      assert(eatPathIdentSegment());
     } else if (checkSimplePathSegment()) {
       assert(eatSimplePathSegment());
+    } else if (check(TokenKind::Lt)) {
+      recover(cp);
+      return parsePathInExpressionOrStructOrExpressionWithPostfix();
+    } else if (checkPathIdentSegment()) {
+      recover(cp);
+      return parsePathInExpressionOrStructOrExpressionWithPostfix();
     } else if (check(TokenKind::Not)) {
       recover(cp);
       return parseMacroInvocationExpression();
@@ -1619,6 +1641,33 @@ llvm::Expected<std::shared_ptr<ast::Expression>> Parser::
   }
 }
 
-// FIXME : generics
+llvm::Expected<std::shared_ptr<ast::Expression>>
+Parser::parsePathInExpressionOrStructOrExpressionWithPostfix() {
+  CheckPoint cp = getCheckPoint();
+
+  while (true) {
+    llvm::outs() << "parseXXX: " << Token2String(getToken().getKind()) << "\n";
+    if (check(TokenKind::Eof)) {
+      // abort
+      return createStringError(
+          inconvertibleErrorCode(),
+          "failed to parse PathInExpressionOrStructOrExpressionWithPostfix: "
+          "eof");
+    } else if (check(TokenKind::BraceOpen)) {
+      recover(cp);
+      return parseStructExpression();
+    } else if (check(TokenKind::ParenOpen)) {
+      recover(cp);
+      return parseStructExpression();
+    } else if (check(TokenKind::PathSep)) {
+      assert(eat(TokenKind::PathSep));
+//    } else if (check(TokenKind::Lt)) {
+//      xxx;
+    } else if (checkPostFix()) {
+      recover(cp);
+      return parseExpressionWithPostfix();
+    }
+  }
+}
 
 } // namespace rust_compiler::parser

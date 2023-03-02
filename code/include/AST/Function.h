@@ -2,12 +2,13 @@
 
 #include "AST/FunctionParameters.h"
 #include "AST/FunctionQualifiers.h"
+#include "AST/FunctionReturnType.h"
 #include "AST/GenericParams.h"
 #include "AST/VisItem.h"
 #include "AST/WhereClause.h"
 
-#include <string>
 #include <memory>
+#include <string>
 
 namespace rust_compiler::ast {
 
@@ -18,7 +19,7 @@ class Function : public VisItem {
   FunctionQualifiers qualifiers;
   FunctionParameters functionParameters;
   GenericParams genericParams;
-  std::shared_ptr<ast::types::TypeExpression> returnType;
+  std::optional<FunctionReturnType> returnType;
   WhereClause whereClause;
 
   std::string identifier;
@@ -42,7 +43,7 @@ public:
 
   void setBody(std::shared_ptr<Expression> block);
 
-  void setReturnType(std::shared_ptr<ast::types::TypeExpression> returnType);
+  void setReturnType(const FunctionReturnType &ret) { returnType = ret; }
 
   void setIdentifier(std::string_view id) { identifier = id; }
 };

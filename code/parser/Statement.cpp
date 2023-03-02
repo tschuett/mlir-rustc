@@ -20,27 +20,12 @@ llvm::Expected<std::shared_ptr<ast::Statement>>
 Parser::parseExpressionStatement() {
   Location loc = getLocation();
 
+  llvm::outs() << "parseExpressionStatement"
+               << "\n";
+
   ExpressionStatement exr = {loc};
 
   if (checkExpressionWithBlock()) {
-    llvm::Expected<std::shared_ptr<ast::Expression>> wo =
-        parseExpressionWithoutBlock();
-    if (auto e = wo.takeError()) {
-      llvm::errs() << "failed to parse expression without block in expression "
-                      "statement: "
-                   << std::move(e) << "\n";
-      exit(EXIT_FAILURE);
-    }
-    exr.setExprWoBlock(*wo);
-
-    if (!check(TokenKind::Semi)) {
-      llvm::errs() << "failed to parse ; token in expression statement: "
-                   << "\n";
-      exit(EXIT_FAILURE);
-    }
-    assert(eat(TokenKind::Semi));
-    return std::make_shared<ExpressionStatement>(exr);
-  } else if (checkExpressionWithoutBlock()) {
     llvm::Expected<std::shared_ptr<ast::Expression>> with =
         parseExpressionWithBlock();
     if (auto e = with.takeError()) {
@@ -49,12 +34,34 @@ Parser::parseExpressionStatement() {
                    << std::move(e) << "\n";
       exit(EXIT_FAILURE);
     }
-    exr.setExprWithBlock(*with);
+    exr.setExprWoBlock(*with);
 
     if (check(TokenKind::Semi)) {
       exr.setTrailingSemi();
       assert(eat(TokenKind::Semi));
     }
+
+    return std::make_shared<ExpressionStatement>(exr);
+  } else if (checkExpressionWithoutBlock()) {
+    llvm::outs() << "parseExpressionStatement: wo"
+                 << "\n";
+    llvm::Expected<std::shared_ptr<ast::Expression>> wo =
+        parseExpressionWithoutBlock();
+    if (auto e = wo.takeError()) {
+      llvm::errs() << "failed to parse expression without block in expression "
+                      "statement: "
+                   << std::move(e) << "\n";
+      exit(EXIT_FAILURE);
+    }
+    exr.setExprWithBlock(*wo);
+
+    if (!check(TokenKind::Semi)) {
+      llvm::errs() << "failed to parse ; token in expression statement: "
+                   << "\n";
+      exit(EXIT_FAILURE);
+    }
+    assert(eat(TokenKind::Semi));
+
     return std::make_shared<ExpressionStatement>(exr);
   }
   return createStringError(inconvertibleErrorCode(),

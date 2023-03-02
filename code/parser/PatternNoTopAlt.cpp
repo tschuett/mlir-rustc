@@ -269,8 +269,7 @@ Parser::parsePathOrStructOrTupleStructPattern() {
   if (check(TokenKind::ParenOpen)) {
     recover(cp);
     return parseTupleStructPattern();
-  }
-  if (check(TokenKind::BraceOpen)) {
+  } else if (check(TokenKind::BraceOpen)) {
     recover(cp);
     return parseStructPattern();
   } else {
@@ -284,6 +283,9 @@ llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parsePathPattern() {
   Location loc = getLocation();
   PathPattern path = {loc};
+
+  llvm::outs() << "parsePathPattern"
+               << "\n";
 
   llvm::Expected<std::shared_ptr<ast::Expression>> pathExpr =
       parsePathExpression();
@@ -820,9 +822,10 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
 
   if (check(TokenKind::Identifier) && check(TokenKind::At, 1)) {
     return parseIdentifierPattern();
-  } else if (check(TokenKind::Identifier) && !check(TokenKind::At, 1)) {
-    return parsePathPattern(); // Path patterns take precedence over
-                               // identifier patterns.
+  } else if (checkKeyWord(KeyWordKind::KW_REF)) {
+    return parseIdentifierPattern();
+  } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
+    return parseIdentifierPattern();
   }
 
   /*
@@ -834,6 +837,10 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
   while (true) {
     if (check(TokenKind::Eof)) {
       // abort
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse "
+                               "RangeOrIdentifierOrStructOrTupleStructOrMacroIn"
+                               "vocationPattern: eof");
     } else if (check(TokenKind::PathSep)) {
       assert(eat(TokenKind::PathSep));
     } else if (checkPathIdentSegment()) {
@@ -862,8 +869,25 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
       // GenericArgs
       recover(point);
       return parsePathOrStructOrTupleStructPattern();
+    } else if (check(TokenKind::Eq)) {
+      // terminator
+      recover(point);
+      return parsePathOrStructOrTupleStructPattern();
+    } else if (check(TokenKind::Colon)) {
+      // terminator
+      recover(point);
+      return parsePathOrStructOrTupleStructPattern();
+    } else if (check(TokenKind::INTEGER_LITERAL)) {
+      // lieral
+      recover(point);
+      return parsePathOrStructOrTupleStructPattern();
     } else {
       // error
+      llvm::outs() << Token2String(getToken().getKind()) << "\n";
+      return createStringError(inconvertibleErrorCode(),
+                               "failed to parse "
+                               "RangeOrIdentifierOrStructOrTupleStructOrMa"
+                               "croInvocationPattern");
     }
   }
 }
@@ -922,6 +946,8 @@ Parser::parsePatternNoTopAlt() {
     return parseRangePattern();
   } else if (check(TokenKind::FLOAT_LITERAL) && check(TokenKind::DotDotEq, 1)) {
     return parseRangePattern();
+  } else if (checkLiteral()) {
+    return parseLiteralPattern();
   }
 
   return parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern();

@@ -24,11 +24,6 @@ std::shared_ptr<Expression> Function::getBody() { return body; }
 
 void Function::setBody(std::shared_ptr<Expression> _body) { body = _body; }
 
-void Function::setReturnType(
-    std::shared_ptr<ast::types::TypeExpression> _returnType) {
-  returnType = _returnType;
-}
-
 void Function::setWhereClasue(WhereClause _whereClause) {
   whereClause = _whereClause;
 }
