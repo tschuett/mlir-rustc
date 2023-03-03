@@ -1,12 +1,10 @@
 #include "Parser/Parser.h"
 
 #include "Lexer/Lexer.h"
-#include <llvm/Support/Error.h>
 
 #include <gtest/gtest.h>
-// #include <llvm/Testing/Support/Error.h>
 
-#include "ADT/Error.h"
+#include "ADT/Result.h"
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
@@ -22,16 +20,8 @@ TEST(ParserTest, CheckModuleDecl) {
 
   Parser parser = {ts};
 
-  llvm::Expected<std::shared_ptr<rust_compiler::ast::Expression>> result =
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
       parser.parseStructExprTuple();
 
-  if (auto E = result.takeError()) {
-    std::move(E);
-    EXPECT_TRUE(false);
-  } else {
-    EXPECT_TRUE(true);
-  }
-
-  EXPECT_THAT_EXPECTED(result, Succeeded());
-  // EXPECT_TRUE(module.has_value());
+  EXPECT_TRUE(result.isOk());
 };

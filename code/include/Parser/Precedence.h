@@ -13,12 +13,31 @@ enum class Precedence {
   ArrayIndexing = 80,
   QuestionMark = 75,
 
+  UnaryAsterisk = 70,
+  UnaryAnd = 70,
+  UnaryMut = 70,
+
   Equal = 30,
   NotEqual = 30,
   GreaterThan = 30,
   LessThan = 30,
   GreaterThanOrEqualTo = 30,
   LessThanOrEqualTo = 30,
+
+  DotDot = 15,
+  DotDotEq = 15,
+
+  Assign = 10,
+  PlusAssign = 10,
+  MinusAssign = 10,
+  MulAssign = 10,
+  DivAssign = 10,
+  RemAssign = 10,
+  XorAssign = 10,
+  AndAssign = 10,
+  OrAssign = 10,
+  ShlAssign = 10,
+  ShrAssign = 10,
 
   Lowest = 0
 };

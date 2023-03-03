@@ -35,6 +35,8 @@ add_library(parser
            ExpressionExceptStruct.cpp
            ExpressionUnaryOrBinary.cpp
            Precedence.cpp
+           ParseExpression.cpp
+           ErrorStack.cpp
            )
 
 

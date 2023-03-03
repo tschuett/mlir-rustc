@@ -14,6 +14,7 @@
 using namespace llvm;
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 namespace rust_compiler::parser {
 
@@ -478,14 +479,15 @@ Parser::parseTypeBoundWhereClauseItem() {
     item.setForLifetimes(*forLifetime);
   }
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+  Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
       parseType();
-  if (auto e = type.takeError()) {
-    llvm::errs() << "failed to parse type in TypeBoundWhereClauseItem: "
-                 << toString(std::move(e)) << "\n";
+  if (!type) {
+    llvm::errs() << "failed to parse type in TypeBoundWhereClauseItem: " << type.getError()
+                 << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  item.setType(*type);
+  item.setType(type.getValue());
 
   if (!check(TokenKind::Colon))
     return createStringError(
@@ -581,50 +583,54 @@ llvm::Expected<ast::ConstParam> Parser::parseConstParam() {
                              "failed to parse identifier token in const param");
   }
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+  Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
       parseType();
-  if (auto e = type.takeError()) {
-    llvm::errs() << "failed to parse type in const param: "
-                 << toString(std::move(e)) << "\n";
+  if (!type) {
+    llvm::errs() << "failed to parse type in const param: " << type.getError()
+                 << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  param.setType(*type);
+  param.setType(type.getValue());
 
   if (check(TokenKind::Eq)) {
     assert(eat(TokenKind::Eq));
 
     if (check(TokenKind::BraceOpen)) {
-      llvm::Expected<std::shared_ptr<ast::Expression>> block =
-          parseBlockExpression();
-      if (auto e = type.takeError()) {
+      Result<std::shared_ptr<ast::Expression>, std::string> block =
+          parseBlockExpression({});
+      if (!block) {
         llvm::errs() << "failed to parse block expression in const param: "
-                     << toString(std::move(e)) << "\n";
+                     << block.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      param.setBlock(*block);
+      param.setBlock(block.getValue());
     } else if (check(TokenKind::Identifier)) {
       Token tok = getToken();
       param.setInit(tok.getIdentifier());
       assert(check(TokenKind::Identifier));
     } else if (check(TokenKind::Minus)) {
       assert(check(TokenKind::Minus));
-      llvm::Expected<std::shared_ptr<ast::Expression>> literal =
-          parseLiteralExpression();
-      if (auto e = literal.takeError()) {
+      Result<std::shared_ptr<ast::Expression>, std::string> literal =
+          parseLiteralExpression({});
+      if (!literal) {
         llvm::errs() << "failed to parse literal expression in const param: "
-                     << toString(std::move(e)) << "\n";
+                     << literal.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      param.setInitLiteral(*literal);
+      param.setInitLiteral(literal.getValue());
     } else {
-      llvm::Expected<std::shared_ptr<ast::Expression>> literal =
-          parseLiteralExpression();
-      if (auto e = literal.takeError()) {
+      Result<std::shared_ptr<ast::Expression>, std::string> literal =
+          parseLiteralExpression({});
+      if (!literal) {
         llvm::errs() << "failed to parse literal expression in const param: "
-                     << toString(std::move(e)) << "\n";
+                     << literal.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      param.setInitLiteral(*literal);
+      param.setInitLiteral(literal.getValue());
     }
   }
 
@@ -710,26 +716,28 @@ llvm::Expected<ast::TypeParam> Parser::parseTypeParam() {
   if (check(TokenKind::Colon) && check(TokenKind::Eq, 1)) {
     assert(eat(TokenKind::Colon));
     assert(eat(TokenKind::Eq));
-    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+    Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
         parseType();
-    if (auto e = type.takeError()) {
-      llvm::errs() << "failed to parse type in type param: "
-                   << toString(std::move(e)) << "\n";
+    if (!type) {
+      llvm::errs() << "failed to parse type in type param: " << type.getError()
+                   << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    param.setType(*type);
+    param.setType(type.getValue());
     return param;
   } else if (check(TokenKind::Eq)) {
     // type
     assert(eat(TokenKind::Eq));
-    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+    Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
         parseType();
-    if (auto e = type.takeError()) {
-      llvm::errs() << "failed to parse type in type param: "
-                   << toString(std::move(e)) << "\n";
+    if (!type) {
+      llvm::errs() << "failed to parse type in type param: " << type.getError()
+                   << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    param.setType(*type);
+    param.setType(type.getValue());
     return param;
   } else if (check(TokenKind::Colon) && !check(TokenKind::Eq, 1)) {
     // type param bounds
@@ -743,14 +751,15 @@ llvm::Expected<ast::TypeParam> Parser::parseTypeParam() {
     param.setBounds(*bounds);
     if (check(TokenKind::Eq)) {
       assert(eat(TokenKind::Eq));
-      llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+      Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
           parseType();
-      if (auto e = type.takeError()) {
+      if (!type) {
         llvm::errs() << "failed to parse type in type param: "
-                     << toString(std::move(e)) << "\n";
+                     << type.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      param.setType(*type);
+      param.setType(type.getValue());
       return param;
     } else {
       return param;

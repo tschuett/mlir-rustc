@@ -1,7 +1,4 @@
-#include "Lexer/Token.h"
 #include "Parser/Parser.h"
-#include "Parser/Restrictions.h"
-#include "llvm/Support/Error.h"
 
 #include <optional>
 #include <sstream>
@@ -9,11 +6,14 @@
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace llvm;
 
 namespace rust_compiler::parser {
 
 llvm::Expected<ast::OuterAttribute> Parser::parseOuterAttribute() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
+
   Location loc = getLocation();
 
   OuterAttribute outer = {loc};
@@ -46,6 +46,8 @@ llvm::Expected<ast::OuterAttribute> Parser::parseOuterAttribute() {
 }
 
 llvm::Expected<ast::InnerAttribute> Parser::parseInnerAttribute() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
+
   Location loc = getLocation();
 
   InnerAttribute inner = {loc};
@@ -83,6 +85,7 @@ llvm::Expected<ast::InnerAttribute> Parser::parseInnerAttribute() {
 }
 
 llvm::Expected<ast::Attr> Parser::parseAttr() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   Attr attr = {loc};
@@ -109,6 +112,7 @@ llvm::Expected<ast::Attr> Parser::parseAttr() {
 }
 
 llvm::Expected<ast::AttrInput> Parser::parseAttrInput() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   AttrInput input = {loc};
@@ -116,14 +120,15 @@ llvm::Expected<ast::AttrInput> Parser::parseAttrInput() {
   if (check(TokenKind::Eq)) {
     assert(eat(TokenKind::Eq));
     Restrictions restrictions;
-    llvm::Expected<std::shared_ptr<ast::Expression>> expr =
-        parseExpression(restrictions);
-    if (auto e = expr.takeError()) {
+    Result<std::shared_ptr<ast::Expression>, std::string> expr =
+        parseExpression({}, restrictions);
+    if (!expr) {
       llvm::errs() << "failed to parse expression in AttrInput: "
-                   << toString(std::move(e)) << "\n";
+                   << expr.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    input.setExpression(*expr);
+    input.setExpression(expr.getValue());
     return input;
   }
 
@@ -140,6 +145,7 @@ llvm::Expected<ast::AttrInput> Parser::parseAttrInput() {
 
 llvm::Expected<std::vector<ast::OuterAttribute>>
 Parser::parseOuterAttributes() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   std::vector<OuterAttribute> outer;
 
   while (true) {
@@ -162,6 +168,7 @@ Parser::parseOuterAttributes() {
 
 llvm::Expected<std::vector<ast::InnerAttribute>>
 Parser::parseInnerAttributes() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   std::vector<InnerAttribute> inner;
 
   while (true) {
@@ -181,7 +188,5 @@ Parser::parseInnerAttributes() {
     }
   }
 }
-
-//  llvm::Expected<ast::DelimTokenTree> Parser::parseDelimTokenTree() {}
 
 } // namespace rust_compiler::parser

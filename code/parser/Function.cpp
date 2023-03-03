@@ -15,6 +15,7 @@
 using namespace llvm;
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 namespace rust_compiler::parser {
 
@@ -61,13 +62,14 @@ llvm::Expected<std::shared_ptr<ast::SelfParam>> Parser::parseTypedSelf() {
 
   assert(eat(TokenKind::Colon));
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+  Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
       parseType();
-  if (auto e = type.takeError()) {
-    llvm::errs() << "failed to parse type: " << toString(std::move(e)) << "\n";
+  if (!type) {
+    llvm::errs() << "failed to parse type: " << type.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  self.setType(*type);
+  self.setType(type.getValue());
 
   return std::make_shared<TypedSelf>(self);
 }
@@ -233,16 +235,17 @@ llvm::Expected<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
     return pat;
   }
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+  Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
       parseType();
-  if (auto e = type.takeError()) {
-    llvm::errs() << "failed to parse type: " << toString(std::move(e)) << "\n";
+  if (!type) {
+    llvm::errs() << "failed to parse type: " << type.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
   FunctionParamPattern pat = (loc);
   pat.setName(*pattern);
-  pat.setType(*type);
+  pat.setType(type.getValue());
   return pat;
 }
 
@@ -348,13 +351,14 @@ llvm::Expected<ast::FunctionReturnType> Parser::parseFunctionReturnType() {
   }
   assert(eat(TokenKind::RArrow));
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+  Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
       parseType();
-  if (auto e = type.takeError()) {
-    llvm::errs() << "failed to parse type: " << toString(std::move(e)) << "\n";
+  if (!type) {
+    llvm::errs() << "failed to parse type: " << type.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  t.setType(*type);
+  t.setType(type.getValue());
 
   return t;
 }
@@ -462,14 +466,15 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   llvm::outs() << "parseFunction: parse body"
                << "\n";
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> body =
-      parseBlockExpression();
-  if (auto e = body.takeError()) {
-    llvm::errs() << "failed to parse fn bofy: " << toString(std::move(e))
+  Result<std::shared_ptr<ast::Expression>, std::string> body =
+      parseBlockExpression({});
+  if (!body) {
+    llvm::errs() << "failed to parse body in function: " << body.getError()
                  << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  fun.setBody(*body);
+  fun.setBody(body.getValue());
 
   return std::make_shared<ast::VisItem>(fun);
 }
