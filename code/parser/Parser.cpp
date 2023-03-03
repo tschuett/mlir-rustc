@@ -245,19 +245,20 @@ rust_compiler::Location Parser::getLocation() {
 
 lexer::Token Parser::getToken(uint8_t off) { return ts.getAt(offset + off); }
 
-llvm::Expected<std::shared_ptr<ast::VisItem>>
+Result<std::shared_ptr<ast::VisItem>, std::string>
 Parser::parseVisItem(std::span<OuterAttribute>) {
   std::optional<ast::Visibility> vis;
 
   if (checkKeyWord(lexer::KeyWordKind::KW_PUB)) {
     // FIXME
-    llvm::Expected<ast::Visibility> result = parseVisibility();
-    if (auto e = result.takeError()) {
-      llvm::errs() << "failed to parse visiblity: " << toString(std::move(e))
+    Result<ast::Visibility, std::string> result = parseVisibility();
+    if (!result) {
+      llvm::errs() << "failed to parse visibility: " << result.getError()
                    << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    vis = *result;
+    vis = result.getValue();
   }
 
   if (checkKeyWord(lexer::KeyWordKind::KW_CONST)) {
@@ -381,13 +382,14 @@ Parser::parseMod(std::optional<ast::Visibility> vis) {
         assert(eat(lexer::TokenKind::BraceClose));
         return std::make_shared<Module>(mod);
       } else {
-        llvm::Expected<std::shared_ptr<ast::Item>> item = parseItem();
-        if (auto e = item.takeError()) {
-          llvm::errs() << "failed to parse item in mod: "
-                       << toString(std::move(e)) << "\n";
+        Result<std::shared_ptr<ast::Item>, std::string> item = parseItem();
+        if (!item) {
+          llvm::errs() << "failed to parse item in mod: " << item.getError()
+                       << "\n";
+          printFunctionStack();
           exit(EXIT_FAILURE);
         }
-        mod.addItem(*item);
+        mod.addItem(item.getValue());
       }
     }
   }

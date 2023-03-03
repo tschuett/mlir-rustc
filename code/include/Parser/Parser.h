@@ -112,7 +112,7 @@ public:
   /// VisItems
   llvm::Expected<std::shared_ptr<ast::VisItem>>
   parseMod(std::optional<ast::Visibility> vis);
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseUseDeclaration(std::optional<ast::Visibility> vis);
   llvm::Expected<std::shared_ptr<ast::VisItem>>
   parseTypeAlias(std::optional<ast::Visibility> vis);
@@ -124,7 +124,7 @@ public:
   parseStaticItem(std::optional<ast::Visibility> vis);
   llvm::Expected<std::shared_ptr<ast::VisItem>>
   parseTrait(std::optional<ast::Visibility> vis);
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseFunction(std::optional<ast::Visibility> vis);
   llvm::Expected<std::shared_ptr<ast::VisItem>>
   parseConstantItem(std::optional<ast::Visibility> vis);
@@ -230,11 +230,12 @@ public:
 
   PathKind testTypePathOrSimplePath();
 
-  llvm::Expected<std::shared_ptr<ast::Crate>>
+  adt::Result<std::shared_ptr<ast::Crate>, std::string>
   parseCrateModule(std::string_view crateName, basic::CrateNum crateNum);
 
   // Patterns
-  adt::Result<std::shared_ptr<ast::patterns::Pattern, std::string>> parsePattern();
+  adt::Result<std::shared_ptr<ast::patterns::Pattern, std::string>>
+  parsePattern();
   adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parsePatternNoTopAlt();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
@@ -350,7 +351,8 @@ public:
       parseFieldExpression(std::shared_ptr<ast::Expression>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseRangeExpression(std::shared_ptr<ast::Expression>);
-  adt::Result<std::shared_ptr<ast::Expression>, std::string> parseRangeExpression();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+  parseRangeExpression();
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseUnderScoreExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
@@ -364,7 +366,7 @@ public:
   parseAssignmentExpression(std::shared_ptr<ast::Expression>,
                             std::span<ast::OuterAttribute>,
                             Restrictions restrictions);
-  adt::Result<std::shared_ptr<ast::Expression>, std::stringxs>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseTypeCastExpression(std::shared_ptr<ast::Expression>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseMethodCallExpression(std::shared_ptr<ast::Expression>,
@@ -395,7 +397,8 @@ public:
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseLiteralExpression(std::span<ast::OuterAttribute>);
 
-  adt::Result<std::shared_ptr<ast::Expression>, std::string> parsePathExpression();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+  parsePathExpression();
 
   adt::Result<ast::CallParams, std::string> parseCallParams(Restrictions);
 
