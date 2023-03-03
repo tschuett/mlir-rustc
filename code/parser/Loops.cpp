@@ -1,6 +1,8 @@
 #include "AST/InfiniteLoopExpression.h"
 #include "AST/IteratorLoopExpression.h"
 #include "AST/LabelBlockExpression.h"
+#include "AST/OuterAttribute.h"
+#include "AST/OuterAttributes.h"
 #include "AST/PredicateLoopExpression.h"
 #include "AST/PredicatePatternLoopExpression.h"
 #include "Lexer/KeyWords.h"
@@ -12,6 +14,7 @@
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::adt;
 using namespace llvm;
 
 namespace rust_compiler::parser {
@@ -20,8 +23,8 @@ bool Parser::checkLoopLabel() {
   return (check(TokenKind::LIFETIME_OR_LABEL) && check(TokenKind::Colon, 1));
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseLabelBlockExpression(std::optional<std::string> label) {
+Result<std::shared_ptr<ast::Expression>, std::string>
+Parser::parseLabelBlockExpression(std::span<OuterAttribute>) {
   Location loc = getLocation();
   LabelBlockExpression bloc = {loc};
 
@@ -41,7 +44,10 @@ Parser::parseLabelBlockExpression(std::optional<std::string> label) {
   return std::make_shared<LabelBlockExpression>(bloc);
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parseLoopExpression() {
+// Result<LoopLabel, std::string> Parser::parseLoopLabel() {}
+
+Result<std::shared_ptr<ast::Expression>, std::string>
+Parser::parseLoopExpression(std::span<OuterAttribute>) {
   if (checkLoopLabel()) {
     if (check(TokenKind::LIFETIME_OR_LABEL) && check(TokenKind::Colon, 1)) {
       std::string label = getToken().getStorage();
@@ -83,8 +89,8 @@ llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parseLoopExpression() {
       "failed to parse loop expression without loop label");
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseIteratorLoopExpression(std::optional<std::string> label) {
+Result<std::shared_ptr<ast::Expression>, std::string>
+Parser::parseIteratorLoopExpression(std::span<OuterAttribute>) {
   Location loc = getLocation();
 
   IteratorLoopExpression it = {loc};
@@ -182,8 +188,8 @@ Parser::parsePredicatePatternLoopExpression(std::optional<std::string> label) {
   return std::make_shared<PredicatePatternLoopExpression>(pat);
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseInfiniteLoopExpression(std::optional<std::string> label) {
+Result<std::shared_ptr<ast::Expression>, std::string>
+Parser::parseInfiniteLoopExpression(std::optional < std::span<OuterAttribute>) {
   Location loc = getLocation();
 
   InfiniteLoopExpression infini = {loc};
@@ -209,8 +215,8 @@ Parser::parseInfiniteLoopExpression(std::optional<std::string> label) {
   return std::make_shared<InfiniteLoopExpression>(infini);
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parsePredicateLoopExpression(std::optional<std::string> label) {
+Result<std::shared_ptr<ast::Expression>, std::string>
+Parser::parsePredicateLoopExpression(std::span<OuterAttribute>) {
   Location loc = getLocation();
 
   PredicateLoopExpression pred = {loc};
@@ -218,8 +224,8 @@ Parser::parsePredicateLoopExpression(std::optional<std::string> label) {
     pred.setLabel(*label);
 
   if (!checkKeyWord(KeyWordKind::KW_WHILE))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse while keyword");
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        "failed to parse while keyword");
   assert(eatKeyWord(KeyWordKind::KW_WHILE));
 
   llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
@@ -241,7 +247,8 @@ Parser::parsePredicateLoopExpression(std::optional<std::string> label) {
 
   pred.setBody(*block);
 
-  return std::make_shared<PredicateLoopExpression>(pred);
+  return Result<std::shared_ptr<ast::Expression>, std::string>(
+      std::make_shared<PredicateLoopExpression>(pred));
 }
 
 } // namespace rust_compiler::parser

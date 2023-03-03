@@ -11,6 +11,8 @@ namespace rust_compiler::analysis {
 class Loop {
 
   llvm::SmallPtrSet<mlir::Block *, 8> loop;
+  llvm::SmallPtrSet<mlir::Block *, 8> exitNodes;
+
   mlir::Block *preheader;
   mlir::Block *header;
   mlir::Block *latch;

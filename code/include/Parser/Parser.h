@@ -26,6 +26,7 @@
 #include "AST/LifetimeParam.h"
 #include "AST/LifetimeWhereClauseItem.h"
 #include "AST/LoopExpression.h"
+#include "AST/LoopLabel.h"
 #include "AST/MacroRulesDef.h"
 #include "AST/MatchArm.h"
 #include "AST/MatchArmGuard.h"
@@ -309,22 +310,28 @@ public:
       parseGroupedExpression(Restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseBlockExpression(std::span<ast::OuterAttribute>);
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseExpressionWithoutBlock();
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseExpressionWithoutBlockExceptStruct();
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseExpressionWithBlock(std::span<ast::OuterAttribute>);
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseClosureExpression();
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseReturnExpression();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parseClosureExpression(std::span<ast::OuterAttribute>);
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parseReturnExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseBreakExpression(std::span<ast::OuterAttribute>);
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseContinueExpression();
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseNegationExpression();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parseContinueExpression(std::span<ast::OuterAttribute>);
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parseNegationExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseDereferenceExpression(std::span<ast::OuterAttribute>);
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseBorrowExpression();
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseAsyncBlockExpression();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parseBorrowExpression(std::span<ast::OuterAttribute>);
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parseAsyncBlockExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseMatchExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
@@ -334,7 +341,7 @@ public:
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseUnsafeBlockExpression(std::span<ast::OuterAttribute>);
   adt::Result<ast::Scrutinee, std::string> parseScrutinee();
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseAwaitExpression(std::shared_ptr<ast::Expression>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseIndexExpression(std::shared_ptr<ast::Expression>,
@@ -344,7 +351,8 @@ public:
   llvm::Expected<std::shared_ptr<ast::Expression>>
       parseRangeExpression(std::shared_ptr<ast::Expression>);
   llvm::Expected<std::shared_ptr<ast::Expression>> parseRangeExpression();
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseUnderScoreExpression();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parseUnderScoreExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseGroupedOrTupleExpression(Restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
@@ -362,9 +370,10 @@ public:
   parseMethodCallExpression(std::shared_ptr<ast::Expression>,
                             std::span<ast::OuterAttribute>,
                             Restrictions restrictions);
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseTupleIndexingExpression(std::shared_ptr<ast::Expression>);
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseArrayExpression();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parseArrayExpression(std::span<ast::OuterAttribute>);
   llvm::Expected<std::shared_ptr<ast::Expression>>
   parseArithmeticOrLogicalExpression(
       std::shared_ptr<ast::Expression>,
@@ -382,7 +391,7 @@ public:
       std::shared_ptr<ast::Expression>,
       rust_compiler::parser::Restrictions restrictions);
   llvm::Expected<std::shared_ptr<ast::Expression>>
-  parseQualifiedPathInExpression();
+      parseQualifiedPathInExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseLiteralExpression(std::span<ast::OuterAttribute>);
 
@@ -392,16 +401,16 @@ public:
 
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseLoopExpression(std::span<ast::OuterAttribute>);
-  llvm::Expected<std::shared_ptr<ast::Expression>>
-      parseIteratorLoopExpression(std::optional<std::string>);
-  llvm::Expected<std::shared_ptr<ast::Expression>>
-      parsePredicatePatternLoopExpression(std::optional<std::string>);
-  llvm::Expected<std::shared_ptr<ast::Expression>>
-      parsePredicateLoopExpression(std::optional<std::string>);
-  llvm::Expected<std::shared_ptr<ast::Expression>>
-      parseInfiniteLoopExpression(std::optional<std::string>);
-  llvm::Expected<std::shared_ptr<ast::Expression>>
-      parseLabelBlockExpression(std::optional<std::string>);
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parseIteratorLoopExpression(std::span<ast::OuterAttribute>);
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parsePredicatePatternLoopExpression(std::span<ast::OuterAttribute>);
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parsePredicateLoopExpression(std::span<ast::OuterAttribute>);
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parseInfiniteLoopExpression(std::span<ast::OuterAttribute>);
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parseLabelBlockExpression(std::span<ast::OuterAttribute>);
   // llvm::Expected<std::shared_ptr<ast::Expression>>
   // parsePatternLoopExpression();
 
@@ -534,6 +543,8 @@ public:
 
   llvm::Expected<std::shared_ptr<ast::Expression>>
   parsePathInExpressionOrMacroInvocationExpression();
+
+  adt::Result<ast::LoopLabel, std::string> parseLoopLabel();
 
 private:
   bool check(lexer::TokenKind token);
