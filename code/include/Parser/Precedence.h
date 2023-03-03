@@ -15,7 +15,9 @@ enum class Precedence {
 
   UnaryAsterisk = 70,
   UnaryAnd = 70,
-  UnaryMut = 70,
+  UnaryMinus = 70,
+  UnaryAndMut = 70,
+  UnaryNot = 70,
 
   Equal = 30,
   NotEqual = 30,

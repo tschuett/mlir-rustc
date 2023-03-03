@@ -1008,8 +1008,8 @@ Result<ast::Scrutinee, std::string> Parser::parseScrutinee() {
   return Result<ast::Scrutinee, std::string>(scrut);
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseUnsafeBlockExpression() {
+Result<std::shared_ptr<ast::Expression>, std::string>
+Parser::parseUnsafeBlockExpression(std::span<OuterAttribute>) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   UnsafeBlockExpression unsafeExpr = {loc};
@@ -1017,21 +1017,23 @@ Parser::parseUnsafeBlockExpression() {
   if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
     assert(eatKeyWord(KeyWordKind::KW_UNSAFE));
   } else {
-    return createStringError(
-        inconvertibleErrorCode(),
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
         "failed to parse unsafe token in unsafe block expression");
   }
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> block =
-      parseBlockExpression();
-  if (auto e = block.takeError()) {
-    llvm::errs() << "failed to parse block in unsafe block expression: "
-                 << toString(std::move(e)) << "\n";
+  Result<std::shared_ptr<ast::Expression>, std::string> block =
+      parseBlockExpression({});
+  if (!block) {
+    llvm::errs()
+        << "failed to parse block expression in unsafe block expression: "
+        << block.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  unsafeExpr.setBlock(*block);
+  unsafeExpr.setBlock(block.getValue());
 
-  return std::make_shared<UnsafeBlockExpression>(unsafeExpr);
+  return Result<std::shared_ptr<ast::Expression>, std::string>(
+      std::make_shared<UnsafeBlockExpression>(unsafeExpr));
 }
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
@@ -1052,14 +1054,16 @@ Parser::parseAsyncBlockExpression() {
     asyncExpr.setMove();
   }
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> block =
-      parseBlockExpression();
-  if (auto e = block.takeError()) {
-    llvm::errs() << "failed to parse block in async block expression: "
-                 << toString(std::move(e)) << "\n";
+  Result<std::shared_ptr<ast::Expression>, std::string> block =
+      parseBlockExpression({});
+  if (!block) {
+    llvm::errs()
+        << "failed to parse block expression in async block expression: "
+        << block.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  asyncExpr.setBlock(*block);
+  asyncExpr.setBlock(block.getValue());
 
   return std::make_shared<AsyncBlockExpression>(asyncExpr);
 }
@@ -1152,7 +1156,7 @@ Parser::parseIfLetExpression(std::span<OuterAttribute> outer) {
   ifLet.setScrutinee(scrutinee.getValue());
 
   Result<std::shared_ptr<ast::Expression>, std::string> block =
-    parseBlockExpression({});
+      parseBlockExpression({});
   if (!block) {
     llvm::errs() << "failed to parse block expression in if let expression: "
                  << block.getError() << "\n";
@@ -1198,7 +1202,7 @@ Parser::parseIfLetExpression(std::span<OuterAttribute> outer) {
         std::make_shared<IfLetExpression>(ifLet));
   }
   Result<std::shared_ptr<ast::Expression>, std::string> block2 =
-      parseBlockExpression();
+      parseBlockExpression({});
   if (!block2) {
     llvm::errs() << "failed to parse block expression in if let expression: "
                  << block2.getError() << "\n";
@@ -1242,7 +1246,7 @@ Parser::parseDereferenceExpression(std::span<OuterAttribute>) {
 }
 
 Result<std::shared_ptr<ast::Expression>, std::string>
-Parser::parseIfExpression() {
+Parser::parseIfExpression(std::span<OuterAttribute>) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   IfExpression ifExpr = {loc};
@@ -1250,12 +1254,14 @@ Parser::parseIfExpression() {
   if (checkKeyWord(KeyWordKind::KW_IF)) {
     assert(eatKeyWord(KeyWordKind::KW_IF));
   } else {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse if expression");
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        "failed to parse if expression");
   }
 
+  Restrictions noStructExpr;
+  noStructExpr.canBeStructExpr = false;
   Result<std::shared_ptr<ast::Expression>, std::string> cond =
-      parseExpression({}, restrictions);
+      parseExpression({}, noStructExpr);
   if (!cond) {
     llvm::errs() << "failed to parse condition in if expression: "
                  << cond.getError() << "\n";
@@ -1265,7 +1271,7 @@ Parser::parseIfExpression() {
   ifExpr.setCondition(cond.getValue());
 
   Result<std::shared_ptr<ast::Expression>, std::string> block =
-      parseBlockExpression();
+      parseBlockExpression({});
   if (!block) {
     llvm::errs() << "failed to parse block in if expression: "
                  << block.getError() << "\n";
@@ -1278,46 +1284,54 @@ Parser::parseIfExpression() {
     assert(eatKeyWord(KeyWordKind::KW_ELSE));
   } else {
     // without else
-    return std::make_shared<IfExpression>(ifExpr);
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        std::make_shared<IfExpression>(ifExpr));
   }
 
   // FIXME
   if (checkKeyWord(KeyWordKind::KW_IF) &&
       checkKeyWord(KeyWordKind::KW_LET, 1)) {
-    llvm::Expected<std::shared_ptr<ast::Expression>> ifLetExpr =
-        parseIfLetExpression();
-    if (auto e = ifLetExpr.takeError()) {
+    Result<std::shared_ptr<ast::Expression>, std::string> ifLetExpr =
+        parseIfLetExpression({});
+    if (!ifLetExpr) {
       llvm::errs() << "failed to parse if let expression in if expression: "
-                   << toString(std::move(e)) << "\n";
+                   << ifLetExpr.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    ifExpr.setTrailing(*ifLetExpr);
-    return std::make_shared<IfExpression>(ifExpr);
+    ifExpr.setTrailing(ifLetExpr.getValue());
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        std::make_shared<IfExpression>(ifExpr));
   } else if (checkKeyWord(KeyWordKind::KW_IF) &&
              !checkKeyWord(KeyWordKind::KW_LET, 1)) {
-    llvm::Expected<std::shared_ptr<ast::Expression>> ifExprTail =
-        parseIfExpression();
-    if (auto e = ifExprTail.takeError()) {
+    Result<std::shared_ptr<ast::Expression>, std::string> ifExprTail =
+        parseIfExpression({});
+    if (!ifExprTail) {
       llvm::errs() << "failed to parse if expression in if expression: "
-                   << toString(std::move(e)) << "\n";
+                   << ifExprTail.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    ifExpr.setTrailing(*ifExprTail);
-    return std::make_shared<IfExpression>(ifExpr);
+    ifExpr.setTrailing(ifExprTail.getValue());
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        std::make_shared<IfExpression>(ifExpr));
   } else {
-    llvm::Expected<std::shared_ptr<ast::Expression>> block =
-        parseBlockExpression();
-    if (auto e = block.takeError()) {
+    Result<std::shared_ptr<ast::Expression>, std::string> block =
+        parseBlockExpression({});
+    if (!block) {
       llvm::errs() << "failed to parse block expression in if expression: "
-                   << toString(std::move(e)) << "\n";
+                   << block.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    ifExpr.setTrailing(*block);
-    return std::make_shared<IfExpression>(ifExpr);
+    ifExpr.setTrailing(block.getValue());
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        std::make_shared<IfExpression>(ifExpr));
   }
 
   // no tail
-  return std::make_shared<IfExpression>(ifExpr);
+  return Result<std::shared_ptr<ast::Expression>, std::string>(
+      std::make_shared<IfExpression>(ifExpr));
 }
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
@@ -1341,22 +1355,23 @@ Parser::parseBorrowExpression() {
   }
 
   Restrictions enteredFromUnary;
-  enteredFromUnary.enteredFromunary = true;
+  enteredFromUnary.enteredFromUnary = true;
   enteredFromUnary.canBeStructExpr = false;
 
   Precedence pred = Precedence::UnaryAnd;
   if (isMutable)
     pred = Precedence::UnaryAndMut;
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> expr =
+  Result<std::shared_ptr<ast::Expression>, std::string> expr =
       parseExpression(pred, {}, enteredFromUnary);
-  if (auto e = expr.takeError()) {
+  if (!expr) {
     llvm::errs() << "failed to parse borrow tail expression: "
-                 << toString(std::move(e)) << "\n";
+                 << expr.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  borrow.setExpression(*expr);
+  borrow.setExpression(expr.getValue());
 
   return std::make_shared<BorrowExpression>(borrow);
 }
@@ -1367,25 +1382,32 @@ Parser::parseNegationExpression() {
   Location loc = getLocation();
   NegationExpression neg = {loc};
 
+  Precedence pred;
   if (check(TokenKind::Minus)) {
     neg.setMinus();
     assert(eat(TokenKind::Minus));
+    pred = Precedence::UnaryMinus;
   } else if (check(TokenKind::Not)) {
     neg.setNot();
+    pred = Precedence::UnaryNot;
     assert(eat(TokenKind::Not));
   } else {
     return createStringError(inconvertibleErrorCode(),
                              "failed to negation token in negation expression");
   }
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
-  if (auto e = expr.takeError()) {
+  Restrictions enteredFromUnary;
+  enteredFromUnary.enteredFromUnary = true;
+  Result<std::shared_ptr<ast::Expression>, std::string> expr =
+      parseExpression(pred, {}, enteredFromUnary);
+  if (!expr) {
     llvm::errs() << "failed to parse negation tail expression: "
-                 << toString(std::move(e)) << "\n";
+                 << expr.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  neg.setRight(*expr);
+  neg.setRight(expr.getValue());
 
   return std::make_shared<NegationExpression>(neg);
 }
@@ -1429,14 +1451,17 @@ Parser::parseReturnExpression() {
   if (check(TokenKind::Semi))
     return std::make_shared<ReturnExpression>(ret);
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
-  if (auto e = expr.takeError()) {
+  Restrictions restrictions;
+  Result<std::shared_ptr<ast::Expression>, std::string> expr =
+      parseExpression({}, restrictions);
+  if (!expr) {
     llvm::errs() << "failed to parse return tail expression: "
-                 << toString(std::move(e)) << "\n";
+                 << expr.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  ret.setTail(*expr);
+  ret.setTail(expr.getValue());
 
   llvm::outs() << "end of return expression: "
                << Token2String(getToken().getKind()) << "\n";
@@ -1444,65 +1469,65 @@ Parser::parseReturnExpression() {
   return std::make_shared<ReturnExpression>(ret);
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseExpressionWithBlock() {
+Result<std::shared_ptr<ast::Expression>, std::string>
+Parser::parseExpressionWithBlock(std::span<OuterAttribute> outer) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
-  std::vector<ast::OuterAttribute> attributes;
-  if (checkOuterAttribute()) {
-    llvm::Expected<std::vector<ast::OuterAttribute>> outerAttributes =
-        parseOuterAttributes();
-    if (auto e = outerAttributes.takeError()) {
-      llvm::errs() << "failed to parse outer attributes: "
-                   << toString(std::move(e)) << "\n";
-      exit(EXIT_FAILURE);
-    }
-    attributes = *outerAttributes;
-  }
-
-  // FIXME attributes
+  //  std::vector<ast::OuterAttribute> attributes;
+  //  if (checkOuterAttribute()) {
+  //    llvm::Expected<std::vector<ast::OuterAttribute>> outerAttributes =
+  //        parseOuterAttributes();
+  //    if (auto e = outerAttributes.takeError()) {
+  //      llvm::errs() << "failed to parse outer attributes: "
+  //                   << toString(std::move(e)) << "\n";
+  //      exit(EXIT_FAILURE);
+  //    }
+  //    attributes = *outerAttributes;
+  //  }
+  //
+  //  // FIXME attributes
 
   if (check(TokenKind::BraceOpen)) {
-    return parseBlockExpression();
+    return parseBlockExpression(outer);
   }
 
   if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
-    return parseUnsafeBlockExpression();
+    return parseUnsafeBlockExpression(outer);
   }
 
   if (checkKeyWord(KeyWordKind::KW_IF) &&
       checkKeyWord(KeyWordKind::KW_LET, 1)) {
-    return parseIfLetExpression();
+    return parseIfLetExpression(outer);
   }
 
   if (checkKeyWord(KeyWordKind::KW_IF) &&
       !checkKeyWord(KeyWordKind::KW_LET, 1)) {
-    return parseIfExpression();
+    return parseIfExpression(outer);
   }
 
   if (checkKeyWord(KeyWordKind::KW_MATCH)) {
-    return parseMatchExpression();
+    return parseMatchExpression(outer);
   }
 
   if (check(TokenKind::LIFETIME_OR_LABEL))
-    return parseLoopExpression();
+    return parseLoopExpression(outer);
 
   if (checkKeyWord(KeyWordKind::KW_LOOP))
-    return parseInfiniteLoopExpression(std::nullopt);
+    return parseInfiniteLoopExpression(outer);
 
   if (checkKeyWord(KeyWordKind::KW_WHILE) &&
       checkKeyWord(KeyWordKind::KW_LET, 1))
-    return parsePredicatePatternLoopExpression(std::nullopt);
+    return parsePredicatePatternLoopExpression(outer);
 
   if (checkKeyWord(KeyWordKind::KW_WHILE) &&
       !checkKeyWord(KeyWordKind::KW_LET, 1))
-    return parsePredicatePatternLoopExpression(std::nullopt);
+    return parsePredicatePatternLoopExpression(outer);
 
   if (checkKeyWord(KeyWordKind::KW_FOR))
-    return parseIteratorLoopExpression(std::nullopt);
+    return parseIteratorLoopExpression(outer);
 
   /// FIXME
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse expression with block");
+  return Result<std::shared_ptr<ast::Expression>, std::string>(
+      "failed to parse expression with block");
 }
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
