@@ -9,12 +9,15 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseArithmeticOrLogicalExpression(
-    std::shared_ptr<ast::Expression> lhs) {
+Parser::parseArithmeticOrLogicalExpression(std::shared_ptr<ast::Expression> lhs,
+                                           Restrictions restrictions) {
   Location loc = getLocation();
 
   ArithmeticOrLogicalExpression arith = {loc};
   arith.setLhs(lhs);
+
+  llvm::outs() << "parseArithmeticOrLogicalExpression"
+               << "\n";
 
   if (check(TokenKind::Plus)) {
     arith.setKind(ArithmeticOrLogicalExpressionKind::Addition);
@@ -42,7 +45,7 @@ Parser::parseArithmeticOrLogicalExpression(
         "failed to parse arithmetic or logical expression");
   }
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression(restrictions);
   if (auto e = expr.takeError()) {
     llvm::errs()
         << "failed to parse expression in arithmetic or logical expression: "

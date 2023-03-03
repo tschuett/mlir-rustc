@@ -33,6 +33,8 @@ add_library(parser
            CheckExpressionWithoutBlock.cpp
            ComplexType.cpp
            ExpressionExceptStruct.cpp
+           ExpressionUnaryOrBinary.cpp
+           Precedence.cpp
            )
 
 

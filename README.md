@@ -42,6 +42,7 @@
 - [ ] outer attributes on expressions
 - [ ] outer attributes on item
 - [ ] macros
+- [ ] precedence
 
 # References
 

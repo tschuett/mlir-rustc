@@ -1,5 +1,6 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
+#include "Parser/Restrictions.h"
 #include "llvm/Support/Error.h"
 
 #include <optional>
@@ -114,7 +115,9 @@ llvm::Expected<ast::AttrInput> Parser::parseAttrInput() {
 
   if (check(TokenKind::Eq)) {
     assert(eat(TokenKind::Eq));
-    llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
+    Restrictions restrictions;
+    llvm::Expected<std::shared_ptr<ast::Expression>> expr =
+        parseExpression(restrictions);
     if (auto e = expr.takeError()) {
       llvm::errs() << "failed to parse expression in AttrInput: "
                    << toString(std::move(e)) << "\n";
@@ -124,7 +127,8 @@ llvm::Expected<ast::AttrInput> Parser::parseAttrInput() {
     return input;
   }
 
-  llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> tokenTree = parseDelimTokenTree();
+  llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> tokenTree =
+      parseDelimTokenTree();
   if (auto e = tokenTree.takeError()) {
     llvm::errs() << "failed to parse token tree in AttrInput: "
                  << toString(std::move(e)) << "\n";
@@ -178,8 +182,6 @@ Parser::parseInnerAttributes() {
   }
 }
 
-  //  llvm::Expected<ast::DelimTokenTree> Parser::parseDelimTokenTree() {}
+//  llvm::Expected<ast::DelimTokenTree> Parser::parseDelimTokenTree() {}
 
-
-  
 } // namespace rust_compiler::parser
