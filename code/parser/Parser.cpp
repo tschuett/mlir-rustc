@@ -395,7 +395,7 @@ Parser::parseMod(std::optional<ast::Visibility> vis) {
   return createStringError(inconvertibleErrorCode(), "failed to parse module");
 }
 
-llvm::Expected<std::shared_ptr<ast::Crate>>
+Result<std::shared_ptr<ast::Crate>, std::string>
 Parser::parseCrateModule(std::string_view crateName, basic::CrateNum crateNum) {
   Location loc = getLocation();
 
@@ -416,18 +416,21 @@ Parser::parseCrateModule(std::string_view crateName, basic::CrateNum crateNum) {
   while (true) {
     if (check(TokenKind::Eof)) {
       // done
-      return std::make_shared<Crate>(crate);
+      return Result<std::shared_ptr<ast::Crate>, std::string>(
+          std::make_shared<Crate>(crate));
     }
-    llvm::Expected<std::shared_ptr<ast::Item>> item = parseItem();
-    if (auto e = item.takeError()) {
-      llvm::errs() << "failed to parse item in crate: "
-                   << toString(std::move(e)) << "\n";
+    Result<std::shared_ptr<ast::Item>, std::string> item = parseItem();
+    if (!type) {
+      llvm::errs() << "failed to parse item in crate: " << type.getError()
+                   << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    crate.addItem(*item);
+    crate.addItem(item.getValue());
   }
 
-  return std::make_shared<Crate>(crate);
+  return Result<std::shared_ptr<ast::Crate>, std::string>(
+      std::make_shared<Crate>(crate));
 }
 
 llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
@@ -482,8 +485,8 @@ Parser::parseTypeBoundWhereClauseItem() {
   Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
       parseType();
   if (!type) {
-    llvm::errs() << "failed to parse type in TypeBoundWhereClauseItem: " << type.getError()
-                 << "\n";
+    llvm::errs() << "failed to parse type in TypeBoundWhereClauseItem: "
+                 << type.getError() << "\n";
     printFunctionStack();
     exit(EXIT_FAILURE);
   }
@@ -861,7 +864,7 @@ llvm::Expected<ast::GenericParams> Parser::parseGenericParams() {
   return params;
 }
 
-llvm::Expected<ast::Visibility> Parser::parseVisibility() {
+Result<ast::Visibility, std::string> Parser::parseVisibility() {
   Location loc = getLocation();
   Visibility vis = {loc};
 
@@ -874,14 +877,14 @@ llvm::Expected<ast::Visibility> Parser::parseVisibility() {
     assert(eatKeyWord(KeyWordKind::KW_CRATE));
     assert(eat(TokenKind::ParenClose));
     vis.setKind(VisibilityKind::PublicCrate);
-    return vis;
+    return Result<ast::Visibility, std::string>(vis);
   } else if (checkKeyWord(KeyWordKind::KW_PUB) &&
              check(TokenKind::ParenOpen, 1) &&
              checkKeyWord(KeyWordKind::KW_SELFVALUE, 2) &&
              check(TokenKind::ParenClose, 3)) {
     // pub (self)
     vis.setKind(VisibilityKind::PublicSelf);
-    return vis;
+    return Result<ast::Visibility, std::string>(vis);
   } else if (checkKeyWord(KeyWordKind::KW_PUB) &&
              check(TokenKind::ParenOpen, 1) &&
              checkKeyWord(KeyWordKind::KW_SUPER, 2) &&
@@ -892,7 +895,7 @@ llvm::Expected<ast::Visibility> Parser::parseVisibility() {
     assert(eatKeyWord(KeyWordKind::KW_SUPER));
     assert(eat(TokenKind::ParenClose));
     vis.setKind(VisibilityKind::PublicSuper);
-    return vis;
+    return Result<ast::Visibility, std::string>(vis);
   } else if (checkKeyWord(KeyWordKind::KW_PUB) &&
              check(TokenKind::ParenOpen, 1) &&
              checkKeyWord(KeyWordKind::KW_IN, 2)) {
@@ -912,16 +915,16 @@ llvm::Expected<ast::Visibility> Parser::parseVisibility() {
       assert(eat(TokenKind::ParenClose));
     // done
     vis.setKind(VisibilityKind::PublicIn);
-    return vis;
+    return Result<ast::Visibility, std::string>(vis);
   } else if (checkKeyWord(KeyWordKind::KW_PUB)) {
     // pub
     assert(eatKeyWord(KeyWordKind::KW_PUB));
     vis.setKind(VisibilityKind::Public);
-    return vis;
+    return Result<ast::Visibility, std::string>(vis);
   }
   // private
   vis.setKind(VisibilityKind::Private);
-  return vis;
+  return Result<ast::Visibility, std::string>(vis);
 }
 
 } // namespace rust_compiler::parser

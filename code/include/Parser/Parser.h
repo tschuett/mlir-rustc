@@ -96,14 +96,14 @@ class Parser {
 public:
   Parser(lexer::TokenStream &ts) : ts(ts){};
 
-  llvm::Expected<ast::Visibility> parseVisibility();
-  llvm::Expected<ast::use_tree::UseTree> parseUseTree();
+  adt::Result<ast::Visibility, std::string> parseVisibility();
+  adt::Result<ast::use_tree::UseTree, std::string> parseUseTree();
 
-  llvm::Expected<std::shared_ptr<ast::Item>> parseItem();
+  adt::Result<std::shared_ptr<ast::Item>, std::string> parseItem();
   llvm::Expected<std::shared_ptr<ast::MacroItem>>
       parseMacroItem(std::span<ast::OuterAttribute>);
 
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
       parseVisItem(std::span<ast::OuterAttribute>);
 
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
@@ -172,7 +172,7 @@ public:
   llvm::Expected<std::shared_ptr<ast::Statement>> parseStatement();
 
   // Types
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseTypeNoBounds();
   adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseType();
@@ -225,7 +225,7 @@ public:
   parseQualifiedPathInType();
   llvm::Expected<ast::types::QualifiedPathType> parseQualifiedPathType();
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseParenthesizedType();
 
   PathKind testTypePathOrSimplePath();
@@ -234,8 +234,8 @@ public:
   parseCrateModule(std::string_view crateName, basic::CrateNum crateNum);
 
   // Patterns
-  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> parsePattern();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::Pattern, std::string>> parsePattern();
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parsePatternNoTopAlt();
   llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
   parseReferencePattern();
@@ -346,11 +346,11 @@ public:
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseIndexExpression(std::shared_ptr<ast::Expression>,
                            std::span<ast::OuterAttribute>, Restrictions);
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseFieldExpression(std::shared_ptr<ast::Expression>);
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseRangeExpression(std::shared_ptr<ast::Expression>);
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseRangeExpression();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string> parseRangeExpression();
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseUnderScoreExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
@@ -358,13 +358,13 @@ public:
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseCallExpression(std::shared_ptr<ast::Expression>,
                           std::span<ast::OuterAttribute>, Restrictions);
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseErrorPropagationExpression(std::shared_ptr<ast::Expression>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseAssignmentExpression(std::shared_ptr<ast::Expression>,
                             std::span<ast::OuterAttribute>,
                             Restrictions restrictions);
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::stringxs>
       parseTypeCastExpression(std::shared_ptr<ast::Expression>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseMethodCallExpression(std::shared_ptr<ast::Expression>,
@@ -374,7 +374,7 @@ public:
       parseTupleIndexingExpression(std::shared_ptr<ast::Expression>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseArrayExpression(std::span<ast::OuterAttribute>);
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseArithmeticOrLogicalExpression(
       std::shared_ptr<ast::Expression>,
       rust_compiler::parser::Restrictions restrictions);
@@ -382,7 +382,7 @@ public:
   parseComparisonExpression(std::shared_ptr<ast::Expression>,
                             rust_compiler::parser::Restrictions restrictions =
                                 rust_compiler::parser::Restrictions());
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseLazyBooleanExpression(std::shared_ptr<ast::Expression>,
                              rust_compiler::parser::Restrictions restrictions =
                                  rust_compiler::parser::Restrictions());
@@ -390,12 +390,12 @@ public:
   parseCompoundAssignmentExpression(
       std::shared_ptr<ast::Expression>,
       rust_compiler::parser::Restrictions restrictions);
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseQualifiedPathInExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseLiteralExpression(std::span<ast::OuterAttribute>);
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> parsePathExpression();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string> parsePathExpression();
 
   adt::Result<ast::CallParams, std::string> parseCallParams(Restrictions);
 
