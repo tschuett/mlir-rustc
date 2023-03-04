@@ -1,4 +1,5 @@
 #include "AST/MacroInvocationSemiStatement.h"
+#include "AST/OuterAttribute.h"
 #include "AST/PathExpression.h"
 #include "AST/Patterns/GroupedPattern.h"
 #include "AST/Patterns/MacroInvocationPattern.h"
@@ -15,8 +16,11 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/raw_ostream.h>
+
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace rust_compiler::ast::patterns;
 using namespace llvm;
 
@@ -24,179 +28,186 @@ namespace rust_compiler::parser {
 
 /// https://doc.rust-lang.org/reference/patterns.html
 
-llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseMacroInvocationPattern() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   MacroInvocationPattern pattern = {loc};
 
-  llvm::Expected<ast::SimplePath> simplePath = parseSimplePath();
-  if (auto e = simplePath.takeError()) {
-    llvm::errs() << "failed to parse simple path in macro invocation pattern"
-                    " : "
-                 << toString(std::move(e)) << "\n";
+  StringResult<ast::SimplePath> simplePath = parseSimplePath();
+  if (!simplePath) {
+    llvm::errs() << "failed to parse simple path in macro invocation pattern: "
+                 << simplePath.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  pattern.setPath(*simplePath);
+  pattern.setPath(simplePath.getValue());
 
   if (!check(TokenKind::Not)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse macro invocation pattern");
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse macro invocation pattern");
   }
   assert(eat(TokenKind::Not));
 
-  llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> token =
+  StringResult<std::shared_ptr<ast::DelimTokenTree>> token =
       parseDelimTokenTree();
-  if (auto e = token.takeError()) {
+  if (!token) {
     llvm::errs()
-        << "failed to parse delim token tree in macro invocation pattern"
-           " : "
-        << toString(std::move(e)) << "\n";
+        << "failed to parse delim token tree in macro invocation pattern: "
+        << token.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  pattern.setTree(*token);
+  pattern.setTree(token.getValue());
 
-  return std::make_shared<MacroInvocationPattern>(pattern);
+  return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+      std::make_shared<MacroInvocationPattern>(pattern));
 }
 
-llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseWildCardPattern() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   WildcardPattern pat = {loc};
 
   if (check(TokenKind::Underscore)) {
     assert(eat(TokenKind::Underscore));
-    return std::make_shared<WildcardPattern>(pat);
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        std::make_shared<WildcardPattern>(pat));
   }
 
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse wild card pattern");
+  return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+      "failed to parse wild card pattern");
 }
 
-llvm::Expected<TuplePatternItems> Parser::parseTuplePatternItems() {
+StringResult<TuplePatternItems> Parser::parseTuplePatternItems() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   TuplePatternItems items = {loc};
 
   if (check(TokenKind::DotDot)) {
     items.setRestPattern();
-    return items;
+    return StringResult<TuplePatternItems>(items);
   }
 
-  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> first =
-      parsePattern();
-  if (auto e = first.takeError()) {
-    llvm::errs() << "failed to parse pattern in tuple pattern items"
-                    "tuple struct pattern : "
-                 << toString(std::move(e)) << "\n";
+  StringResult<std::shared_ptr<ast::patterns::Pattern>> first = parsePattern();
+  if (!first) {
+    llvm::errs() << "failed to parse pattern in wildcard pattern: "
+                 << first.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  items.addPattern(*first);
+  items.addPattern(first.getValue());
 
   if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
     items.setTrailingComma();
     assert(eat(TokenKind::Comma));
-    return items;
+    return StringResult<TuplePatternItems>(items);
   } else if (check(TokenKind::ParenClose)) {
-    return items;
+    return StringResult<TuplePatternItems>(items);
   }
 
   assert(eat(TokenKind::Comma));
 
   while (true) {
     if (check(TokenKind::Eof)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse tuple pattern items: eof");
+      return StringResult<TuplePatternItems>(
+          "failed to parse tuple pattern items: eof");
     } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
       assert(eat(TokenKind::Comma));
-      return items;
+      return StringResult<TuplePatternItems>(items);
     } else if (check(TokenKind::ParenClose)) {
-      return items;
+      return StringResult<TuplePatternItems>(items);
     } else if (check(TokenKind::Comma)) {
       assert(eat(TokenKind::Comma));
     } else {
-      llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> next =
+      StringResult<std::shared_ptr<ast::patterns::Pattern>> next =
           parsePattern();
-      if (auto e = next.takeError()) {
-        llvm::errs() << "failed to parse pattern in tuple pattern items"
-                        "tuple struct pattern : "
-                     << toString(std::move(e)) << "\n";
+      if (!next) {
+        llvm::errs() << "failed to parse pattern in tuple pattern items: "
+                     << next.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      items.addPattern(*next);
+      items.addPattern(next.getValue());
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse tuple pattern items");
+  return StringResult<TuplePatternItems>("failed to parse tuple pattern items");
 }
 
-llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseTuplePattern() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   TuplePattern tuple = {loc};
 
   if (!check(TokenKind::ParenOpen))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse ( token in tuple pattern");
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse ( token in tuple pattern");
   assert(eat(TokenKind::ParenOpen));
 
-  llvm::Expected<TuplePatternItems> items = parseTuplePatternItems();
-  if (auto e = items.takeError()) {
-    llvm::errs() << "failed to parse tuple pattern items in tuple pattern "
-                    "tuple struct pattern : "
-                 << toString(std::move(e)) << "\n";
+  StringResult<TuplePatternItems> items = parseTuplePatternItems();
+  if (!items) {
+    llvm::errs() << "failed to parse tuple pattern items in tuple pattern: "
+                 << items.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  tuple.setItems(*items);
+  tuple.setItems(items.getValue());
 
   if (!check(TokenKind::ParenClose))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse ) token in tuple pattern");
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse ) token in tuple pattern");
   assert(eat(TokenKind::ParenOpen));
 
-  return std::make_shared<TuplePattern>(tuple);
+  return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+      std::make_shared<TuplePattern>(tuple));
 }
 
-llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseGroupedPattern() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   GroupedPattern grouped = {loc};
 
   if (!check(TokenKind::ParenOpen))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse ( token in grouped pattern");
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse ( token in grouped pattern");
   assert(eat(TokenKind::ParenOpen));
 
-  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> pattern =
+  StringResult<std::shared_ptr<ast::patterns::Pattern>> pattern =
       parsePattern();
-  if (auto e = pattern.takeError()) {
-    llvm::errs() << "failed to parse pattern in grouped or tuple pattern "
-                    "tuple struct pattern : "
-                 << toString(std::move(e)) << "\n";
+  if (!pattern) {
+    llvm::errs() << "failed to parse pattern in grouped pattern: "
+                 << pattern.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  grouped.setPattern(*pattern);
+  grouped.setPattern(pattern.getValue());
 
   if (!check(TokenKind::ParenClose))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse ) token in grouped pattern");
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse ) token in grouped pattern");
   assert(eat(TokenKind::ParenOpen));
 
-  return std::make_shared<GroupedPattern>(grouped);
+  return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+      std::make_shared<GroupedPattern>(grouped));
 }
 
-llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseMacroInvocationOrPathOrStructOrTupleStructPattern() {
 
   while (true) {
   }
 }
 
-llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseGroupedOrTuplePattern() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   CheckPoint cp = getCheckPoint();
 
   if (!check(TokenKind::ParenOpen))
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
         "failed to parse ( token in grouped or tuple pattern");
   assert(eat(TokenKind::ParenOpen));
 
@@ -205,12 +216,12 @@ Parser::parseGroupedOrTuplePattern() {
     return parseTuplePattern();
   }
 
-  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> pattern =
+  StringResult<std::shared_ptr<ast::patterns::Pattern>> pattern =
       parsePattern();
-  if (auto e = pattern.takeError()) {
-    llvm::errs() << "failed to parse pattern in grouped or tuple pattern "
-                    "tuple struct pattern : "
-                 << toString(std::move(e)) << "\n";
+  if (!pattern) {
+    llvm::errs() << "failed to parse pattern in grouped or tuple pattern: "
+                 << pattern.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
@@ -222,8 +233,9 @@ Parser::parseGroupedOrTuplePattern() {
   return parseTuplePattern();
 }
 
-llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parsePatternWithoutRange() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   //  CheckPoint cp = getCheckPoint();
 
   if (checkLiteral()) {
@@ -245,8 +257,9 @@ Parser::parsePatternWithoutRange() {
   return parseMacroInvocationOrPathOrStructOrTupleStructPattern();
 }
 
-llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parsePathOrStructOrTupleStructPattern() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   CheckPoint cp = getCheckPoint();
 
@@ -257,15 +270,15 @@ Parser::parsePathOrStructOrTupleStructPattern() {
   if (check(TokenKind::Lt))
     return parsePathPattern();
 
-  llvm::Expected<std::shared_ptr<ast::PathExpression>> pathIn =
+  StringResult<std::shared_ptr<ast::PathExpression>> pathIn =
       parsePathInExpression();
-  if (auto e = pathIn.takeError()) {
-    llvm::errs() << "failed to parse path in expression in path or struct or "
-                    "tuple struct pattern : "
-                 << toString(std::move(e)) << "\n";
+  if (!pathIn) {
+    llvm::errs() << "failed to parse path in expression in "
+                    "parsePathOrStructOrTupleStructPattern: "
+                 << pathIn.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-
   if (check(TokenKind::ParenOpen)) {
     recover(cp);
     return parseTupleStructPattern();
@@ -274,71 +287,81 @@ Parser::parsePathOrStructOrTupleStructPattern() {
     return parseStructPattern();
   } else {
     PathPattern pat = {loc};
-    pat.setPath(*pathIn);
-    return std::make_shared<PathPattern>(pat);
+    pat.setPath(pathIn.getValue());
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        std::make_shared<PathPattern>(pat));
   }
 }
 
-llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parsePathPattern() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   PathPattern path = {loc};
 
   llvm::outs() << "parsePathPattern"
                << "\n";
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> pathExpr =
+  StringResult<std::shared_ptr<ast::Expression>> pathExpr =
       parsePathExpression();
-  if (auto e = pathExpr.takeError()) {
-    llvm::errs() << "failed to parse path expression in path pattern : "
-                 << toString(std::move(e)) << "\n";
+  if (!pathExpr) {
+    llvm::errs() << "failed to parse path  expression in "
+                    "parse path pattern: "
+                 << pathExpr.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  path.setPath(*pathExpr);
+  path.setPath(pathExpr.getValue());
 
-  return std::make_shared<PathPattern>(path);
+  return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+      std::make_shared<PathPattern>(path));
 }
 
-llvm::Expected<ast::patterns::StructPatternEtCetera>
+StringResult<ast::patterns::StructPatternEtCetera>
 Parser::parseStructPatternEtCetera() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   StructPatternEtCetera et = {loc};
 
   if (checkOuterAttribute()) {
-    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+    StringResult<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
-    if (auto e = outer.takeError()) {
-      llvm::errs()
-          << "failed to parse outer attributes in struct pattern elements : "
-          << toString(std::move(e)) << "\n";
+    if (!outer) {
+      llvm::errs() << "failed to parse outer attributes in "
+                      "parse struct pattern etcetera  pattern: "
+                   << outer.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    et.setOuterAttributes(*outer);
+    std::vector<ast::OuterAttribute> out = outer.getValue();
+    et.setOuterAttributes(out);
   }
 
   if (!check(TokenKind::DotDot))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse struct pattern etcetera");
+    return StringResult<ast::patterns::StructPatternEtCetera>(
+        "failed to parse struct pattern etcetera");
   assert(eat(TokenKind::DotDot));
 
-  return et;
+  return StringResult<ast::patterns::StructPatternEtCetera>(et);
 }
 
-llvm::Expected<ast::patterns::StructPatternElements>
+StringResult<ast::patterns::StructPatternElements>
 Parser::parseStructPatternElements() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   StructPatternElements elements = {loc};
 
   CheckPoint cp = getCheckPoint();
 
   if (checkOuterAttribute()) {
-    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+    StringResult<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
-    if (auto e = outer.takeError()) {
-      llvm::errs()
-          << "failed to parse outer attributes in struct pattern elements : "
-          << toString(std::move(e)) << "\n";
+    if (!outer) {
+      llvm::errs() << "failed to parse outer attributes in "
+                      "parse struct elements: "
+                   << outer.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
   }
@@ -346,247 +369,267 @@ Parser::parseStructPatternElements() {
   if (check(TokenKind::DotDot)) {
     // StructPatternEtCetera
     recover(cp);
-    llvm::Expected<ast::patterns::StructPatternEtCetera> etcetera =
+    StringResult<ast::patterns::StructPatternEtCetera> etcetera =
         parseStructPatternEtCetera();
-    if (auto e = etcetera.takeError()) {
-      llvm::errs() << "failed to parse struct pattern et cetera in struct "
-                      "pattern elements : "
-                   << toString(std::move(e)) << "\n";
+    if (!etcetera) {
+      llvm::errs() << "failed to parse struct pattern etcetera in "
+                      "parse struct elements: "
+                   << etcetera.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    elements.setEtCetera(*etcetera);
-    return elements;
+    elements.setEtCetera(etcetera.getValue());
+    return StringResult<ast::patterns::StructPatternElements>(elements);
   } else if (check(TokenKind::INTEGER_LITERAL) && check(TokenKind::Colon, 1)) {
     // StructPatternField
     recover(cp);
-    llvm::Expected<ast::patterns::StructPatternFields> fields =
+    StringResult<ast::patterns::StructPatternFields> fields =
         parseStructPatternFields();
-    if (auto e = fields.takeError()) {
-      llvm::errs() << "failed to parse struct pattern fields in struct pattern "
-                      "elements : "
-                   << toString(std::move(e)) << "\n";
+    if (!fields) {
+      llvm::errs() << "failed to parse struct pattern fields in "
+                      "parse struct elements: "
+                   << fields.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    elements.setFields(*fields);
+    elements.setFields(fields.getValue());
     if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
       assert(eat(TokenKind::Comma));
       // done
     } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
       assert(eat(TokenKind::Comma));
       // StructPatterrnEtCetera
-      llvm::Expected<ast::patterns::StructPatternEtCetera> etcetera =
+      StringResult<ast::patterns::StructPatternEtCetera> etcetera =
           parseStructPatternEtCetera();
-      if (auto e = etcetera.takeError()) {
-        llvm::errs() << "failed to parse struct pattern et cetera in struct "
-                        "pattern elements : "
-                     << toString(std::move(e)) << "\n";
+      if (!etcetera) {
+        llvm::errs() << "failed to parse struct pattern etcetera in "
+                        "parse struct elements: "
+                     << etcetera.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      elements.setEtCetera(*etcetera);
-      return elements;
+      elements.setEtCetera(etcetera.getValue());
+      return StringResult<ast::patterns::StructPatternElements>(elements);
     } else {
       // error
     }
   } else if (checkIdentifier() && check(TokenKind::Colon, 1)) {
     // StructPatternField
     recover(cp);
-    llvm::Expected<ast::patterns::StructPatternFields> fields =
+    StringResult<ast::patterns::StructPatternFields> fields =
         parseStructPatternFields();
-    if (auto e = fields.takeError()) {
-      llvm::errs() << "failed to parse struct pattern fields in struct pattern "
-                      "elements : "
-                   << toString(std::move(e)) << "\n";
+    if (!fields) {
+      llvm::errs() << "failed to parse struct pattern fields in "
+                      "parse struct elements: "
+                   << fields.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    elements.setFields(*fields);
+    elements.setFields(fields.getValue());
     if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
       assert(eat(TokenKind::Comma));
       // done
     } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
       assert(eat(TokenKind::Comma));
       // StructPatterrnEtCetera
-      llvm::Expected<ast::patterns::StructPatternEtCetera> etcetera =
+      StringResult<ast::patterns::StructPatternEtCetera> etcetera =
           parseStructPatternEtCetera();
-      if (auto e = etcetera.takeError()) {
-        llvm::errs() << "failed to parse struct pattern et cetera in struct "
-                        "pattern elements : "
-                     << toString(std::move(e)) << "\n";
+      if (!etcetera) {
+        llvm::errs() << "failed to parse struct pattern etcetera in "
+                        "parse struct elements: "
+                     << etcetera.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      elements.setEtCetera(*etcetera);
-      return elements;
+      elements.setEtCetera(etcetera.getValue());
+      return StringResult<ast::patterns::StructPatternElements>(elements);
     } else {
       // error
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse struct pattern elements");
+      return StringResult<ast::patterns::StructPatternElements>(
+          "failed to parse struct pattern elements");
     }
   } else if (checkKeyWord(KeyWordKind::KW_REF) ||
              checkKeyWord(KeyWordKind::KW_MUT)) {
     // StructPatternField
     // COPY && PASTE
     recover(cp);
-    llvm::Expected<ast::patterns::StructPatternFields> fields =
+    StringResult<ast::patterns::StructPatternFields> fields =
         parseStructPatternFields();
-    if (auto e = fields.takeError()) {
-      llvm::errs() << "failed to parse struct pattern fields in struct pattern "
-                      "elements : "
-                   << toString(std::move(e)) << "\n";
+    if (!fields) {
+      llvm::errs()
+          << "failed to parse struct pattern fields in struct pattern fields: "
+          << fields.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    elements.setFields(*fields);
+    elements.setFields(fields.getValue());
     if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
       assert(eat(TokenKind::Comma));
       // done
     } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
       assert(eat(TokenKind::Comma));
       // StructPatterrnEtCetera
-      llvm::Expected<ast::patterns::StructPatternEtCetera> etcetera =
+      StringResult<ast::patterns::StructPatternEtCetera> etcetera =
           parseStructPatternEtCetera();
-      if (auto e = etcetera.takeError()) {
-        llvm::errs() << "failed to parse struct pattern et cetera in struct "
-                        "pattern elements : "
-                     << toString(std::move(e)) << "\n";
+      if (!etcetera) {
+        llvm::errs() << "failed to parse struct pattern etcetera in "
+                        "parse struct elements: "
+                     << etcetera.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      elements.setEtCetera(*etcetera);
-      return elements;
+      elements.setEtCetera(etcetera.getValue());
+      return StringResult<ast::patterns::StructPatternElements>(elements);
     } else {
       // error
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse struct pattern elements");
+      return StringResult<ast::patterns::StructPatternElements>(
+          "failed to parse struct pattern elements");
     }
   } else if (checkIdentifier() && !check(TokenKind::Colon, 1)) {
     // StructPatternField
     // COPY && PASTE
     recover(cp);
-    llvm::Expected<ast::patterns::StructPatternFields> fields =
+    StringResult<ast::patterns::StructPatternFields> fields =
         parseStructPatternFields();
-    if (auto e = fields.takeError()) {
-      llvm::errs() << "failed to parse struct pattern fields in struct pattern "
-                      "elements : "
-                   << toString(std::move(e)) << "\n";
+    if (!fields) {
+      llvm::errs() << "failed to parse struct pattern fields in "
+                      "parse struct elements: "
+                   << fields.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    elements.setFields(*fields);
+    elements.setFields(fields.getValue());
     if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
       assert(eat(TokenKind::Comma));
       // done
     } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
       assert(eat(TokenKind::Comma));
       // StructPatterrnEtCetera
-      llvm::Expected<ast::patterns::StructPatternEtCetera> etcetera =
+      StringResult<ast::patterns::StructPatternEtCetera> etcetera =
           parseStructPatternEtCetera();
-      if (auto e = etcetera.takeError()) {
-        llvm::errs() << "failed to parse struct pattern et cetera in struct "
-                        "pattern elements : "
-                     << toString(std::move(e)) << "\n";
+      if (!etcetera) {
+        llvm::errs() << "failed to parse struct pattern etcetera in "
+                        "parse struct elements: "
+                     << etcetera.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      elements.setEtCetera(*etcetera);
-      return elements;
+      elements.setEtCetera(etcetera.getValue());
+      return StringResult<ast::patterns::StructPatternElements>(elements);
     } else {
       // error
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse struct pattern elements");
+      return StringResult<ast::patterns::StructPatternElements>(
+          "failed to parse struct pattern elements");
     }
   } else {
     // error
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse struct pattern elements");
+    return StringResult<ast::patterns::StructPatternElements>(
+        "failed to parse struct pattern elements");
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse struct pattern elements");
+  return StringResult<ast::patterns::StructPatternElements>(
+      "failed to parse struct pattern elements");
 }
 
-llvm::Expected<ast::patterns::TupleStructItems>
-Parser::parseTupleStructItems() {
+StringResult<ast::patterns::TupleStructItems> Parser::parseTupleStructItems() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   TupleStructItems items = {loc};
 
-  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> pattern =
+  StringResult<std::shared_ptr<ast::patterns::Pattern>> pattern =
       parsePattern();
-  if (auto e = pattern.takeError()) {
-    llvm::errs() << "failed to parse pattern in tuple struct item : "
-                 << toString(std::move(e)) << "\n";
+  if (!pattern) {
+    llvm::errs() << "failed to parse  pattern in "
+                    "parse tuple struct items: "
+                 << pattern.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  items.addPattern(*pattern);
+  items.addPattern(pattern.getValue());
 
   while (true) {
     if (check(TokenKind::Eof)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse tuple struct items field: eof");
+      return StringResult<ast::patterns::TupleStructItems>(
+          "failed to parse tuple struct items field: eof");
     } else if (check(TokenKind::ParenClose)) {
-      return items;
+      return StringResult<ast::patterns::TupleStructItems>(items);
     } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose)) {
       items.setTrailingComma();
       assert(eat(TokenKind::Comma));
-      return items;
+      return StringResult<ast::patterns::TupleStructItems>(items);
     } else if (check(TokenKind::Comma) && !check(TokenKind::ParenClose)) {
       assert(eat(TokenKind::Comma));
-      llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> pattern =
+      StringResult<std::shared_ptr<ast::patterns::Pattern>> pattern =
           parsePattern();
-      if (auto e = pattern.takeError()) {
-        llvm::errs() << "failed to parse pattern in tuple struct item : "
-                     << toString(std::move(e)) << "\n";
+      if (!pattern) {
+        llvm::errs() << "failed to parse  pattern in "
+                        "parse tuple struct items: "
+                     << pattern.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      items.addPattern(*pattern);
+      items.addPattern(pattern.getValue());
     } else {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse tuple struct items field");
+      return StringResult<ast::patterns::TupleStructItems>(
+          "failed to parse tuple struct items field");
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse tuple struct items field");
+  return StringResult<ast::patterns::TupleStructItems>(
+      "failed to parse tuple struct items field");
 }
 
-llvm::Expected<ast::patterns::StructPatternField>
+StringResult<ast::patterns::StructPatternField>
 Parser::parseStructPatternField() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   StructPatternField field = {loc};
 
   if (checkOuterAttribute()) {
-    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+    StringResult<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
-    if (auto e = outer.takeError()) {
-      llvm::errs()
-          << "failed to parse outer attributes in struct pattern field : "
-          << toString(std::move(e)) << "\n";
+    if (!outer) {
+      llvm::errs() << "failed to parse  outer attributes in "
+                      "parse struct pattern field: "
+                   << outer.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    field.setOuterAttributes(*outer);
+    std::vector<OuterAttribute> out = outer.getValue();
+    field.setOuterAttributes(out);
   }
 
   if (check(TokenKind::INTEGER_LITERAL) && check(TokenKind::Colon)) {
     field.setTupleIndex(getToken().getLiteral());
     assert(eat(TokenKind::INTEGER_LITERAL));
     assert(eat(TokenKind::Colon));
-    llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> patterns =
+    StringResult<std::shared_ptr<ast::patterns::Pattern>> patterns =
         parsePattern();
-    if (auto e = patterns.takeError()) {
-      llvm::errs() << "failed to parse pattern in struct pattern field : "
-                   << toString(std::move(e)) << "\n";
+    if (!patterns) {
+      llvm::errs() << "failed to parse  pattern in "
+                      "parse struct pattern field: "
+                   << patterns.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    field.setPattern(*patterns);
+    field.setPattern(patterns.getValue());
     field.setKind(StructPatternFieldKind::TupleIndex);
-    return field;
+    return StringResult<ast::patterns::StructPatternField>(field);
   } else if (checkIdentifier() && check(TokenKind::Colon)) {
     field.setIdentifier(getToken().getIdentifier());
     assert(eat(TokenKind::Identifier));
     assert(eat(TokenKind::Colon));
-    llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> patterns =
+    StringResult<std::shared_ptr<ast::patterns::Pattern>> patterns =
         parsePattern();
-    if (auto e = patterns.takeError()) {
-      llvm::errs() << "failed to parse pattern in struct pattern field : "
-                   << toString(std::move(e)) << "\n";
+    if (!patterns) {
+      llvm::errs() << "failed to parse  pattern in "
+                      "parse struct pattern field: "
+                   << patterns.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    field.setPattern(*patterns);
+    field.setPattern(patterns.getValue());
     field.setKind(StructPatternFieldKind::Identifier);
-    return field;
+    return StringResult<ast::patterns::StructPatternField>(field);
   } else if (checkKeyWord(KeyWordKind::KW_REF) ||
              checkKeyWord(KeyWordKind::KW_MUT) || checkIdentifier()) {
     if (checkKeyWord(KeyWordKind::KW_REF)) {
@@ -598,104 +641,110 @@ Parser::parseStructPatternField() {
       assert(eatKeyWord(KeyWordKind::KW_MUT));
     }
     if (!checkIdentifier())
-      return createStringError(
-          inconvertibleErrorCode(),
+      return StringResult<ast::patterns::StructPatternField>(
           "failed to parse identifier token in struct pattern field");
     field.setIdentifier(getToken().getIdentifier());
     field.setKind(StructPatternFieldKind::RefMut);
     assert(eat(TokenKind::Identifier));
-    return field;
+    return StringResult<ast::patterns::StructPatternField>(field);
   } else {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse struct pattern field");
+    return StringResult<ast::patterns::StructPatternField>(
+        "failed to parse struct pattern field");
   }
 
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse struct pattern field");
+  return StringResult<ast::patterns::StructPatternField>(
+      "failed to parse struct pattern field");
 }
 
-llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseTupleStructPattern() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   TupleStructPattern pat = {loc};
 
-  llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
+  StringResult<std::shared_ptr<ast::PathExpression>> path =
       parsePathInExpression();
-  if (auto e = path.takeError()) {
-    llvm::errs()
-        << "failed to parse path in expression in tuple struct pattern : "
-        << toString(std::move(e)) << "\n";
+  if (!path) {
+    llvm::errs() << "failed to parse path in expression in "
+                    "parse tuple struct pattern: "
+                 << path.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  pat.setPath(*path);
+  pat.setPath(path.getValue());
 
   if (!check(TokenKind::ParenOpen))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse tuple struct pattern");
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse tuple struct pattern");
   assert(eat(TokenKind::ParenOpen));
 
   if (check(TokenKind::ParenClose)) {
     assert(eat(TokenKind::ParenClose));
-    return std::make_shared<TupleStructPattern>(pat);
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        std::make_shared<TupleStructPattern>(pat));
   }
 
-  llvm::Expected<ast::patterns::TupleStructItems> items =
-      parseTupleStructItems();
-  if (auto e = items.takeError()) {
-    llvm::errs()
-        << "failed to parse tuple struct items in tuple struct pattern : "
-        << toString(std::move(e)) << "\n";
+  StringResult<ast::patterns::TupleStructItems> items = parseTupleStructItems();
+  if (!items) {
+    llvm::errs() << "failed to parse tuple struct items in "
+                    "parse tuple struct pattern: "
+                 << items.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  pat.setItems(*items);
+  pat.setItems(items.getValue());
 
   if (!check(TokenKind::ParenClose))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse tuple struct pattern");
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse tuple struct pattern");
   assert(eat(TokenKind::ParenClose));
 
-  return std::make_shared<TupleStructPattern>(pat);
+  return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+      std::make_shared<TupleStructPattern>(pat));
 }
 
-llvm::Expected<ast::patterns::StructPatternFields>
+StringResult<ast::patterns::StructPatternFields>
 Parser::parseStructPatternFields() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   StructPatternFields fields = {loc};
 
-  llvm::Expected<ast::patterns::StructPatternField> first =
+  StringResult<ast::patterns::StructPatternField> first =
       parseStructPatternField();
-  if (auto e = first.takeError()) {
-    llvm::errs()
-        << "failed to parse struct pattern field in struct pattern fields : "
-        << toString(std::move(e)) << "\n";
+  if (!first) {
+    llvm::errs() << "failed to parse struct pattern field in "
+                    "parse struct pattern fields: "
+                 << first.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  fields.addPattern(*first);
+  fields.addPattern(first.getValue());
 
   while (true) {
     if (check(TokenKind::Eof)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse struct pattern fields: eof");
+      return StringResult<ast::patterns::StructPatternFields>(
+          "failed to parse struct pattern fields: eof");
     } else if (check(TokenKind::Comma)) {
       assert(eat((TokenKind::Comma)));
-      llvm::Expected<ast::patterns::StructPatternField> next =
+      StringResult<ast::patterns::StructPatternField> next =
           parseStructPatternField();
-      if (auto e = next.takeError()) {
-        llvm::errs() << "failed to parse struct pattern field in struct "
-                        "pattern fields : "
-                     << toString(std::move(e)) << "\n";
+      if (!next) {
+        llvm::errs() << "failed to parse struct pattern field in "
+                        "parse struct pattern fields: "
+                     << next.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      fields.addPattern(*next);
+      fields.addPattern(next.getValue());
     } else {
       // done
-      return fields;
+      return StringResult<ast::patterns::StructPatternFields>(fields);
     }
   }
 
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse struct pattern fields");
+  return StringResult<ast::patterns::StructPatternFields>(
+      "failed to parse struct pattern fields");
 }
 
 // llvm::Expected<ast::patterns::StructPatternElements>
@@ -733,55 +782,60 @@ Parser::parseStructPatternFields() {
 //   xxx;
 // }
 
-llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseStructPattern() {
   Location loc = getLocation();
 
   StructPattern pat = {loc};
 
-  llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
+  StringResult<std::shared_ptr<ast::PathExpression>> path =
       parsePathInExpression();
-  if (auto e = path.takeError()) {
-    llvm::errs() << "failed to parse path in expression in struct pattern : "
-                 << toString(std::move(e)) << "\n";
+  if (!path) {
+    llvm::errs() << "failed to parse path in expression in "
+                    "parse struct pattern: "
+                 << path.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  pat.setPath(*path);
-
+  pat.setPath(path.getValue());
   if (!check(lexer::TokenKind::BraceOpen)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse struct pattern");
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse struct pattern");
   }
   assert(eat(TokenKind::BraceOpen));
 
   if (check(TokenKind::BraceClose)) {
     assert(eat(TokenKind::BraceClose));
-    return std::make_shared<StructPattern>(pat);
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        std::make_shared<StructPattern>(pat));
   }
 
-  llvm::Expected<StructPatternElements> pattern = parseStructPatternElements();
-  if (auto e = pattern.takeError()) {
-    llvm::errs()
-        << "failed to parse struct pattern elements in struct pattern : "
-        << toString(std::move(e)) << "\n";
+  StringResult<StructPatternElements> pattern = parseStructPatternElements();
+  if (!pattern) {
+    llvm::errs() << "failed to parse struct pattern elements in "
+                    "parse struct pattern: "
+                 << pattern.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  pat.setElements(*pattern);
+  StructPatternElements el = pattern.getValue();
+  pat.setElements(el);
 
   if (!check(lexer::TokenKind::BraceClose)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse struct pattern");
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse struct pattern");
   }
   assert(eat(TokenKind::BraceClose));
 
-  return std::make_shared<StructPattern>(pat);
+  return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+      std::make_shared<StructPattern>(pat));
 }
 
-llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseReferencePattern() {
   if (!check(lexer::TokenKind::And) && !check(lexer::TokenKind::AndAnd)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse reference pattern");
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse reference pattern");
   }
 
   Location loc = getLocation();
@@ -801,20 +855,22 @@ Parser::parseReferencePattern() {
     refer.setMut();
   }
 
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>> woRange =
+  StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>> woRange =
       parsePatternWithoutRange();
-  if (auto e = woRange.takeError()) {
-    llvm::errs()
-        << "failed to parse pattern without block in reference pattern : "
-        << toString(std::move(e)) << "\n";
+  if (!woRange) {
+    llvm::errs() << "failed to parse pattern without range in "
+                    "parse reference pattern: "
+                 << woRange.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  refer.setPattern(*woRange);
+  refer.setPattern(woRange.getValue());
 
-  return std::make_shared<ReferencePattern>(refer);
+  return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+      std::make_shared<ReferencePattern>(refer));
 }
 
-llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
   Location loc = getLocation();
 
@@ -837,10 +893,10 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
   while (true) {
     if (check(TokenKind::Eof)) {
       // abort
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse "
-                               "RangeOrIdentifierOrStructOrTupleStructOrMacroIn"
-                               "vocationPattern: eof");
+      return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+          "failed to parse "
+          "RangeOrIdentifierOrStructOrTupleStructOrMacroIn"
+          "vocationPattern: eof");
     } else if (check(TokenKind::PathSep)) {
       assert(eat(TokenKind::PathSep));
     } else if (checkPathIdentSegment()) {
@@ -884,15 +940,15 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
     } else {
       // error
       llvm::outs() << Token2String(getToken().getKind()) << "\n";
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse "
-                               "RangeOrIdentifierOrStructOrTupleStructOrMa"
-                               "croInvocationPattern");
+      return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+          "failed to parse "
+          "RangeOrIdentifierOrStructOrTupleStructOrMa"
+          "croInvocationPattern");
     }
   }
 }
 
-llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parsePatternNoTopAlt() {
 
   if (check(TokenKind::And) || check(TokenKind::AndAnd)) {
