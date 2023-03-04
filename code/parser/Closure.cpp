@@ -55,7 +55,7 @@ Parser::parseClosureExpression(std::span<ast::OuterAttribute> outer) {
     }
     clos.setType(types.getValue());
     StringResult<std::shared_ptr<ast::Expression>> block =
-        parseBlockExpression(outer);
+        parseBlockExpression();
     if (!block) {
       llvm::errs()
           << "failed to parse type noblock expression in closure expression: "

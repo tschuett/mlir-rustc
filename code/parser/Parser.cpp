@@ -617,7 +617,7 @@ Result<ast::ConstParam, std::string> Parser::parseConstParam() {
 
     if (check(TokenKind::BraceOpen)) {
       Result<std::shared_ptr<ast::Expression>, std::string> block =
-          parseBlockExpression({});
+          parseBlockExpression();
       if (!block) {
         llvm::errs() << "failed to parse block expression in const param: "
                      << block.getError() << "\n";

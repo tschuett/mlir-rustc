@@ -172,7 +172,8 @@ public:
   adt::Result<ast::SelfParam, std::string> parseSelfParam();
 
   adt::Result<ast::Statements, std::string> parseStatements();
-  adt::Result<std::shared_ptr<ast::Statement>, std::string> parseStatement();
+  adt::Result<std::shared_ptr<ast::Statement>, std::string>
+  parseStatement(Restrictions restriction);
 
   // Types
   adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
@@ -322,7 +323,7 @@ public:
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseGroupedExpression(Restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
-      parseBlockExpression(std::span<ast::OuterAttribute>);
+  parseBlockExpression();
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseExpressionWithoutBlock();
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
@@ -462,7 +463,8 @@ public:
   parseEnumItemDiscriminant();
 
   // statements
-  adt::Result<std::shared_ptr<ast::Statement>, std::string> parseLetStatement();
+  adt::Result<std::shared_ptr<ast::Statement>, std::string>
+      parseLetStatement(std::span<ast::OuterAttribute>, Restrictions);
   adt::Result<std::shared_ptr<ast::Statement>, std::string>
   parseItemDeclaration();
   adt::Result<std::shared_ptr<ast::Statement>, std::string>
