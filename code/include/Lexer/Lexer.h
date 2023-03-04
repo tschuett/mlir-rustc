@@ -18,6 +18,8 @@ public:
 
 private:
   std::optional<char> bump();
+
+  Token advanceToken();
 };
 
 } // namespace rust_compiler::lexer

@@ -1,47 +1,55 @@
 #include "AST/Enumeration.h"
 
+#include "ADT/Result.h"
 #include "AST/EnumItemDiscriminant.h"
 #include "AST/EnumItemStruct.h"
+#include "AST/OuterAttribute.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
+#include "Parser/Restrictions.h"
 
 #include <cassert>
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace llvm;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<ast::EnumItem> Parser::parseEnumItem() {
+StringResult<ast::EnumItem> Parser::parseEnumItem() {
   Location loc = getLocation();
 
   EnumItem item = {loc};
 
   if (checkOuterAttribute()) {
-    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+    StringResult<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
-    if (auto e = outer.takeError()) {
+    if (!outer) {
       llvm::errs() << "failed to parse outer attributes in enum item: "
-                   << toString(std::move(e)) << "\n";
+                   << outer.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    item.setOuterAttributes(*outer);
+    std::vector<OuterAttribute> ot = outer.getValue();
+    item.setOuterAttributes(ot);
   }
 
   if (checkKeyWord(KeyWordKind::KW_PUB)) {
-    llvm::Expected<ast::Visibility> vis = parseVisibility();
-    if (auto e = vis.takeError()) {
-      llvm::errs() << "failed to parse visiblity in enum item: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::Visibility> vis = parseVisibility();
+    if (!vis) {
+      llvm::errs() << "failed to parse visibility in enum item: "
+                   << vis.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    item.setVisibility(*vis);
+    item.setVisibility(vis.getValue());
   }
 
   if (!check(TokenKind::Identifier)) {
-    return createStringError(inconvertibleErrorCode(),
+    return StringResult<ast::EnumItem>(
                              "failed to parse identifier token in enum item");
   }
   Token tok = getToken();
@@ -50,31 +58,35 @@ llvm::Expected<ast::EnumItem> Parser::parseEnumItem() {
 
   if (check(TokenKind::BraceOpen)) {
     // Struct
-    llvm::Expected<ast::EnumItemStruct> struc = parseEnumItemStruct();
-    if (auto e = struc.takeError()) {
+    StringResult<ast::EnumItemStruct> struc = parseEnumItemStruct();
+    if (!struc) {
       llvm::errs() << "failed to parse enum item struct in enum item: "
-                   << toString(std::move(e)) << "\n";
+                   << struc.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    item.setEnumItemStruct(*struc);
+    item.setEnumItemStruct(struc.getValue());
   } else if (check(TokenKind::Eq)) {
     // Dis
-    llvm::Expected<ast::EnumItemDiscriminant> dis = parseEnumItemDiscriminant();
-    if (auto e = dis.takeError()) {
-      llvm::errs() << "failed to parse enum item discriminant in enum item: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::EnumItemDiscriminant> dis = parseEnumItemDiscriminant();
+    if (!dis) {
+      llvm::errs()
+          << "failed to parse enum item discriminatn tuple in enum item: "
+          << dis.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    item.setEnumItemDiscriminant(*dis);
+    item.setEnumItemDiscriminant(dis.getValue());
   } else if (check(TokenKind::ParenOpen)) {
     // Tupl
-    llvm::Expected<ast::EnumItemTuple> tupl = parseEnumItemTuple();
-    if (auto e = tupl.takeError()) {
+    StringResult<ast::EnumItemTuple> tupl = parseEnumItemTuple();
+    if (!tupl) {
       llvm::errs() << "failed to parse enum item tuple in enum item: "
-                   << toString(std::move(e)) << "\n";
+                   << tupl.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    item.setEnumItemTuple(*tupl);
+    item.setEnumItemTuple(tupl.getValue());
   } else if (check(TokenKind::Comma)) {
     // done?
 
@@ -82,24 +94,24 @@ llvm::Expected<ast::EnumItem> Parser::parseEnumItem() {
     // done ?
   }
 
-  return item;
+  return StringResult<ast::EnumItem>(item);
 }
 
-llvm::Expected<std::shared_ptr<ast::VisItem>>
+StringResult<std::shared_ptr<ast::VisItem>>
 Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
   Enumeration enu = {loc, vis};
 
   if (!checkKeyWord(lexer::KeyWordKind::KW_ENUM)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse enum keyword in enum ");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse enum keyword in enum ");
   }
   assert(eatKeyWord(KeyWordKind::KW_ENUM));
 
   if (!check(TokenKind::Identifier)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse identifier token in enum ");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse identifier token in enum ");
   }
 
   enu.setIdentifier(getToken().getIdentifier());
@@ -107,183 +119,186 @@ Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
 
   if (check(TokenKind::Lt)) {
     // GenericParams
-    llvm::Expected<ast::GenericParams> genericParams = parseGenericParams();
-    if (auto e = genericParams.takeError()) {
-      llvm::errs() << "failed to parse generic params in enum: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::GenericParams> genericParams = parseGenericParams();
+    if (!genericParams) {
+      llvm::errs() << "failed to parse generic params in enumeration: "
+                   << genericParams.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    enu.setGenericParams(*genericParams);
+    enu.setGenericParams(genericParams.getValue());
   }
 
   if (checkKeyWord(KeyWordKind::KW_WHERE)) {
-    llvm::Expected<ast::WhereClause> whereClause = parseWhereClause();
-    if (auto e = whereClause.takeError()) {
-      llvm::errs() << "failed to parse where clause in enum: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::WhereClause> whereClause = parseWhereClause();
+    if (!whereClause) {
+      llvm::errs() << "failed to parse where clause in enumeration: "
+                   << whereClause.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    enu.setWhereClause(*whereClause);
+    enu.setWhereClause(whereClause.getValue());
   }
 
   if (!check(TokenKind::BraceOpen)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse { token in enum ");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse { token in enum ");
   }
   assert(eat(TokenKind::BraceOpen));
 
   if (check(TokenKind::BraceClose)) {
     // done
   } else {
-    llvm::Expected<ast::EnumItems> items = parseEnumItems();
-    if (auto e = items.takeError()) {
-      llvm::errs() << "failed to parse enum items in enum: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::EnumItems> items = parseEnumItems();
+    if (!items) {
+      llvm::errs() << "failed to parse enum items in enumeration: "
+                   << items.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    enu.setItems(*items);
+    enu.setItems(items.getValue());
   }
 
   if (!check(TokenKind::BraceClose)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse } token in enum ");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse } token in enum ");
   }
   assert(eat(TokenKind::BraceClose));
 
-  return std::make_shared<Enumeration>(enu);
+  return StringResult<std::shared_ptr<ast::VisItem>>(
+      std::make_shared<Enumeration>(enu));
 }
 
-llvm::Expected<ast::EnumItemTuple> Parser::parseEnumItemTuple() {
+StringResult<ast::EnumItemTuple> Parser::parseEnumItemTuple() {
   Location loc = getLocation();
 
   EnumItemTuple tup = {loc};
 
   if (!check(TokenKind::ParenOpen))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse ( token in enum item tuple");
+    return StringResult<ast::EnumItemTuple>(
+        "failed to parse ( token in enum item tuple");
   assert(eat(TokenKind::ParenOpen));
 
   if (check(TokenKind::ParenClose)) {
     assert(eat(TokenKind::ParenClose));
-    return tup;
+    return StringResult<ast::EnumItemTuple>(tup);
   }
 
-  llvm::Expected<ast::TupleFields> fields = parseTupleFields();
-  if (auto e = fields.takeError()) {
-    llvm::errs()
-        << "failed to parse tuple  fields expression in enum item tuple: "
-        << toString(std::move(e)) << "\n";
+  StringResult<ast::TupleFields> fields = parseTupleFields();
+  if (!fields) {
+    llvm::errs() << "failed to parse tuple fields in enum item tuple: "
+                 << fields.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  tup.setTupleFields(*fields);
+  tup.setTupleFields(fields.getValue());
 
   if (!check(TokenKind::ParenClose)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse ) token in enum item tuple");
+    return StringResult<ast::EnumItemTuple>(
+        "failed to parse ) token in enum item tuple");
   }
   assert(eat(TokenKind::ParenClose));
 
-  return tup;
+  return StringResult<ast::EnumItemTuple>(tup);
 }
 
-llvm::Expected<ast::EnumItemStruct> Parser::parseEnumItemStruct() {
+StringResult<ast::EnumItemStruct> Parser::parseEnumItemStruct() {
   Location loc = getLocation();
 
   EnumItemStruct str = {loc};
 
   if (!check(TokenKind::BraceOpen))
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<ast::EnumItemStruct>(
         "failed to parse { token in enum item discriminant");
 
   assert(eat(TokenKind::BraceOpen));
 
   if (check(TokenKind::BraceClose)) {
     assert(eat(TokenKind::BraceClose));
-    return str;
+    return StringResult<ast::EnumItemStruct>(str);
   }
 
-  llvm::Expected<ast::StructFields> fields = parseStructFields();
-  if (auto e = fields.takeError()) {
-    llvm::errs()
-        << "failed to parse struct fields expression in enum item struct: "
-        << toString(std::move(e)) << "\n";
+  StringResult<ast::StructFields> fields = parseStructFields();
+  if (!fields) {
+    llvm::errs() << "failed to parse struct fields in enum item struct: "
+                 << fields.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  str.setStructFields(*fields);
+  str.setStructFields(fields.getValue());
 
   if (!check(TokenKind::BraceClose))
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<ast::EnumItemStruct>(
         "failed to parse } token in enum item discriminant");
 
   assert(eat(TokenKind::BraceClose));
 
-  return str;
+  return StringResult<ast::EnumItemStruct>(str);
 }
 
-llvm::Expected<ast::EnumItemDiscriminant> Parser::parseEnumItemDiscriminant() {
+StringResult<ast::EnumItemDiscriminant> Parser::parseEnumItemDiscriminant() {
   Location loc = getLocation();
 
   EnumItemDiscriminant dis = {loc};
 
   if (!check(TokenKind::Eq))
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<ast::EnumItemDiscriminant>(
         "failed to parse = token in enum item discriminant");
 
   assert(eat(TokenKind::Eq));
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
-  if (auto e = expr.takeError()) {
+  Restrictions restrictions;
+  StringResult<std::shared_ptr<ast::Expression>> expr = parseExpression({}, restrictions);
+  if (!expr) {
     llvm::errs() << "failed to parse expression in enum item discriminant: "
-                 << toString(std::move(e)) << "\n";
+                 << expr.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  dis.setExpression(*expr);
+  dis.setExpression(expr.getValue());
 
-  return dis;
+  return StringResult<ast::EnumItemDiscriminant>(dis);
 }
 
-llvm::Expected<ast::EnumItems> Parser::parseEnumItems() {
+StringResult<ast::EnumItems> Parser::parseEnumItems() {
   Location loc = getLocation();
 
   EnumItems items = {loc};
 
-  llvm::Expected<ast::EnumItem> first = parseEnumItem();
-  if (auto e = first.takeError()) {
-    llvm::errs() << "failed to parse enum teim in enum items: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<ast::EnumItem> first = parseEnumItem();
+  if (!first) {
+    llvm::errs() << "failed to parse enum item in enum items: "
+                 << first.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  items.addItem(*first);
+  items.addItem(first.getValue());
 
   while (true) {
     if (check(TokenKind::Eof)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse enum items: eof ");
+      return StringResult<ast::EnumItems>("failed to parse enum items: eof ");
     } else if (check(TokenKind::BraceClose)) {
       // done
-      return items;
+      return StringResult<ast::EnumItems>(items);
     } else if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
       assert(eat(TokenKind::Comma));
       // done with trailing
       items.setTrailingComma();
-      return items;
+      return StringResult<ast::EnumItems>(items);
     } else if (check(TokenKind::Comma)) {
       assert(eat(TokenKind::Comma));
     } else {
-      llvm::Expected<ast::EnumItem> item = parseEnumItem();
-      if (auto e = item.takeError()) {
+      StringResult<ast::EnumItem> item = parseEnumItem();
+      if (!item) {
         llvm::errs() << "failed to parse enum item in enum items: "
-                     << toString(std::move(e)) << "\n";
+                     << item.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      items.addItem(*item);
+      items.addItem(item.getValue());
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse enum items");
+  return StringResult<ast::EnumItems>("failed to parse enum items");
 }
 
 } // namespace rust_compiler::parser

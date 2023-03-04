@@ -510,24 +510,32 @@ public:
   adt::Result<ast::StructExprFields, std::string> parseStructExprFields();
 
   adt::Result<ast::StructExprField, std::string> parseStructExprField();
-  adt::Result<std::shared_ptr<ast::Expression>, std::string> parseStructExprStruct();
-  adt::Result<std::shared_ptr<ast::Expression>, std::string> parseStructExprTuple();
-  adt::Result<std::shared_ptr<ast::Expression>, std::string> parseStructExprUnit();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+  parseStructExprStruct();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+  parseStructExprTuple();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+  parseStructExprUnit();
   adt::Result<ast::StructBase, std::string> parseStructBase();
 
-  adt::Result<std::shared_ptr<ast::PathExpression>, std::string> parsePathInExpression();
+  adt::Result<std::shared_ptr<ast::PathExpression>, std::string>
+  parsePathInExpression();
 
   adt::Result<ast::patterns::StructPatternElements, std::string>
   parseStructPatternElements();
-  adt::Result<ast::patterns::StructPatternFields, std::string> parseStructPatternFields();
-  adt::Result<ast::patterns::StructPatternField, std::string> parseStructPatternField();
+  adt::Result<ast::patterns::StructPatternFields, std::string>
+  parseStructPatternFields();
+  adt::Result<ast::patterns::StructPatternField, std::string>
+  parseStructPatternField();
 
-  adt::Result<ast::patterns::TupleStructItems, std::string> parseTupleStructItems();
+  adt::Result<ast::patterns::TupleStructItems, std::string>
+  parseTupleStructItems();
 
   adt::Result<ast::patterns::StructPatternEtCetera, std::string>
   parseStructPatternEtCetera();
 
-  adt::Result<ast::ArrayElements, std::string> parseArrayElements();
+  adt::Result<ast::ArrayElements, std::string>
+  parseArrayElements(std::span<ast::OuterAttribute>, Restrictions restrictions);
 
   adt::Result<ast::types::FunctionParametersMaybeNamedVariadic, std::string>
   parseMaybeNamedFunctionParameters();
@@ -548,7 +556,8 @@ public:
   adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseGroupedPattern();
 
-  adt::Result<ast::patterns::TuplePatternItems, std::string> parseTuplePatternItems();
+  adt::Result<ast::patterns::TuplePatternItems, std::string>
+  parseTuplePatternItems();
 
   adt::Result<ast::MacroRulesDef, std::string> parseMacroRulesDef();
   adt::Result<ast::MacroRules, std::string> parseMacroRules();

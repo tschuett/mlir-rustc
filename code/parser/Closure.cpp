@@ -3,15 +3,19 @@
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
+#include "Parser/Restrictions.h"
+
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace llvm;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseClosureExpression() {
+StringResult<std::shared_ptr<ast::Expression>>
+Parser::parseClosureExpression(std::span<ast::OuterAttribute> outer) {
   Location loc = getLocation();
 
   ClosureExpression clos = {loc};
@@ -26,131 +30,145 @@ Parser::parseClosureExpression() {
   } else if (check(TokenKind::Or) && !!check(TokenKind::OrOr)) {
     assert(check(TokenKind::Or));
     // parameters
-    llvm::Expected<ast::ClosureParameters> parameters =
-        parseClosureParameters();
-    if (auto e = parameters.takeError()) {
-      llvm::errs() << "failed to parse closure parameters in closure: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::ClosureParameters> parameters = parseClosureParameters();
+    if (!parameters) {
+      llvm::errs()
+          << "failed to parse closure parameters in closure expression: "
+          << parameters.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    clos.setParameters(*parameters);
+    clos.setParameters(parameters.getValue());
   } else {
     // error
   }
 
   if (check(TokenKind::RArrow)) {
     assert(eat(TokenKind::RArrow));
-    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> types =
+    StringResult<std::shared_ptr<ast::types::TypeExpression>> types =
         parseTypeNoBounds();
-    if (auto e = types.takeError()) {
-      llvm::errs() << "failed to parse type in closure: "
-                   << toString(std::move(e)) << "\n";
+    if (!types) {
+      llvm::errs() << "failed to parse type no bounds in closure expression: "
+                   << types.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    clos.setType(*types);
-    llvm::Expected<std::shared_ptr<ast::Expression>> block =
-        parseBlockExpression();
-    if (auto e = block.takeError()) {
-      llvm::errs() << "failed to parse block expression in closure: "
-                   << toString(std::move(e)) << "\n";
+    clos.setType(types.getValue());
+    StringResult<std::shared_ptr<ast::Expression>> block =
+        parseBlockExpression(outer);
+    if (!block) {
+      llvm::errs()
+          << "failed to parse type noblock expression in closure expression: "
+          << block.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    clos.setBlock(*block);
-    return std::make_shared<ClosureExpression>(clos);
+    clos.setBlock(block.getValue());
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        std::make_shared<ClosureExpression>(clos));
   } else {
-    llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
-    if (auto e = expr.takeError()) {
-      llvm::errs() << "failed to parse expression in closure: "
-                   << toString(std::move(e)) << "\n";
+    Restrictions restrictions;
+    StringResult<std::shared_ptr<ast::Expression>> expr = parseExpression({}, restrictions);
+    if (!expr) {
+      llvm::errs() << "failed to parse  expression in closure expression: "
+                   << expr.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    clos.setExpr(*expr);
-    return std::make_shared<ClosureExpression>(clos);
+    clos.setExpr(expr.getValue());
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        std::make_shared<ClosureExpression>(clos));
   }
 
   // error
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse closure expression ");
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      "failed to parse closure expression ");
 }
 
-llvm::Expected<ast::ClosureParameters> Parser::parseClosureParameters() {
+StringResult<ast::ClosureParameters> Parser::parseClosureParameters() {
   Location loc = getLocation();
 
   ClosureParameters params = {loc};
 
-  llvm::Expected<ast::ClosureParam> first = parseClosureParam();
-  if (auto e = first.takeError()) {
-    llvm::errs() << "failed to parse closure param in closure parameters: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<ast::ClosureParam> first = parseClosureParam();
+  if (!first) {
+    llvm::errs() << "failed to parse  closure param in closure parameters: "
+                 << first.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  params.addParam(*first);
+  params.addParam(first.getValue());
 
   while (true) {
     if (check(TokenKind::Eof)) {
       // abort
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse closure parameters: eof");
+      return StringResult<ast::ClosureParameters>(
+          "failed to parse closure parameters: eof");
     } else if (check(TokenKind::Comma) && check(TokenKind::Or, 1)) {
       // done
-      return params;
+      return StringResult<ast::ClosureParameters>(params);
     } else if (check(TokenKind::Or)) {
       // done
-      return params;
+      return StringResult<ast::ClosureParameters>(params);
     } else if (check(TokenKind::Or)) {
-      llvm::Expected<ast::ClosureParam> cp = parseClosureParam();
-      if (auto e = cp.takeError()) {
-        llvm::errs() << "failed to parse closure param in closure parameters: "
-                     << toString(std::move(e)) << "\n";
+      StringResult<ast::ClosureParam> cp = parseClosureParam();
+      if (!cp) {
+        llvm::errs() << "failed to parse  closure param in closure parameters: "
+                     << cp.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      params.addParam(*cp);
+      params.addParam(cp.getValue());
     }
   }
   // error
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse closure parameters");
+  return StringResult<ast::ClosureParameters>(
+      "failed to parse closure parameters");
 }
 
-llvm::Expected<ast::ClosureParam> Parser::parseClosureParam() {
+StringResult<ast::ClosureParam> Parser::parseClosureParam() {
   Location loc = getLocation();
 
   ClosureParam param = {loc};
 
   if (checkOuterAttribute()) {
-    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+    StringResult<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
-    if (auto e = outer.takeError()) {
+    if (!outer) {
       llvm::errs() << "failed to parse outer attributes in closure param: "
-                   << toString(std::move(e)) << "\n";
+                   << outer.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    param.setOuterAttributes(*outer);
+    std::vector<ast::OuterAttribute> ot = outer.getValue();
+    param.setOuterAttributes(ot);
   }
 
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>> pattern =
+  StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>> pattern =
       parsePatternNoTopAlt();
-  if (auto e = pattern.takeError()) {
-    llvm::errs() << "failed to parse pattern no top alt in closure param: "
-                 << toString(std::move(e)) << "\n";
+  if (!pattern) {
+    llvm::errs() << "failed to parse pattern in closure param: "
+                 << pattern.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  param.setPattern(*pattern);
+  param.setPattern(pattern.getValue());
 
   if (check(TokenKind::Colon)) {
     assert(eat(TokenKind::Colon));
 
-    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+    StringResult<std::shared_ptr<ast::types::TypeExpression>> type =
         parseType();
-    if (auto e = type.takeError()) {
-      llvm::errs() << "failed to parse type expression in closure param: "
-                   << toString(std::move(e)) << "\n";
+    if (!type) {
+      llvm::errs() << "failed to parse type in closure param: "
+                   << type.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    param.setType(*type);
+    param.setType(type.getValue());
   }
 
-  return param;
+  return StringResult<ast::ClosureParam>(param);
 }
 
 } // namespace rust_compiler::parser

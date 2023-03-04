@@ -1,10 +1,12 @@
 #pragma once
 
 #include "AST/AST.h"
-#include "AST/OuterAttributes.h"
+#include "AST/OuterAttribute.h"
 #include "Location.h"
 
 #include <memory>
+#include <span>
+#include <vector>
 
 namespace rust_compiler::ast {
 
@@ -13,7 +15,7 @@ class VisItem;
 enum class ItemKind { VisItem, MacroItem };
 
 class Item : public Node {
-  std::shared_ptr<OuterAttributes> outerAttributes;
+  std::vector<OuterAttribute> outerAttributes;
   std::shared_ptr<VisItem> visItem;
 
   ItemKind kind;
@@ -21,10 +23,10 @@ class Item : public Node {
 public:
   explicit Item(Location loc, ItemKind kind) : Node(loc), kind(kind) {}
 
-  void setOuterAttributes(std::shared_ptr<OuterAttributes> outer);
+  void setOuterAttributes(std::span<OuterAttribute> outer);
   void setVisItem(std::shared_ptr<VisItem> visItem);
 
-  std::shared_ptr<OuterAttributes> getOuterAttributes() const;
+  std::span<OuterAttribute> getOuterAttributes() ;
 
   ItemKind getItemKind() const { return kind; }
   std::shared_ptr<VisItem> getVisItem() const;

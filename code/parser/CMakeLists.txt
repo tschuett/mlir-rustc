@@ -5,7 +5,6 @@ add_library(parser
            Function.cpp
            Attributes.cpp
            PatternNoTopAlt.cpp
-           Expression.cpp
            Enumeration.cpp
            Closure.cpp
            Statement.cpp
@@ -37,6 +36,7 @@ add_library(parser
            Precedence.cpp
            ParseExpression.cpp
            ErrorStack.cpp
+           Expression.cpp
            )
 
 
