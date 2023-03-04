@@ -71,7 +71,7 @@ bool Parser::checkLifetime(uint8_t offset) {
   return false;
 }
 
-llvm::Expected<ast::Lifetime> Parser::parseLifetimeAsLifetime() {
+StringResult<ast::Lifetime> Parser::parseLifetimeAsLifetime() {
   Location loc = getLocation();
   Lifetime lf = {loc};
 
@@ -83,11 +83,10 @@ llvm::Expected<ast::Lifetime> Parser::parseLifetimeAsLifetime() {
              getToken().getStorage() == "'_") {
     lf.setLifetime(getToken().getStorage());
   } else {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse lifetime");
+    return StringResult<ast::Lifetime>("failed to parse lifetime");
   }
 
-  return lf;
+  return StringResult<ast::Lifetime>(lf);
 }
 
 bool Parser::checkDelimiters() {
@@ -248,7 +247,7 @@ rust_compiler::Location Parser::getLocation() {
 
 lexer::Token Parser::getToken(uint8_t off) { return ts.getAt(offset + off); }
 
-Result<std::shared_ptr<ast::VisItem>, std::string>
+StringResult<std::shared_ptr<ast::VisItem>>
 Parser::parseVisItem(std::span<OuterAttribute>) {
   std::optional<ast::Visibility> vis;
 
@@ -314,8 +313,8 @@ Parser::parseVisItem(std::span<OuterAttribute>) {
     return parseExternBlock(vis);
   }
   // complete?
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse vis item");
+  return StringResult<std::shared_ptr<ast::VisItem>>(
+      "failed to parse vis item");
 }
 
 StringResult<std::shared_ptr<ast::VisItem>>
@@ -366,12 +365,13 @@ Parser::parseMod(std::optional<ast::Visibility> vis) {
       StringResult<std::vector<ast::InnerAttribute>> inner =
           parseInnerAttributes();
       if (!inner) {
-        llvm::errs() << "failed to parse inner attributes in mod: " << inner.getError()
-                     << "\n";
+        llvm::errs() << "failed to parse inner attributes in mod: "
+                     << inner.getError() << "\n";
         printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      mod.setInnerAttributes(inner.getValue());
+      std::vector<InnerAttribute> in = inner.getValue();
+      mod.setInnerAttributes(in);
     }
 
     if (check(TokenKind::BraceClose)) {
@@ -387,7 +387,8 @@ Parser::parseMod(std::optional<ast::Visibility> vis) {
       } else if (check(TokenKind::BraceClose)) {
         // done
         assert(eat(lexer::TokenKind::BraceClose));
-        return std::make_shared<Module>(mod);
+        return StringResult<std::shared_ptr<ast::VisItem>>(
+            std::make_shared<Module>(mod));
       } else {
         Result<std::shared_ptr<ast::Item>, std::string> item = parseItem();
         if (!item) {
@@ -667,7 +668,8 @@ StringResult<ast::LifetimeBounds> Parser::parseLifetimeBounds() {
   while (true) {
     if (check(TokenKind::Eof)) {
       // abort
-      xxx;
+      return StringResult<ast::LifetimeBounds>(
+          "failed to pars elifetime bounds");
     } else if (!checkLifetime()) {
       StringResult<ast::Lifetime> life = parseLifetimeAsLifetime();
       if (!life) {
@@ -807,7 +809,8 @@ StringResult<ast::GenericParam> Parser::parseGenericParam() {
       printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    param.setOuterAttributes(outer.getValue());
+    std::vector<OuterAttribute> out = outer.getValue();
+    param.setOuterAttributes(out);
   }
 
   if (checkKeyWord(KeyWordKind::KW_CONST)) {
