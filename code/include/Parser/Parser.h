@@ -68,9 +68,9 @@
 #include "Parser/Precedence.h"
 #include "Parser/Restrictions.h"
 
-#include <llvm/Support/Error.h>
 #include <span>
 #include <stack>
+#include <string>
 #include <string_view>
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_parse/parser/struct.Parser.html#method.new
@@ -100,130 +100,140 @@ public:
   adt::Result<ast::use_tree::UseTree, std::string> parseUseTree();
 
   adt::Result<std::shared_ptr<ast::Item>, std::string> parseItem();
-  llvm::Expected<std::shared_ptr<ast::MacroItem>>
+  adt::Result<std::shared_ptr<ast::MacroItem>, std::string>
       parseMacroItem(std::span<ast::OuterAttribute>);
 
   adt::Result<std::shared_ptr<ast::VisItem>, std::string>
       parseVisItem(std::span<ast::OuterAttribute>);
 
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern();
 
   /// VisItems
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseMod(std::optional<ast::Visibility> vis);
   adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseUseDeclaration(std::optional<ast::Visibility> vis);
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseTypeAlias(std::optional<ast::Visibility> vis);
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseEnumeration(std::optional<ast::Visibility> vis);
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseUnion(std::optional<ast::Visibility> vis);
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseStaticItem(std::optional<ast::Visibility> vis);
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseTrait(std::optional<ast::Visibility> vis);
   adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseFunction(std::optional<ast::Visibility> vis);
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseConstantItem(std::optional<ast::Visibility> vis);
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseExternBlock(std::optional<ast::Visibility> vis);
 
-  llvm::Expected<ast::ExternalItem> parseExternalItem();
+  adt::Result<ast::ExternalItem, std::string> parseExternalItem();
 
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseStruct(std::optional<ast::Visibility> vis);
-  llvm::Expected<ast::StructFields> parseStructFields();
-  llvm::Expected<ast::StructField> parseStructField();
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<ast::StructFields, std::string> parseStructFields();
+  adt::Result<ast::StructField, std::string> parseStructField();
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseStructStruct(std::optional<ast::Visibility> vis);
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseTupleStruct(std::optional<ast::Visibility> vis);
 
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseImplementation(std::optional<ast::Visibility> vis);
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseInherentImpl(std::optional<ast::Visibility> vis);
-  llvm::Expected<std::shared_ptr<ast::VisItem>>
+  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
   parseTraitImpl(std::optional<ast::Visibility> vis);
 
-  llvm::Expected<std::vector<ast::OuterAttribute>> parseOuterAttributes();
-  llvm::Expected<std::vector<ast::InnerAttribute>> parseInnerAttributes();
+  adt::Result<std::vector<ast::OuterAttribute>, std::string>
+  parseOuterAttributes();
+  adt::Result<std::vector<ast::InnerAttribute>, std::string>
+  parseInnerAttributes();
 
-  llvm::Expected<ast::OuterAttribute> parseOuterAttribute();
-  llvm::Expected<ast::InnerAttribute> parseInnerAttribute();
+  adt::Result<ast::OuterAttribute, std::string> parseOuterAttribute();
+  adt::Result<ast::InnerAttribute, std::string> parseInnerAttribute();
 
-  llvm::Expected<ast::ConstParam> parseConstParam();
-  llvm::Expected<ast::LifetimeParam> parseLifetimeParam();
-  llvm::Expected<ast::TypeParam> parseTypeParam();
+  adt::Result<ast::ConstParam, std::string> parseConstParam();
+  adt::Result<ast::LifetimeParam, std::string> parseLifetimeParam();
+  adt::Result<ast::TypeParam, std::string> parseTypeParam();
 
   // Function
-  llvm::Expected<ast::FunctionQualifiers> parseFunctionQualifiers();
+  adt::Result<ast::FunctionQualifiers, std::string> parseFunctionQualifiers();
   // llvm::Expected<ast::FunctionSignature> parseFunctionsignature();
-  llvm::Expected<ast::FunctionParam> parseFunctionParam();
-  llvm::Expected<ast::FunctionParameters> parseFunctionParameters();
-  llvm::Expected<ast::FunctionParamPattern> parseFunctionParamPattern();
-  llvm::Expected<ast::FunctionReturnType> parseFunctionReturnType();
-  llvm::Expected<ast::SelfParam> parseSelfParam();
+  adt::Result<ast::FunctionParam, std::string> parseFunctionParam();
+  adt::Result<ast::FunctionParameters, std::string> parseFunctionParameters();
+  adt::Result<ast::FunctionParamPattern, std::string>
+  parseFunctionParamPattern();
+  adt::Result<ast::FunctionReturnType, std::string> parseFunctionReturnType();
+  adt::Result<ast::SelfParam, std::string> parseSelfParam();
 
-  llvm::Expected<ast::Statements> parseStatements();
-  llvm::Expected<std::shared_ptr<ast::Statement>> parseStatement();
+  adt::Result<ast::Statements, std::string> parseStatements();
+  adt::Result<std::shared_ptr<ast::Statement>, std::string> parseStatement();
 
   // Types
   adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseTypeNoBounds();
   adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseType();
-  llvm::Expected<std::shared_ptr<ast::types::TypePath>> parseTypePath();
+  adt::Result<std::shared_ptr<ast::types::TypePath>, std::string>
+  parseTypePath();
 
-  llvm::Expected<ast::types::TypePathSegment> parseTypePathSegment();
-  llvm::Expected<ast::PathIdentSegment> parsePathIdentSegment();
+  adt::Result<ast::types::TypePathSegment, std::string> parseTypePathSegment();
+  adt::Result<ast::PathIdentSegment, std::string> parsePathIdentSegment();
 
-  llvm::Expected<ast::PathExprSegment> parsePathExprSegment();
+  adt::Result<ast::PathExprSegment, std::string> parsePathExprSegment();
 
-  llvm::Expected<ast::types::TypePathFn> parseTypePathFn();
-  llvm::Expected<ast::types::TypePathFnInputs> parseTypePathFnInputs();
+  adt::Result<ast::types::TypePathFn, std::string> parseTypePathFn();
+  adt::Result<ast::types::TypePathFnInputs, std::string>
+  parseTypePathFnInputs();
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> parseTraitBound();
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeParamBound>, std::string>
+  parseTraitBound();
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseBareFunctionType();
-  llvm::Expected<ast::types::FunctionTypeQualifiers>
+  adt::Result<ast::types::FunctionTypeQualifiers, std::string>
   parseFunctionTypeQualifiers();
-  llvm::Expected<ast::types::BareFunctionReturnType>
+  adt::Result<ast::types::BareFunctionReturnType, std::string>
   parseBareFunctionReturnType();
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseTraitObjectTypeOneBound();
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseImplTraitTypeOneBound();
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseImplTraitType();
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseRawPointerType();
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseNeverType();
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
+  parseNeverType();
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseReferenceType();
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseInferredType();
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseTraitObjectType();
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseImplType();
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
+  parseImplType();
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseArrayOrSliceType();
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseTupleOrParensType();
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> parseTupleType();
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
+  parseTupleType();
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType();
   // only for types !!!
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseQualifiedPathInType();
-  llvm::Expected<ast::types::QualifiedPathType> parseQualifiedPathType();
+  adt::Result<ast::types::QualifiedPathType, std::string>
+  parseQualifiedPathType();
 
   adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseParenthesizedType();
@@ -234,64 +244,66 @@ public:
   parseCrateModule(std::string_view crateName, basic::CrateNum crateNum);
 
   // Patterns
-  adt::Result<std::shared_ptr<ast::patterns::Pattern, std::string>>
+  adt::Result<std::shared_ptr<ast::patterns::Pattern>, std::string>
   parsePattern();
   adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parsePatternNoTopAlt();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseReferencePattern();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseRestPattern();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseWildCardPattern();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseTupleOrGroupedPattern();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseSlicePattern();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseLiteralPattern();
-  llvm::Expected<ast::patterns::SlicePatternItems> parseSlicePatternItems();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<ast::patterns::SlicePatternItems, std::string>
+  parseSlicePatternItems();
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parsePatternWithoutRange();
 
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseRangePattern();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseStructPattern();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseTupleStructPattern();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseIdentifierPattern();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parsePathOrStructOrTupleStructPattern();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseMacroInvocationPattern();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parsePathPattern();
 
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parsePathInExpressionOrStructExprStructOrStructExprTupleOrStructExprUnitOrMacroInvocationOrExpressionWithPostfix();
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectType();
 
   // Expressions
 
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseMacroInvocationExpression();
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExpression();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+  parseStructExpression();
 
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpression();
 
   adt::Result<ast::TupleElements, std::string> parseTupleElements(Restrictions);
 
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parsePathInExpressionOrStructOrExpressionWithPostfix();
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseExpressionWithPostfix(
-      llvm::Expected<std::shared_ptr<ast::Expression>> left,
-      rust_compiler::parser::Restrictions =
-          rust_compiler::parser::Restrictions());
+  //  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+  //  parseExpressionWithPostfix(std::shared_ptr<ast::Expression> left,
+  //                             rust_compiler::parser::Restrictions =
+  //                                 rust_compiler::parser::Restrictions());
 
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseExpression(std::span<ast::OuterAttribute> outer,
@@ -417,134 +429,141 @@ public:
   // llvm::Expected<std::shared_ptr<ast::Expression>>
   // parsePatternLoopExpression();
 
-  llvm::Expected<ast::MatchArms> parseMatchArms();
-  llvm::Expected<ast::MatchArm> parseMatchArm();
-  llvm::Expected<ast::MatchArmGuard> parseMatchArmGuard();
-  llvm::Expected<ast::GenericParam> parseGenericParam();
+  adt::Result<ast::MatchArms, std::string> parseMatchArms();
+  adt::Result<ast::MatchArm, std::string> parseMatchArm();
+  adt::Result<ast::MatchArmGuard, std::string> parseMatchArmGuard();
+  adt::Result<ast::GenericParam, std::string> parseGenericParam();
 
-  llvm::Expected<ast::GenericArgs> parseGenericArgs();
-  llvm::Expected<ast::GenericArg>
+  adt::Result<ast::GenericArgs, std::string> parseGenericArgs();
+  adt::Result<ast::GenericArg, std::string>
   parseGenericArg(std::optional<ast::GenericArgKind> last);
-  llvm::Expected<ast::GenericParams> parseGenericParams();
-  llvm::Expected<ast::GenericArgsConst> parseGenericArgsConst();
-  llvm::Expected<ast::GenericArgsBinding> parseGenericArgsBinding();
-  llvm::Expected<ast::WhereClause> parseWhereClause();
-  llvm::Expected<std::shared_ptr<ast::WhereClauseItem>> parseWhereClauseItem();
-  llvm::Expected<ast::types::ForLifetimes> parseForLifetimes();
+  adt::Result<ast::GenericParams, std::string> parseGenericParams();
+  adt::Result<ast::GenericArgsConst, std::string> parseGenericArgsConst();
+  adt::Result<ast::GenericArgsBinding, std::string> parseGenericArgsBinding();
+  adt::Result<ast::WhereClause, std::string> parseWhereClause();
+  adt::Result<std::shared_ptr<ast::WhereClauseItem>, std::string>
+  parseWhereClauseItem();
+  adt::Result<ast::types::ForLifetimes, std::string> parseForLifetimes();
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>>
+  adt::Result<std::shared_ptr<ast::types::TypeParamBound>, std::string>
   parseLifetimeAsTypeParamBound();
-  llvm::Expected<ast::Lifetime> parseLifetimeAsLifetime();
-  llvm::Expected<ast::LifetimeBounds> parseLifetimeBounds();
-  llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
+  adt::Result<ast::Lifetime, std::string> parseLifetimeAsLifetime();
+  adt::Result<ast::LifetimeBounds, std::string> parseLifetimeBounds();
+  adt::Result<std::shared_ptr<ast::WhereClauseItem>, std::string>
   parseLifetimeWhereClauseItem();
-  llvm::Expected<std::shared_ptr<ast::WhereClauseItem>>
+  adt::Result<std::shared_ptr<ast::WhereClauseItem>, std::string>
   parseTypeBoundWhereClauseItem();
 
-  llvm::Expected<ast::EnumItems> parseEnumItems();
-  llvm::Expected<ast::EnumItem> parseEnumItem();
-  llvm::Expected<ast::EnumItemTuple> parseEnumItemTuple();
-  llvm::Expected<ast::EnumItemStruct> parseEnumItemStruct();
-  llvm::Expected<ast::EnumItemDiscriminant> parseEnumItemDiscriminant();
+  adt::Result<ast::EnumItems, std::string> parseEnumItems();
+  adt::Result<ast::EnumItem, std::string> parseEnumItem();
+  adt::Result<ast::EnumItemTuple, std::string> parseEnumItemTuple();
+  adt::Result<ast::EnumItemStruct, std::string> parseEnumItemStruct();
+  adt::Result<ast::EnumItemDiscriminant, std::string>
+  parseEnumItemDiscriminant();
 
   // statements
-  llvm::Expected<std::shared_ptr<ast::Statement>> parseLetStatement();
-  llvm::Expected<std::shared_ptr<ast::Statement>> parseItemDeclaration();
-  llvm::Expected<std::shared_ptr<ast::Statement>> parseExpressionStatement();
-  llvm::Expected<std::shared_ptr<ast::Statement>>
+  adt::Result<std::shared_ptr<ast::Statement>, std::string> parseLetStatement();
+  adt::Result<std::shared_ptr<ast::Statement>, std::string>
+  parseItemDeclaration();
+  adt::Result<std::shared_ptr<ast::Statement>, std::string>
+  parseExpressionStatement();
+  adt::Result<std::shared_ptr<ast::Statement>, std::string>
   parseMacroInvocationSemiStatement();
 
-  llvm::Expected<std::shared_ptr<ast::MacroItem>>
+  adt::Result<std::shared_ptr<ast::MacroItem>, std::string>
   parseMacroInvocationSemiItem();
 
-  llvm::Expected<std::shared_ptr<ast::MacroItem>> parseMacroRulesDefinition();
-  llvm::Expected<std::shared_ptr<ast::SelfParam>> parseShorthandSelf();
-  llvm::Expected<std::shared_ptr<ast::SelfParam>> parseTypedSelf();
+  adt::Result<std::shared_ptr<ast::MacroItem>, std::string>
+  parseMacroRulesDefinition();
+  adt::Result<std::shared_ptr<ast::SelfParam>, std::string>
+  parseShorthandSelf();
+  adt::Result<std::shared_ptr<ast::SelfParam>, std::string> parseTypedSelf();
 
-  llvm::Expected<ast::types::TypeParamBounds> parseTypeParamBounds();
-  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>>
+  adt::Result<ast::types::TypeParamBounds, std::string> parseTypeParamBounds();
+  adt::Result<std::shared_ptr<ast::types::TypeParamBound>, std::string>
   parseTypeParamBound();
 
-  llvm::Expected<ast::SimplePath> parseSimplePath();
-  llvm::Expected<ast::SimplePathSegment> parseSimplePathSegment();
+  adt::Result<ast::SimplePath, std::string> parseSimplePath();
+  adt::Result<ast::SimplePathSegment, std::string> parseSimplePathSegment();
 
-  llvm::Expected<ast::AttrInput> parseAttrInput();
+  adt::Result<ast::AttrInput, std::string> parseAttrInput();
 
-  llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> parseDelimTokenTree();
-  llvm::Expected<ast::TokenTree> parseTokenTree();
+  adt::Result<std::shared_ptr<ast::DelimTokenTree>, std::string>
+  parseDelimTokenTree();
+  adt::Result<ast::TokenTree, std::string> parseTokenTree();
 
-  llvm::Expected<ast::AssociatedItem> parseAssociatedItem();
+  adt::Result<ast::AssociatedItem, std::string> parseAssociatedItem();
 
-  llvm::Expected<ast::Abi> parseAbi();
-  llvm::Expected<ast::Attr> parseAttr();
+  adt::Result<ast::Abi, std::string> parseAbi();
+  adt::Result<ast::Attr, std::string> parseAttr();
 
-  llvm::Expected<ast::TupleFields> parseTupleFields();
-  llvm::Expected<ast::TupleField> parseTupleField();
+  adt::Result<ast::TupleFields, std::string> parseTupleFields();
+  adt::Result<ast::TupleField, std::string> parseTupleField();
 
-  llvm::Expected<ast::ClosureParameters> parseClosureParameters();
-  llvm::Expected<ast::ClosureParam> parseClosureParam();
+  adt::Result<ast::ClosureParameters, std::string> parseClosureParameters();
+  adt::Result<ast::ClosureParam, std::string> parseClosureParam();
 
-  llvm::Expected<ast::types::FunctionParametersMaybeNamedVariadic>
+  adt::Result<ast::types::FunctionParametersMaybeNamedVariadic, std::string>
   parseFunctionParametersMaybeNamedVariadic();
 
-  llvm::Expected<ast::types::MaybeNamedParam> parseMaybeNamedParam();
-  llvm::Expected<ast::StructExprFields> parseStructExprFields();
+  adt::Result<ast::types::MaybeNamedParam, std::string> parseMaybeNamedParam();
+  adt::Result<ast::StructExprFields, std::string> parseStructExprFields();
 
-  llvm::Expected<ast::StructExprField> parseStructExprField();
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprStruct();
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprTuple();
-  llvm::Expected<std::shared_ptr<ast::Expression>> parseStructExprUnit();
-  llvm::Expected<ast::StructBase> parseStructBase();
+  adt::Result<ast::StructExprField, std::string> parseStructExprField();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string> parseStructExprStruct();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string> parseStructExprTuple();
+  adt::Result<std::shared_ptr<ast::Expression>, std::string> parseStructExprUnit();
+  adt::Result<ast::StructBase, std::string> parseStructBase();
 
-  llvm::Expected<std::shared_ptr<ast::PathExpression>> parsePathInExpression();
+  adt::Result<std::shared_ptr<ast::PathExpression>, std::string> parsePathInExpression();
 
-  llvm::Expected<ast::patterns::StructPatternElements>
+  adt::Result<ast::patterns::StructPatternElements, std::string>
   parseStructPatternElements();
-  llvm::Expected<ast::patterns::StructPatternFields> parseStructPatternFields();
-  llvm::Expected<ast::patterns::StructPatternField> parseStructPatternField();
+  adt::Result<ast::patterns::StructPatternFields, std::string> parseStructPatternFields();
+  adt::Result<ast::patterns::StructPatternField, std::string> parseStructPatternField();
 
-  llvm::Expected<ast::patterns::TupleStructItems> parseTupleStructItems();
+  adt::Result<ast::patterns::TupleStructItems, std::string> parseTupleStructItems();
 
-  llvm::Expected<ast::patterns::StructPatternEtCetera>
+  adt::Result<ast::patterns::StructPatternEtCetera, std::string>
   parseStructPatternEtCetera();
 
-  llvm::Expected<ast::ArrayElements> parseArrayElements();
+  adt::Result<ast::ArrayElements, std::string> parseArrayElements();
 
-  llvm::Expected<ast::types::FunctionParametersMaybeNamedVariadic>
+  adt::Result<ast::types::FunctionParametersMaybeNamedVariadic, std::string>
   parseMaybeNamedFunctionParameters();
-  llvm::Expected<ast::types::FunctionParametersMaybeNamedVariadic>
+  adt::Result<ast::types::FunctionParametersMaybeNamedVariadic, std::string>
   parseMaybeNamedFunctionParametersVariadic();
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseMacroInvocationType();
 
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseGroupedOrTuplePattern();
 
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseMacroInvocationOrPathOrStructOrTupleStructPattern();
 
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseTuplePattern();
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseGroupedPattern();
 
-  llvm::Expected<ast::patterns::TuplePatternItems> parseTuplePatternItems();
+  adt::Result<ast::patterns::TuplePatternItems, std::string> parseTuplePatternItems();
 
-  llvm::Expected<ast::MacroRulesDef> parseMacroRulesDef();
-  llvm::Expected<ast::MacroRules> parseMacroRules();
-  llvm::Expected<ast::MacroRule> parseMacroRule();
-  llvm::Expected<ast::MacroMatcher> parseMacroMatcher();
-  llvm::Expected<ast::MacroMatch> parseMacroMatch();
-  llvm::Expected<ast::MacroTranscriber> parseMacroTranscriber();
-  llvm::Expected<ast::MacroFragSpec> parseMacroFragSpec();
-  llvm::Expected<ast::MacroRepSep> parseMacroRepSep();
-  llvm::Expected<ast::MacroRepOp> parseMacroRepOp();
+  adt::Result<ast::MacroRulesDef, std::string> parseMacroRulesDef();
+  adt::Result<ast::MacroRules, std::string> parseMacroRules();
+  adt::Result<ast::MacroRule, std::string> parseMacroRule();
+  adt::Result<ast::MacroMatcher, std::string> parseMacroMatcher();
+  adt::Result<ast::MacroMatch, std::string> parseMacroMatch();
+  adt::Result<ast::MacroTranscriber, std::string> parseMacroTranscriber();
+  adt::Result<ast::MacroFragSpec, std::string> parseMacroFragSpec();
+  adt::Result<ast::MacroRepSep, std::string> parseMacroRepSep();
+  adt::Result<ast::MacroRepOp, std::string> parseMacroRepOp();
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseTraitObjectTypeOrTypePathOrMacroInvocation();
 
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parsePathInExpressionOrMacroInvocationExpression();
 
   adt::Result<ast::LoopLabel, std::string> parseLoopLabel();
@@ -611,10 +630,10 @@ private:
   bool checkPathExprSegment(uint8_t off = 0);
   bool checkPostFix();
 
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseBinaryExpression(bool allowBlocks);
 
-  llvm::Expected<std::shared_ptr<ast::Expression>>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseUnaryExpression(std::span<ast::OuterAttribute> outer,
                        ParseRestrictions restrictions = ParseRestrictions());
 

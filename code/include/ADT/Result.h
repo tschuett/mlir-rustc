@@ -43,4 +43,6 @@ public:
   }
 };
 
+template <class T> using StringResult = Result<T, std::string>;
+
 } // namespace rust_compiler::adt

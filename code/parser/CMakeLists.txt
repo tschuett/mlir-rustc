@@ -45,3 +45,14 @@ target_include_directories(parser PRIVATE  ../include)
 
 target_link_libraries(parser ast lexer)
 
+
+target_precompile_headers(parser PRIVATE
+                                 ../include/Parser/Parser.h
+                                 ../include/Parser/ErrorStack.h
+                                 ../include/Parser/Precedence.h
+                                 ../include/Parser/Restrictions.h
+                                 ../include/Lexer/Token.h
+                                 ../include/Lexer/KeyWords.h
+                                 ../include/AST/AST.h
+                                 ../include/AST/Expression.h
+)
