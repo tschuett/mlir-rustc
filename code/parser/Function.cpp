@@ -19,6 +19,7 @@ using namespace rust_compiler::adt;
 namespace rust_compiler::parser {
 
 StringResult<std::shared_ptr<ast::SelfParam>> Parser::parseShorthandSelf() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   ShorthandSelf self = {loc};
@@ -36,14 +37,17 @@ StringResult<std::shared_ptr<ast::SelfParam>> Parser::parseShorthandSelf() {
   }
 
   if (!checkKeyWord(KeyWordKind::KW_SELFVALUE))
-    return createStringError(inconvertibleErrorCode(), "failed to parse self");
+    return StringResult<std::shared_ptr<ast::SelfParam>>(
+        "failed to parse self");
 
   assert(eatKeyWord(KeyWordKind::KW_SELFVALUE));
 
-  return std::make_shared<ShorthandSelf>(self);
+  return StringResult<std::shared_ptr<ast::SelfParam>>(
+      std::make_shared<ShorthandSelf>(self));
 }
 
 StringResult<std::shared_ptr<ast::SelfParam>> Parser::parseTypedSelf() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   TypedSelf self = {loc};
@@ -52,12 +56,14 @@ StringResult<std::shared_ptr<ast::SelfParam>> Parser::parseTypedSelf() {
     self.setMut();
 
   if (!checkKeyWord(KeyWordKind::KW_SELFVALUE))
-    return createStringError(inconvertibleErrorCode(), "failed to parse self");
+    return StringResult<std::shared_ptr<ast::SelfParam>>(
+        "failed to parse self");
 
   assert(eatKeyWord(KeyWordKind::KW_SELFVALUE));
 
   if (!check(TokenKind::Colon))
-    return createStringError(inconvertibleErrorCode(), "failed to parse colon");
+    return StringResult<std::shared_ptr<ast::SelfParam>>(
+        "failed to parse colon");
 
   assert(eat(TokenKind::Colon));
 
@@ -70,10 +76,12 @@ StringResult<std::shared_ptr<ast::SelfParam>> Parser::parseTypedSelf() {
   }
   self.setType(type.getValue());
 
-  return std::make_shared<TypedSelf>(self);
+  return StringResult<std::shared_ptr<ast::SelfParam>>(
+      std::make_shared<TypedSelf>(self));
 }
 
 StringResult<ast::SelfParam> Parser::parseSelfParam() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   SelfParam self = {loc};
@@ -81,69 +89,73 @@ StringResult<ast::SelfParam> Parser::parseSelfParam() {
   if (checkOuterAttribute()) {
     StringResult<std::vector<ast::OuterAttribute>> parsedOuterAttributes =
         parseOuterAttributes();
-    if (auto e = parsedOuterAttributes.takeError()) {
-      llvm::errs() << "failed to parse outer attributes: "
-                   << toString(std::move(e)) << "\n";
+    if (!parsedOuterAttributes) {
+      llvm::errs() << "failed to parse outer attributes in self param: "
+                   << parsedOuterAttributes.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    self.setOuterAttributes(*parsedOuterAttributes);
+    std::vector<ast::OuterAttribute> outer = parsedOuterAttributes.getValue();
+    self.setOuterAttributes(outer);
   }
 
   if (check(TokenKind::And)) {
     // ShordhandSelf
-    StringResult<std::shared_ptr<ast::SelfParam>> shortA =
-        parseShorthandSelf();
-    if (auto e = shortA.takeError()) {
-      llvm::errs() << "failed to parse ShortandSelf: " << toString(std::move(e))
-                   << "\n";
+    StringResult<std::shared_ptr<ast::SelfParam>> shortA = parseShorthandSelf();
+    if (!shortA) {
+      llvm::errs() << "failed to parse shorthand self in self param: "
+                   << shortA.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    self.setSelf(SelfParamKind::ShorthandSelf, *shortA);
+    self.setSelf(SelfParamKind::ShorthandSelf, shortA.getValue());
   } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
     if (checkKeyWord(KeyWordKind::KW_SELFVALUE, 1)) {
       if (check(TokenKind::Colon, 2)) {
-        StringResult<std::shared_ptr<ast::SelfParam>> shortA =
-            parseTypedSelf();
-        if (auto e = shortA.takeError()) {
-          llvm::errs() << "failed to parse TypeSelf: " << toString(std::move(e))
-                       << "\n";
+        StringResult<std::shared_ptr<ast::SelfParam>> shortA = parseTypedSelf();
+        if (!shortA) {
+          llvm::errs() << "failed to parse shortand self in self param: "
+                       << shortA.getError() << "\n";
+          printFunctionStack();
           exit(EXIT_FAILURE);
         }
-        self.setSelf(SelfParamKind::TypeSelf, *shortA);
+        self.setSelf(SelfParamKind::TypeSelf, shortA.getValue());
         // TypedSelf
       } else {
         StringResult<std::shared_ptr<ast::SelfParam>> shortA =
             parseShorthandSelf();
-        if (auto e = shortA.takeError()) {
-          llvm::errs() << "failed to parse ShortandSelf: "
-                       << toString(std::move(e)) << "\n";
+        if (!shortA) {
+          llvm::errs() << "failed to parse shortand self in self param: "
+                       << shortA.getError() << "\n";
+          printFunctionStack();
           exit(EXIT_FAILURE);
         }
-        self.setSelf(SelfParamKind::ShorthandSelf, *shortA);
+        self.setSelf(SelfParamKind::ShorthandSelf, shortA.getValue());
       }
     }
   } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
     if (check(TokenKind::Colon, 1)) {
       StringResult<std::shared_ptr<ast::SelfParam>> shortA = parseTypedSelf();
-      if (auto e = shortA.takeError()) {
-        llvm::errs() << "failed to parse TypeSelf: " << toString(std::move(e))
-                     << "\n";
+      if (!shortA) {
+        llvm::errs() << "failed to parse shortand self in self param: "
+                     << shortA.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      self.setSelf(SelfParamKind::TypeSelf, *shortA);
+      self.setSelf(SelfParamKind::TypeSelf, shortA.getValue());
     } else {
       StringResult<std::shared_ptr<ast::SelfParam>> shortA =
           parseShorthandSelf();
-      if (auto e = shortA.takeError()) {
-        llvm::errs() << "failed to parse ShortandSelf: "
-                     << toString(std::move(e)) << "\n";
+      if (!shortA) {
+        llvm::errs() << "failed to parse shortand self in self param: "
+                     << shortA.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      self.setSelf(SelfParamKind::ShorthandSelf, *shortA);
+      self.setSelf(SelfParamKind::ShorthandSelf, shortA.getValue());
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse colonself param");
+  return StringResult<ast::SelfParam>("failed to parse colonself param");
 }
 
 bool Parser::checkSelfParam() {
@@ -158,23 +170,25 @@ bool Parser::checkSelfParam() {
 }
 
 StringResult<ast::FunctionParameters> Parser::parseFunctionParameters() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   ast::FunctionParameters parameters = {loc};
 
   if (checkSelfParam()) { // FIXME OuterAttributes
     StringResult<ast::SelfParam> selfParam = parseSelfParam();
-    if (auto e = selfParam.takeError()) {
-      llvm::errs() << "failed to parse self param: " << toString(std::move(e))
+    if (!selfParam) {
+      llvm::errs() << "failed to parse self param: " << selfParam.getError()
                    << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    parameters.addSelfParam(*selfParam);
+    parameters.addSelfParam(selfParam.getValue());
     if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
       assert(eat(TokenKind::Comma));
-      return parameters;
+      return StringResult<ast::FunctionParameters>(parameters);
     } else if (check(TokenKind::ParenClose)) {
-      return parameters;
+      return StringResult<ast::FunctionParameters>(parameters);
     } else {
       // continue
       while (true) {
@@ -188,20 +202,21 @@ StringResult<ast::FunctionParameters> Parser::parseFunctionParameters() {
                      << "\n";
         exit(EXIT_FAILURE);
       } else if (check(TokenKind::ParenClose)) {
-        return parameters;
+        return StringResult<ast::FunctionParameters>(parameters);
       } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
         assert(eat(TokenKind::Comma));
-        return parameters;
+        return StringResult<ast::FunctionParameters>(parameters);
       } else if (check(TokenKind::Comma)) {
         assert(eat(TokenKind::Comma));
       } else {
         StringResult<ast::FunctionParam> param = parseFunctionParam();
-        if (auto e = param.takeError()) {
-          llvm::errs() << "failed to parse function param: "
-                       << toString(std::move(e)) << "\n";
+        if (!param) {
+          llvm::errs() << "failed to parse function param: " << param.getError()
+                       << "\n";
+          printFunctionStack();
           exit(EXIT_FAILURE);
         }
-        parameters.addFunctionParam(*param);
+        parameters.addFunctionParam(param.getValue());
       }
     }
   }
@@ -209,17 +224,18 @@ StringResult<ast::FunctionParameters> Parser::parseFunctionParameters() {
 }
 
 StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>> pattern =
       parsePatternNoTopAlt();
-
-  if (auto e = pattern.takeError()) {
-    llvm::errs() << "failed to parse pattern no top alt: "
-                 << toString(std::move(e)) << "\n";
+  if (!pattern) {
+    llvm::errs()
+        << "failed to parse pattern no top al in function param pattern: "
+        << pattern.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-
   if (!check(TokenKind::Colon)) {
     // error
   }
@@ -230,8 +246,8 @@ StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
     // done
     assert(eat(TokenKind::DotDotDot));
     FunctionParamPattern pat = (loc);
-    pat.setName(*pattern);
-    return pat;
+    pat.setName(pattern.getValue());
+    return StringResult<ast::FunctionParamPattern>(pat);
   }
 
   Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
@@ -243,12 +259,13 @@ StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
   }
 
   FunctionParamPattern pat = (loc);
-  pat.setName(*pattern);
+  pat.setName(pattern.getValue());
   pat.setType(type.getValue());
-  return pat;
+  return StringResult<ast::FunctionParamPattern>(pat);
 }
 
 StringResult<ast::FunctionParam> Parser::parseFunctionParam() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   std::vector<ast::OuterAttribute> outerAttributes;
@@ -256,12 +273,13 @@ StringResult<ast::FunctionParam> Parser::parseFunctionParam() {
   if (checkOuterAttribute()) {
     StringResult<std::vector<ast::OuterAttribute>> parsedOuterAttributes =
         parseOuterAttributes();
-    if (auto e = parsedOuterAttributes.takeError()) {
-      llvm::errs() << "failed to parse outer attributes: "
-                   << toString(std::move(e)) << "\n";
+    if (!parsedOuterAttributes) {
+      llvm::errs() << "failed to parse outer attributes in function param: "
+                   << parsedOuterAttributes.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    outerAttributes = *parsedOuterAttributes;
+    outerAttributes = parsedOuterAttributes.getValue();
   }
 
   // FIXME ignore naked type
@@ -270,41 +288,43 @@ StringResult<ast::FunctionParam> Parser::parseFunctionParam() {
     assert(eat(TokenKind::DotDotDot));
     FunctionParam param = {loc, FunctionParamKind::DotDotDot};
     param.setOuterAttributes(outerAttributes);
-    return param;
+    return StringResult<ast::FunctionParam>(param);
   } else {
     FunctionParam param = {loc, FunctionParamKind::Pattern};
     StringResult<ast::FunctionParamPattern> pattern =
         parseFunctionParamPattern();
-    if (auto e = pattern.takeError()) {
+    if (!pattern) {
       llvm::errs() << "failed to parse pattern in function param: "
-                   << toString(std::move(e)) << "\n";
+                   << pattern.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    param.setPattern(*pattern);
+    param.setPattern(pattern.getValue());
     param.setOuterAttributes(outerAttributes);
-    return param;
+    return StringResult<ast::FunctionParam>(param);
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse function param");
+  return StringResult<ast::FunctionParam>("failed to parse function param");
 }
 
 StringResult<ast::Abi> Parser::parseAbi() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   Abi abi = {loc};
 
   if (check(TokenKind::STRING_LITERAL)) {
     // FIXME
-    return abi;
+    return StringResult<ast::Abi>(abi);
   } else if (check(TokenKind::RAW_STRING_LITERAL)) {
     // FIXME
-    return abi;
+    return StringResult<ast::Abi>(abi);
   }
 
   return StringResult<ast::Abi>("failed to parse Abi");
 }
 
 StringResult<ast::FunctionQualifiers> Parser::parseFunctionQualifiers() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   FunctionQualifiers qual = {loc};
@@ -327,25 +347,26 @@ StringResult<ast::FunctionQualifiers> Parser::parseFunctionQualifiers() {
   if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
     assert(eatKeyWord(KeyWordKind::KW_EXTERN));
 
-    llvm::Expected<ast::Abi> abi = Parser::parseAbi();
-    if (auto e = abi.takeError()) {
-      llvm::errs() << "failed to parse Abi in function qualifiers: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::Abi> abi = Parser::parseAbi();
+    if (!abi) {
+      llvm::errs() << "failed to parse abi in function qualifiers: "
+                   << abi.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    qual.setAbi(*abi);
+    qual.setAbi(abi.getValue());
   }
 
-  return qual;
+  return StringResult<ast::FunctionQualifiers>(qual);
 }
 
 StringResult<ast::FunctionReturnType> Parser::parseFunctionReturnType() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   FunctionReturnType t = {loc};
 
   if (!check(TokenKind::RArrow)) {
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<ast::FunctionReturnType>(
         "failed to parse -> token in function return type");
   }
   assert(eat(TokenKind::RArrow));
@@ -359,11 +380,12 @@ StringResult<ast::FunctionReturnType> Parser::parseFunctionReturnType() {
   }
   t.setType(type.getValue());
 
-  return t;
+  return StringResult<ast::FunctionReturnType>(t);
 }
 
 StringResult<std::shared_ptr<ast::VisItem>>
 Parser::parseFunction(std::optional<ast::Visibility> vis) {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   Function fun = {loc, vis};
@@ -377,12 +399,13 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
       checkKeyWord(KeyWordKind::KW_EXTERN)) {
     StringResult<ast::FunctionQualifiers> qualifiers =
         parseFunctionQualifiers();
-    if (auto e = qualifiers.takeError()) {
-      llvm::errs() << "failed to parse function qualifiers: "
-                   << toString(std::move(e)) << "\n";
+    if (!qualifiers) {
+      llvm::errs() << "failed to parse function qualifiers in function: "
+                   << qualifiers.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    fun.setQualifiers(*qualifiers);
+    fun.setQualifiers(qualifiers.getValue());
   }
 
   if (!checkKeyWord(KeyWordKind::KW_FN)) {
@@ -407,17 +430,18 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
 
   if (check(TokenKind::Lt)) {
     StringResult<ast::GenericParams> genericParams = parseGenericParams();
-    if (auto e = genericParams.takeError()) {
-      llvm::errs() << "failed to parse generic parameters: "
-                   << toString(std::move(e)) << "\n";
+    if (!genericParams) {
+      llvm::errs() << "failed to parse generic params in function: "
+                   << genericParams.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    fun.setGenericParams(*genericParams);
+    fun.setGenericParams(genericParams.getValue());
   }
 
   if (!check(TokenKind::ParenOpen)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse generic params");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse generic params");
   }
 
   assert(eat(TokenKind::ParenOpen));
@@ -426,12 +450,13 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   if (!check(TokenKind::ParenClose)) {
     StringResult<ast::FunctionParameters> parameters =
         parseFunctionParameters();
-    if (auto e = parameters.takeError()) {
-      llvm::errs() << "failed to parse fn parameters: "
-                   << toString(std::move(e)) << "\n";
+    if (!parameters) {
+      llvm::errs() << "failed to parse function parameters in function: "
+                   << parameters.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    fun.setParameters(*parameters);
+    fun.setParameters(parameters.getValue());
   }
 
   assert(eat(TokenKind::ParenClose));
@@ -439,27 +464,30 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   // return type
   if (check(TokenKind::RArrow)) {
     StringResult<FunctionReturnType> returnType = parseFunctionReturnType();
-    if (auto e = returnType.takeError()) {
-      llvm::errs() << "failed to parse fn return type: "
-                   << toString(std::move(e)) << "\n";
+    if (!returnType) {
+      llvm::errs() << "failed to parse function return type in function: "
+                   << returnType.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    fun.setReturnType(*returnType);
+    fun.setReturnType(returnType.getValue());
   }
 
   if (checkKeyWord(KeyWordKind::KW_WHERE)) {
     StringResult<ast::WhereClause> whereClause = parseWhereClause();
-    if (auto e = whereClause.takeError()) {
-      llvm::errs() << "failed to parse fn where clause: "
-                   << toString(std::move(e)) << "\n";
+    if (!whereClause) {
+      llvm::errs() << "failed to parse where clause in function: "
+                   << whereClause.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    fun.setWhereClasue(*whereClause);
+    fun.setWhereClasue(whereClause.getValue());
   }
 
   if (check(TokenKind::Semi)) {
     assert(eat(TokenKind::Semi));
-    return std::make_shared<ast::VisItem>(fun);
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        std::make_shared<ast::VisItem>(fun));
   }
 
   llvm::outs() << "parseFunction: parse body"
@@ -475,7 +503,8 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   }
   fun.setBody(body.getValue());
 
-  return std::make_shared<ast::VisItem>(fun);
+  return StringResult<std::shared_ptr<ast::VisItem>>(
+      std::make_shared<ast::VisItem>(fun));
 }
 
 } // namespace rust_compiler::parser
