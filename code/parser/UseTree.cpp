@@ -3,16 +3,18 @@
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
-#include "llvm/Support/Error.h"
+
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace rust_compiler::ast::use_tree;
 using namespace llvm;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<ast::use_tree::UseTree> Parser::parseUseTree() {
+StringResult<ast::use_tree::UseTree> Parser::parseUseTree() {
   Location loc = getLocation();
 
   UseTree tree{loc};
@@ -32,7 +34,7 @@ llvm::Expected<ast::use_tree::UseTree> Parser::parseUseTree() {
   if (check(TokenKind::Star)) {
     tree.setKind(UseTreeKind::Glob);
     assert(check(TokenKind::Star));
-    return tree;
+    return StringResult<ast::use_tree::UseTree>(tree);
     // *
     // done
   } else if (check(TokenKind::PathSep) && check(TokenKind::Star, 1)) {
@@ -40,7 +42,7 @@ llvm::Expected<ast::use_tree::UseTree> Parser::parseUseTree() {
     tree.setDoubleColon();
     assert(check(TokenKind::PathSep));
     assert(check(TokenKind::Star));
-    return tree;
+    return StringResult<ast::use_tree::UseTree>(tree);
     // :: *
     // done
   } else if (check(TokenKind::PathSep) && check(TokenKind::BraceOpen, 1) &&
@@ -51,7 +53,7 @@ llvm::Expected<ast::use_tree::UseTree> Parser::parseUseTree() {
     assert(check(TokenKind::BraceClose));
     tree.setKind(UseTreeKind::Recursive);
     tree.setDoubleColon();
-    return tree;
+    return StringResult<ast::use_tree::UseTree>(tree);
   } else if (check(TokenKind::PathSep) && check(TokenKind::BraceOpen, 1)) {
     // :: {
     assert(eat(TokenKind::PathSep));
@@ -59,32 +61,34 @@ llvm::Expected<ast::use_tree::UseTree> Parser::parseUseTree() {
     tree.setKind(UseTreeKind::Recursive);
     tree.setDoubleColon();
     while (true) {
-      llvm::Expected<ast::use_tree::UseTree> useTree = parseUseTree();
-      if (auto e = useTree.takeError()) {
-        llvm::errs() << "failed to use tree in use tree: "
-                     << toString(std::move(e)) << "\n";
+      StringResult<ast::use_tree::UseTree> useTree = parseUseTree();
+      if (!useTree) {
+        llvm::errs() << "failed to parse use tree in use tree: "
+                     << useTree.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
-        tree.addTree(*useTree);
       }
+      tree.addTree(useTree.getValue());
+
       if (check(TokenKind::BraceClose)) {
         // }
         assert(check(TokenKind::BraceClose));
         // done
-        return tree;
+        return StringResult<ast::use_tree::UseTree>(tree);
       } else if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
         // , }
         assert(check(TokenKind::Comma));
         assert(check(TokenKind::BraceClose));
         // done
-        return tree;
+        return StringResult<ast::use_tree::UseTree>(tree);
       } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
         // ,
         assert(check(TokenKind::Comma));
         // continue
       } else if (check(TokenKind::Eof)) {
         // abort
-        return createStringError(inconvertibleErrorCode(),
-                                 "failed to parse use tree: eof");
+        return StringResult<ast::use_tree::UseTree>(
+            "failed to parse use tree: eof");
       }
     }
   } else if (check(TokenKind::BraceOpen) && check(TokenKind::BraceClose, 1)) {
@@ -92,56 +96,58 @@ llvm::Expected<ast::use_tree::UseTree> Parser::parseUseTree() {
     assert(check(TokenKind::BraceOpen));
     assert(check(TokenKind::BraceClose));
     tree.setKind(UseTreeKind::Recursive);
-    return tree;
+    return StringResult<ast::use_tree::UseTree>(tree);
   } else if (check(TokenKind::BraceOpen)) {
     // {
     assert(check(TokenKind::BraceOpen));
     tree.setKind(UseTreeKind::Recursive);
     // WORK: COPY & PASTE
     while (true) {
-      llvm::Expected<ast::use_tree::UseTree> useTree = parseUseTree();
-      if (auto e = useTree.takeError()) {
-        llvm::errs() << "failed to use tree in use tree: "
-                     << toString(std::move(e)) << "\n";
+      StringResult<ast::use_tree::UseTree> useTree = parseUseTree();
+      if (!useTree) {
+        llvm::errs() << "failed to parse use tree in use tree: "
+                     << useTree.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
       if (check(TokenKind::BraceClose)) {
         assert(eat(TokenKind::BraceClose));
         // }
         // done
-        return tree;
+        return StringResult<ast::use_tree::UseTree>(tree);
       } else if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
         assert(eat(TokenKind::Comma));
         assert(eat(TokenKind::BraceClose));
         // , }
         // done
-        return tree;
+        return StringResult<ast::use_tree::UseTree>(tree);
       } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
         assert(eat(TokenKind::Comma));
         // ,
         continue;
       } else if (check(TokenKind::Eof)) {
         // abort
-        return createStringError(inconvertibleErrorCode(),
-                                 "failed to parse use tree: eof");
+        return StringResult<ast::use_tree::UseTree>(
+            "failed to parse use tree: eof");
       }
     }
   } else {
     // parse simplepath
-    llvm::Expected<ast::SimplePath> simple = parseSimplePath();
-    if (auto e = simple.takeError()) {
-      llvm::errs() << "failed to simple block in use tree: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::SimplePath> simple = parseSimplePath();
+    if (!simple) {
+      llvm::errs() << "failed to parse simple block in use tree: "
+                   << simple.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    tree.setPath(*simple);
+    tree.setPath(simple.getValue());
     // check next token
     if (check(TokenKind::PathSep) && check(TokenKind::Star)) {
       // path :: *
       // done
       tree.setDoubleColon();
       tree.setKind(UseTreeKind::Glob);
-      return tree;
+      return StringResult<ast::use_tree::UseTree>(tree);
     } else if (check(TokenKind::PathSep) && check(TokenKind::BraceOpen)) {
       // path :: {
       assert(eat(TokenKind::PathSep));
@@ -149,23 +155,24 @@ llvm::Expected<ast::use_tree::UseTree> Parser::parseUseTree() {
       // WORK: COPY & PASTE
       tree.setKind(UseTreeKind::Recursive);
       while (true) {
-        llvm::Expected<ast::use_tree::UseTree> useTree = parseUseTree();
-        if (auto e = useTree.takeError()) {
-          llvm::errs() << "failed to use tree in use tree: "
-                       << toString(std::move(e)) << "\n";
+        StringResult<ast::use_tree::UseTree> useTree = parseUseTree();
+        if (!useTree) {
+          llvm::errs() << "failed to parse use tree in use tree: "
+                       << simple.getError() << "\n";
+          printFunctionStack();
           exit(EXIT_FAILURE);
         }
         if (check(TokenKind::BraceClose)) {
           assert(eat(TokenKind::BraceClose));
           // }
           // done
-          return tree;
+          return StringResult<ast::use_tree::UseTree>(tree);
         } else if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
           assert(eat(TokenKind::Comma));
           assert(eat(TokenKind::BraceClose));
           // , }
           // done
-          return tree;
+          return StringResult<ast::use_tree::UseTree>(tree);
         } else if (check(TokenKind::Comma) &&
                    !check(TokenKind::BraceClose, 1)) {
           assert(eat(TokenKind::Comma));
@@ -173,8 +180,8 @@ llvm::Expected<ast::use_tree::UseTree> Parser::parseUseTree() {
           continue;
         } else if (check(TokenKind::Eof)) {
           // abort
-          return createStringError(inconvertibleErrorCode(),
-                                   "failed to parse use tree: eof");
+          return StringResult<ast::use_tree::UseTree>(
+              "failed to parse use tree: eof");
         }
       }
     } else if (checkKeyWord(KeyWordKind::KW_AS)) {
@@ -186,22 +193,21 @@ llvm::Expected<ast::use_tree::UseTree> Parser::parseUseTree() {
         tree.setIdentifier(getToken().getIdentifier());
         assert(eat(TokenKind::Identifier));
         // done
-        return tree;
+        return StringResult<ast::use_tree::UseTree>(tree);
       } else if (check(TokenKind::Underscore)) {
         tree.setUnderscore();
         assert(eat(TokenKind::Underscore));
         // path as _
         // done
-        return tree;
+        return StringResult<ast::use_tree::UseTree>(tree);
       }
     } else if (!checkKeyWord(KeyWordKind::KW_AS)) {
       // path
       // done
-      return tree;
+      return StringResult<ast::use_tree::UseTree>(tree);
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse use tree");
+  return StringResult<ast::use_tree::UseTree>("failed to parse use tree");
 }
 
 } // namespace rust_compiler::parser

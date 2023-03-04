@@ -8,7 +8,6 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
-#include <llvm/Support/Error.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <optional>
 
@@ -19,7 +18,7 @@ using namespace rust_compiler::adt;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<std::shared_ptr<ast::SelfParam>> Parser::parseShorthandSelf() {
+StringResult<std::shared_ptr<ast::SelfParam>> Parser::parseShorthandSelf() {
   Location loc = getLocation();
 
   ShorthandSelf self = {loc};
@@ -44,7 +43,7 @@ llvm::Expected<std::shared_ptr<ast::SelfParam>> Parser::parseShorthandSelf() {
   return std::make_shared<ShorthandSelf>(self);
 }
 
-llvm::Expected<std::shared_ptr<ast::SelfParam>> Parser::parseTypedSelf() {
+StringResult<std::shared_ptr<ast::SelfParam>> Parser::parseTypedSelf() {
   Location loc = getLocation();
 
   TypedSelf self = {loc};
@@ -74,13 +73,13 @@ llvm::Expected<std::shared_ptr<ast::SelfParam>> Parser::parseTypedSelf() {
   return std::make_shared<TypedSelf>(self);
 }
 
-llvm::Expected<ast::SelfParam> Parser::parseSelfParam() {
+StringResult<ast::SelfParam> Parser::parseSelfParam() {
   Location loc = getLocation();
 
   SelfParam self = {loc};
 
   if (checkOuterAttribute()) {
-    llvm::Expected<std::vector<ast::OuterAttribute>> parsedOuterAttributes =
+    StringResult<std::vector<ast::OuterAttribute>> parsedOuterAttributes =
         parseOuterAttributes();
     if (auto e = parsedOuterAttributes.takeError()) {
       llvm::errs() << "failed to parse outer attributes: "
@@ -92,7 +91,7 @@ llvm::Expected<ast::SelfParam> Parser::parseSelfParam() {
 
   if (check(TokenKind::And)) {
     // ShordhandSelf
-    llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
+    StringResult<std::shared_ptr<ast::SelfParam>> shortA =
         parseShorthandSelf();
     if (auto e = shortA.takeError()) {
       llvm::errs() << "failed to parse ShortandSelf: " << toString(std::move(e))
@@ -103,7 +102,7 @@ llvm::Expected<ast::SelfParam> Parser::parseSelfParam() {
   } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
     if (checkKeyWord(KeyWordKind::KW_SELFVALUE, 1)) {
       if (check(TokenKind::Colon, 2)) {
-        llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
+        StringResult<std::shared_ptr<ast::SelfParam>> shortA =
             parseTypedSelf();
         if (auto e = shortA.takeError()) {
           llvm::errs() << "failed to parse TypeSelf: " << toString(std::move(e))
@@ -113,7 +112,7 @@ llvm::Expected<ast::SelfParam> Parser::parseSelfParam() {
         self.setSelf(SelfParamKind::TypeSelf, *shortA);
         // TypedSelf
       } else {
-        llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
+        StringResult<std::shared_ptr<ast::SelfParam>> shortA =
             parseShorthandSelf();
         if (auto e = shortA.takeError()) {
           llvm::errs() << "failed to parse ShortandSelf: "
@@ -125,7 +124,7 @@ llvm::Expected<ast::SelfParam> Parser::parseSelfParam() {
     }
   } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
     if (check(TokenKind::Colon, 1)) {
-      llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA = parseTypedSelf();
+      StringResult<std::shared_ptr<ast::SelfParam>> shortA = parseTypedSelf();
       if (auto e = shortA.takeError()) {
         llvm::errs() << "failed to parse TypeSelf: " << toString(std::move(e))
                      << "\n";
@@ -133,7 +132,7 @@ llvm::Expected<ast::SelfParam> Parser::parseSelfParam() {
       }
       self.setSelf(SelfParamKind::TypeSelf, *shortA);
     } else {
-      llvm::Expected<std::shared_ptr<ast::SelfParam>> shortA =
+      StringResult<std::shared_ptr<ast::SelfParam>> shortA =
           parseShorthandSelf();
       if (auto e = shortA.takeError()) {
         llvm::errs() << "failed to parse ShortandSelf: "
@@ -158,13 +157,13 @@ bool Parser::checkSelfParam() {
   return false;
 }
 
-llvm::Expected<ast::FunctionParameters> Parser::parseFunctionParameters() {
+StringResult<ast::FunctionParameters> Parser::parseFunctionParameters() {
   Location loc = getLocation();
 
   ast::FunctionParameters parameters = {loc};
 
   if (checkSelfParam()) { // FIXME OuterAttributes
-    llvm::Expected<ast::SelfParam> selfParam = parseSelfParam();
+    StringResult<ast::SelfParam> selfParam = parseSelfParam();
     if (auto e = selfParam.takeError()) {
       llvm::errs() << "failed to parse self param: " << toString(std::move(e))
                    << "\n";
@@ -196,7 +195,7 @@ llvm::Expected<ast::FunctionParameters> Parser::parseFunctionParameters() {
       } else if (check(TokenKind::Comma)) {
         assert(eat(TokenKind::Comma));
       } else {
-        llvm::Expected<ast::FunctionParam> param = parseFunctionParam();
+        StringResult<ast::FunctionParam> param = parseFunctionParam();
         if (auto e = param.takeError()) {
           llvm::errs() << "failed to parse function param: "
                        << toString(std::move(e)) << "\n";
@@ -209,10 +208,10 @@ llvm::Expected<ast::FunctionParameters> Parser::parseFunctionParameters() {
   // FIXME
 }
 
-llvm::Expected<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
+StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
   Location loc = getLocation();
 
-  llvm::Expected<std::shared_ptr<ast::patterns::PatternNoTopAlt>> pattern =
+  StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>> pattern =
       parsePatternNoTopAlt();
 
   if (auto e = pattern.takeError()) {
@@ -249,13 +248,13 @@ llvm::Expected<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
   return pat;
 }
 
-llvm::Expected<ast::FunctionParam> Parser::parseFunctionParam() {
+StringResult<ast::FunctionParam> Parser::parseFunctionParam() {
   Location loc = getLocation();
 
   std::vector<ast::OuterAttribute> outerAttributes;
 
   if (checkOuterAttribute()) {
-    llvm::Expected<std::vector<ast::OuterAttribute>> parsedOuterAttributes =
+    StringResult<std::vector<ast::OuterAttribute>> parsedOuterAttributes =
         parseOuterAttributes();
     if (auto e = parsedOuterAttributes.takeError()) {
       llvm::errs() << "failed to parse outer attributes: "
@@ -274,7 +273,7 @@ llvm::Expected<ast::FunctionParam> Parser::parseFunctionParam() {
     return param;
   } else {
     FunctionParam param = {loc, FunctionParamKind::Pattern};
-    llvm::Expected<ast::FunctionParamPattern> pattern =
+    StringResult<ast::FunctionParamPattern> pattern =
         parseFunctionParamPattern();
     if (auto e = pattern.takeError()) {
       llvm::errs() << "failed to parse pattern in function param: "
@@ -289,7 +288,7 @@ llvm::Expected<ast::FunctionParam> Parser::parseFunctionParam() {
                            "failed to parse function param");
 }
 
-llvm::Expected<ast::Abi> Parser::parseAbi() {
+StringResult<ast::Abi> Parser::parseAbi() {
   Location loc = getLocation();
 
   Abi abi = {loc};
@@ -302,10 +301,10 @@ llvm::Expected<ast::Abi> Parser::parseAbi() {
     return abi;
   }
 
-  return createStringError(inconvertibleErrorCode(), "failed to parse Abi");
+  return StringResult<ast::Abi>("failed to parse Abi");
 }
 
-llvm::Expected<ast::FunctionQualifiers> Parser::parseFunctionQualifiers() {
+StringResult<ast::FunctionQualifiers> Parser::parseFunctionQualifiers() {
   Location loc = getLocation();
 
   FunctionQualifiers qual = {loc};
@@ -340,7 +339,7 @@ llvm::Expected<ast::FunctionQualifiers> Parser::parseFunctionQualifiers() {
   return qual;
 }
 
-llvm::Expected<ast::FunctionReturnType> Parser::parseFunctionReturnType() {
+StringResult<ast::FunctionReturnType> Parser::parseFunctionReturnType() {
   Location loc = getLocation();
   FunctionReturnType t = {loc};
 
@@ -363,7 +362,7 @@ llvm::Expected<ast::FunctionReturnType> Parser::parseFunctionReturnType() {
   return t;
 }
 
-llvm::Expected<std::shared_ptr<ast::VisItem>>
+StringResult<std::shared_ptr<ast::VisItem>>
 Parser::parseFunction(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
@@ -376,7 +375,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
       checkKeyWord(KeyWordKind::KW_ASYNC) ||
       checkKeyWord(KeyWordKind::KW_UNSAFE) ||
       checkKeyWord(KeyWordKind::KW_EXTERN)) {
-    llvm::Expected<ast::FunctionQualifiers> qualifiers =
+    StringResult<ast::FunctionQualifiers> qualifiers =
         parseFunctionQualifiers();
     if (auto e = qualifiers.takeError()) {
       llvm::errs() << "failed to parse function qualifiers: "
@@ -407,7 +406,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   fun.setIdentifier(identifier);
 
   if (check(TokenKind::Lt)) {
-    llvm::Expected<ast::GenericParams> genericParams = parseGenericParams();
+    StringResult<ast::GenericParams> genericParams = parseGenericParams();
     if (auto e = genericParams.takeError()) {
       llvm::errs() << "failed to parse generic parameters: "
                    << toString(std::move(e)) << "\n";
@@ -425,7 +424,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
 
   // optional
   if (!check(TokenKind::ParenClose)) {
-    llvm::Expected<ast::FunctionParameters> parameters =
+    StringResult<ast::FunctionParameters> parameters =
         parseFunctionParameters();
     if (auto e = parameters.takeError()) {
       llvm::errs() << "failed to parse fn parameters: "
@@ -439,7 +438,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
 
   // return type
   if (check(TokenKind::RArrow)) {
-    llvm::Expected<FunctionReturnType> returnType = parseFunctionReturnType();
+    StringResult<FunctionReturnType> returnType = parseFunctionReturnType();
     if (auto e = returnType.takeError()) {
       llvm::errs() << "failed to parse fn return type: "
                    << toString(std::move(e)) << "\n";
@@ -449,7 +448,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   }
 
   if (checkKeyWord(KeyWordKind::KW_WHERE)) {
-    llvm::Expected<ast::WhereClause> whereClause = parseWhereClause();
+    StringResult<ast::WhereClause> whereClause = parseWhereClause();
     if (auto e = whereClause.takeError()) {
       llvm::errs() << "failed to parse fn where clause: "
                    << toString(std::move(e)) << "\n";

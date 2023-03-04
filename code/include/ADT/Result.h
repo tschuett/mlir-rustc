@@ -1,14 +1,17 @@
 #pragma once
 
 #include <cassert>
+#include <optional>
 #include <variant>
 
 namespace rust_compiler::adt {
 
 /// A Result type for error handling.
 /// Inspired by https://doc.rust-lang.org/std/result/enum.Result.html
+
+/// Note that std::optional is a cheap trick
 template <typename T, typename E> class Result {
-  std::variant<T, E> storage;
+  std::variant<std::optional<T>, E> storage;
 
   bool checked = false;
 
@@ -28,13 +31,13 @@ public:
   operator bool() { return isOk(); }
 
   /// Can throw
-  T getValue() { return std::get<T>(storage); }
+  T getValue() { return *std::get<std::optional<T>>(storage); }
   /// Can throw
   E getError() { return std::get<E>(storage); }
 
   bool isOk() noexcept {
     checked = true;
-    return std::holds_alternative<T>(storage);
+    return std::holds_alternative<std::optional<T>>(storage);
   }
 
   bool isErr() noexcept {
