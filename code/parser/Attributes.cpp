@@ -1,5 +1,6 @@
 #include "Parser/Parser.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <optional>
 #include <sstream>
 #include <vector>
@@ -11,7 +12,7 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<ast::OuterAttribute> Parser::parseOuterAttribute() {
+StringResult<ast::OuterAttribute> Parser::parseOuterAttribute() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
 
   Location loc = getLocation();
@@ -19,33 +20,30 @@ llvm::Expected<ast::OuterAttribute> Parser::parseOuterAttribute() {
   OuterAttribute outer = {loc};
 
   if (!check(TokenKind::Hash))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse outer attribute");
+    return StringResult<ast::OuterAttribute>("failed to parse outer attribute");
   assert(eat(TokenKind::Hash));
 
   if (!check(TokenKind::SquareOpen))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse outer attribute");
+    return StringResult<ast::OuterAttribute>("failed to parse outer attribute");
   assert(eat(TokenKind::SquareOpen));
 
-  llvm::Expected<Attr> attr = parseAttr();
-
-  if (auto e = attr.takeError()) {
-    llvm::errs() << "failed to parse attr in outer attribute: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<Attr> attr = parseAttr();
+  if (!attr) {
+    llvm::errs() << "failed to parse attr  in outer attribute: "
+                 << attr.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  outer.setAttr(*attr);
+  outer.setAttr(attr.getValue());
 
   if (!check(TokenKind::SquareClose))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse outer attribute");
+    return StringResult<ast::OuterAttribute>("failed to parse outer attribute");
   assert(eat(TokenKind::SquareClose));
 
-  return outer;
+  return StringResult<ast::OuterAttribute>(outer);
 }
 
-llvm::Expected<ast::InnerAttribute> Parser::parseInnerAttribute() {
+StringResult<ast::InnerAttribute> Parser::parseInnerAttribute() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
 
   Location loc = getLocation();
@@ -53,65 +51,67 @@ llvm::Expected<ast::InnerAttribute> Parser::parseInnerAttribute() {
   InnerAttribute inner = {loc};
 
   if (!check(TokenKind::Hash))
-    return createStringError(inconvertibleErrorCode(),
+    return StringResult<ast::InnerAttribute>(
                              "failed to parse inner attribute");
   assert(eat(TokenKind::Hash));
 
   if (!check(TokenKind::Not))
-    return createStringError(inconvertibleErrorCode(),
+    return StringResult<ast::InnerAttribute>(
                              "failed to parse inner attribute");
   assert(eat(TokenKind::Not));
 
   if (!check(TokenKind::SquareOpen))
-    return createStringError(inconvertibleErrorCode(),
+    return StringResult<ast::InnerAttribute>(
                              "failed to parse inner attribute");
   assert(eat(TokenKind::SquareOpen));
 
-  llvm::Expected<Attr> attr = parseAttr();
-
-  if (auto e = attr.takeError()) {
-    llvm::errs() << "failed to parse attr in inner attribute: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<Attr> attr = parseAttr();
+  if (!attr) {
+    llvm::errs() << "failed to parse attr  in inner attribute: "
+                 << attr.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  inner.setAttr(*attr);
+  inner.setAttr(attr.getValue());
 
   if (!check(TokenKind::SquareClose))
-    return createStringError(inconvertibleErrorCode(),
+    return StringResult<ast::InnerAttribute>(
                              "failed to parse inner attribute");
   assert(eat(TokenKind::SquareClose));
 
-  return inner;
+  return StringResult<ast::InnerAttribute>(inner);
 }
 
-llvm::Expected<ast::Attr> Parser::parseAttr() {
+StringResult<ast::Attr> Parser::parseAttr() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   Attr attr = {loc};
 
-  llvm::Expected<ast::SimplePath> path = parseSimplePath();
-  if (auto e = path.takeError()) {
-    llvm::errs() << "failed to parse simple path in Attr: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<ast::SimplePath> path = parseSimplePath();
+  if (!path) {
+    llvm::errs() << "failed to parse simple path  in attr: "
+                 << path.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  attr.setSimplePath(*path);
+  attr.setSimplePath(path.getValue());
 
   if (check(TokenKind::SquareClose)) {
   } else {
-    llvm::Expected<ast::AttrInput> attrInput = parseAttrInput();
-    if (auto e = attrInput.takeError()) {
-      llvm::errs() << "failed to parse attr input in Attr: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::AttrInput> attrInput = parseAttrInput();
+    if (!attrInput) {
+      llvm::errs() << "failed to parse attr input in attr: "
+                   << attrInput.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    attr.setAttrInput(*attrInput);
+    attr.setAttrInput(attrInput.getValue());
   }
-  return attr;
+  return StringResult<ast::Attr>(attr);
 }
 
-llvm::Expected<ast::AttrInput> Parser::parseAttrInput() {
+StringResult<ast::AttrInput> Parser::parseAttrInput() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
@@ -129,62 +129,63 @@ llvm::Expected<ast::AttrInput> Parser::parseAttrInput() {
       exit(EXIT_FAILURE);
     }
     input.setExpression(expr.getValue());
-    return input;
+    return StringResult<ast::AttrInput>(input);
   }
 
-  llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> tokenTree =
+  StringResult<std::shared_ptr<ast::DelimTokenTree>> tokenTree =
       parseDelimTokenTree();
-  if (auto e = tokenTree.takeError()) {
-    llvm::errs() << "failed to parse token tree in AttrInput: "
-                 << toString(std::move(e)) << "\n";
+  if (!tokenTree) {
+    llvm::errs() << "failed to parse delim token tree in attr input: "
+                 << tokenTree.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  input.setTokenTree(*tokenTree);
-  return input;
+  input.setTokenTree(tokenTree.getValue());
+  return StringResult<ast::AttrInput>(input);
 }
 
-llvm::Expected<std::vector<ast::OuterAttribute>>
-Parser::parseOuterAttributes() {
+StringResult<std::vector<ast::OuterAttribute>> Parser::parseOuterAttributes() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   std::vector<OuterAttribute> outer;
 
   while (true) {
     if (check(TokenKind::Eof)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse outer attributes");
+      return StringResult<std::vector<ast::OuterAttribute>>(
+          "failed to parse outer attributes");
     } else if (checkOuterAttribute()) {
-      llvm::Expected<ast::OuterAttribute> outerAttr = parseOuterAttribute();
-      if (auto e = outerAttr.takeError()) {
+      StringResult<ast::OuterAttribute> outerAttr = parseOuterAttribute();
+      if (!outerAttr) {
         llvm::errs() << "failed to parse outer attribute in outer attributes: "
-                     << toString(std::move(e)) << "\n";
+                     << outerAttr.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      outer.push_back(*outerAttr);
+      outer.push_back(outerAttr.getValue());
     } else {
-      return outer;
+      return StringResult<std::vector<ast::OuterAttribute>>(outer);
     }
   }
 }
 
-llvm::Expected<std::vector<ast::InnerAttribute>>
-Parser::parseInnerAttributes() {
+StringResult<std::vector<ast::InnerAttribute>> Parser::parseInnerAttributes() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   std::vector<InnerAttribute> inner;
 
   while (true) {
     if (check(TokenKind::Eof)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse inner attributes");
+      return StringResult<std::vector<ast::InnerAttribute>>(
+          "failed to parse inner attributes");
     } else if (checkInnerAttribute()) {
-      llvm::Expected<ast::InnerAttribute> innerAttr = parseInnerAttribute();
-      if (auto e = innerAttr.takeError()) {
+      StringResult<ast::InnerAttribute> innerAttr = parseInnerAttribute();
+      if (!innerAttr) {
         llvm::errs() << "failed to parse inner attribute in inner attributes: "
-                     << toString(std::move(e)) << "\n";
+                     << innerAttr.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      inner.push_back(*innerAttr);
+      inner.push_back(innerAttr.getValue());
     } else {
-      return inner;
+      return StringResult<std::vector<ast::InnerAttribute>>(inner);
     }
   }
 }
