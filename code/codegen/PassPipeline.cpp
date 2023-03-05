@@ -39,6 +39,7 @@ int processMLIR(mlir::MLIRContext &context,
   // Lir
 
 
+  pm.addPass(optimizer::createConvertLirToLLVMPass());
   // LLLVM Dialect
 
   // optimize
@@ -62,7 +63,7 @@ int processMLIR(mlir::MLIRContext &context,
   pm.addPass(mlir::createAsyncFuncToAsyncRuntimePass());
   pm.addPass(mlir::createAsyncToAsyncRuntimePass());
   pm.addPass(mlir::createConvertAsyncToLLVMPass());
-  pm.addPass(createLowerUtilsToLLVMPass());
+  //pm.addPass(createLowerUtilsToLLVMPass());
 
   // Finish lowering the Mir IR to the LLVM dialect.
   pm.addPass(createMirToLLVMLowering());

@@ -78,6 +78,12 @@ def ConvertMirToLirPass : Pass<"Mir2Lir", "mlir::ModuleOp"> {
   let dependentDialects = ["::LirDialect", "::mlir::arith::ArithDialect"];
 }
 
+def ConvertLirToLLVMPass : Pass<"Lir2LLVM", "mlir::ModuleOp"> {
+  let summary = "Lir -> LLVM";
+  let description = "Convert Lir to LLVM dialect";
+  let dependentDialects = ["::LirDialect", "::mlir::arith::ArithDialect"];
+}
+
 def LoopPass : Pass<"Loop", "mlir::func::FuncOp"> {
   let summary = "Fat loops";
   let description = "Fat loop pass";

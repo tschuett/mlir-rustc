@@ -44,6 +44,9 @@ namespace rust_compiler::optimizer {
 #define GEN_PASS_DECL_CONVERTMIRTOLIRPASS
 #include "Optimizer/Passes.h.inc"
 
+#define GEN_PASS_DECL_CONVERTLIRTOLLVMPASS
+#include "Optimizer/Passes.h.inc"
+
 #define GEN_PASS_DECL_LOOPPASS
 #include "Optimizer/Passes.h.inc"
 

@@ -123,3 +123,15 @@ code/include/Hir/HirOpsInterfaces.cpp.inc
 code/include/Hir/HirOpsInterfaces.h.inc
 
 tools/rustc-opt/rustc-opt
+
+
+code/include/Lir/LirAttr.cpp.inc
+code/include/Lir/LirAttr.h.inc
+code/include/Lir/LirDialect.cpp.inc
+code/include/Lir/LirDialect.h.inc
+code/include/Lir/LirEnumAttr.cpp.inc
+code/include/Lir/LirEnumAttr.h.inc
+code/include/Lir/LirOps.cpp.inc
+code/include/Lir/LirOps.h.inc
+code/include/Lir/LirTypes.cpp.inc
+code/include/Lir/LirTypes.h.inc

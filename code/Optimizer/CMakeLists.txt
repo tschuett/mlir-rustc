@@ -13,6 +13,7 @@ add_library(optimizer
            HirLICM.cpp
            ConvertHirToMir.cpp
            ConvertMirToLir.cpp
+           ConvertLirToLLVM.cpp
            Loop.cpp
            SCCPPass.cpp
            )
