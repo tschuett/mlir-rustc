@@ -54,5 +54,6 @@ target_precompile_headers(parser PRIVATE
                                  ../include/Lexer/Token.h
                                  ../include/Lexer/KeyWords.h
                                  ../include/AST/AST.h
+                                 ../include/AST/ASTVisitor.h
                                  ../include/AST/Expression.h
 )

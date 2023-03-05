@@ -44,6 +44,6 @@ enum class Precedence {
   Lowest = 0
 };
 
-int getLeftBindingPower(lexer::Token);
+Precedence getLeftBindingPower(lexer::Token);
 
 } // namespace rust_compiler::parser

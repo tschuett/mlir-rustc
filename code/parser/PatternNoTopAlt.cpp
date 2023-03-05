@@ -270,7 +270,7 @@ Parser::parsePathOrStructOrTupleStructPattern() {
   if (check(TokenKind::Lt))
     return parsePathPattern();
 
-  StringResult<std::shared_ptr<ast::PathExpression>> pathIn =
+  StringResult<std::shared_ptr<ast::Expression>> pathIn =
       parsePathInExpression();
   if (!pathIn) {
     llvm::errs() << "failed to parse path in expression in "
@@ -662,7 +662,7 @@ Parser::parseTupleStructPattern() {
   Location loc = getLocation();
   TupleStructPattern pat = {loc};
 
-  StringResult<std::shared_ptr<ast::PathExpression>> path =
+  StringResult<std::shared_ptr<ast::Expression>> path =
       parsePathInExpression();
   if (!path) {
     llvm::errs() << "failed to parse path in expression in "
@@ -788,7 +788,7 @@ Parser::parseStructPattern() {
 
   StructPattern pat = {loc};
 
-  StringResult<std::shared_ptr<ast::PathExpression>> path =
+  StringResult<std::shared_ptr<ast::Expression>> path =
       parsePathInExpression();
   if (!path) {
     llvm::errs() << "failed to parse path in expression in "

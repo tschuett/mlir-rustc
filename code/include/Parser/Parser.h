@@ -325,7 +325,7 @@ public:
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseBlockExpression();
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
-  parseExpressionWithoutBlock();
+  parseExpressionWithoutBlock(std::span<ast::OuterAttribute>, Restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseExpressionWithoutBlockExceptStruct();
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
@@ -406,7 +406,7 @@ public:
       std::shared_ptr<ast::Expression>,
       rust_compiler::parser::Restrictions restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
-      parseQualifiedPathInExpression(std::span<ast::OuterAttribute>);
+      parseQualifiedPathInExpression();
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseLiteralExpression(std::span<ast::OuterAttribute>);
 
@@ -468,7 +468,7 @@ public:
   adt::Result<std::shared_ptr<ast::Statement>, std::string>
   parseItemDeclaration();
   adt::Result<std::shared_ptr<ast::Statement>, std::string>
-  parseExpressionStatement();
+  parseExpressionStatement(std::span<ast::OuterAttribute>, Restrictions);
   adt::Result<std::shared_ptr<ast::Statement>, std::string>
   parseMacroInvocationSemiStatement();
 
@@ -520,7 +520,7 @@ public:
   parseStructExprUnit();
   adt::Result<ast::StructBase, std::string> parseStructBase();
 
-  adt::Result<std::shared_ptr<ast::PathExpression>, std::string>
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parsePathInExpression();
 
   adt::Result<ast::patterns::StructPatternElements, std::string>

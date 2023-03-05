@@ -5,21 +5,24 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/raw_ostream.h>
+
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace rust_compiler::ast::types;
 using namespace llvm;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseRawPointerType() {
   Location loc = getLocation();
   RawPointerType rawPointer = {loc};
 
   if (!check(TokenKind::Star))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse * token in raw pointer type");
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+        "failed to parse * token in raw pointer type");
   assert(eat(TokenKind::Star));
 
   if (checkKeyWord(KeyWordKind::KW_MUT)) {
@@ -27,32 +30,34 @@ Parser::parseRawPointerType() {
   } else if (checkKeyWord(KeyWordKind::KW_CONST)) {
     rawPointer.setConst();
   } else {
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+
         "failed to parse mut or const keyword in raw pointer type");
   }
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> noBounds =
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> noBounds =
       parseTypeNoBounds();
-  if (auto e = noBounds.takeError()) {
-    llvm::errs() << "failed to parse type in raw pointer type: "
-                 << toString(std::move(e)) << "\n";
+  if (!noBounds) {
+    llvm::errs() << "failed to parse type no bounds in raw pointer type: "
+                 << noBounds.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  rawPointer.setType(*noBounds);
+  rawPointer.setType(noBounds.getValue());
 
-  return std::make_shared<RawPointerType>(rawPointer);
+  return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+      std::make_shared<RawPointerType>(rawPointer));
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseReferenceType() {
   Location loc = getLocation();
   ReferenceType refType = {loc};
 
   if (!check(TokenKind::And))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse & token in reference type");
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+        "failed to parse & token in reference type");
   assert(eat(TokenKind::And));
 
   // FIXME Lifetime
@@ -62,17 +67,19 @@ Parser::parseReferenceType() {
     assert(eatKeyWord(KeyWordKind::KW_MUT));
   }
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> noBounds =
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> noBounds =
       parseTypeNoBounds();
-  if (auto e = noBounds.takeError()) {
-    llvm::errs() << "failed to parse type in reference type: "
-                 << toString(std::move(e)) << "\n";
+  if (!noBounds) {
+    llvm::errs() << "failed to parse type no bounds in reference type: "
+                 << noBounds.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  refType.setType(*noBounds);
+  refType.setType(noBounds.getValue());
 
-  return std::make_shared<ReferenceType>(refType);
+  return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+      std::make_shared<ReferenceType>(refType));
 }
 
 } // namespace rust_compiler::parser

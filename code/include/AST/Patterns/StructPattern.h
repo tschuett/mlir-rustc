@@ -10,14 +10,14 @@
 namespace rust_compiler::ast::patterns {
 
 class StructPattern : public PatternWithoutRange {
-  std::shared_ptr<PathExpression> path;
+  std::shared_ptr<Expression> path;
   std::optional<StructPatternElements> elements;
 
 public:
   StructPattern(Location loc)
       : PatternWithoutRange(loc, PatternWithoutRangeKind::StructPattern) {}
 
-  void setPath(std::shared_ptr<PathExpression> p) { path = p; }
+  void setPath(std::shared_ptr<Expression> p) { path = p; }
 
   void setElements(StructPatternElements &el) { elements = el; }
 };

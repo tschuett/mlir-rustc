@@ -2,347 +2,373 @@
 #include "AST/StructExprStruct.h"
 #include "AST/StructExprTuple.h"
 #include "AST/StructExprUnit.h"
+#include "AST/StructFields.h"
 #include "AST/StructStruct.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
-#include "llvm/Support/raw_ostream.h"
+#include "Parser/Restrictions.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace rust_compiler::ast::patterns;
 using namespace rust_compiler::lexer;
 using namespace llvm;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<ast::StructExprField> Parser::parseStructExprField() {
+StringResult<ast::StructExprField> Parser::parseStructExprField() {
   Location loc = getLocation();
   StructExprField field = {loc};
 
-  llvm::Expected<std::vector<ast::OuterAttribute>> outerAttributes =
+  StringResult<std::vector<ast::OuterAttribute>> outerAttributes =
       parseOuterAttributes();
-  if (auto e = outerAttributes.takeError()) {
-    llvm::errs() << "failed to parse outer attributes in struct expr field : "
-                 << toString(std::move(e)) << "\n";
+  if (!outerAttributes) {
+    llvm::errs()
+        << "failed to parse outer attributes in parse struct expr field: "
+        << outerAttributes.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  field.setOuterAttributes(*outerAttributes);
+  std::vector<ast::OuterAttribute> ot = outerAttributes.getValue();
+  field.setOuterAttributes(ot);
 
   if (checkIdentifier() && check(TokenKind::Colon, 1)) {
     field.setIdentifier(getToken().getIdentifier());
     if (!check(TokenKind::Colon)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse : token in struct expr field");
+      return StringResult<ast::StructExprField>(
+          "failed to parse : token in struct expr field");
     }
     assert(eat(TokenKind::Colon));
-    llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
-    if (auto e = expr.takeError()) {
-      llvm::errs() << "failed to parse expression in struct expr field : "
-                   << toString(std::move(e)) << "\n";
+    Restrictions restrictions;
+    StringResult<std::shared_ptr<ast::Expression>> expr = parseExpression({}, restrictions);
+    if (!expr) {
+      llvm::errs() << "failed to parse expression in parse struct expr field: "
+                   << expr.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    field.setExpression(*expr);
-    return field;
+    field.setExpression(expr.getValue());
+    return StringResult<ast::StructExprField>(field);
   } else if (check(TokenKind::INTEGER_LITERAL) && check(TokenKind::Colon, 1)) {
     field.setTupleIndex(getToken().getLiteral());
     // COPY & PASTE
     if (!check(TokenKind::Colon)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse : token in struct expr field");
+      return StringResult<ast::StructExprField>(
+          "failed to parse : token in struct expr field");
     }
     assert(eat(TokenKind::Colon));
-    llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
-    if (auto e = expr.takeError()) {
-      llvm::errs() << "failed to parse expression in struct expr field : "
-                   << toString(std::move(e)) << "\n";
+    Restrictions restrictions;
+    StringResult<std::shared_ptr<ast::Expression>> expr = parseExpression({}, restrictions);
+    if (!expr) {
+      llvm::errs() << "failed to parse expression in parse struct expr field: "
+                   << expr.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    field.setExpression(*expr);
-    return field;
+    field.setExpression(expr.getValue());
+    return StringResult<ast::StructExprField>(field);
   } else if (checkIdentifier()) {
     field.setIdentifier(getToken().getIdentifier());
-    return field;
+    return StringResult<ast::StructExprField>(field);
   } else {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse struct expr field");
+    return StringResult<ast::StructExprField>(
+        "failed to parse struct expr field");
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse struct expr field");
+  return StringResult<ast::StructExprField>(
+      "failed to parse struct expr field");
 }
 
-llvm::Expected<ast::StructExprFields> Parser::parseStructExprFields() {
+StringResult<ast::StructExprFields> Parser::parseStructExprFields() {
   Location loc = getLocation();
   StructExprFields fields = {loc};
 
-  llvm::Expected<StructExprField> first = parseStructExprField();
-  if (auto e = first.takeError()) {
-    llvm::errs() << "failed to parse struct expr field in struct expr fields : "
-                 << toString(std::move(e)) << "\n";
+  StringResult<StructExprField> first = parseStructExprField();
+  if (!first) {
+    llvm::errs() << "failed to parse struct expr field in struct expr fields: "
+                 << first.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  fields.addField(*first);
+  fields.addField(first.getValue());
 
   while (true) {
     if (check(TokenKind::Eof)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse struct expr fields: eof");
+      return StringResult<ast::StructExprFields>(
+          "failed to parse struct expr fields: eof");
     } else if (check(TokenKind::BraceClose)) {
-      return fields;
+      return StringResult<ast::StructExprFields>(fields);
     } else if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
       assert(eat(TokenKind::Comma));
       fields.setTrailingcomma();
-      return fields;
+      return StringResult<ast::StructExprFields>(fields);
     } else if (check(TokenKind::Comma) && check(TokenKind::DotDot, 1)) {
       assert(eat(TokenKind::Comma));
-      llvm::Expected<ast::StructBase> base = parseStructBase();
-      if (auto e = first.takeError()) {
-        llvm::errs() << "failed to parse struct base in struct expr fields : "
-                     << toString(std::move(e)) << "\n";
+      StringResult<ast::StructBase> base = parseStructBase();
+      if (!base) {
+        llvm::errs() << "failed to parse struct base in struct expr fields: "
+                     << base.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      fields.setBase(*base);
-      return fields;
+      fields.setBase(base.getValue());
+      return StringResult<ast::StructExprFields>(fields);
     } else {
       assert(eat(TokenKind::Comma));
-      llvm::Expected<StructExprField> field = parseStructExprField();
-      if (auto e = field.takeError()) {
+      StringResult<StructExprField> field = parseStructExprField();
+      if (!field) {
         llvm::errs()
-            << "failed to parse struct expr field in struct expr fields : "
-            << toString(std::move(e)) << "\n";
+            << "failed to parse struct expr field in struct expr fields: "
+            << field.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      fields.addField(*field);
+      fields.addField(field.getValue());
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse struct expr fields");
+  return StringResult<ast::StructExprFields>(
+      "failed to parse struct expr fields");
 }
 
-llvm::Expected<ast::StructBase> Parser::parseStructBase() {
+StringResult<ast::StructBase> Parser::parseStructBase() {
   Location loc = getLocation();
   StructBase base = {loc};
 
   if (!check(TokenKind::DotDot)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse .. token struct base");
+    return StringResult<ast::StructBase>(
+        "failed to parse .. token struct base");
     assert(eat(TokenKind::ParenOpen));
   }
 
-  llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
+  StringResult<std::shared_ptr<ast::Expression>> path =
       parsePathInExpression();
-
-  if (auto e = path.takeError()) {
-    llvm::errs() << "failed to parse path in expression in struct base : "
-                 << toString(std::move(e)) << "\n";
+  if (!path) {
+    llvm::errs() << "failed to parse path in expression in struct base: "
+                 << path.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  base.setPath(*path);
+  base.setPath(path.getValue());
 
-  return base;
+  return StringResult<ast::StructBase>(base);
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parseStructExprUnit() {
+StringResult<std::shared_ptr<ast::Expression>> Parser::parseStructExprUnit() {
   Location loc = getLocation();
   StructExprUnit unit = {loc};
 
-  llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
+  StringResult<std::shared_ptr<ast::Expression>> path =
       parsePathInExpression();
-  if (auto e = path.takeError()) {
-    llvm::errs() << "failed to parse path in expression in struct expr unit : "
-                 << toString(std::move(e)) << "\n";
+  if (!path) {
+    llvm::errs() << "failed to parse path in expression in struct expr unit: "
+                 << path.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  unit.setPath(*path);
+  unit.setPath(path.getValue());
 
-  return std::make_shared<StructExprUnit>(unit);
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      std::make_shared<StructExprUnit>(unit));
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseStructExprTuple() {
+StringResult<std::shared_ptr<ast::Expression>> Parser::parseStructExprTuple() {
   Location loc = getLocation();
 
   StructExprTuple tuple = {loc};
 
-  llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
+  StringResult<std::shared_ptr<ast::Expression>> path =
       parsePathInExpression();
-  if (auto e = path.takeError()) {
-    llvm::errs() << "failed to parse path in expression in struct expr tuple : "
-                 << toString(std::move(e)) << "\n";
+  if (!path) {
+    llvm::errs() << "failed to parse path in epxression in struct expr tuple: "
+                 << path.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  tuple.setPath(*path);
+  tuple.setPath(path.getValue());
 
   if (!check(TokenKind::ParenOpen))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse ( token struct expr tuple");
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        "failed to parse ( token struct expr tuple");
   assert(eat(TokenKind::ParenOpen));
 
   if (check(TokenKind::ParenClose)) {
     // empty
     assert(eat(TokenKind::ParenClose));
-    return std::make_shared<StructExprTuple>(tuple);
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        std::make_shared<StructExprTuple>(tuple));
   } else {
+    Restrictions restrictions;
     while (true) {
-      llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
-      if (auto e = expr.takeError()) {
+      StringResult<std::shared_ptr<ast::Expression>> expr =
+          parseExpression({}, restrictions);
+      if (!expr) {
         llvm::errs() << "failed to parse expression in struct expr tuple: "
-                     << toString(std::move(e)) << "\n";
+                     << expr.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      tuple.addExpression(*expr);
+      tuple.addExpression(expr.getValue());
 
       if (check(TokenKind::Eof)) {
-        return createStringError(inconvertibleErrorCode(),
-                                 "failed to parse struct expr tuple: eof");
+        return StringResult<std::shared_ptr<ast::Expression>>(
+            "failed to parse struct expr tuple: eof");
       } else if (check(TokenKind::ParenClose)) {
         assert(eat(TokenKind::ParenClose));
         // done
-        return std::make_shared<StructExprTuple>(tuple);
+        return StringResult<std::shared_ptr<ast::Expression>>(
+            std::make_shared<StructExprTuple>(tuple));
       } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
         assert(eat(TokenKind::Comma));
         assert(eat(TokenKind::ParenClose));
         tuple.setTrailingComma();
         // done
-        return std::make_shared<StructExprTuple>(tuple);
+        return StringResult<std::shared_ptr<ast::Expression>>(
+            std::make_shared<StructExprTuple>(tuple));
       } else if (check(TokenKind::Comma) && !check(TokenKind::ParenClose, 1)) {
         assert(eat(TokenKind::Comma));
-        llvm::Expected<std::shared_ptr<ast::Expression>> expr =
-            parseExpression();
-        if (auto e = expr.takeError()) {
-          llvm::errs() << "failed to parse expression in struct expr tuple: "
-                       << toString(std::move(e)) << "\n";
+        StringResult<std::shared_ptr<ast::Expression>> expr = parseExpression({}, restrictions);
+        if (!expr) {
+          llvm::errs() << "failed to expression in struct expr tuple: "
+                       << expr.getError() << "\n";
+          printFunctionStack();
           exit(EXIT_FAILURE);
         }
-        tuple.addExpression(*expr);
+        tuple.addExpression(expr.getValue());
       } else {
-        return createStringError(inconvertibleErrorCode(),
-                                 "failed to parse struct expr tuple");
+        return StringResult<std::shared_ptr<ast::Expression>>(
+            "failed to parse struct expr tuple");
       }
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse struct expr tuple");
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      "failed to parse struct expr tuple");
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseStructExprStruct() {
+StringResult<std::shared_ptr<ast::Expression>> Parser::parseStructExprStruct() {
   Location loc = getLocation();
 
   StructExprStruct str = {loc};
 
-  llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
+  StringResult<std::shared_ptr<ast::Expression>> path =
       parsePathInExpression();
-  if (auto e = path.takeError()) {
-    llvm::errs()
-        << "failed to parse path in expression in struct expr struct : "
-        << toString(std::move(e)) << "\n";
+  if (!path) {
+    llvm::errs() << "failed to parse path in expression in struct expr struct: "
+                 << path.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  str.setPath(*path);
+  str.setPath(path.getValue());
 
   if (!check(TokenKind::BraceOpen))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse { token struct expr struct");
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        "failed to parse { token struct expr struct");
   assert(eat(TokenKind::BraceOpen));
 
   if (check(TokenKind::DotDot)) {
-    llvm::Expected<ast::StructBase> base = parseStructBase();
-    if (auto e = base.takeError()) {
-      llvm::errs() << "failed to parse struct base in struct expr struct : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::StructBase> base = parseStructBase();
+    if (!base) {
+      llvm::errs() << "failed to parse struct base in struct expr struct: "
+                   << base.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    str.setBase(*base);
+    str.setBase(base.getValue());
   } else {
-    llvm::Expected<ast::StructExprFields> fields = parseStructExprFields();
-    if (auto e = fields.takeError()) {
+    StringResult<ast::StructExprFields> fields = parseStructExprFields();
+    if (!fields) {
       llvm::errs()
-          << "failed to parse struct expr fields in struct expr struct : "
-          << toString(std::move(e)) << "\n";
+          << "failed to parse struct expr fields in struct expr struct: "
+          << fields.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    str.setFields(*fields);
+    str.setFields(fields.getValue());
   }
 
-  return std::make_shared<StructExprStruct>(str);
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      std::make_shared<StructExprStruct>(str));
 }
 
-llvm::Expected<std::shared_ptr<ast::VisItem>>
+StringResult<std::shared_ptr<ast::VisItem>>
 Parser::parseStructStruct(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   class StructStruct str = {loc, vis};
 
   if (!checkKeyWord(KeyWordKind::KW_STRUCT))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse struct struct");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse struct struct");
   assert(eatKeyWord(KeyWordKind::KW_STRUCT));
 
   if (!checkIdentifier())
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse struct struct");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse struct struct");
 
   str.setName(getToken().getIdentifier());
   assert(eat(TokenKind::Identifier));
 
   if (check(TokenKind::Lt)) {
-    llvm::Expected<ast::GenericParams> params = parseGenericParams();
-    if (auto e = params.takeError()) {
-      llvm::errs() << "failed to parse generic params in struct struct : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::GenericParams> params = parseGenericParams();
+    if (!params) {
+      llvm::errs() << "failed to parse generic params in struct struct: "
+                   << params.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    str.setGenericParams(*params);
+    str.setGenericParams(params.getValue());
   }
 
   if (checkKeyWord(KeyWordKind::KW_STRUCT)) {
-    llvm::Expected<ast::WhereClause> where = parseWhereClause();
-    if (auto e = where.takeError()) {
-      llvm::errs() << "failed to parse where clause in struct struct : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::WhereClause> where = parseWhereClause();
+    if (!where) {
+      llvm::errs() << "failed to where clause in struct struct: "
+                   << where.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    str.setWhereClause(*where);
+    str.setWhereClause(where.getValue());
   }
 
   if (check(TokenKind::Semi)) {
     assert(eat(TokenKind::Semi));
-    return std::make_shared<class StructStruct>(str);
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        std::make_shared<class StructStruct>(str));
   } else if (check(TokenKind::BraceOpen)) {
     assert(eat(TokenKind::BraceOpen));
-    llvm::Expected<ast::StructFields> fields = parseStructFields();
-    if (auto e = fields.takeError()) {
-      llvm::errs() << "failed to parse struct fields in struct struct : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::StructFields> fields = parseStructFields();
+    if (!fields) {
+      llvm::errs() << "failed to parse struct fields in struct struct: "
+                   << fields.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    str.setFields(*fields);
+    str.setFields(fields.getValue());
     if (!check(TokenKind::BraceClose))
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse struct struct");
+      return StringResult<std::shared_ptr<ast::VisItem>>(
+          "failed to parse struct struct");
     assert(eat(TokenKind::BraceClose));
-    return std::make_shared<class StructStruct>(str);
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        std::make_shared<class StructStruct>(str));
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse struct struct");
+  return StringResult<std::shared_ptr<ast::VisItem>>(
+      "failed to parse struct struct");
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseStructExpression() {
+StringResult<std::shared_ptr<ast::Expression>> Parser::parseStructExpression() {
 
   CheckPoint cp = getCheckPoint();
 
   if (check(TokenKind::PathSep) || checkPathIdentSegment()) {
-    llvm::Expected<std::shared_ptr<ast::PathExpression>> path =
+    StringResult<std::shared_ptr<ast::Expression>> path =
         parsePathInExpression();
-    if (auto e = path.takeError()) {
-      llvm::errs()
-          << "failed to parse path in expression in struct expression : "
-          << toString(std::move(e)) << "\n";
+    if (!path) {
+      llvm::errs() << "failed to parse path in expession in struct expression: "
+                   << path.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-
     if (check(TokenKind::BraceOpen)) {
       recover(cp);
       return parseStructExprStruct();
@@ -358,71 +384,74 @@ Parser::parseStructExpression() {
                  << "\n";
   }
 
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse struct expression");
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      "failed to parse struct expression");
 }
 
-llvm::Expected<ast::StructFields> Parser::parseStructFields() {
+StringResult<ast::StructFields> Parser::parseStructFields() {
   Location loc = getLocation();
   StructFields sfs = {loc};
 
-  llvm::Expected<ast::StructField> sf = parseStructField();
-  if (auto e = sf.takeError()) {
-    llvm::errs() << "failed to parse struct field in struct fields : "
-                 << toString(std::move(e)) << "\n";
+  StringResult<ast::StructField> sf = parseStructField();
+  if (!sf) {
+    llvm::errs() << "failed to parse struct field in struct fields: "
+                 << sf.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  sfs.addStructField(*sf);
+  sfs.addStructField(sf.getValue());
 
   while (true) {
     if (check(TokenKind::BraceClose)) {
       // done
-      return sfs;
+      return StringResult<ast::StructFields>(sfs);
     } else if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
       // done
       assert(eat(TokenKind::Comma));
       sfs.setTrailingComma();
-      return sfs;
+      return StringResult<ast::StructFields>(sfs);
     } else if (check(TokenKind::Eof)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse struct fields");
+      return StringResult<ast::StructFields>("failed to parse struct fields");
     }
-    llvm::Expected<ast::StructField> sf = parseStructField();
-    if (auto e = sf.takeError()) {
-      llvm::errs() << "failed to parse struct field in struct fields : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::StructField> sf = parseStructField();
+    if (!sf) {
+      llvm::errs() << "failed to parse struct field in struct fields: "
+                   << sf.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    sfs.addStructField(*sf);
+    sfs.addStructField(sf.getValue());
   }
 }
 
-llvm::Expected<ast::StructField> Parser::parseStructField() {
+StringResult<ast::StructField> Parser::parseStructField() {
   Location loc = getLocation();
   StructField sf = {loc};
 
-  llvm::Expected<std::vector<ast::OuterAttribute>> outerAttributes =
+  StringResult<std::vector<ast::OuterAttribute>> outerAttributes =
       parseOuterAttributes();
-  if (auto e = outerAttributes.takeError()) {
-    llvm::errs() << "failed to parse outer attributes in struct field : "
-                 << toString(std::move(e)) << "\n";
+  if (!outerAttributes) {
+    llvm::errs() << "failed to parse outer attributes in struct field: "
+                 << outerAttributes.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  sf.setOuterAttributes(*outerAttributes);
+  std::vector<ast::OuterAttribute> ot = outerAttributes.getValue();
+  sf.setOuterAttributes(ot);
 
   if (checkKeyWord(KeyWordKind::KW_PUB)) {
-    llvm::Expected<ast::Visibility> visibility = parseVisibility();
-    if (auto e = visibility.takeError()) {
-      llvm::errs() << "failed to parse visibility in struct field : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::Visibility> visibility = parseVisibility();
+    if (!visibility) {
+      llvm::errs() << "failed to parse visibility in struct field: "
+                   << visibility.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    sf.setVisibility(*visibility);
+    sf.setVisibility(visibility.getValue());
   }
 
   if (!check(TokenKind::Identifier)) {
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<ast::StructField>(
         "failed to parse identifier token in struct field");
   }
 
@@ -432,22 +461,22 @@ llvm::Expected<ast::StructField> Parser::parseStructField() {
   assert(eat(TokenKind::Identifier));
 
   if (!check(TokenKind::Colon)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse : token in struct field");
+    return StringResult<ast::StructField>(
+        "failed to parse : token in struct field");
   }
 
   assert(eat(TokenKind::Colon));
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
-      parseType();
-  if (auto e = type.takeError()) {
-    llvm::errs() << "failed to parse type in struct field : "
-                 << toString(std::move(e)) << "\n";
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> type = parseType();
+  if (!type) {
+    llvm::errs() << "failed to parse type in struct field: " << type.getError()
+                 << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  sf.setType(*type);
+  sf.setType(type.getValue());
 
-  return sf;
+  return StringResult<ast::StructField>(sf);
 }
 
 } // namespace rust_compiler::parser

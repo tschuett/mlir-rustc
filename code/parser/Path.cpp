@@ -11,117 +11,128 @@
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
-#include "llvm/Support/Error.h"
+
+#include <llvm/Support/Error.h>
+#include <span>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace rust_compiler::ast::types;
 using namespace llvm;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<ast::SimplePathSegment> Parser::parseSimplePathSegment() {
+StringResult<ast::SimplePathSegment> Parser::parseSimplePathSegment() {
   Location loc = getLocation();
   SimplePathSegment seg = {loc};
 
   if (checkKeyWord(KeyWordKind::KW_SUPER)) {
     seg.setKeyWord(KeyWordKind::KW_SUPER);
     assert(eatKeyWord(KeyWordKind::KW_SUPER));
-    return seg;
+    return StringResult<ast::SimplePathSegment>(seg);
   } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
     seg.setKeyWord(KeyWordKind::KW_SELFVALUE);
     assert(eatKeyWord(KeyWordKind::KW_SELFVALUE));
-    return seg;
+    return StringResult<ast::SimplePathSegment>(seg);
   } else if (checkKeyWord(KeyWordKind::KW_CRATE)) {
     seg.setKeyWord(KeyWordKind::KW_CRATE);
     assert(eatKeyWord(KeyWordKind::KW_CRATE));
-    return seg;
+    return StringResult<ast::SimplePathSegment>(seg);
   } else if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE)) {
     seg.setKeyWord(KeyWordKind::KW_DOLLARCRATE);
     assert(eatKeyWord(KeyWordKind::KW_DOLLARCRATE));
-    return seg;
+    return StringResult<ast::SimplePathSegment>(seg);
   } else if (checkIdentifier()) {
     assert(eat(TokenKind::Identifier));
     seg.setIdentifier(getToken().getIdentifier());
-    return seg;
+    return StringResult<ast::SimplePathSegment>(seg);
   }
 
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse simple path segment");
+  return StringResult<ast::SimplePathSegment>(
+      "failed to parse simple path segment");
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>> Parser::parsePathExpression() {
+StringResult<std::shared_ptr<ast::Expression>>
+Parser::parsePathExpression() {
   if (check(TokenKind::Lt))
     return parseQualifiedPathInExpression();
 
   return parsePathInExpression();
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
+StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseQualifiedPathInExpression() {
   Location loc = getLocation();
 
   QualifiedPathInExpression expr = {loc};
 
-  llvm::Expected<ast::types::QualifiedPathType> path = parseQualifiedPathType();
-  if (auto e = path.takeError()) {
-    llvm::errs() << "failed to parse qualified path type in qualified path in "
-                    "expression: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<ast::types::QualifiedPathType> path = parseQualifiedPathType();
+  if (!path) {
+    llvm::errs() << "failed to parse qualified pyth type in parse qualified "
+                    "path in expression: "
+                 << path.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  expr.setType(*path);
+
+  expr.setType(path.getValue());
 
   while (true) {
     if (check(TokenKind::PathSep)) {
       assert(eat(TokenKind::PathSep));
-      llvm::Expected<ast::PathExprSegment> segment = parsePathExprSegment();
-      if (auto e = segment.takeError()) {
-        llvm::errs()
-            << "failed to parse path expr segment in qualified path in "
-               "expression: "
-            << toString(std::move(e)) << "\n";
+      StringResult<ast::PathExprSegment> segment = parsePathExprSegment();
+      if (!segment) {
+        llvm::errs() << "failed to parse path expr segment  in parse qualified "
+                        "path in expression: "
+                     << segment.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      expr.addSegment(*segment);
+      expr.addSegment(segment.getValue());
     } else if (check(TokenKind::Eof)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse qualified path in expression");
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          "failed to parse qualified path in expression");
     } else {
-      return std::make_shared<QualifiedPathInExpression>(expr);
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          std::make_shared<QualifiedPathInExpression>(expr));
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse qualified path in expression");
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      "failed to parse qualified path in expression");
 }
 
-llvm::Expected<ast::PathExprSegment> Parser::parsePathExprSegment() {
+StringResult<ast::PathExprSegment> Parser::parsePathExprSegment() {
   Location loc = getLocation();
   PathExprSegment seg = {loc};
 
-  llvm::Expected<ast::PathIdentSegment> first = parsePathIdentSegment();
-  if (auto e = first.takeError()) {
-    llvm::errs() << "failed to parse path ident segment in path expr segment: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<ast::PathIdentSegment> first = parsePathIdentSegment();
+  if (!first) {
+    llvm::errs()
+        << "failed to parse path ident segment in parse path expr segment: "
+        << first.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  seg.addIdentSegment(*first);
+  seg.addIdentSegment(first.getValue());
 
   if (check(TokenKind::PathSep) && check(TokenKind::Lt, 1)) {
     assert(eat(TokenKind::PathSep));
-    llvm::Expected<ast::GenericArgs> args = parseGenericArgs();
-    if (auto e = args.takeError()) {
-      llvm::errs() << "failed to parse generic args in path expr segment: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::GenericArgs> args = parseGenericArgs();
+    if (!args) {
+      llvm::errs()
+          << "failed to parse generic args in parse path expr segment: "
+          << first.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    seg.addGenerics(*args);
+    seg.addGenerics(args.getValue());
   }
 
-  return seg;
+  return StringResult<ast::PathExprSegment>(seg);
 }
 
-llvm::Expected<std::shared_ptr<ast::PathExpression>>
+StringResult<std::shared_ptr<ast::Expression>>
 Parser::parsePathInExpression() {
   Location loc = getLocation();
   PathInExpression path = {loc};
@@ -131,39 +142,42 @@ Parser::parsePathInExpression() {
     assert(eat(TokenKind::PathSep));
   }
 
-  llvm::Expected<ast::PathExprSegment> first = parsePathExprSegment();
-  if (auto e = first.takeError()) {
+  StringResult<ast::PathExprSegment> first = parsePathExprSegment();
+  if (!first) {
     llvm::errs() << "failed to parse path expr segment in path in expression: "
-                 << toString(std::move(e)) << "\n";
+                 << first.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  path.addSegment(*first);
+  path.addSegment(first.getValue());
 
   while (true) {
     if (check(TokenKind::Eof)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse path in expression: eof");
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          "failed to parse path in expression: eof");
     } else if (check(TokenKind::PathSep)) {
       assert(eat(TokenKind::PathSep));
-      llvm::Expected<ast::PathExprSegment> next = parsePathExprSegment();
-      if (auto e = next.takeError()) {
+      StringResult<ast::PathExprSegment> next = parsePathExprSegment();
+      if (!next) {
         llvm::errs()
             << "failed to parse path expr segment in path in expression: "
-            << toString(std::move(e)) << "\n";
+            << next.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      path.addSegment(*next);
+      path.addSegment(next.getValue());
     } else {
       // done
-      return std::make_shared<PathInExpression>(path);
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          std::make_shared<PathInExpression>(path));
     }
   }
 
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse path in expression");
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      "failed to parse path in expression");
 }
 
-llvm::Expected<ast::PathIdentSegment> Parser::parsePathIdentSegment() {
+StringResult<ast::PathIdentSegment> Parser::parsePathIdentSegment() {
   Location loc = getLocation();
 
   PathIdentSegment seg = {loc};
@@ -189,95 +203,95 @@ llvm::Expected<ast::PathIdentSegment> Parser::parsePathIdentSegment() {
     seg.setDollarCrate();
     assert(eatKeyWord(KeyWordKind::KW_DOLLARCRATE));
   } else {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse path ident segment");
+    return StringResult<ast::PathIdentSegment>(
+        "failed to parse path ident segment");
   }
 
-  return seg;
+  return StringResult<ast::PathIdentSegment>(seg);
 }
 
-llvm::Expected<ast::types::TypePathFn> Parser::parseTypePathFn() {
+StringResult<ast::types::TypePathFn> Parser::parseTypePathFn() {
   Location loc = getLocation();
 
   TypePathFn fn = {loc};
 
   if (!check(TokenKind::ParenOpen)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse ( token in type path fn");
+    return StringResult<ast::types::TypePathFn>(
+        "failed to parse ( token in type path fn");
   }
   assert(eat(TokenKind::ParenOpen));
 
   if (!check(TokenKind::ParenClose)) {
-    llvm::Expected<ast::types::TypePathFnInputs> inputs =
-        parseTypePathFnInputs();
-    if (auto e = inputs.takeError()) {
-      llvm::errs()
-          << "failed to parse type path fn inputs in type path path fn: "
-          << toString(std::move(e)) << "\n";
+    StringResult<ast::types::TypePathFnInputs> inputs = parseTypePathFnInputs();
+    if (!inputs) {
+      llvm::errs() << "failed to parse type path fn inputs in type path fn: "
+                   << inputs.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    fn.setTypePathFnInputs(*inputs);
+    fn.setTypePathFnInputs(inputs.getValue());
   }
   assert(eat(TokenKind::ParenClose));
 
   if (check(TokenKind::RArrow)) {
     assert(eat(TokenKind::RArrow));
-    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+    StringResult<std::shared_ptr<ast::types::TypeExpression>> type =
         parseType();
-    if (auto e = type.takeError()) {
-      llvm::errs() << "failed to parse type in type path path fn: "
-                   << toString(std::move(e)) << "\n";
+    if (!type) {
+      llvm::errs() << "failed to parse type in type path fn: "
+                   << type.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    fn.setType(*type);
+    fn.setType(type.getValue());
   }
 
-  return fn;
+  return StringResult<ast::types::TypePathFn>(fn);
 }
 
-llvm::Expected<ast::types::TypePathFnInputs> Parser::parseTypePathFnInputs() {
+StringResult<ast::types::TypePathFnInputs> Parser::parseTypePathFnInputs() {
   Location loc = getLocation();
 
   TypePathFnInputs inputs = {loc};
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> start =
-      parseType();
-  if (auto e = start.takeError()) {
-    llvm::errs() << "failed to parse type in type path path fn inputs: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> start = parseType();
+  if (!start) {
+    llvm::errs() << "failed to parse type in type path fn inputs: "
+                 << start.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  inputs.addType(*start);
+  inputs.addType(start.getValue());
 
   if (!check(TokenKind::Comma)) {
     // done
-    return inputs;
+    return StringResult<ast::types::TypePathFnInputs>(inputs);
   } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
     assert(eat(TokenKind::Comma));
     // done
     inputs.setTrailingComma();
-    return inputs;
+    return StringResult<ast::types::TypePathFnInputs>(inputs);
   } else {
     assert(eat(TokenKind::Comma));
 
     while (true) {
-      llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> typ =
+      StringResult<std::shared_ptr<ast::types::TypeExpression>> typ =
           parseType();
-      if (auto e = typ.takeError()) {
-        llvm::errs() << "failed to parse type in type path path fn inputs: "
-                     << toString(std::move(e)) << "\n";
+      if (!typ) {
+        llvm::errs() << "failed to parse type in type path fn inputs: "
+                     << typ.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      inputs.addType(*typ);
-
+      inputs.addType(typ.getValue());
       if (check(TokenKind::Eof)) {
         // abort
       } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose)) {
         assert(eat(TokenKind::Comma));
         inputs.setTrailingComma();
-        return inputs;
+        return StringResult<ast::types::TypePathFnInputs>(inputs);
       } else if (check(TokenKind::ParenClose)) {
-        return inputs;
+        return StringResult<ast::types::TypePathFnInputs>(inputs);
       } else {
         continue;
       }
@@ -287,15 +301,17 @@ llvm::Expected<ast::types::TypePathFnInputs> Parser::parseTypePathFnInputs() {
   // FIXEM
 }
 
-llvm::Expected<ast::types::TypePathSegment> Parser::parseTypePathSegment() {
+StringResult<ast::types::TypePathSegment> Parser::parseTypePathSegment() {
   Location loc = getLocation();
 
   TypePathSegment seg = {loc};
 
-  llvm::Expected<ast::PathIdentSegment> ident = parsePathIdentSegment();
-  if (auto e = ident.takeError()) {
-    llvm::errs() << "failed to parse path ident segment  in type path segment: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<ast::PathIdentSegment> ident = parsePathIdentSegment();
+  if (!ident) {
+    llvm::errs()
+        << "failed to parse path ident segment in parse type path segment: "
+        << ident.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
@@ -306,30 +322,34 @@ llvm::Expected<ast::types::TypePathSegment> Parser::parseTypePathSegment() {
 
   if (check(TokenKind::Lt)) {
     // GenericArgs
-    llvm::Expected<ast::GenericArgs> args = parseGenericArgs();
-    if (auto e = args.takeError()) {
-      llvm::errs() << "failed to parse generic args  in type path segment: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::GenericArgs> args = parseGenericArgs();
+    if (!args) {
+      llvm::errs()
+          << "failed to parse generic args in parse type path segment: "
+          << args.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    seg.setGenericArgs(*args);
-    return seg;
+    seg.setGenericArgs(args.getValue());
+    return StringResult<ast::types::TypePathSegment>(seg);
   } else if (check(TokenKind::ParenOpen)) {
     // TypePathFn
-    llvm::Expected<ast::types::TypePathFn> fn = parseTypePathFn();
-    if (auto e = fn.takeError()) {
-      llvm::errs() << "failed to parse type path fn  in type path segment: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::types::TypePathFn> fn = parseTypePathFn();
+    if (!fn) {
+      llvm::errs()
+          << "failed to parse type path fn in parse type path segment: "
+          << fn.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    seg.setTypePathFn(*fn);
-    return seg;
+    seg.setTypePathFn(fn.getValue());
+    return StringResult<ast::types::TypePathSegment>(seg);
   } else {
-    return seg;
+    return StringResult<ast::types::TypePathSegment>(seg);
   }
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypePath>> Parser::parseTypePath() {
+StringResult<std::shared_ptr<ast::types::TypePath>> Parser::parseTypePath() {
   Location loc = getLocation();
 
   class TypePath path = {loc};
@@ -339,34 +359,38 @@ llvm::Expected<std::shared_ptr<ast::types::TypePath>> Parser::parseTypePath() {
     assert(eat(TokenKind::PathSep));
   }
 
-  llvm::Expected<ast::types::TypePathSegment> first = parseTypePathSegment();
-  if (auto e = first.takeError()) {
-    llvm::errs() << "failed to parse type path segment  in type path: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<ast::types::TypePathSegment> first = parseTypePathSegment();
+  if (!first) {
+    llvm::errs() << "failed to parse type path segment in parse type path: "
+                 << first.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  path.addSegment(*first);
+  path.addSegment(first.getValue());
 
   while (true) {
     if (check(TokenKind::Eof)) {
     } else if (check(TokenKind::PathSep)) {
       assert(eat(TokenKind::PathSep));
-      llvm::Expected<ast::types::TypePathSegment> next = parseTypePathSegment();
-      if (auto e = next.takeError()) {
-        llvm::errs() << "failed to parse type path segment  in type path: "
-                     << toString(std::move(e)) << "\n";
+      StringResult<ast::types::TypePathSegment> next = parseTypePathSegment();
+      if (!next) {
+        llvm::errs() << "failed to parse type path segment in parse type path: "
+                     << next.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      path.addSegment(*next);
+      path.addSegment(next.getValue());
     } else {
-      return std::make_shared<ast::types::TypePath>(path);
+      return StringResult<std::shared_ptr<ast::types::TypePath>>(
+          std::make_shared<ast::types::TypePath>(path));
     }
   }
 
-  return std::make_shared<ast::types::TypePath>(path);
+  return StringResult<std::shared_ptr<ast::types::TypePath>>(
+      std::make_shared<ast::types::TypePath>(path));
 }
 
-llvm::Expected<ast::SimplePath> Parser::parseSimplePath() {
+StringResult<ast::SimplePath> Parser::parseSimplePath() {
   Location loc = getLocation();
 
   class SimplePath path {
@@ -383,7 +407,7 @@ llvm::Expected<ast::SimplePath> Parser::parseSimplePath() {
   } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
   } else if (checkKeyWord(KeyWordKind::KW_CRATE)) {
   } else if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE)) {
-    return path;
+    return StringResult<ast::SimplePath>(path);
   }
 
   if (!check(TokenKind::PathSep)) {
@@ -399,87 +423,92 @@ llvm::Expected<ast::SimplePath> Parser::parseSimplePath() {
     } else if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE)) {
     } else if (check(TokenKind::Eof)) {
     } else {
-      return path;
+      return StringResult<ast::SimplePath>(path);
     }
 
     // PathSep ??
   }
 }
 
-llvm::Expected<ast::types::QualifiedPathType> Parser::parseQualifiedPathType() {
+StringResult<ast::types::QualifiedPathType> Parser::parseQualifiedPathType() {
   Location loc = getLocation();
   QualifiedPathType qual = {loc};
 
   if (!check(TokenKind::Lt))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse < token in QualifiedPathType");
+    return StringResult<ast::types::QualifiedPathType>(
+        "failed to parse < token in QualifiedPathType");
   assert(eat(TokenKind::Lt));
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
-      parseType();
-  if (auto e = type.takeError()) {
-    llvm::errs() << "failed to parse  type  in qualified path type: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> type = parseType();
+  if (!type) {
+    llvm::errs() << "failed to parse type in parse qualified path type: "
+                 << type.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  qual.setType(*type);
+  qual.setType(type.getValue());
 
   if (checkKeyWord(KeyWordKind::KW_AS)) {
     assert(eatKeyWord(KeyWordKind::KW_AS));
-    llvm::Expected<std::shared_ptr<ast::types::TypePath>> typePath =
+    StringResult<std::shared_ptr<ast::types::TypePath>> typePath =
         parseTypePath();
-    if (auto e = typePath.takeError()) {
-      llvm::errs() << "failed to parse  type path  in qualified path type: "
-                   << toString(std::move(e)) << "\n";
+    if (!typePath) {
+      llvm::errs() << "failed to parse type path in parse qualified path type: "
+                   << typePath.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    qual.setPath(*typePath);
+    qual.setPath(typePath.getValue());
     assert(eat(TokenKind::Gt));
 
-    return qual;
+    return StringResult<ast::types::QualifiedPathType>(qual);
   }
 
-  return qual;
+  return StringResult<ast::types::QualifiedPathType>(qual);
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseQualifiedPathInType() {
   Location loc = getLocation();
   QualifiedPathInType qual = {loc};
 
-  llvm::Expected<ast::types::QualifiedPathType> seg = parseQualifiedPathType();
-  if (auto e = seg.takeError()) {
+  StringResult<ast::types::QualifiedPathType> seg = parseQualifiedPathType();
+  if (!seg) {
     llvm::errs()
-        << "failed to parse qualified path type  in qualified path in type: "
-        << toString(std::move(e)) << "\n";
+        << "failed to parse qualified path type in  qualified path in type: "
+        << seg.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  qual.setSegment(*seg);
+  qual.setSegment(seg.getValue());
 
   if (!check(TokenKind::PathSep)) {
-    return std::make_shared<QualifiedPathInType>(qual);
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+        std::make_shared<QualifiedPathInType>(qual));
   }
 
   while (true) {
     if (check(TokenKind::PathSep)) {
       assert(eat(TokenKind::PathSep));
-      llvm::Expected<ast::types::TypePathSegment> seg = parseTypePathSegment();
-      if (auto e = seg.takeError()) {
-        llvm::errs() << "failed to parse type path segment in qualified "
-                        "path in type: "
-                     << toString(std::move(e)) << "\n";
+      StringResult<ast::types::TypePathSegment> seg = parseTypePathSegment();
+      if (!seg) {
+        llvm::errs() << "failed to parse type path segment in parse qualified "
+                        "path type: "
+                     << seg.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      qual.append(*seg);
+      qual.append(seg.getValue());
     } else if (check(TokenKind::Eof)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse qualified pth in type: eof");
+      return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+          "failed to parse qualified pth in type: eof");
     } else {
-      return std::make_shared<QualifiedPathInType>(qual);
+      return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+          std::make_shared<QualifiedPathInType>(qual));
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse qualified pth in type");
+  return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+      "failed to parse qualified pth in type");
 }
 
 } // namespace rust_compiler::parser

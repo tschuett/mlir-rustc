@@ -19,7 +19,8 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 StringResult<std::shared_ptr<ast::Statement>>
-Parser::parseExpressionStatement() {
+Parser::parseExpressionStatement(std::span<ast::OuterAttribute> outer,
+                                 Restrictions restrictions) {
   Location loc = getLocation();
 
   llvm::outs() << "parseExpressionStatement"
@@ -29,7 +30,7 @@ Parser::parseExpressionStatement() {
 
   if (checkExpressionWithBlock()) {
     StringResult<std::shared_ptr<ast::Expression>> with =
-        parseExpressionWithBlock();
+        parseExpressionWithBlock(outer);
     if (!with) {
       llvm::errs() << "failed to expression with block: " << with.getError()
                    << "\n";
@@ -43,12 +44,13 @@ Parser::parseExpressionStatement() {
       assert(eat(TokenKind::Semi));
     }
 
-    return std::make_shared<ExpressionStatement>(exr);
+    return StringResult<std::shared_ptr<ast::Statement>>(
+        std::make_shared<ExpressionStatement>(exr));
   } else if (checkExpressionWithoutBlock()) {
     llvm::outs() << "parseExpressionStatement: wo"
                  << "\n";
     StringResult<std::shared_ptr<ast::Expression>> wo =
-        parseExpressionWithoutBlock();
+        parseExpressionWithoutBlock(outer, restrictions);
     if (!wo) {
       llvm::errs() << "failed to expression without block: " << wo.getError()
                    << "\n";
@@ -64,10 +66,11 @@ Parser::parseExpressionStatement() {
     }
     assert(eat(TokenKind::Semi));
 
-    return std::make_shared<ExpressionStatement>(exr);
+    return StringResult<std::shared_ptr<ast::Statement>>(
+        std::make_shared<ExpressionStatement>(exr));
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse expression statement");
+  return StringResult<std::shared_ptr<ast::Statement>>(
+      "failed to parse expression statement");
 }
 
 bool Parser::checkStatement() {
@@ -105,13 +108,13 @@ Parser::parseMacroInvocationSemiStatement() {
   MacroInvocationSemiStatement stmt = {loc};
 
   StringResult<ast::SimplePath> path = parseSimplePath();
-  if (auto e = path.takeError()) {
-    llvm::errs()
-        << "failed to parse simple path in macro invocation semi statement: "
-        << std::move(e) << "\n";
+  if (!path) {
+    llvm::errs() << "failed to simple path in macro invocation statement: "
+                 << path.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  stmt.setPath(*path);
+  stmt.setPath(path.getValue());
 
   if (!check(TokenKind::Not)) {
     llvm::errs()
@@ -123,8 +126,7 @@ Parser::parseMacroInvocationSemiStatement() {
 
   while (true) {
     if (check(TokenKind::Eof)) {
-      return createStringError(
-          inconvertibleErrorCode(),
+      return StringResult<std::shared_ptr<ast::Statement>>(
           "failed to parse macro invocation semi statement: eof");
     } else if (check(TokenKind::ParenOpen)) {
       stmt.setKind(MacroInvocationSemiStatementKind::Paren);
@@ -137,25 +139,27 @@ Parser::parseMacroInvocationSemiStatement() {
       assert(eat(TokenKind::BraceOpen));
     } else if (check(TokenKind::ParenClose) && check(TokenKind::Semi, 1)) {
       if (stmt.getKind() != MacroInvocationSemiStatementKind::Paren)
-        return createStringError(
-            inconvertibleErrorCode(),
+        return StringResult<std::shared_ptr<ast::Statement>>(
             "failed to parse macro invocation semi statement");
       assert(eat(TokenKind::ParenClose));
       assert(eat(TokenKind::Semi));
-      return std::make_shared<MacroInvocationSemiStatement>(stmt);
+      return StringResult<std::shared_ptr<ast::Statement>>(
+          std::make_shared<MacroInvocationSemiStatement>(stmt));
     } else if (check(TokenKind::SquareClose) && check(TokenKind::Semi, 1)) {
       if (stmt.getKind() != MacroInvocationSemiStatementKind::Square)
         return StringResult<std::shared_ptr<ast::Statement>>(
             "failed to parse macro invocation semi statement");
       assert(eat(TokenKind::SquareClose));
       assert(eat(TokenKind::Semi));
-      return std::make_shared<MacroInvocationSemiStatement>(stmt);
+      return StringResult<std::shared_ptr<ast::Statement>>(
+          std::make_shared<MacroInvocationSemiStatement>(stmt));
     } else if (check(TokenKind::BraceClose)) {
       if (stmt.getKind() != MacroInvocationSemiStatementKind::Brace)
         return StringResult<std::shared_ptr<ast::Statement>>(
             "failed to parse macro invocation semi statement");
       assert(eat(TokenKind::BraceClose));
-      return std::make_shared<MacroInvocationSemiStatement>(stmt);
+      return StringResult<std::shared_ptr<ast::Statement>>(
+          std::make_shared<MacroInvocationSemiStatement>(stmt));
     } else {
       StringResult<ast::TokenTree> tree = parseTokenTree();
       if (!tree) {
@@ -173,23 +177,14 @@ Parser::parseMacroInvocationSemiStatement() {
       "failed to parse macro invocation semi statement");
 }
 
-StringResult<std::shared_ptr<ast::Statement>> Parser::parseLetStatement() {
+StringResult<std::shared_ptr<ast::Statement>>
+Parser::parseLetStatement(std::span<ast::OuterAttribute> outer,
+                          Restrictions restrictions) {
   Location loc = getLocation();
 
   LetStatement let = {loc};
 
-  if (checkOuterAttribute()) {
-    StringResult<std::vector<ast::OuterAttribute>> outer =
-        parseOuterAttributes();
-    if (!outer) {
-      llvm::errs() << "failed to parse outer attributes in let statement: "
-                   << outer.getError() << "\n";
-      printFunctionStack();
-      exit(EXIT_FAILURE);
-    }
-    std::vector<OuterAttribute> ot = outer.getValue();
-    let.setOuterAttributes(ot);
-  }
+  let.setOuterAttributes(outer);
 
   if (!checkKeyWord(KeyWordKind::KW_LET)) {
     llvm::errs() << "failed to let token: "
@@ -224,7 +219,8 @@ StringResult<std::shared_ptr<ast::Statement>> Parser::parseLetStatement() {
 
   if (check(TokenKind::Eq)) {
     assert(eat(TokenKind::Eq));
-    StringResult<std::shared_ptr<ast::Expression>> expr = parseExpression();
+    StringResult<std::shared_ptr<ast::Expression>> expr =
+        parseExpression({}, restrictions);
     if (!expr) {
       llvm::errs() << "failed to parse expression in let statement: "
                    << expr.getError() << "\n";
@@ -259,7 +255,8 @@ StringResult<std::shared_ptr<ast::Statement>> Parser::parseLetStatement() {
       std::make_shared<LetStatement>(let));
 }
 
-StringResult<std::shared_ptr<ast::Statement>> Parser::parseStatement() {
+StringResult<std::shared_ptr<ast::Statement>>
+Parser::parseStatement(Restrictions restriction) {
   Location loc = getLocation();
   CheckPoint cp = getCheckPoint();
   if (checkOuterAttribute()) {
@@ -302,7 +299,7 @@ StringResult<std::shared_ptr<ast::Statement>> Parser::parseStatement() {
           std::make_shared<ItemDeclaration>(item));
     } else if (checkKeyWord(KeyWordKind::KW_LET)) {
       recover(cp);
-      return parseLetStatement();
+      return parseLetStatement(ot, restriction);
     } else {
       return StringResult<std::shared_ptr<ast::Statement>>(
           "failed to parse statement");
@@ -336,9 +333,9 @@ StringResult<std::shared_ptr<ast::Statement>> Parser::parseStatement() {
       return StringResult<std::shared_ptr<ast::Statement>>(
           std::make_shared<ItemDeclaration>(item));
     } else if (checkKeyWord(KeyWordKind::KW_LET)) {
-      return parseLetStatement();
+      return parseLetStatement(outer, restriction);
     } else if (checkExpressionWithBlock() || checkExpressionWithoutBlock()) {
-      return parseExpressionStatement();
+      return parseExpressionStatement(outer, restriction);
     } else if (check(TokenKind::PathSep) || checkSimplePathSegment()) {
       return parseMacroInvocationSemiStatement();
     } else {
