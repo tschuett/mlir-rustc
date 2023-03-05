@@ -3,12 +3,13 @@
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace rust_compiler::ast::types;
 using namespace llvm;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTypeNoBounds() {
 
   if (checkKeyWord(KeyWordKind::KW_IMPL))

@@ -20,6 +20,7 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 StringResult<ast::EnumItem> Parser::parseEnumItem() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   EnumItem item = {loc};
@@ -99,6 +100,7 @@ StringResult<ast::EnumItem> Parser::parseEnumItem() {
 
 StringResult<std::shared_ptr<ast::VisItem>>
 Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   Enumeration enu = {loc, vis};
@@ -170,6 +172,7 @@ Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
 }
 
 StringResult<ast::EnumItemTuple> Parser::parseEnumItemTuple() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   EnumItemTuple tup = {loc};
@@ -203,6 +206,7 @@ StringResult<ast::EnumItemTuple> Parser::parseEnumItemTuple() {
 }
 
 StringResult<ast::EnumItemStruct> Parser::parseEnumItemStruct() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   EnumItemStruct str = {loc};
@@ -237,6 +241,7 @@ StringResult<ast::EnumItemStruct> Parser::parseEnumItemStruct() {
 }
 
 StringResult<ast::EnumItemDiscriminant> Parser::parseEnumItemDiscriminant() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   EnumItemDiscriminant dis = {loc};
@@ -261,6 +266,7 @@ StringResult<ast::EnumItemDiscriminant> Parser::parseEnumItemDiscriminant() {
 }
 
 StringResult<ast::EnumItems> Parser::parseEnumItems() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   EnumItems items = {loc};

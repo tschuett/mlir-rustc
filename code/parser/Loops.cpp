@@ -2,13 +2,13 @@
 #include "AST/IteratorLoopExpression.h"
 #include "AST/LabelBlockExpression.h"
 #include "AST/OuterAttribute.h"
-#include "AST/OuterAttributes.h"
 #include "AST/PredicateLoopExpression.h"
 #include "AST/PredicatePatternLoopExpression.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
 
@@ -25,227 +25,237 @@ bool Parser::checkLoopLabel() {
 
 Result<std::shared_ptr<ast::Expression>, std::string>
 Parser::parseLabelBlockExpression(std::span<OuterAttribute>) {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   LabelBlockExpression bloc = {loc};
 
-  if (label)
-    bloc.setLabel(*label);
-
-  llvm::Expected<std::shared_ptr<ast::Expression>> block =
-      parseBlockExpression();
-  if (auto e = block.takeError()) {
+  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression();
+  if (!block) {
     llvm::errs()
         << "failed to parse block expression in label block expression: "
-        << toString(std::move(e)) << "\n";
+        << block.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  bloc.setBlock(*block);
+  bloc.setBlock(block.getValue());
 
-  return std::make_shared<LabelBlockExpression>(bloc);
+  return Result<std::shared_ptr<ast::Expression>, std::string>(
+      std::make_shared<LabelBlockExpression>(bloc));
 }
 
 // Result<LoopLabel, std::string> Parser::parseLoopLabel() {}
 
 Result<std::shared_ptr<ast::Expression>, std::string>
-Parser::parseLoopExpression(std::span<OuterAttribute>) {
+Parser::parseLoopExpression(std::span<OuterAttribute> outer) {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   if (checkLoopLabel()) {
     if (check(TokenKind::LIFETIME_OR_LABEL) && check(TokenKind::Colon, 1)) {
       std::string label = getToken().getStorage();
       assert(eat(TokenKind::LIFETIME_OR_LABEL));
       assert(eat(TokenKind::Colon));
 
+      // FIXME
+
       if (checkKeyWord(KeyWordKind::KW_LOOP)) {
-        return parseInfiniteLoopExpression(label);
+        return parseInfiniteLoopExpression(outer);
       } else if (checkKeyWord(KeyWordKind::KW_WHILE) &&
                  checkKeyWord(KeyWordKind::KW_LET, 1)) {
-        return parsePredicatePatternLoopExpression(label);
+        return parsePredicatePatternLoopExpression(outer);
       } else if (checkKeyWord(KeyWordKind::KW_WHILE)) {
-        return parsePredicateLoopExpression(label);
+        return parsePredicateLoopExpression(outer);
       } else if (checkKeyWord(KeyWordKind::KW_FOR)) {
-        return parseIteratorLoopExpression(label);
+        return parseIteratorLoopExpression(outer);
       } else {
-        return parseLabelBlockExpression(label);
+        return parseLabelBlockExpression(outer);
       }
-      return createStringError(
-          inconvertibleErrorCode(),
+      return Result<std::shared_ptr<ast::Expression>, std::string>(
           "failed to parse loop expression with loop label");
     }
   }
 
   if (checkKeyWord(KeyWordKind::KW_LOOP)) {
-    return parseInfiniteLoopExpression(std::nullopt);
+    return parseInfiniteLoopExpression({});
   } else if (checkKeyWord(KeyWordKind::KW_WHILE) &&
              checkKeyWord(KeyWordKind::KW_LET, 1)) {
-    return parsePredicatePatternLoopExpression(std::nullopt);
+    return parsePredicatePatternLoopExpression({});
   } else if (checkKeyWord(KeyWordKind::KW_WHILE)) {
-    return parsePredicateLoopExpression(std::nullopt);
+    return parsePredicateLoopExpression(outer);
   } else if (checkKeyWord(KeyWordKind::KW_FOR)) {
-    return parseIteratorLoopExpression(std::nullopt);
+    return parseIteratorLoopExpression(outer);
   } else {
-    return parseLabelBlockExpression(std::nullopt);
+    return parseLabelBlockExpression(outer);
   }
-  return createStringError(
-      inconvertibleErrorCode(),
+  return Result<std::shared_ptr<ast::Expression>, std::string>(
       "failed to parse loop expression without loop label");
 }
 
 Result<std::shared_ptr<ast::Expression>, std::string>
 Parser::parseIteratorLoopExpression(std::span<OuterAttribute>) {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   IteratorLoopExpression it = {loc};
-  if (label)
-    it.setLabel(*label);
 
   if (!checkKeyWord(KeyWordKind::KW_FOR))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse for keyword");
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        "failed to parse for keyword");
   assert(eatKeyWord(KeyWordKind::KW_FOR));
 
-  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> pred = parsePattern();
-  if (auto e = pred.takeError()) {
-    llvm::errs() << "failed to parse pattern in iterator loop: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<std::shared_ptr<ast::patterns::Pattern>> pred = parsePattern();
+  if (!pred) {
+    llvm::errs() << "failed to parse pattern in iterator loop expression: "
+                 << pred.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  it.setPattern(*pred);
+  it.setPattern(pred.getValue());
 
   if (!checkKeyWord(KeyWordKind::KW_IN))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse in keyword");
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        "failed to parse in keyword");
   assert(eatKeyWord(KeyWordKind::KW_IN));
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
-  if (auto e = expr.takeError()) {
-    llvm::errs() << "failed to parse expression in iterator loop: "
-                 << toString(std::move(e)) << "\n";
+  Restrictions restrictions;
+  StringResult<std::shared_ptr<ast::Expression>> expr =
+      parseExpression({}, restrictions);
+  if (!expr) {
+    llvm::errs() << "failed to parse expression in iterator loop expression: "
+                 << expr.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
+  it.setExpression(expr.getValue());
 
-  it.setExpression(*expr);
-
-  llvm::Expected<std::shared_ptr<ast::Expression>> block =
-      parseBlockExpression();
-  if (auto e = block.takeError()) {
-    llvm::errs() << "failed to parse block expression in iterator loop: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression();
+  if (!block) {
+    llvm::errs()
+        << "failed to parse block expression in iterator loop expression: "
+        << block.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
+  it.setBody(block.getValue());
 
-  it.setBody(*block);
-
-  return std::make_shared<IteratorLoopExpression>(it);
+  return Result<std::shared_ptr<ast::Expression>, std::string>(
+      std::make_shared<IteratorLoopExpression>(it));
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parsePredicatePatternLoopExpression(std::optional<std::string> label) {
+StringResult<std::shared_ptr<ast::Expression>>
+Parser::parsePredicatePatternLoopExpression(std::span<ast::OuterAttribute>) {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   PredicatePatternLoopExpression pat = {loc};
-  if (label)
-    pat.setLabel(*label);
 
   if (!checkKeyWord(KeyWordKind::KW_WHILE))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse while keyword");
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        "failed to parse while keyword");
   assert(eatKeyWord(KeyWordKind::KW_WHILE));
 
   if (!checkKeyWord(KeyWordKind::KW_LET))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse let keyword");
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        "failed to parse let keyword");
   assert(eatKeyWord(KeyWordKind::KW_LET));
 
-  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> pred = parsePattern();
-  if (auto e = pred.takeError()) {
-    llvm::errs() << "failed to parse pattern in predicate pattern loop: "
-                 << toString(std::move(e)) << "\n";
-    exit(EXIT_FAILURE);
-  }
-
-  pat.setPattern(*pred);
-
-  llvm::Expected<ast::Scrutinee> scrut = parseScrutinee();
-  if (auto e = scrut.takeError()) {
-    llvm::errs() << "failed to parse scrutinee in predicate pattern loop: "
-                 << toString(std::move(e)) << "\n";
-    exit(EXIT_FAILURE);
-  }
-
-  pat.setScrutinee(*scrut);
-
-  llvm::Expected<std::shared_ptr<ast::Expression>> block =
-      parseBlockExpression();
-  if (auto e = block.takeError()) {
+  StringResult<std::shared_ptr<ast::patterns::Pattern>> pred = parsePattern();
+  if (!pred) {
     llvm::errs()
-        << "failed to parse block expression in predicate pattern loop: "
-        << toString(std::move(e)) << "\n";
+        << "failed to parse pattern in predicate pattern loop expression: "
+        << pred.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  pat.setBody(*block);
+  pat.setPattern(pred.getValue());
 
-  return std::make_shared<PredicatePatternLoopExpression>(pat);
+  StringResult<ast::Scrutinee> scrut = parseScrutinee();
+  if (!scrut) {
+    llvm::errs()
+        << "failed to parse scrutinee in predicate pattern loop expression: "
+        << scrut.getError() << "\n";
+    printFunctionStack();
+    exit(EXIT_FAILURE);
+  }
+
+  pat.setScrutinee(scrut.getValue());
+
+  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression();
+  if (!block) {
+    llvm::errs() << "failed to parse block expression in predicate pattern "
+                    "loop expression: "
+                 << block.getError() << "\n";
+    printFunctionStack();
+    exit(EXIT_FAILURE);
+  }
+
+  pat.setBody(block.getValue());
+
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      std::make_shared<PredicatePatternLoopExpression>(pat));
 }
 
 Result<std::shared_ptr<ast::Expression>, std::string>
-Parser::parseInfiniteLoopExpression(std::optional < std::span<OuterAttribute>) {
+Parser::parseInfiniteLoopExpression(std::span<OuterAttribute>) {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   InfiniteLoopExpression infini = {loc};
 
-  if (label)
-    infini.setLabel(*label);
-
   if (!checkKeyWord(KeyWordKind::KW_LOOP))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse loop keyword");
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        "failed to parse loop keyword");
   assert(eatKeyWord(KeyWordKind::KW_LOOP));
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> block =
-      parseBlockExpression();
-  if (auto e = block.takeError()) {
-    llvm::errs() << "failed to parse block expression in infinite loop: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression();
+  if (!block) {
+    llvm::errs()
+        << "failed to parse block expression in infinite loop expression: "
+        << block.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  infini.setBody(*block);
+  infini.setBody(block.getValue());
 
-  return std::make_shared<InfiniteLoopExpression>(infini);
+  return Result<std::shared_ptr<ast::Expression>, std::string>(
+      std::make_shared<InfiniteLoopExpression>(infini));
 }
 
 Result<std::shared_ptr<ast::Expression>, std::string>
 Parser::parsePredicateLoopExpression(std::span<OuterAttribute>) {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   PredicateLoopExpression pred = {loc};
-  if (label)
-    pred.setLabel(*label);
 
   if (!checkKeyWord(KeyWordKind::KW_WHILE))
     return Result<std::shared_ptr<ast::Expression>, std::string>(
         "failed to parse while keyword");
   assert(eatKeyWord(KeyWordKind::KW_WHILE));
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
-  if (auto e = expr.takeError()) {
-    llvm::errs() << "failed to parse expression in predicate loop: "
-                 << toString(std::move(e)) << "\n";
+  Restrictions restrictions;
+  StringResult<std::shared_ptr<ast::Expression>> expr =
+      parseExpression({}, restrictions);
+  if (!expr) {
+    llvm::errs() << "failed to parse expression in predicate loop expression: "
+                 << expr.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  pred.setCondition(*expr);
+  pred.setCondition(expr.getValue());
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> block =
-      parseBlockExpression();
-  if (auto e = block.takeError()) {
-    llvm::errs() << "failed to parse block expression in predicate loop: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression();
+  if (!block) {
+    llvm::errs()
+        << "failed to parse block expression in predicate loop expression: "
+        << block.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  pred.setBody(*block);
+  pred.setBody(block.getValue());
 
   return Result<std::shared_ptr<ast::Expression>, std::string>(
       std::make_shared<PredicateLoopExpression>(pred));

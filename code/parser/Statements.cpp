@@ -2,14 +2,19 @@
 
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
+#include "Parser/Restrictions.h"
+
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace llvm;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<ast::Statements> Parser::parseStatements() {
+StringResult<ast::Statements> Parser::parseStatements() {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   Statements stmts = {loc};
@@ -17,42 +22,46 @@ llvm::Expected<ast::Statements> Parser::parseStatements() {
   llvm::outs() << "parseStatements"
                << "\n";
 
+  Restrictions restrictions;
+
   while (true) {
     llvm::outs() << Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Eof)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse statements: eof");
+      return StringResult<ast::Statements>("failed to parse statements: eof");
     } else if (check(TokenKind::BraceClose)) {
       // done
-      return stmts;
+      return StringResult<ast::Statements>(stmts);
     } else if (checkStatement()) {
       llvm::outs() << "parseStatements: statement"
                    << "\n";
-      llvm::Expected<std::shared_ptr<ast::Statement>> stmt = parseStatement();
-      if (auto e = stmt.takeError()) {
-        llvm::errs() << "failed to parse statement in statements"
-                     << std::move(e) << "\n";
+      StringResult<std::shared_ptr<ast::Statement>> stmt =
+          parseStatement(restrictions);
+      if (!stmt) {
+        llvm::errs() << "failed to parse statement in statements: "
+                     << stmt.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      stmts.addStmt(*stmt);
+      stmts.addStmt(stmt.getValue());
     } else if (checkExpressionWithoutBlock()) {
       llvm::outs() << "parseStatements: wo block"
                    << "\n";
-      llvm::Expected<std::shared_ptr<ast::Expression>> woBlock =
-          parseExpressionWithoutBlock();
-      if (auto e = woBlock.takeError()) {
-        llvm::errs() << "failed to parse expression without block in statements"
-                     << std::move(e) << "\n";
+      StringResult<std::shared_ptr<ast::Expression>> woBlock =
+        parseExpressionWithoutBlock({}, restrictions);
+      if (!woBlock) {
+        llvm::errs()
+            << "failed to parse expression without block in statements: "
+            << woBlock.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      stmts.setTrailing(*woBlock);
+      stmts.setTrailing(woBlock.getValue());
     } else {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse statements");
+      return StringResult<ast::Statements>("failed to parse statements");
     }
   }
 
-  return stmts;
+  return StringResult<ast::Statements>(stmts);
 }
 
 } // namespace rust_compiler::parser
