@@ -35,7 +35,9 @@ int processMLIR(mlir::MLIRContext &context,
 
   pm.addPass(optimizer::createLoopPass());
 
+  pm.addPass(optimizer::createConvertMirToLirPass());
   // Lir
+
 
   // LLLVM Dialect
 

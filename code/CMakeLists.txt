@@ -3,6 +3,7 @@ add_subdirectory(parser)
 add_subdirectory(codegen)
 add_subdirectory(mir)
 add_subdirectory(hir)
+add_subdirectory(Lir)
 add_subdirectory(toml)
 add_subdirectory(Basic)
 

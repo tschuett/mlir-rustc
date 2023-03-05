@@ -12,6 +12,7 @@ add_library(optimizer
            SCCP.cpp
            HirLICM.cpp
            ConvertHirToMir.cpp
+           ConvertMirToLir.cpp
            Loop.cpp
            SCCPPass.cpp
            )
@@ -21,7 +22,7 @@ target_include_directories(optimizer PRIVATE  ../include)
 add_dependencies(optimizer OptimizerPassIncGen MirOpsIncGen CombineIncGen)
 
 
-target_link_libraries(optimizer analysis hir MirDialect)
+target_link_libraries(optimizer analysis hir MirDialect LirDialect)
 
 target_precompile_headers(optimizer PRIVATE )
 

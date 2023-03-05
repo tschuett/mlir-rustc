@@ -66,10 +66,16 @@ def HirLICMPass : Pass<"SCCP", "mlir::func::FuncOp"> {
 }
 
 
-def ConvertHirToMirPass : Pass<"SCCP", "mlir::ModuleOp"> {
+def ConvertHirToMirPass : Pass<"Hir2Mir", "mlir::ModuleOp"> {
   let summary = "Hir -> Mir";
   let description = "Convert Hir to Mir dialect";
-  let dependentDialects = ["::HirDialect", "::mlir::arith::ArithDialect"];
+  let dependentDialects = ["::MirDialect", "::mlir::arith::ArithDialect"];
+}
+
+def ConvertMirToLirPass : Pass<"Mir2Lir", "mlir::ModuleOp"> {
+  let summary = "Hir -> Mir";
+  let description = "Convert Mir to Lir dialect";
+  let dependentDialects = ["::LirDialect", "::mlir::arith::ArithDialect"];
 }
 
 def LoopPass : Pass<"Loop", "mlir::func::FuncOp"> {

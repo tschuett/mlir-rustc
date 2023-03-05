@@ -28,7 +28,6 @@ add_library(ast
            BorrowExpression.cpp
            ArithmeticOrLogicalExpression.cpp
            Item.cpp
-           OuterAttributes.cpp
            IfExpression.cpp
            IfLetExpression.cpp
            Pattern.cpp
