@@ -19,11 +19,13 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <optional>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast::types;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace llvm;
 
 namespace rust_compiler::parser {
@@ -36,92 +38,94 @@ bool Parser::checkPathExprSegment(uint8_t offset) {
   return true;
 }
 
-llvm::Expected<ast::GenericArgsConst> Parser::parseGenericArgsConst() {
+StringResult<ast::GenericArgsConst> Parser::parseGenericArgsConst() {
   Location loc = getLocation();
   GenericArgsConst cons = {loc};
 
   if (check(TokenKind::BraceOpen)) {
     // block
-    llvm::Expected<std::shared_ptr<ast::Expression>> block =
+    StringResult<std::shared_ptr<ast::Expression>> block =
         parseBlockExpression();
-    if (auto e = block.takeError()) {
-      llvm::errs()
-          << "failed to parse block expression in generic args const : "
-          << toString(std::move(e)) << "\n";
+    if (!block) {
+      llvm::errs() << "failed to parse block expression in generic args const: "
+                   << block.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    cons.setBlock(*block);
+    cons.setBlock(block.getValue());
   } else if (checkLiteral()) {
     // literal
-    llvm::Expected<std::shared_ptr<ast::Expression>> literal =
-        parseLiteralExpression();
-    if (auto e = literal.takeError()) {
+    StringResult<std::shared_ptr<ast::Expression>> literal =
+        parseLiteralExpression({});
+    if (!literal) {
       llvm::errs()
-          << "failed to parse literal expression in generic args const : "
-          << toString(std::move(e)) << "\n";
+          << "failed to parse literal expression in generic args const: "
+          << literal.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    cons.setLiteral(*literal);
+    cons.setLiteral(literal.getValue());
   } else if (check(TokenKind::Minus) && checkLiteral(1)) {
     assert(eat(TokenKind::Minus));
     // minus literal
     cons.setLeadingMinus();
-    llvm::Expected<std::shared_ptr<ast::Expression>> literal =
-        parseLiteralExpression();
-    if (auto e = literal.takeError()) {
+    StringResult<std::shared_ptr<ast::Expression>> literal =
+        parseLiteralExpression({});
+    if (!literal) {
       llvm::errs()
-          << "failed to parse literal expression in generic args const : "
-          << toString(std::move(e)) << "\n";
+          << "failed to parse literal expression in generic args const: "
+          << literal.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    cons.setLiteral(*literal);
+    cons.setLiteral(literal.getValue());
   } else if (checkSimplePathSegment()) {
     // simple path segment
-    llvm::Expected<ast::SimplePathSegment> seg = parseSimplePathSegment();
-    if (auto e = seg.takeError()) {
+    StringResult<ast::SimplePathSegment> seg = parseSimplePathSegment();
+    if (!seg) {
       llvm::errs()
-          << "failed to parse simple path segment in generic args const : "
-          << toString(std::move(e)) << "\n";
+          << "failed to parse simple path segment in generic args const: "
+          << seg.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    cons.setSegment(*seg);
+    cons.setSegment(seg.getValue());
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse generic args const");
+  return StringResult<ast::GenericArgsConst>(
+      "failed to parse generic args const");
 }
 
-llvm::Expected<ast::GenericArgsBinding> Parser::parseGenericArgsBinding() {
+StringResult<ast::GenericArgsBinding> Parser::parseGenericArgsBinding() {
   Location loc = getLocation();
   GenericArgsBinding binding = {loc};
 
   if (!check(TokenKind::Identifier)) {
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<ast::GenericArgsBinding>(
         "failed to parse generic args binding: identifier");
   }
   binding.setIdentifier(getToken().getIdentifier());
   assert(eat(TokenKind::Identifier));
 
   if (!check(TokenKind::Eq)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse generic args binding: =");
+    return StringResult<ast::GenericArgsBinding>(
+        "failed to parse generic args binding: =");
   }
   assert(eat(TokenKind::Eq));
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
-      parseType();
-  if (auto e = type.takeError()) {
-    llvm::errs() << "failed to parse type expression in generic args binding : "
-                 << toString(std::move(e)) << "\n";
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> type = parseType();
+  if (!type) {
+    llvm::errs() << "failed to parse type in generic args binding: "
+                 << type.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  binding.setType(*type);
+  binding.setType(type.getValue());
 
-  return binding;
+  return StringResult<ast::GenericArgsBinding>(binding);
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>>
+StringResult<std::shared_ptr<ast::types::TypeParamBound>>
 Parser::parseLifetimeAsTypeParamBound() {
   Location loc = getLocation();
   rust_compiler::ast::types::Lifetime lf = {loc};
@@ -134,68 +138,72 @@ Parser::parseLifetimeAsTypeParamBound() {
              getToken().getStorage() == "'_") {
     lf.setLifetime(getToken().getStorage());
   } else {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse lifetime");
+    return StringResult<std::shared_ptr<ast::types::TypeParamBound>>(
+        "failed to parse lifetime");
   }
 
-  return std::make_shared<rust_compiler::ast::types::Lifetime>(lf);
+  return StringResult<std::shared_ptr<ast::types::TypeParamBound>>(
+      std::make_shared<rust_compiler::ast::types::Lifetime>(lf));
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseImplTraitType() {
   Location loc = getLocation();
   ImplTraitType trait = {loc};
 
   if (!checkKeyWord(KeyWordKind::KW_IMPL))
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
         "failed to parse impl keyworkd in impl trait type");
   assert(eatKeyWord(KeyWordKind::KW_IMPL));
 
-  llvm::Expected<ast::types::TypeParamBounds> bounds = parseTypeParamBounds();
-  if (auto e = bounds.takeError()) {
-    llvm::errs() << "failed to parse type param bounds in impl trait type : "
-                 << toString(std::move(e)) << "\n";
+  StringResult<ast::types::TypeParamBounds> bounds = parseTypeParamBounds();
+  if (!bounds) {
+    llvm::errs() << "failed to parse type param bounds in impl trait type: "
+                 << bounds.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  trait.setBounds(*bounds);
+  trait.setBounds(bounds.getValue());
 
-  return std::make_shared<ImplTraitType>(trait);
+  return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+      std::make_shared<ImplTraitType>(trait));
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseMacroInvocationType() {
   Location loc = getLocation();
   MacroInvocationType macro = {loc};
 
-  llvm::Expected<ast::SimplePath> path = parseSimplePath();
-  if (auto e = path.takeError()) {
-    llvm::errs() << "failed to parse simple path in macro invocation type : "
-                 << toString(std::move(e)) << "\n";
+  StringResult<ast::SimplePath> path = parseSimplePath();
+  if (!path) {
+    llvm::errs() << "failed to parse simple path in macro invocation type: "
+                 << path.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  macro.setPath(*path);
+  macro.setPath(path.getValue());
 
   if (!check(TokenKind::Not))
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
         "failed to parse ! token in macro invocation type");
   assert(eat(TokenKind::Not));
 
-  llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> token =
+  StringResult<std::shared_ptr<ast::DelimTokenTree>> token =
       parseDelimTokenTree();
-  if (auto e = token.takeError()) {
+  if (!token) {
     llvm::errs()
-        << "failed to parse delimt token tree in macro invocation type : "
-        << toString(std::move(e)) << "\n";
+        << "failed to parse delim token tree in macro invocation type: "
+        << token.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  macro.setTree(*token);
+  macro.setTree(token.getValue());
 
-  return std::make_shared<MacroInvocationType>(macro);
+  return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+      std::make_shared<MacroInvocationType>(macro));
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTraitObjectTypeOneBound() {
   Location loc = getLocation();
 
@@ -206,53 +214,56 @@ Parser::parseTraitObjectTypeOneBound() {
     assert(eatKeyWord(KeyWordKind::KW_DYN));
   }
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> traitBound =
+  StringResult<std::shared_ptr<ast::types::TypeParamBound>> traitBound =
       parseTraitBound();
-  if (auto e = traitBound.takeError()) {
+  if (!traitBound) {
     llvm::errs()
-        << "failed to parse trait bound in trait object type one bound : "
-        << toString(std::move(e)) << "\n";
+        << "failed to parse trait bound in trait object type one bound: "
+        << traitBound.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  bound.setBound(*traitBound);
+  bound.setBound(traitBound.getValue());
 
-  return std::make_shared<TraitObjectTypeOneBound>(bound);
+  return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+      std::make_shared<TraitObjectTypeOneBound>(bound));
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseParenthesizedType() {
   Location loc = getLocation();
   ParenthesizedType parenType = {loc};
 
   if (!check(TokenKind::ParenOpen))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse ( token in parenthesized type");
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+        "failed to parse ( token in parenthesized type");
   assert(eat(TokenKind::ParenOpen));
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
-      parseType();
-  if (auto e = type.takeError()) {
-    llvm::errs() << "failed to parse type in parenthesized type : "
-                 << toString(std::move(e)) << "\n";
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> type = parseType();
+  if (!type) {
+    llvm::errs() << "failed to parse type in parenthesized type: "
+                 << type.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  parenType.setType(*type);
+  parenType.setType(type.getValue());
 
   if (!check(TokenKind::ParenClose))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse ) token in parenthesized type");
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+        "failed to parse ) token in parenthesized type");
   assert(eat(TokenKind::ParenClose));
 
-  return std::make_shared<ParenthesizedType>(parenType);
+  return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+      std::make_shared<ParenthesizedType>(parenType));
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTupleOrParensType() {
   CheckPoint cp = getCheckPoint();
 
   if (!check(TokenKind::ParenOpen))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse ( token in tuple or parens type");
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+        "failed to parse ( token in tuple or parens type");
   assert(eat(TokenKind::ParenOpen));
 
   if (check(TokenKind::ParenClose)) {
@@ -261,11 +272,11 @@ Parser::parseTupleOrParensType() {
     return parseTupleType();
   }
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
-      parseType();
-  if (auto e = type.takeError()) {
-    llvm::errs() << "failed to parse type in tuple or parens type : "
-                 << toString(std::move(e)) << "\n";
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> type = parseType();
+  if (!type) {
+    llvm::errs() << "failed to parse type in tuple or parenthesized type: "
+                 << type.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
@@ -279,62 +290,63 @@ Parser::parseTupleOrParensType() {
   return parseTupleType();
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseImplTraitTypeOneBound() {
   Location loc = getLocation();
   ImplTraitTypeOneBound one = {loc};
 
   if (!checkKeyWord(KeyWordKind::KW_IMPL)) {
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
         "failed to parse impl keyword in impl trait type one bound");
   }
   assert(eatKeyWord(KeyWordKind::KW_IMPL));
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> bound =
+  StringResult<std::shared_ptr<ast::types::TypeParamBound>> bound =
       parseTraitBound();
-  if (auto e = bound.takeError()) {
-    llvm::errs()
-        << "failed to parse trait bound in impl trait type one bound : "
-        << toString(std::move(e)) << "\n";
+  if (!bound) {
+    llvm::errs() << "failed to parse trait bound in impl trait type one bound: "
+                 << bound.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  one.setBound(*bound);
+  one.setBound(bound.getValue());
 
-  return std::make_shared<ImplTraitTypeOneBound>(one);
+  return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+      std::make_shared<ImplTraitTypeOneBound>(one));
 }
 
-llvm::Expected<ast::types::ForLifetimes> Parser::parseForLifetimes() {
+StringResult<ast::types::ForLifetimes> Parser::parseForLifetimes() {
   Location loc = getLocation();
 
   ForLifetimes forL = {loc};
 
   if (!checkKeyWord(KeyWordKind::KW_FOR)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse for keyword in for lifetimes");
+    return StringResult<ast::types::ForLifetimes>(
+        "failed to parse for keyword in for lifetimes");
   }
   assert(eatKeyWord(KeyWordKind::KW_FOR));
 
-  llvm::Expected<ast::GenericParams> genericParams = parseGenericParams();
-  if (auto e = genericParams.takeError()) {
-    llvm::errs() << "failed to parse generic params in for lifetimes : "
-                 << toString(std::move(e)) << "\n";
+  StringResult<ast::GenericParams> genericParams = parseGenericParams();
+  if (!genericParams) {
+    llvm::errs() << "failed to parse generic params in for lifetimes: "
+                 << genericParams.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  forL.setGenericParams(*genericParams);
+  forL.setGenericParams(genericParams.getValue());
 
-  return forL;
+  return StringResult<ast::types::ForLifetimes>(forL);
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseImplType() {
   Location loc = getLocation();
 
   CheckPoint cp = getCheckPoint();
 
   if (!checkKeyWord(KeyWordKind::KW_IMPL)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse impl keyword in impl trait");
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+        "failed to parse impl keyword in impl trait");
   }
   assert(eatKeyWord(KeyWordKind::KW_IMPL));
 
@@ -351,11 +363,12 @@ Parser::parseImplType() {
     } else if (check(TokenKind::QMark) || checkKeyWord(KeyWordKind::KW_FOR) ||
                check(TokenKind::PathSep) || checkPathIdentSegment()) {
       // TraitBound
-      llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> bound =
+      StringResult<std::shared_ptr<ast::types::TypeParamBound>> bound =
           parseTraitBound();
-      if (auto e = bound.takeError()) {
-        llvm::errs() << "failed to parse trait bound in impl type : "
-                     << toString(std::move(e)) << "\n";
+      if (!bound) {
+        llvm::errs() << "failed to parse trait bound in impl type: "
+                     << bound.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
       if (check(TokenKind::Plus)) {
@@ -369,7 +382,7 @@ Parser::parseImplType() {
   }
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTraitObjectType() {
   Location loc = getLocation();
 
@@ -392,11 +405,12 @@ Parser::parseTraitObjectType() {
     } else if (check(TokenKind::QMark) || checkKeyWord(KeyWordKind::KW_FOR) ||
                check(TokenKind::PathSep) || checkPathIdentSegment()) {
       // TraitBound
-      llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> bound =
+      StringResult<std::shared_ptr<ast::types::TypeParamBound>> bound =
           parseTraitBound();
-      if (auto e = bound.takeError()) {
-        llvm::errs() << "failed to parse trait bound in impl type : "
-                     << toString(std::move(e)) << "\n";
+      if (!bound) {
+        llvm::errs() << "failed to parse trait bound in trait object type: "
+                     << bound.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
       if (check(TokenKind::Plus)) {
@@ -410,58 +424,63 @@ Parser::parseTraitObjectType() {
   }
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseArrayOrSliceType() {
   Location loc = getLocation();
 
   if (!check(TokenKind::SquareOpen)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse array or slice type");
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+        "failed to parse array or slice type");
   }
 
   assert(eat(TokenKind::SquareOpen));
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
-      parseType();
-  if (auto e = type.takeError()) {
-    llvm::errs() << "failed to parse type in array or slice type : "
-                 << toString(std::move(e)) << "\n";
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> type = parseType();
+  if (!type) {
+    llvm::errs() << "failed to parse type in array or slice type: "
+                 << type.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
   if (check(TokenKind::SquareClose)) {
     // slice type
     SliceType slice = {loc};
-    slice.setType(*type);
+    slice.setType(type.getValue());
 
-    return std::make_shared<SliceType>(slice);
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+        std::make_shared<SliceType>(slice));
   } else if (check(TokenKind::Semi)) {
     // array type
     // slice type
     ArrayType arr = {loc};
-    arr.setType(*type);
+    arr.setType(type.getValue());
 
     assert(eat(TokenKind::Semi));
 
-    llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
-    if (auto e = expr.takeError()) {
-      llvm::errs() << "failed to parse expression in array type : "
-                   << toString(std::move(e)) << "\n";
+    Restrictions restrictions;
+    StringResult<std::shared_ptr<ast::Expression>> expr =
+        parseExpression({}, restrictions);
+    if (!expr) {
+      llvm::errs() << "failed to parse expression in array or slice type: "
+                   << expr.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    arr.setExpression(*expr);
+    arr.setExpression(expr.getValue());
 
     if (check(TokenKind::SquareClose)) {
       assert(eat(TokenKind::SquareClose));
-      return std::make_shared<ArrayType>(arr);
+      return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+          std::make_shared<ArrayType>(arr));
     }
   }
 
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse array or slice type");
+  return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+      "failed to parse array or slice type");
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseInferredType() {
   Location loc = getLocation();
 
@@ -469,14 +488,15 @@ Parser::parseInferredType() {
 
   if (check(TokenKind::Underscore)) {
     assert(eat(TokenKind::Underscore));
-    return std::make_shared<InferredType>(infer);
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+        std::make_shared<InferredType>(infer));
   }
 
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse inferred type");
+  return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+      "failed to parse inferred type");
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseNeverType() {
   Location loc = getLocation();
 
@@ -484,249 +504,270 @@ Parser::parseNeverType() {
 
   if (check(TokenKind::Not)) {
     assert(eat(TokenKind::Not));
-    return std::make_shared<NeverType>(never);
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+        std::make_shared<NeverType>(never));
   }
 
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse never type");
+  return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+      "failed to parse never type");
 }
 
-llvm::Expected<ast::GenericArgs> Parser::parseGenericArgs() {
+StringResult<ast::GenericArgs> Parser::parseGenericArgs() {
   Location loc = getLocation();
   GenericArgs args = {loc};
 
   if (!check(TokenKind::Lt)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse generic args");
+    return StringResult<ast::GenericArgs>("failed to parse generic args");
   }
   assert(eat(TokenKind::Lt));
 
   if (check(TokenKind::Gt)) {
     assert(eat(TokenKind::Gt));
-    return args;
+    return StringResult<ast::GenericArgs>(args);
   }
 
   std::optional<GenericArgKind> last = std::nullopt;
 
   while (true) {
     if (check(TokenKind::Eof)) {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse generic args: eof");
+      return StringResult<ast::GenericArgs>(
+          "failed to parse generic args: eof");
     } else if (check(TokenKind::Gt)) {
       assert(eat(TokenKind::Gt));
-      return args;
+      return StringResult<ast::GenericArgs>(args);
     } else if (check(TokenKind::Comma) && check(TokenKind::Gt, 1)) {
       assert(eat(TokenKind::Comma));
       assert(eat(TokenKind::Gt));
       args.setTrailingSemi();
-      return args;
+      return StringResult<ast::GenericArgs>(args);
     } else {
-      llvm::Expected<ast::GenericArg> arg = parseGenericArg(last);
-      if (auto e = arg.takeError()) {
-        llvm::errs() << "failed to parse generic arg in generic args : "
-                     << toString(std::move(e)) << "\n";
+      StringResult<ast::GenericArg> arg = parseGenericArg(last);
+      if (!arg) {
+        llvm::errs() << "failed to parse generic arg in generic args: "
+                     << arg.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      args.addArg(*arg);
-      last = arg->getKind();
+      args.addArg(arg.getValue());
+      last = arg.getValue().getKind();
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse generic args");
+  return StringResult<ast::GenericArgs>("failed to parse generic args");
 }
 
-llvm::Expected<ast::GenericArg>
+StringResult<ast::GenericArg>
 Parser::parseGenericArg(std::optional<GenericArgKind> last) {
   Location loc = getLocation();
   GenericArg arg = {loc};
 
   if (checkLifetime()) {
     // lifetime
-    llvm::Expected<ast::Lifetime> life = parseLifetimeAsLifetime();
-    if (auto e = life.takeError()) {
-      llvm::errs() << "failed to parse lifetime in generic arg : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::Lifetime> life = parseLifetimeAsLifetime();
+    if (!life) {
+      llvm::errs() << "failed to parse lifetime as lifetime in generic arg: "
+                   << life.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    arg.setLifetime(*life);
-    return arg;
+    arg.setLifetime(life.getValue());
+    return StringResult<ast::GenericArg>(arg);
   } else if (checkIdentifier() && check(TokenKind::Eq, 1)) {
     // binding
-    llvm::Expected<ast::GenericArgsBinding> bind = parseGenericArgsBinding();
-    if (auto e = bind.takeError()) {
-      llvm::errs() << "failed to parse generic args binding in generic arg : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::GenericArgsBinding> bind = parseGenericArgsBinding();
+    if (!bind) {
+      llvm::errs() << "failed to parse generic args binding in generic arg: "
+                   << bind.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    arg.setArgsBinding(*bind);
-    return arg;
+    arg.setArgsBinding(bind.getValue());
+    return StringResult<ast::GenericArg>(arg);
   } else if (checkLiteral()) {
-    llvm::Expected<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
-    if (auto e = constArgs.takeError()) {
-      llvm::errs() << "failed to parse generic args const in generic arg : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
+    if (!constArgs) {
+      llvm::errs() << "failed to parse generic args const in generic arg: "
+                   << constArgs.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    arg.setArgsConst(*constArgs);
-    return arg;
+    arg.setArgsConst(constArgs.getValue());
+    return StringResult<ast::GenericArg>(arg);
   } else if (check(TokenKind::Minus) && checkLiteral(1)) {
-    llvm::Expected<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
-    if (auto e = constArgs.takeError()) {
-      llvm::errs() << "failed to parse generic args const in generic arg : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
+    if (!constArgs) {
+      llvm::errs() << "failed to parse generic args const in generic arg: "
+                   << constArgs.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    arg.setArgsConst(*constArgs);
-    return arg;
+    arg.setArgsConst(constArgs.getValue());
+    return StringResult<ast::GenericArg>(arg);
   } else if (check(TokenKind::BraceOpen)) {
-    llvm::Expected<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
-    if (auto e = constArgs.takeError()) {
-      llvm::errs() << "failed to parse generic args const in generic arg : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
+    if (!constArgs) {
+      llvm::errs() << "failed to parse generic args const in generic arg: "
+                   << constArgs.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    arg.setArgsConst(*constArgs);
-    return arg;
+    arg.setArgsConst(constArgs.getValue());
+    return StringResult<ast::GenericArg>(arg);
   } else if (checkSimplePathSegment() && check(TokenKind::Comma, 1)) {
-    llvm::Expected<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
-    if (auto e = constArgs.takeError()) {
-      llvm::errs() << "failed to parse generic args const in generic arg : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
+    if (!constArgs) {
+      llvm::errs() << "failed to parse generic args const in generic arg: "
+                   << constArgs.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    arg.setArgsConst(*constArgs);
-    return arg;
+    arg.setArgsConst(constArgs.getValue());
+    return StringResult<ast::GenericArg>(arg);
   } else if (checkSimplePathSegment() && check(TokenKind::Lt, 1)) {
-    llvm::Expected<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
-    if (auto e = constArgs.takeError()) {
-      llvm::errs() << "failed to parse generic args const in generic arg : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
+    if (!constArgs) {
+      llvm::errs() << "failed to parse generic args const in generic arg: "
+                   << constArgs.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    arg.setArgsConst(*constArgs);
-    return arg;
+    arg.setArgsConst(constArgs.getValue());
+    return StringResult<ast::GenericArg>(arg);
   } else {
-    llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
+    StringResult<std::shared_ptr<ast::types::TypeExpression>> type =
         parseType();
-    if (auto e = type.takeError()) {
-      llvm::errs() << "failed to parse type expression in generic arg : "
-                   << toString(std::move(e)) << "\n";
+    if (!type) {
+      llvm::errs() << "failed to parse type in generic arg: " << type.getError()
+                   << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    arg.setType(*type);
-    return arg;
+    arg.setType(type.getValue());
+    return StringResult<ast::GenericArg>(arg);
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse generic arg");
+  return StringResult<ast::GenericArg>("failed to parse generic arg");
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>>
+StringResult<std::shared_ptr<ast::types::TypeParamBound>>
 Parser::parseTypeParamBound() {
   Location loc = getLocation();
 
   if (check(TokenKind::ParenOpen)) {
-    llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> trait =
+    StringResult<std::shared_ptr<ast::types::TypeParamBound>> trait =
         parseTraitBound();
-    if (auto e = trait.takeError()) {
-      llvm::errs() << "failed to parse trait bound in type param bound : "
-                   << toString(std::move(e)) << "\n";
+    if (!trait) {
+      llvm::errs() << "failed to parse trait bound in type param bound: "
+                   << trait.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    return *trait;
+    return StringResult<std::shared_ptr<ast::types::TypeParamBound>>(
+        trait.getValue());
   } else if (check(TokenKind::QMark)) {
-    llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> trait =
+    StringResult<std::shared_ptr<ast::types::TypeParamBound>> trait =
         parseTraitBound();
-    if (auto e = trait.takeError()) {
-      llvm::errs() << "failed to parse trait bound in type param bound : "
-                   << toString(std::move(e)) << "\n";
+    if (!trait) {
+      llvm::errs() << "failed to parse trait bound in type param bound: "
+                   << trait.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    return *trait;
+    return StringResult<std::shared_ptr<ast::types::TypeParamBound>>(
+        trait.getValue());
   } else if (checkKeyWord(KeyWordKind::KW_FOR)) {
-    llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> trait =
+    StringResult<std::shared_ptr<ast::types::TypeParamBound>> trait =
         parseTraitBound();
-    if (auto e = trait.takeError()) {
-      llvm::errs() << "failed to parse trait bound in type param bound : "
-                   << toString(std::move(e)) << "\n";
+    if (!trait) {
+      llvm::errs() << "failed to parse trait bound in type param bound: "
+                   << trait.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    return *trait;
+    return StringResult<std::shared_ptr<ast::types::TypeParamBound>>(
+        trait.getValue());
   } else if (check(TokenKind::PathSep)) {
-    llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> trait =
+    StringResult<std::shared_ptr<ast::types::TypeParamBound>> trait =
         parseTraitBound();
-    if (auto e = trait.takeError()) {
-      llvm::errs() << "failed to parse trait bound in type param bound : "
-                   << toString(std::move(e)) << "\n";
+    if (!trait) {
+      llvm::errs() << "failed to parse trait bound in type param bound: "
+                   << trait.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    return *trait;
+    return StringResult<std::shared_ptr<ast::types::TypeParamBound>>(
+        trait.getValue());
   } else if (checkPathIdentSegment()) {
-    llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> trait =
+    StringResult<std::shared_ptr<ast::types::TypeParamBound>> trait =
         parseTraitBound();
-    if (auto e = trait.takeError()) {
-      llvm::errs() << "failed to parse trait bound in type param bound : "
-                   << toString(std::move(e)) << "\n";
+    if (!trait) {
+      llvm::errs() << "failed to parse trait bound in type param bound: "
+                   << trait.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    return *trait;
+    return StringResult<std::shared_ptr<ast::types::TypeParamBound>>(
+        trait.getValue());
   }
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> life =
+  StringResult<std::shared_ptr<ast::types::TypeParamBound>> life =
       parseLifetimeAsTypeParamBound();
-  if (auto e = life.takeError()) {
-    llvm::errs() << "failed to parse lifetime in type param bound : "
-                 << toString(std::move(e)) << "\n";
+  if (!life) {
+    llvm::errs()
+        << "failed to parse lifetime as type param bound in type param bound: "
+        << life.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  return *life;
+  return StringResult<std::shared_ptr<ast::types::TypeParamBound>>(
+      life.getValue());
 }
 
-llvm::Expected<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
+StringResult<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
   Location loc = getLocation();
 
   TypeParamBounds bounds = {loc};
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> first =
+  StringResult<std::shared_ptr<ast::types::TypeParamBound>> first =
       parseTypeParamBound();
-  if (auto e = first.takeError()) {
-    llvm::errs() << "failed to parse  type param bound in type param bounds :"
-                 << toString(std::move(e)) << "\n";
+  if (!first) {
+    llvm::errs() << "failed to parse type param bound in type param bound: "
+                 << first.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  bounds.addTypeParamBound(*first);
+  bounds.addTypeParamBound(first.getValue());
 
   // heuristic ; or , or { or >
   while (true) {
     if (check(TokenKind::Eof)) {
       // abort
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse type param bounds: eof");
+      return StringResult<ast::types::TypeParamBounds>(
+          "failed to parse type param bounds: eof");
     } else if (check(TokenKind::Semi) || check(TokenKind::Comma) ||
                check(TokenKind::BraceOpen) || check(TokenKind::Lt)) {
-      return bounds;
+      return StringResult<ast::types::TypeParamBounds>(bounds);
     } else if (check(TokenKind::Plus) &&
                (check(TokenKind::Semi, 1) || check(TokenKind::Comma, 1) ||
                 check(TokenKind::BraceOpen, 1) || check(TokenKind::Lt, 1))) {
       bounds.setTrailingPlus();
-      return bounds;
+      return StringResult<ast::types::TypeParamBounds>(bounds);
     } else if (check(TokenKind::Plus)) {
       assert(eat(TokenKind::Plus));
-      llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>> type =
+      StringResult<std::shared_ptr<ast::types::TypeParamBound>> type =
           parseTypeParamBound();
-      if (auto e = first.takeError()) {
-        llvm::errs()
-            << "failed to parse  type param bound in type param bounds :"
-            << toString(std::move(e)) << "\n";
+      if (!type) {
+        llvm::errs() << "failed to parse type param bound in type param bound: "
+                     << type.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      bounds.addTypeParamBound(*type);
+      bounds.addTypeParamBound(type.getValue());
     } else {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse type param bounds");
+      return StringResult<ast::types::TypeParamBounds>(
+          "failed to parse type param bounds");
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse type param bounds");
+  return StringResult<ast::types::TypeParamBounds>(
+      "failed to parse type param bounds");
 }
 
 PathKind Parser::testTypePathOrSimplePath() {
@@ -834,8 +875,7 @@ PathKind Parser::testTypePathOrSimplePath() {
 //   // }
 // }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
-Parser::parseType() {
+StringResult<std::shared_ptr<ast::types::TypeExpression>> Parser::parseType() {
 
   llvm::outs() << "parseType"
                << "\n";
@@ -879,7 +919,7 @@ Parser::parseType() {
   return parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType();
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeParamBound>>
+StringResult<std::shared_ptr<ast::types::TypeParamBound>>
 Parser::parseTraitBound() {
   Location loc = getLocation();
   TraitBound tr = {loc};
@@ -892,27 +932,29 @@ Parser::parseTraitBound() {
       tr.setHasQuestionMark();
     }
     if (checkKeyWord(KeyWordKind::KW_FOR)) {
-      llvm::Expected<ast::types::ForLifetimes> forL = parseForLifetimes();
-      if (auto e = forL.takeError()) {
-        llvm::errs() << "failed to parse ForLifetimes in trait bound : "
-                     << toString(std::move(e)) << "\n";
+      StringResult<ast::types::ForLifetimes> forL = parseForLifetimes();
+      if (!forL) {
+        llvm::errs() << "failed to parse for life times in trait bound: "
+                     << forL.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      tr.setForLifetimes(*forL);
+      tr.setForLifetimes(forL.getValue());
     }
-    llvm::Expected<std::shared_ptr<ast::types::TypePath>> path =
-        parseTypePath();
-    if (auto e = path.takeError()) {
-      llvm::errs() << "failed to parse type path in trait bound : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<std::shared_ptr<ast::types::TypePath>> path = parseTypePath();
+    if (!path) {
+      llvm::errs() << "failed to parse type path in trait bound: "
+                   << path.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    tr.setTypePath(*path);
+    tr.setTypePath(path.getValue());
     if (!check(TokenKind::ParenClose))
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse trait bound ;missing ): ");
+      return StringResult<std::shared_ptr<ast::types::TypeParamBound>>(
+          "failed to parse trait bound ;missing ): ");
     assert(eat(TokenKind::ParenClose));
-    return std::make_shared<TraitBound>(tr);
+    return StringResult<std::shared_ptr<ast::types::TypeParamBound>>(
+        std::make_shared<TraitBound>(tr));
   } else if (!check(TokenKind::ParenOpen)) {
     if (check(TokenKind::QMark)) {
       assert(eat(TokenKind::QMark));
@@ -920,31 +962,33 @@ Parser::parseTraitBound() {
     }
 
     if (checkKeyWord(KeyWordKind::KW_FOR)) {
-      llvm::Expected<ast::types::ForLifetimes> forL = parseForLifetimes();
-      if (auto e = forL.takeError()) {
-        llvm::errs() << "failed to parse ForLifetimes in trait bound : "
-                     << toString(std::move(e)) << "\n";
+      StringResult<ast::types::ForLifetimes> forL = parseForLifetimes();
+      if (!forL) {
+        llvm::errs() << "failed to parse for life times in trait bound: "
+                     << forL.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      tr.setForLifetimes(*forL);
+      tr.setForLifetimes(forL.getValue());
     }
 
-    llvm::Expected<std::shared_ptr<ast::types::TypePath>> path =
-        parseTypePath();
-    if (auto e = path.takeError()) {
-      llvm::errs() << "failed to parse type path in trait bound : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<std::shared_ptr<ast::types::TypePath>> path = parseTypePath();
+    if (!path) {
+      llvm::errs() << "failed to parse type path in trait bound: "
+                   << path.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    tr.setTypePath(*path);
-    return std::make_shared<TraitBound>(tr);
+    tr.setTypePath(path.getValue());
+    return StringResult<std::shared_ptr<ast::types::TypeParamBound>>(
+        std::make_shared<TraitBound>(tr));
   } else {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse trait bound: ");
+    return StringResult<std::shared_ptr<ast::types::TypeParamBound>>(
+        "failed to parse trait bound: ");
   }
 
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse trait bound: ");
+  return StringResult<std::shared_ptr<ast::types::TypeParamBound>>(
+      "failed to parse trait bound: ");
 }
 
 } // namespace rust_compiler::parser

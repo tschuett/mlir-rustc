@@ -5,138 +5,151 @@
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
-#include "llvm/Support/Error.h"
+#include "Parser/Restrictions.h"
+
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace llvm;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<ast::MatchArmGuard> Parser::parseMatchArmGuard() {
+StringResult<ast::MatchArmGuard> Parser::parseMatchArmGuard() {
   Location loc = getLocation();
   MatchArmGuard guard = {loc};
 
   if (!checkKeyWord(KeyWordKind::KW_IF))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse match arm guard");
+    return StringResult<ast::MatchArmGuard>("failed to parse match arm guard");
 
   assert(checkKeyWord(KeyWordKind::KW_IF));
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression();
-  if (auto e = expr.takeError()) {
+  Restrictions restrictions;
+  StringResult<std::shared_ptr<ast::Expression>> expr =
+      parseExpression({}, restrictions);
+  if (!expr) {
     llvm::errs() << "failed to parse expression in match arm guard: "
-                 << toString(std::move(e)) << "\n";
+                 << expr.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  guard.setGuard(*expr);
+  guard.setGuard(expr.getValue());
 
-  return guard;
+  return StringResult<ast::MatchArmGuard>(guard);
 }
 
-llvm::Expected<ast::MatchArm> Parser::parseMatchArm() {
+StringResult<ast::MatchArm> Parser::parseMatchArm() {
   Location loc = getLocation();
   MatchArm arm = {loc};
 
   if (checkOuterAttribute()) {
-    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+    StringResult<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
-    if (auto e = outer.takeError()) {
-      llvm::errs() << "failed to parse outer attributes in match guard: "
-                   << toString(std::move(e)) << "\n";
+    if (!outer) {
+      llvm::errs() << "failed to parse outer attributes in match arm: "
+                   << outer.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    arm.setOuterAttributes(*outer);
+    std::vector<ast::OuterAttribute> ot = outer.getValue();
+    arm.setOuterAttributes(ot);
   }
 
-  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> pattern =
+  StringResult<std::shared_ptr<ast::patterns::Pattern>> pattern =
       parsePattern();
-  if (auto e = pattern.takeError()) {
-    llvm::errs() << "failed to parse pattern in match guard: "
-                 << toString(std::move(e)) << "\n";
+  if (!pattern) {
+    llvm::errs() << "failed to parse pattern in match arm: "
+                 << pattern.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  arm.setPattern(*pattern);
+  arm.setPattern(pattern.getValue());
 
   if (checkKeyWord(KeyWordKind::KW_IF)) {
-    llvm::Expected<ast::MatchArmGuard> guard = parseMatchArmGuard();
-    if (auto e = guard.takeError()) {
-      llvm::errs() << "failed to parse match arm guard in match guard: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::MatchArmGuard> guard = parseMatchArmGuard();
+    if (!guard) {
+      llvm::errs() << "failed to parse match arm guard in match arm: "
+                   << guard.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    arm.setGuard(*guard);
+    arm.setGuard(guard.getValue());
   }
 
-  return arm;
+  return StringResult<ast::MatchArm>(arm);
 }
 
-llvm::Expected<ast::MatchArms> Parser::parseMatchArms() {
+StringResult<ast::MatchArms> Parser::parseMatchArms() {
   Location loc = getLocation();
   MatchArms arms = {loc};
 
-  llvm::Expected<ast::MatchArm> arm = parseMatchArm();
-  if (auto e = arm.takeError()) {
+  StringResult<ast::MatchArm> arm = parseMatchArm();
+  if (!arm) {
     llvm::errs() << "failed to parse match arm in match arms: "
-                 << toString(std::move(e)) << "\n";
+                 << arm.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
   if (!check(TokenKind::FatArrow)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse fat arrow in match arms");
+    return StringResult<ast::MatchArms>(
+        "failed to parse fat arrow in match arms");
   }
   assert(eat(TokenKind::FatArrow));
 
-  llvm::Expected<std::shared_ptr<Expression>> expr = parseExpression();
-  if (auto e = expr.takeError()) {
+  Restrictions restrictions;
+  StringResult<std::shared_ptr<Expression>> expr =
+      parseExpression({}, restrictions);
+  if (!expr) {
     llvm::errs() << "failed to parse expression in match arms: "
-                 << toString(std::move(e)) << "\n";
+                 << expr.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  arms.addArm(*arm, *expr);
+  arms.addArm(arm.getValue(), expr.getValue());
 
   while (true) {
     if (check(TokenKind::Eof)) {
       // abort
-        return createStringError(inconvertibleErrorCode(),
-                                 "failed to parse match arms: eof");
+      return StringResult<ast::MatchArms>("failed to parse match arms: eof");
     } else if (check(TokenKind::BraceClose)) {
       // done
-      return arms;
+      return StringResult<ast::MatchArms>(arms);
     } else if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
       // done
-      return arms;
+      return StringResult<ast::MatchArms>(arms);
     } else {
-      llvm::Expected<ast::MatchArm> arm = parseMatchArm();
-      if (auto e = arm.takeError()) {
+      StringResult<ast::MatchArm> arm = parseMatchArm();
+      if (!arm) {
         llvm::errs() << "failed to parse match arm in match arms: "
-                     << toString(std::move(e)) << "\n";
+                     << arm.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-
       if (!check(TokenKind::FatArrow)) {
-        return createStringError(inconvertibleErrorCode(),
-                                 "failed to parse fat arrow in match arms");
+        return StringResult<ast::MatchArms>(
+            "failed to parse fat arrow in match arms");
       }
       assert(eat(TokenKind::FatArrow));
 
-      llvm::Expected<std::shared_ptr<Expression>> expr = parseExpression();
-      if (auto e = expr.takeError()) {
+      Restrictions restrictions;
+      StringResult<std::shared_ptr<Expression>> expr =
+          parseExpression({}, restrictions);
+      if (!expr) {
         llvm::errs() << "failed to parse expression in match arms: "
-                     << toString(std::move(e)) << "\n";
+                     << expr.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
+      arms.addArm(arm.getValue(), expr.getValue());
 
-      arms.addArm(*arm, *expr);
-
-      if ((*expr)->getExpressionKind() ==
+      if ((expr.getValue())->getExpressionKind() ==
           ExpressionKind::ExpressionWithoutBlock) {
         if (!check(TokenKind::Comma)) {
-          return createStringError(
-              inconvertibleErrorCode(),
+          return StringResult<ast::MatchArms>(
               "failed to parse , after parse expression without "
               "block in match arms");
         }
@@ -147,69 +160,73 @@ llvm::Expected<ast::MatchArms> Parser::parseMatchArms() {
       }
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse match arms");
+  return StringResult<ast::MatchArms>("failed to parse match arms");
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseMatchExpression() {
+StringResult<std::shared_ptr<ast::Expression>>
+Parser::parseMatchExpression(std::span<ast::OuterAttribute>) {
   Location loc = getLocation();
   MatchExpression ma = {loc};
 
   if (checkKeyWord(KeyWordKind::KW_MATCH)) {
     assert(eatKeyWord(KeyWordKind::KW_MATCH));
   } else {
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<std::shared_ptr<ast::Expression>>(
         "failed to parse match keyword in match expression");
   }
 
-  llvm::Expected<ast::Scrutinee> scrutinee = parseScrutinee();
-  if (auto e = scrutinee.takeError()) {
+  StringResult<ast::Scrutinee> scrutinee = parseScrutinee();
+  if (!scrutinee) {
     llvm::errs() << "failed to parse scrutinee in match expression: "
-                 << toString(std::move(e)) << "\n";
+                 << scrutinee.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  ma.setScrutinee(*scrutinee);
+  ma.setScrutinee(scrutinee.getValue());
 
   if (check(TokenKind::BraceOpen)) {
     assert(eat(TokenKind::BraceOpen));
   } else {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse { token in match expression");
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        "failed to parse { token in match expression");
   }
 
   if (checkInnerAttribute()) {
-    llvm::Expected<std::vector<ast::InnerAttribute>> inner =
+    StringResult<std::vector<ast::InnerAttribute>> inner =
         parseInnerAttributes();
-    if (auto e = inner.takeError()) {
-      llvm::errs() << "failed to parse inner attributes in match expression: "
-                   << toString(std::move(e)) << "\n";
+    if (!inner) {
+      llvm::errs() << "failed to parse inner attribute in match expression: "
+                   << inner.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    ma.setInnerAttributes(*inner);
+    std::vector<ast::InnerAttribute> in = inner.getValue();
+    ma.setInnerAttributes(in);
   }
 
   if (check(TokenKind::BraceClose)) {
     assert(eat(TokenKind::BraceClose));
-    return std::make_shared<MatchExpression>(ma);
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        std::make_shared<MatchExpression>(ma));
   }
 
-  llvm::Expected<ast::MatchArms> arms = parseMatchArms();
-  if (auto e = arms.takeError()) {
+  StringResult<ast::MatchArms> arms = parseMatchArms();
+  if (!arms) {
     llvm::errs() << "failed to parse match arms in match expression: "
-                 << toString(std::move(e)) << "\n";
+                 << arms.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  ma.setMatchArms(*arms);
+  ma.setMatchArms(arms.getValue());
 
   if (check(TokenKind::BraceClose)) {
     assert(eat(TokenKind::BraceClose));
-    return std::make_shared<MatchExpression>(ma);
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        std::make_shared<MatchExpression>(ma));
   }
 
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse match expression");
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      "failed to parse match expression");
 }
 
 } // namespace rust_compiler::parser

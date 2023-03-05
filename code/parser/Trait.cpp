@@ -1,101 +1,111 @@
 #include "AST/Trait.h"
 
-#include "AST/TraitImpl.h"
+#include "ADT/Result.h"
 #include "AST/InherentImpl.h"
+#include "AST/TraitImpl.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/raw_ostream.h>
+
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace llvm;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<std::shared_ptr<ast::VisItem>>
+StringResult<std::shared_ptr<ast::VisItem>>
 Parser::parseInherentImpl(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   InherentImpl impl = {loc, vis};
 
   if (!checkKeyWord(KeyWordKind::KW_IMPL)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse impl keyword in inherent impl");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse impl keyword in inherent impl");
   }
   assert(eatKeyWord(KeyWordKind::KW_IMPL));
 
   if (check(TokenKind::Lt)) {
-    llvm::Expected<ast::GenericParams> generic = parseGenericParams();
-    if (auto e = generic.takeError()) {
-      llvm::errs() << "failed to parse generic params in trait impl: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::GenericParams> generic = parseGenericParams();
+    if (!generic) {
+      llvm::errs() << "failed to parse generic params in inherent impl: "
+                   << generic.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    impl.setGenericParams(*generic);
+    impl.setGenericParams(generic.getValue());
   }
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
-      parseType();
-  if (auto e = type.takeError()) {
-    llvm::errs() << "failed to parse type in inherent impl: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> type = parseType();
+  if (!type) {
+    llvm::errs() << "failed to parse type in inherent impl: " << type.getError()
+                 << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  impl.setType(*type);
+  impl.setType(type.getValue());
 
   if (checkKeyWord(KeyWordKind::KW_WHERE)) {
-    llvm::Expected<ast::WhereClause> where = parseWhereClause();
-    if (auto e = where.takeError()) {
+    StringResult<ast::WhereClause> where = parseWhereClause();
+    if (!where) {
       llvm::errs() << "failed to parse where clause in inherent impl: "
-                   << toString(std::move(e)) << "\n";
+                   << where.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    impl.setWhereClause(*where);
+    impl.setWhereClause(where.getValue());
   }
 
   if (!check(TokenKind::BraceOpen)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse { token in inherent impl");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse { token in inherent impl");
   }
   assert(eat(TokenKind::BraceOpen));
 
   if (checkInnerAttribute()) {
-    llvm::Expected<std::vector<ast::InnerAttribute>> inner =
+    StringResult<std::vector<ast::InnerAttribute>> inner =
         parseInnerAttributes();
-    if (auto e = inner.takeError()) {
+    if (!inner) {
       llvm::errs() << "failed to parse inner attributes in inherent impl: "
-                   << toString(std::move(e)) << "\n";
+                   << inner.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    impl.setInnerAttributes(*inner);
+    std::vector<ast::InnerAttribute> in = inner.getValue();
+    impl.setInnerAttributes(in);
   }
 
   while (true) {
     if (check(TokenKind::Eof)) {
       // error
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse inherent impl: eof");
+      return StringResult<std::shared_ptr<ast::VisItem>>(
+          "failed to parse inherent impl: eof");
     } else if (check(TokenKind::BraceClose)) {
       // done
-      return std::make_shared<InherentImpl>(impl);
+      return StringResult<std::shared_ptr<ast::VisItem>>(
+          std::make_shared<InherentImpl>(impl));
     } else if (!check(TokenKind::BraceClose)) {
       // asso without check
-      llvm::Expected<ast::AssociatedItem> asso = parseAssociatedItem();
-      if (auto e = asso.takeError()) {
+      StringResult<ast::AssociatedItem> asso = parseAssociatedItem();
+      if (!asso) {
         llvm::errs() << "failed to parse associated item in inherent impl: "
-                     << toString(std::move(e)) << "\n";
+                     << asso.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      impl.addAssociatedItem(*asso);
+      impl.addAssociatedItem(asso.getValue());
     } else {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse inherent impl");
+      return StringResult<std::shared_ptr<ast::VisItem>>(
+          "failed to parse inherent impl");
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse inherent impl");
+  return StringResult<std::shared_ptr<ast::VisItem>>(
+      "failed to parse inherent impl");
 }
 
-llvm::Expected<std::shared_ptr<ast::VisItem>>
+StringResult<std::shared_ptr<ast::VisItem>>
 Parser::parseTraitImpl(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   TraitImpl impl = {loc, vis};
@@ -106,19 +116,20 @@ Parser::parseTraitImpl(std::optional<ast::Visibility> vis) {
   }
 
   if (!checkKeyWord(KeyWordKind::KW_IMPL)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse impl keyword in trait impl");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse impl keyword in trait impl");
   }
   assert(eatKeyWord(KeyWordKind::KW_IMPL));
 
   if (check(TokenKind::Lt)) {
-    llvm::Expected<ast::GenericParams> generic = parseGenericParams();
-    if (auto e = generic.takeError()) {
-      llvm::errs() << "failed to parse generic params in trait impl: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::GenericParams> generic = parseGenericParams();
+    if (!generic) {
+      llvm::errs() << "failed to parse generic params item in trait impl: "
+                   << generic.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    impl.setGenericParams(*generic);
+    impl.setGenericParams(generic.getValue());
   }
 
   if (check(TokenKind::Not)) {
@@ -126,84 +137,90 @@ Parser::parseTraitImpl(std::optional<ast::Visibility> vis) {
     impl.setNot();
   }
 
-  llvm::Expected<std::shared_ptr<ast::types::TypePath>> typePath =
+  StringResult<std::shared_ptr<ast::types::TypePath>> typePath =
       parseTypePath();
-  if (auto e = typePath.takeError()) {
-    llvm::errs() << "failed to parse type path in trait impl: "
-                 << toString(std::move(e)) << "\n";
+  if (!typePath) {
+    llvm::errs() << "failed to parse type item in trait impl: "
+                 << typePath.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  impl.setTypePath(*typePath);
+  impl.setTypePath(typePath.getValue());
 
   if (!checkKeyWord(KeyWordKind::KW_FOR)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse for keyword in trait impl");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse for keyword in trait impl");
   }
   assert(eatKeyWord(KeyWordKind::KW_FOR));
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> type =
-      parseType();
-  if (auto e = type.takeError()) {
-    llvm::errs() << "failed to parse type in trait impl: "
-                 << toString(std::move(e)) << "\n";
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> type = parseType();
+  if (!type) {
+    llvm::errs() << "failed to parse type in trait impl: " << type.getError()
+                 << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  impl.setType(*type);
+  impl.setType(type.getValue());
 
   if (checkKeyWord(KeyWordKind::KW_WHERE)) {
-    llvm::Expected<ast::WhereClause> where = parseWhereClause();
-    if (auto e = where.takeError()) {
+    StringResult<ast::WhereClause> where = parseWhereClause();
+    if (!where) {
       llvm::errs() << "failed to parse where clause in trait impl: "
-                   << toString(std::move(e)) << "\n";
+                   << where.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    impl.setWhereClause(*where);
+    impl.setWhereClause(where.getValue());
   }
 
   if (!check(TokenKind::BraceOpen)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse { token in trait impl");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse { token in trait impl");
   }
   assert(eat(TokenKind::BraceOpen));
 
   if (checkInnerAttribute()) {
-    llvm::Expected<std::vector<ast::InnerAttribute>> inner =
+    StringResult<std::vector<ast::InnerAttribute>> inner =
         parseInnerAttributes();
-    if (auto e = inner.takeError()) {
-      llvm::errs() << "failed to parse inner attributes in trait impl: "
-                   << toString(std::move(e)) << "\n";
+    if (!inner) {
+      llvm::errs() << "failed to parse inner attribute in trait impl: "
+                   << inner.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    impl.setInnerAttributes(*inner);
+    std::vector<ast::InnerAttribute> in = inner.getValue();
+    impl.setInnerAttributes(in);
   }
 
   while (true) {
     if (check(TokenKind::Eof)) {
       // error
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse trait impl: eof");
+      return StringResult<std::shared_ptr<ast::VisItem>>(
+          "failed to parse trait impl: eof");
     } else if (check(TokenKind::BraceClose)) {
       // done
-      return std::make_shared<TraitImpl>(impl);
+      return StringResult<std::shared_ptr<ast::VisItem>>(
+          std::make_shared<TraitImpl>(impl));
     } else if (!check(TokenKind::BraceClose)) {
       // asso without check
-      llvm::Expected<ast::AssociatedItem> asso = parseAssociatedItem();
-      if (auto e = asso.takeError()) {
+      StringResult<ast::AssociatedItem> asso = parseAssociatedItem();
+      if (!asso) {
         llvm::errs() << "failed to parse associated item in trait impl: "
-                     << toString(std::move(e)) << "\n";
+                     << asso.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      impl.addAssociatedItem(*asso);
+      impl.addAssociatedItem(asso.getValue());
     } else {
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse trait impl");
+      return StringResult<std::shared_ptr<ast::VisItem>>(
+          "failed to parse trait impl");
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse trait impl");
+  return StringResult<std::shared_ptr<ast::VisItem>>(
+      "failed to parse trait impl");
 }
 
-llvm::Expected<std::shared_ptr<ast::VisItem>>
+StringResult<std::shared_ptr<ast::VisItem>>
 Parser::parseTrait(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
@@ -215,26 +232,27 @@ Parser::parseTrait(std::optional<ast::Visibility> vis) {
   }
 
   if (!checkKeyWord(KeyWordKind::KW_TRAIT)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse trait keyword in trait");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse trait keyword in trait");
   }
   assert(eatKeyWord(KeyWordKind::KW_TRAIT));
 
   if (!check(TokenKind::Identifier)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse identifier token in trait");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse identifier token in trait");
   }
   trait.setIdentifier(getToken().getIdentifier());
   assert(eat(TokenKind::Identifier));
 
   if (check(TokenKind::Lt)) {
-    llvm::Expected<ast::GenericParams> params = parseGenericParams();
-    if (auto e = params.takeError()) {
-      llvm::errs() << "failed to parse generic params in trait: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::GenericParams> params = parseGenericParams();
+    if (!params) {
+      llvm::errs() << "failed to parse generic params in trait impl: "
+                   << params.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    trait.setGenericParams(*params);
+    trait.setGenericParams(params.getValue());
   }
 
   if (check(TokenKind::ParenOpen) && check(TokenKind::Colon, 1) &&
@@ -246,41 +264,45 @@ Parser::parseTrait(std::optional<ast::Visibility> vis) {
              !check(TokenKind::ParenClose, 2)) {
     assert(eat(TokenKind::ParenOpen));
     assert(eat(TokenKind::Colon));
-    llvm::Expected<ast::types::TypeParamBounds> bounds = parseTypeParamBounds();
-    if (auto e = bounds.takeError()) {
-      llvm::errs() << "failed to parse generic params in trait: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::types::TypeParamBounds> bounds = parseTypeParamBounds();
+    if (!bounds) {
+      llvm::errs() << "failed to parse type param bounds in trait impl: "
+                   << bounds.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
     assert(eat(TokenKind::ParenClose));
-    trait.setBounds(*bounds);
+    trait.setBounds(bounds.getValue());
   }
 
   if (checkKeyWord(KeyWordKind::KW_WHERE)) {
-    llvm::Expected<ast::WhereClause> where = parseWhereClause();
-    if (auto e = where.takeError()) {
-      llvm::errs() << "failed to parse where clause in trait: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::WhereClause> where = parseWhereClause();
+    if (!where) {
+      llvm::errs() << "failed to parse where clause in trait impl: "
+                   << where.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    trait.setWhere(*where);
+    trait.setWhere(where.getValue());
   }
 
   if (!check(TokenKind::BraceOpen)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse { token in trait");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse { token in trait");
   }
   assert(eat(TokenKind::BraceOpen));
 
   if (checkInnerAttribute()) {
-    llvm::Expected<std::vector<ast::InnerAttribute>> inner =
+    StringResult<std::vector<ast::InnerAttribute>> inner =
         parseInnerAttributes();
-    if (auto e = inner.takeError()) {
-      llvm::errs() << "failed to parse inner attributes in trait: "
-                   << toString(std::move(e)) << "\n";
+    if (!inner) {
+      llvm::errs() << "failed to parse inner attribute in trait impl: "
+                   << inner.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    trait.setInner(*inner);
+    std::vector<ast::InnerAttribute> in = inner.getValue();
+    trait.setInner(in);
   }
 
   // FIXME
@@ -289,30 +311,33 @@ Parser::parseTrait(std::optional<ast::Visibility> vis) {
   while (true) {
     if (check(TokenKind::Eof)) {
       // abort
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse trait: eof");
+      return StringResult<std::shared_ptr<ast::VisItem>>(
+          "failed to parse trait: eof");
     } else if (check(TokenKind::BraceClose)) {
       // done
       assert(eat(TokenKind::BraceClose));
-      return std::make_shared<Trait>(trait);
+      return StringResult<std::shared_ptr<ast::VisItem>>(
+          std::make_shared<Trait>(trait));
     } else {
-      llvm::Expected<ast::AssociatedItem> asso = parseAssociatedItem();
-      if (auto e = asso.takeError()) {
-        llvm::errs() << "failed to parse associated item in trait: "
-                     << toString(std::move(e)) << "\n";
+      StringResult<ast::AssociatedItem> asso = parseAssociatedItem();
+      if (!asso) {
+        llvm::errs() << "failed to parse associated item in trait impl: "
+                     << asso.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      trait.addItem(*asso);
+      trait.addItem(asso.getValue());
     }
   }
 
   if (!check(TokenKind::BraceClose)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse } token in trait");
+    return StringResult<std::shared_ptr<ast::VisItem>>(
+        "failed to parse } token in trait");
   }
   assert(eat(TokenKind::BraceClose));
 
-  return std::make_shared<Trait>(trait);
+  return StringResult<std::shared_ptr<ast::VisItem>>(
+      std::make_shared<Trait>(trait));
 }
 
 } // namespace rust_compiler::parser
