@@ -28,6 +28,16 @@ class CodeGenAction : public FrontendAction {
   void generateLLVMIR();
 
   std::unique_ptr<llvm::TargetMachine> tm;
+
+  /// Sets up LLVM's TargetMachine.
+  void setUpTargetMachine();
+  /// Runs the optimization (aka middle-end) pipeline on the LLVM module
+  /// associated with this action.
+  void runOptimizationPipeline(llvm::raw_pwrite_stream &os);
+
+  /// Generates an LLVM IR module from CodeGenAction::mlirModule and saves it
+  /// in CodeGenAction::llvmModule.
+  void generateLLVMIR();
 };
 
 } // namespace rust_compiler::frontend

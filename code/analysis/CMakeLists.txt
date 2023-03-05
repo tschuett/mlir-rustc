@@ -8,6 +8,7 @@ add_library(analysis
            MemorySSANodes.cpp
            Abstractelement.cpp
            Loops.cpp
+           PointsTo.cpp
            )
 
 target_include_directories(analysis PRIVATE  ../include)

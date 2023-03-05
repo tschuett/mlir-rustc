@@ -75,4 +75,3 @@ int processMLIR(mlir::MLIRContext &context,
 
 } // namespace rust_compiler
 
-// A Sparse Algorithm for Predicated Global Value Numbering from Karthik Gargi.

@@ -48,10 +48,10 @@ void ConvertLirToLLVMPass::runOnOperation() {
 
   target.addLegalOp<mlir::ModuleOp>();
 
-  target.addIllegalDialect<LirDialect>();
-  target.addLegalDialect<mlir::memref::MemRefDialect>();
-  target.addLegalDialect<mlir::arith::ArithDialect>();
-  target.addLegalDialect<mlir::func::FuncDialect>();
+  //target.addIllegalDialect<LirDialect>();
+  //target.addLegalDialect<mlir::memref::MemRefDialect>();
+  //target.addLegalDialect<mlir::arith::ArithDialect>();
+  //target.addLegalDialect<mlir::func::FuncDialect>();
 
   LLVMTypeConverter typeConverter(&getContext());
 
