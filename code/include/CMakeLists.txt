@@ -17,5 +17,6 @@ add_subdirectory(Basic)
 add_subdirectory(CrateLoader)
 add_subdirectory(Serialization)
 add_subdirectory(Lir)
+add_subdirectory(Frontend)
 
 
