@@ -27,16 +27,16 @@ add_library(parser
            ArithmeticOrLogicalExpression.cpp
            MacroRules.cpp
            DelimTokenTree.cpp
-           ParseItem.cpp
            VisItem.cpp
            CheckExpressionWithoutBlock.cpp
            ComplexType.cpp
-           ExpressionExceptStruct.cpp
-           ExpressionUnaryOrBinary.cpp
+#           ExpressionExceptStruct.cpp
+#           ExpressionUnaryOrBinary.cpp
            Precedence.cpp
            ParseExpression.cpp
            ErrorStack.cpp
            Expression.cpp
+           ParseItem.cpp
            )
 
 

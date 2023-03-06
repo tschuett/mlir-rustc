@@ -18,6 +18,7 @@
 #include "AST/IfLetExpression.h"
 #include "AST/IndexEpression.h"
 #include "AST/LazyBooleanExpression.h"
+#include "AST/LifetimeOrLabel.h"
 #include "AST/LiteralExpression.h"
 #include "AST/MacroInvocationExpression.h"
 #include "AST/MatchExpression.h"
@@ -38,9 +39,9 @@
 #include "Parser/Parser.h"
 #include "Parser/Precedence.h"
 #include "Parser/Restrictions.h"
-#include "llvm/Support/YAMLTraits.h"
 
 #include <cassert>
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
 #include <string>
@@ -54,11 +55,13 @@ namespace rust_compiler::parser {
 
 bool Parser::checkExpressionWithBlock() {
   if (checkOuterAttribute()) {
-    llvm::Expected<std::vector<ast::OuterAttribute>> outerAttributes =
+    StringResult<std::vector<ast::OuterAttribute>> outerAttributes =
         parseOuterAttributes();
-    if (auto e = outerAttributes.takeError()) {
-      llvm::errs() << "failed to parse outer attributes: "
-                   << toString(std::move(e)) << "\n";
+    if (!outerAttributes) {
+      llvm::errs()
+          << "failed to parse outer attributes in expression with block: "
+          << outerAttributes.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
   }
@@ -105,48 +108,50 @@ Parser::parseLiteralExpression(std::span<ast::OuterAttribute> outer) {
   else if (checkKeyWord(KeyWordKind::KW_FALSE))
     lit.setKind(LiteralExpressionKind::False);
   else {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse literal  in literal expression");
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        "failed to parse literal  in literal expression");
   }
   lit.setStorage(getToken().getLiteral());
 
   assert(eat(getToken().getKind()));
 
-  return std::make_shared<LiteralExpression>(lit);
+  return Result<std::shared_ptr<ast::Expression>, std::string>(
+      std::make_shared<LiteralExpression>(lit));
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
+StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseMacroInvocationExpression() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   MacroInvocationExpression macro = {loc};
 
-  llvm::Expected<ast::SimplePath> path = parseSimplePath();
-  if (auto e = path.takeError()) {
-    llvm::errs()
-        << "failed to parse simple path in macro invocation expression : "
-        << toString(std::move(e)) << "\n";
+  StringResult<ast::SimplePath> path = parseSimplePath();
+  if (!path) {
+    llvm::errs() << "failed to simple path in macro invocation expression: "
+                 << path.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  macro.setPath(*path);
+  macro.setPath(path.getValue());
 
   if (!check(TokenKind::Not))
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<std::shared_ptr<ast::Expression>>(
         "failed to parse ! token in macro invocation expression");
   assert(eat(TokenKind::Not));
 
-  llvm::Expected<std::shared_ptr<ast::DelimTokenTree>> token =
+  StringResult<std::shared_ptr<ast::DelimTokenTree>> token =
       parseDelimTokenTree();
-  if (auto e = token.takeError()) {
+  if (!token) {
     llvm::errs()
-        << "failed to parse delimt token tree in macro invocation expression : "
-        << toString(std::move(e)) << "\n";
+        << "failed to delim token tree in macro invocation expression: "
+        << token.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  macro.setTree(*token);
+  macro.setTree(token.getValue());
 
-  return std::make_shared<MacroInvocationExpression>(macro);
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      std::make_shared<MacroInvocationExpression>(macro));
 }
 
 bool Parser::checkRangeTerminator() {
@@ -164,8 +169,7 @@ bool Parser::checkRangeTerminator() {
   // heuristic :, or ; or ) or ] or )
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseRangeExpression() {
+StringResult<std::shared_ptr<ast::Expression>> Parser::parseRangeExpression() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   RangeExpression range = {loc};
@@ -175,49 +179,58 @@ Parser::parseRangeExpression() {
     if (checkRangeTerminator()) {
       // done
       range.setKind(RangeExpressionKind::RangeFullExpr);
-      return std::make_shared<RangeExpression>(range);
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          std::make_shared<RangeExpression>(range));
     } else {
       // parse
       Restrictions restrictions;
-      llvm::Expected<std::shared_ptr<ast::Expression>> right =
+      StringResult<std::shared_ptr<ast::Expression>> right =
           parseExpression(Precedence::DotDot, {}, restrictions);
-      if (auto e = right.takeError()) {
-        llvm::errs() << "failed to parse expression in range expression: "
-                     << toString(std::move(e)) << "\n";
+      if (!right) {
+        llvm::errs() << "failed to parse epxression in range expression: "
+                     << right.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      range.setRight(*right);
+      range.setRight(right.getValue());
       range.setKind(RangeExpressionKind::RangeToExpr);
-      return std::make_shared<RangeExpression>(range);
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          std::make_shared<RangeExpression>(range));
     }
   } else if (check(TokenKind::DotDotEq)) {
     assert(eat(TokenKind::DotDotEq));
     // parse
     Restrictions restrictions;
-    llvm::Expected<std::shared_ptr<ast::Expression>> right =
+    StringResult<std::shared_ptr<ast::Expression>> right =
         parseExpression(Precedence::DotDotEq, {}, restrictions);
-    if (auto e = right.takeError()) {
+    if (!right) {
       llvm::errs() << "failed to parse expression in range expression: "
-                   << toString(std::move(e)) << "\n";
+                   << right.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    range.setRight(*right);
+    range.setRight(right.getValue());
     range.setKind(RangeExpressionKind::RangeToInclusiveExpr);
-    return std::make_shared<RangeExpression>(range);
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        std::make_shared<RangeExpression>(range));
   }
 
-  Restrictions restrictions;
-  llvm::Expected<std::shared_ptr<ast::Expression>> left =
-      parseExpression(Precedence::, {}, restrictions);
-  if (auto e = left.takeError()) {
-    llvm::errs() << "failed to parse expression in range expression: "
-                 << toString(std::move(e)) << "\n";
-    exit(EXIT_FAILURE);
-  }
-  return parseRangeExpression(*left);
+  //  Restrictions restrictions;
+  //  StringResult<std::shared_ptr<ast::Expression>> left =
+  //      parseExpression({}, restrictions);
+  //  if (!left) {
+  //    llvm::errs() << "failed to parse expression in range expression: "
+  //                 << left.getError() << "\n";
+  //    printFunctionStack();
+  //    exit(EXIT_FAILURE);
+  //  }
+  //
+  //  return parseRangeExpression(left.getValue());
+  //
+  //
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
+StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseRangeExpression(std::shared_ptr<ast::Expression> l) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
@@ -229,32 +242,41 @@ Parser::parseRangeExpression(std::shared_ptr<ast::Expression> l) {
     assert(check(TokenKind::DotDot));
     if (checkRangeTerminator()) {
       range.setKind(RangeExpressionKind::RangeFromExpr);
-      return std::make_shared<RangeExpression>(range);
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          std::make_shared<RangeExpression>(range));
     } else {
-      llvm::Expected<std::shared_ptr<ast::Expression>> left = parseExpression();
-      if (auto e = left.takeError()) {
+      Restrictions restrictions;
+      StringResult<std::shared_ptr<ast::Expression>> left =
+          parseExpression({}, restrictions);
+      if (!left) {
         llvm::errs() << "failed to parse expression in range expression: "
-                     << toString(std::move(e)) << "\n";
+                     << left.getError() << "\n";
+        printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      range.setRight(*left);
+      range.setRight(left.getValue());
     }
     range.setKind(RangeExpressionKind::RangeExpr);
-    return std::make_shared<RangeExpression>(range);
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        std::make_shared<RangeExpression>(range));
   } else if (check(TokenKind::DotDotEq)) {
     assert(check(TokenKind::DotDotEq));
     range.setKind(RangeExpressionKind::RangeInclusiveExpr);
-    Result<std::shared_ptr<ast::Expression>, std::string> left = parseExpression();
-    if (auto e = left.takeError()) {
+    Restrictions restrictions;
+    Result<std::shared_ptr<ast::Expression>, std::string> left =
+        parseExpression({}, restrictions);
+    if (!left) {
       llvm::errs() << "failed to parse expression in range expression: "
-                   << toString(std::move(e)) << "\n";
+                   << left.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    range.setRight(*left);
-    return std::make_shared<RangeExpression>(range);
+    range.setRight(left.getValue());
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        std::make_shared<RangeExpression>(range));
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to range expression");
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      "failed to range expression");
 }
 
 Result<ArrayElements, std::string>
@@ -285,12 +307,12 @@ Parser::parseArrayElements(std::span<OuterAttribute>,
     el.setKind(ArrayElementsKind::Repeated);
     el.setValue(first.getValue());
     el.setCount(second.getValue());
-    return el;
+    return Result<ArrayElements, std::string>(el);
   } else if (check(TokenKind::Comma) && check(TokenKind::SquareClose, 1)) {
     assert(eat(TokenKind::Comma));
     el.setKind(ArrayElementsKind::List);
     el.addElement(first.getValue());
-    return el;
+    return Result<ArrayElements, std::string>(el);
   } else {
     while (true) {
       if (check(TokenKind::Eof)) {
@@ -334,13 +356,17 @@ Parser::parseArrayExpression(std::span<OuterAttribute>) {
         std::make_shared<ArrayExpression>(array));
   }
 
-  llvm::Expected<ast::ArrayElements> elements = parseArrayElements();
-  if (auto e = elements.takeError()) {
-    llvm::errs() << "failed to parse array elements in array elements: "
-                 << toString(std::move(e)) << "\n";
+  Restrictions restrictions;
+  StringResult<ast::ArrayElements> elements =
+      parseArrayElements({}, restrictions);
+  if (!elements) {
+    llvm::errs() << "failed to parse array elements in array expression: "
+                 << elements.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  array.setElements(*elements);
+
+  array.setElements(elements.getValue());
 
   if (!check(TokenKind::SquareClose))
     return Result<std::shared_ptr<ast::Expression>, std::string>(
@@ -431,7 +457,7 @@ Parser::parseTupleIndexingExpression(std::shared_ptr<ast::Expression> lhs) {
       std::make_shared<TupleIndexingExpression>(tuple));
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
+StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseFieldExpression(std::shared_ptr<ast::Expression> l) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
@@ -440,20 +466,20 @@ Parser::parseFieldExpression(std::shared_ptr<ast::Expression> l) {
   field.setLeft(l);
 
   if (!check(TokenKind::Dot))
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse . token in field expression");
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        "failed to parse . token in field expression");
   assert(eat(TokenKind::Dot));
 
   if (!checkIdentifier())
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<std::shared_ptr<ast::Expression>>(
         "failed to parse identifier token in field expression");
 
   field.setIdentifier(getToken().getIdentifier());
 
   assert(eat(TokenKind::Identifier));
 
-  return std::make_shared<FieldExpression>(field);
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      std::make_shared<FieldExpression>(field));
 }
 
 Result<std::shared_ptr<ast::Expression>, std::string>
@@ -490,7 +516,7 @@ Parser::parseIndexExpression(std::shared_ptr<ast::Expression> left,
       std::make_shared<IndexExpression>(idx));
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
+StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseTypeCastExpression(std::shared_ptr<ast::Expression> lhs) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
@@ -499,21 +525,23 @@ Parser::parseTypeCastExpression(std::shared_ptr<ast::Expression> lhs) {
   ty.setLeft(lhs);
 
   if (!checkKeyWord(KeyWordKind::KW_AS))
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<std::shared_ptr<ast::Expression>>(
         "failed to parse as keyword in type cast expression");
   assert(eatKeyWord(KeyWordKind::KW_AS));
 
-  llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> noBounds =
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> noBounds =
       parseTypeNoBounds();
-  if (auto e = noBounds.takeError()) {
-    llvm::errs() << "failed to parse type no bpunds in assignment expression: "
-                 << toString(std::move(e)) << "\n";
+  if (!noBounds) {
+    llvm::errs()
+        << "failed to parse type no bounds expression in type cast expression: "
+        << noBounds.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  ty.setType(*noBounds);
+  ty.setType(noBounds.getValue());
 
-  return std::make_shared<TypeCastExpression>(ty);
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      std::make_shared<TypeCastExpression>(ty));
 }
 
 Result<std::shared_ptr<ast::Expression>, std::string>
@@ -605,14 +633,15 @@ Parser::parseMethodCallExpression(std::shared_ptr<ast::Expression> receiver,
   }
   assert(eat(TokenKind::Dot));
 
-  llvm::Expected<ast::PathExprSegment> segment = parsePathExprSegment();
-  if (auto e = segment.takeError()) {
+  StringResult<ast::PathExprSegment> segment = parsePathExprSegment();
+  if (!segment) {
     llvm::errs()
         << "failed to parse path expr segment in method call expression: "
-        << toString(std::move(e)) << "\n";
+        << segment.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  call.setSegment(*segment);
+  call.setSegment(segment.getValue());
 
   if (!check(TokenKind::ParenOpen)) {
     return Result<std::shared_ptr<ast::Expression>, std::string>(
@@ -945,21 +974,22 @@ Parser::parseCompoundAssignmentExpression(std::shared_ptr<ast::Expression> e,
       std::make_shared<CompoundAssignmentExpression>(comp));
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
+StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseErrorPropagationExpression(std::shared_ptr<ast::Expression> er) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   ErrorPropagationExpression ep = {loc};
 
   if (!check(TokenKind::QMark)) {
-    return createStringError(inconvertibleErrorCode(),
-                             "failed to parse ? token in await expression");
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        "failed to parse ? token in await expression");
   }
   assert(eat(TokenKind::QMark));
 
   ep.setLhs(er);
 
-  return std::make_shared<ErrorPropagationExpression>(ep);
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      std::make_shared<ErrorPropagationExpression>(ep));
 }
 
 Result<std::shared_ptr<ast::Expression>, std::string>
@@ -1086,7 +1116,9 @@ Parser::parseBreakExpression(std::span<OuterAttribute>) {
   if (check(TokenKind::LIFETIME_OR_LABEL)) {
     assert(eat(TokenKind::LIFETIME_OR_LABEL));
     // do something
-    breakExpr.setLifetime(getToken());
+    LifetimeOrLabel l = {loc};
+    l.setLifeTime(getToken().getStorage());
+    breakExpr.setLifetime(l);
   }
 
   if (check(TokenKind::Semi)) {
@@ -1130,15 +1162,16 @@ Parser::parseIfLetExpression(std::span<OuterAttribute> outer) {
         "failed to parse let key word in if let expression");
   }
 
-  llvm::Expected<std::shared_ptr<ast::patterns::Pattern>> pattern =
+  StringResult<std::shared_ptr<ast::patterns::Pattern>> pattern =
       parsePattern();
-  if (auto e = pattern.takeError()) {
+  if (!pattern) {
     llvm::errs() << "failed to parse pattern in if let expression: "
-                 << toString(std::move(e)) << "\n";
+                 << pattern.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  ifLet.setPattern(*pattern);
+  ifLet.setPattern(pattern.getValue());
 
   if (check(TokenKind::Eq)) {
     assert(eat(TokenKind::Eq));
@@ -1430,7 +1463,10 @@ Parser::parseContinueExpression(std::span<OuterAttribute>) {
 
   if (check(TokenKind::LIFETIME_OR_LABEL)) {
     Token tok = getToken();
-    cont.setLifetime(tok);
+    LifetimeOrLabel l = {getToken().getLocation()};
+    l.setLifeTime(tok.getStorage());
+    assert(eat(TokenKind::LIFETIME_OR_LABEL));
+    cont.setLifetime(l);
   }
 
   return Result<std::shared_ptr<ast::Expression>, std::string>(
@@ -1555,23 +1591,25 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
 
   if (check(TokenKind::Hash) && check(TokenKind::Not, 1) &&
       check(TokenKind::SquareOpen, 2)) {
-    llvm::Expected<std::vector<ast::InnerAttribute>> innerAttributes =
+    StringResult<std::vector<ast::InnerAttribute>> innerAttributes =
         parseInnerAttributes();
-    if (auto e = innerAttributes.takeError()) {
+    if (!innerAttributes) {
       llvm::errs() << "failed to parse inner attributes in block expression: "
-                   << toString(std::move(e)) << "\n";
+                   << innerAttributes.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
   }
 
-  llvm::Expected<ast::Statements> stmts = parseStatements();
-  if (auto e = stmts.takeError()) {
+  StringResult<ast::Statements> stmts = parseStatements();
+  if (!stmts) {
     llvm::errs() << "failed to parse statements in block expression: "
-                 << toString(std::move(e)) << "\n";
+                 << stmts.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  bloc.setStatements(*stmts);
+  bloc.setStatements(stmts.getValue());
 
   if (!check(TokenKind::BraceClose)) {
     return Result<std::shared_ptr<ast::Expression>, std::string>(
@@ -1584,247 +1622,252 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
       std::make_shared<BlockExpression>(bloc));
 }
 
-Result<std::shared_ptr<ast::Expression>, std::string>
-Parser::parseExpressionWithoutBlock() {
-  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
+// Result<std::shared_ptr<ast::Expression>, std::string>
+// Parser::parseExpressionWithoutBlock() {
+//   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
+//
+//   llvm::outs() << "parseExpressionWithoutBlock"
+//                << "\n";
+//
+//   std::vector<ast::OuterAttribute> outer;
+//   if (checkOuterAttribute()) {
+//     StringResult<std::vector<ast::OuterAttribute>> outerAttributes =
+//         parseOuterAttributes();
+//     if (!outerAttributes) {
+//       llvm::errs()
+//           << "failed to parse outer attributes expression without block: "
+//           << outerAttributes.getError() << "\n";
+//       printFunctionStack();
+//       exit(EXIT_FAILURE);
+//     }
+//     outer = outerAttributes.getValue();
+//   }
+//
+//   //  // FIXME attributes
+//
+//   if (checkLiteral()) {
+//     return parseLiteralExpression(outer);
+//   }
+//   if (check(TokenKind::And)) {
+//     return parseBorrowExpression(outer);
+//   }
+//
+//   if (check(TokenKind::Lt)) {
+//     return parseQualifiedPathInExpression(outer);
+//   }
+//
+//   if (check(TokenKind::AndAnd)) {
+//     return parseBorrowExpression(outer);
+//   }
+//
+//   if (check(TokenKind::Star)) {
+//     return parseDereferenceExpression(outer);
+//   }
+//
+//   if (check(TokenKind::Not) || check(TokenKind::Minus)) {
+//     return parseNegationExpression(outer);
+//   }
+//
+//   if (checkKeyWord(KeyWordKind::KW_MOVE)) {
+//     return parseClosureExpression(outer);
+//   }
+//
+//   if (check(TokenKind::OrOr)) {
+//     return parseClosureExpression(outer);
+//   }
+//
+//   if (check(TokenKind::Or)) {
+//     return parseClosureExpression(outer);
+//   }
+//
+//   if (check(TokenKind::SquareOpen)) {
+//     return parseArrayExpression(outer);
+//   }
+//
+//   if (check(TokenKind::ParenOpen)) {
+//     return parseGroupedOrTupleExpression(outer);
+//   }
+//
+//   if (check(TokenKind::DotDot)) {
+//     return parseRangeExpression(outer);
+//   }
+//
+//   if (check(TokenKind::DotDotEq)) {
+//     return parseRangeExpression(outer);
+//   }
+//
+//   if (checkKeyWord(KeyWordKind::KW_ASYNC)) {
+//     return parseAsyncBlockExpression(outer);
+//   }
+//
+//   if (checkKeyWord(KeyWordKind::KW_CONTINUE)) {
+//     return parseContinueExpression(outer);
+//   }
+//
+//   if (checkKeyWord(KeyWordKind::KW_BREAK)) {
+//     return parseBreakExpression(outer);
+//   }
+//
+//   if (checkKeyWord(KeyWordKind::KW_RETURN)) {
+//     return parseReturnExpression(outer);
+//   }
+//
+//   if (check(TokenKind::Underscore)) {
+//     return parseUnderScoreExpression(outer);
+//   }
+//
+//   xxx;
+//
+//   return
+//   parsePathInExpressionOrStructExprStructOrStructExprTupleOrStructExprUnitOrMacroInvocationOrExpressionWithPostfix(
+//       outer);
+//
+//   //  /*
+//   //    PathInExpression -> PathExpression, StructExprStruct,
+//   StructExprTuple,
+//   //    StructExprUnit SimplePath -> MacroInvocation
+//   //    ExpressionWithPostFix
+//   //   */
+//   //
+//   //  if (check(TokenKind::PathSep) || check(TokenKind::Identifier) ||
+//   //      checkKeyWord(KeyWordKind::KW_SUPER) ||
+//   //      checkKeyWord(KeyWordKind::KW_SELFVALUE) ||
+//   //      checkKeyWord(KeyWordKind::KW_CRATE) ||
+//   //      checkKeyWord(KeyWordKind::KW_SELFTYPE) ||
+//   //      checkKeyWord(KeyWordKind::KW_DOLLARCRATE)) {
+//   //    //    return
+//   //    //
+//   //
+//   parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpressionOrExpressionWithPostfix();
+//   //  }
+// }
 
-  llvm::outs() << "parseExpressionWithoutBlock"
-               << "\n";
+// StringResult<std::shared_ptr<ast::Expression>>
+// Parser::parseExpressionWithPostfix(
+//     ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
+//     llvm::Expected<std::shared_ptr<ast::Expression>> left,
+//     Restrictions restrictions) {
+//
+//   llvm::outs() << "parseExpressionWithPostfix"
+//                << "\n";
+//
+//   if (check(TokenKind::Dot) && checkKeyWord(KeyWordKind::KW_AWAIT, 1)) {
+//     return parseAwaitExpression(*left);
+//   } else if (check(TokenKind::SquareOpen)) {
+//     return parseIndexExpression(*left);
+//   } else if (check(TokenKind::ParenOpen)) {
+//     return parseCallExpression(*left);
+//   } else if (check(TokenKind::QMark)) {
+//     return parseErrorPropagationExpression(*left);
+//   } else if (check(TokenKind::Dot) && check(TokenKind::Identifier) &&
+//              !check(TokenKind::ParenOpen)) {
+//     return parseFieldExpression(*left);
+//   } else if (check(TokenKind::Dot) && check(TokenKind::INTEGER_LITERAL, 1)) {
+//     return parseTupleIndexingExpression(*left);
+//   } else if (check(TokenKind::Dot)) {
+//     return parseMethodCallExpression(*left);
+//   } else if (check(TokenKind::Plus) || check(TokenKind::Minus) ||
+//              check(TokenKind::Star) || check(TokenKind::Slash) ||
+//              check(TokenKind::Percent) || check(TokenKind::Or) ||
+//              check(TokenKind::Shl) || check(TokenKind::Shr)) {
+//     Restrictions restrictions;
+//     xxx;
+//     return parseArithmeticOrLogicalExpression(*left, restrictions);
+//   } else if (check(TokenKind::EqEq) || check(TokenKind::Ne) ||
+//              check(TokenKind::Gt) || check(TokenKind::Ge) ||
+//              check(TokenKind::Le)) {
+//     return parseComparisonExpression(*left);
+//   } else if (check(TokenKind::OrOr) || check(TokenKind::AndAnd)) {
+//     return parseLazyBooleanExpression(*left);
+//   } else if (checkKeyWord(KeyWordKind::KW_AS)) {
+//     return parseTypeCastExpression(*left);
+//   } else if (check(TokenKind::Eq)) {
+//     return parseAssignmentExpression(*left);
+//   } else if (check(TokenKind::PlusEq) || check(TokenKind::MinusEq) ||
+//              check(TokenKind::StarEq) || check(TokenKind::PercentEq) ||
+//              check(TokenKind::AndEq) || check(TokenKind::OrEq) ||
+//              check(TokenKind::CaretEq) || check(TokenKind::ShlEq) ||
+//              check(TokenKind::ShrEq)) {
+//     return parseCompoundAssignmentExpression(*left, restrictions);
+//   } else if (check(TokenKind::DotDot) || check(TokenKind::DotDotEq)) {
+//     return parseRangeExpression(*left);
+//   }
+//
+//   llvm::outs() << "parseExpressiionWithPostfix: "
+//                << Token2String(getToken().getKind()) << "\n";
+//   return createStringError(inconvertibleErrorCode(),
+//                            "failed to parse "
+//                            "ExpressionWithPostFix: eof");
+// }
 
-  std::vector<ast::OuterAttribute> outer;
-  if (checkOuterAttribute()) {
-    llvm::Expected<std::vector<ast::OuterAttribute>> outerAttributes =
-        parseOuterAttributes();
-    if (auto e = outerAttributes.takeError()) {
-      llvm::errs() << "failed to parse outer attributes: "
-                   << toString(std::move(e)) << "\n";
-      exit(EXIT_FAILURE);
-    }
-    outer = *outerAttributes;
-  }
+// StringResult<std::shared_ptr<ast::Expression>> Parser::
+//     parsePathInExpressionOrStructExprStructOrStructExprTupleOrStructExprUnitOrMacroInvocationOrExpressionWithPostfix()
+//     {
+//   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
+//   CheckPoint cp = getCheckPoint();
+//
+//   while (true) {
+//     llvm::outs() << "parseXXX1: " << Token2String(getToken().getKind()) <<
+//     "\n"; if (check(TokenKind::Eof)) {
+//       // abort
+//       return createStringError(inconvertibleErrorCode(),
+//                                "failed to parse "
+//                                "PathInExpressionOrStructExprStructOrStructTuple"
+//                                "UnitOrMacroInvocationExpression: eof");
+//     } else if (checkSimplePathSegment()) {
+//       assert(eatSimplePathSegment());
+//     } else if (check(TokenKind::Lt)) {
+//       recover(cp);
+//       return parsePathInExpressionOrStructOrExpressionWithPostfix();
+//     } else if (checkPathIdentSegment()) {
+//       recover(cp);
+//       return parsePathInExpressionOrStructOrExpressionWithPostfix();
+//     } else if (check(TokenKind::Not)) {
+//       recover(cp);
+//       return parseMacroInvocationExpression();
+//     } else if (check(TokenKind::BraceOpen)) {
+//       recover(cp);
+//       return parseStructExpression();
+//     } else if (check(TokenKind::ParenOpen)) {
+//       recover(cp);
+//       return parseStructExpression();
+//     } else if (checkPostFix()) {
+//       recover(cp);
+//       xxx;
+//       endless loop return parseExpressionWithPostfix();
+//     } else if (check(TokenKind::PathSep)) {
+//       assert(eat(TokenKind::PathSep));
+//     }
+//   }
+// }
 
-  //  // FIXME attributes
-
-  if (checkLiteral()) {
-    return parseLiteralExpression(outer);
-  }
-  if (check(TokenKind::And)) {
-    return parseBorrowExpression(outer);
-  }
-
-  if (check(TokenKind::Lt)) {
-    return parseQualifiedPathInExpression(outer);
-  }
-
-  if (check(TokenKind::AndAnd)) {
-    return parseBorrowExpression(outer);
-  }
-
-  if (check(TokenKind::Star)) {
-    return parseDereferenceExpression(outer);
-  }
-
-  if (check(TokenKind::Not) || check(TokenKind::Minus)) {
-    return parseNegationExpression(outer);
-  }
-
-  if (checkKeyWord(KeyWordKind::KW_MOVE)) {
-    return parseClosureExpression(outer);
-  }
-
-  if (check(TokenKind::OrOr)) {
-    return parseClosureExpression(outer);
-  }
-
-  if (check(TokenKind::Or)) {
-    return parseClosureExpression(outer);
-  }
-
-  if (check(TokenKind::SquareOpen)) {
-    return parseArrayExpression(outer);
-  }
-
-  if (check(TokenKind::ParenOpen)) {
-    return parseGroupedOrTupleExpression(outer);
-  }
-
-  if (check(TokenKind::DotDot)) {
-    return parseRangeExpression(outer);
-  }
-
-  if (check(TokenKind::DotDotEq)) {
-    return parseRangeExpression(outer);
-  }
-
-  if (checkKeyWord(KeyWordKind::KW_ASYNC)) {
-    return parseAsyncBlockExpression(outer);
-  }
-
-  if (checkKeyWord(KeyWordKind::KW_CONTINUE)) {
-    return parseContinueExpression(outer);
-  }
-
-  if (checkKeyWord(KeyWordKind::KW_BREAK)) {
-    return parseBreakExpression(outer);
-  }
-
-  if (checkKeyWord(KeyWordKind::KW_RETURN)) {
-    return parseReturnExpression(outer);
-  }
-
-  if (check(TokenKind::Underscore)) {
-    return parseUnderScoreExpression(outer);
-  }
-
-  xxx;
-
-  return parsePathInExpressionOrStructExprStructOrStructExprTupleOrStructExprUnitOrMacroInvocationOrExpressionWithPostfix(
-      outer);
-
-  //  /*
-  //    PathInExpression -> PathExpression, StructExprStruct, StructExprTuple,
-  //    StructExprUnit SimplePath -> MacroInvocation
-  //    ExpressionWithPostFix
-  //   */
-  //
-  //  if (check(TokenKind::PathSep) || check(TokenKind::Identifier) ||
-  //      checkKeyWord(KeyWordKind::KW_SUPER) ||
-  //      checkKeyWord(KeyWordKind::KW_SELFVALUE) ||
-  //      checkKeyWord(KeyWordKind::KW_CRATE) ||
-  //      checkKeyWord(KeyWordKind::KW_SELFTYPE) ||
-  //      checkKeyWord(KeyWordKind::KW_DOLLARCRATE)) {
-  //    //    return
-  //    //
-  //    parsePathInExpressionOrStructExprStructOrStructTupleUnitOrMacroInvocationExpressionOrExpressionWithPostfix();
-  //  }
-}
-
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parseExpressionWithPostfix(
-    ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
-    llvm::Expected<std::shared_ptr<ast::Expression>> left,
-    Restrictions restrictions) {
-
-  llvm::outs() << "parseExpressionWithPostfix"
-               << "\n";
-
-  if (check(TokenKind::Dot) && checkKeyWord(KeyWordKind::KW_AWAIT, 1)) {
-    return parseAwaitExpression(*left);
-  } else if (check(TokenKind::SquareOpen)) {
-    return parseIndexExpression(*left);
-  } else if (check(TokenKind::ParenOpen)) {
-    return parseCallExpression(*left);
-  } else if (check(TokenKind::QMark)) {
-    return parseErrorPropagationExpression(*left);
-  } else if (check(TokenKind::Dot) && check(TokenKind::Identifier) &&
-             !check(TokenKind::ParenOpen)) {
-    return parseFieldExpression(*left);
-  } else if (check(TokenKind::Dot) && check(TokenKind::INTEGER_LITERAL, 1)) {
-    return parseTupleIndexingExpression(*left);
-  } else if (check(TokenKind::Dot)) {
-    return parseMethodCallExpression(*left);
-  } else if (check(TokenKind::Plus) || check(TokenKind::Minus) ||
-             check(TokenKind::Star) || check(TokenKind::Slash) ||
-             check(TokenKind::Percent) || check(TokenKind::Or) ||
-             check(TokenKind::Shl) || check(TokenKind::Shr)) {
-    Restrictions restrictions;
-    xxx;
-    return parseArithmeticOrLogicalExpression(*left, restrictions);
-  } else if (check(TokenKind::EqEq) || check(TokenKind::Ne) ||
-             check(TokenKind::Gt) || check(TokenKind::Ge) ||
-             check(TokenKind::Le)) {
-    return parseComparisonExpression(*left);
-  } else if (check(TokenKind::OrOr) || check(TokenKind::AndAnd)) {
-    return parseLazyBooleanExpression(*left);
-  } else if (checkKeyWord(KeyWordKind::KW_AS)) {
-    return parseTypeCastExpression(*left);
-  } else if (check(TokenKind::Eq)) {
-    return parseAssignmentExpression(*left);
-  } else if (check(TokenKind::PlusEq) || check(TokenKind::MinusEq) ||
-             check(TokenKind::StarEq) || check(TokenKind::PercentEq) ||
-             check(TokenKind::AndEq) || check(TokenKind::OrEq) ||
-             check(TokenKind::CaretEq) || check(TokenKind::ShlEq) ||
-             check(TokenKind::ShrEq)) {
-    return parseCompoundAssignmentExpression(*left, restrictions);
-  } else if (check(TokenKind::DotDot) || check(TokenKind::DotDotEq)) {
-    return parseRangeExpression(*left);
-  }
-
-  llvm::outs() << "parseExpressiionWithPostfix: "
-               << Token2String(getToken().getKind()) << "\n";
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse "
-                           "ExpressionWithPostFix: eof");
-}
-
-llvm::Expected<std::shared_ptr<ast::Expression>> Parser::
-    parsePathInExpressionOrStructExprStructOrStructExprTupleOrStructExprUnitOrMacroInvocationOrExpressionWithPostfix() {
-  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
-  CheckPoint cp = getCheckPoint();
-
-  while (true) {
-    llvm::outs() << "parseXXX1: " << Token2String(getToken().getKind()) << "\n";
-    if (check(TokenKind::Eof)) {
-      // abort
-      return createStringError(inconvertibleErrorCode(),
-                               "failed to parse "
-                               "PathInExpressionOrStructExprStructOrStructTuple"
-                               "UnitOrMacroInvocationExpression: eof");
-    } else if (checkSimplePathSegment()) {
-      assert(eatSimplePathSegment());
-    } else if (check(TokenKind::Lt)) {
-      recover(cp);
-      return parsePathInExpressionOrStructOrExpressionWithPostfix();
-    } else if (checkPathIdentSegment()) {
-      recover(cp);
-      return parsePathInExpressionOrStructOrExpressionWithPostfix();
-    } else if (check(TokenKind::Not)) {
-      recover(cp);
-      return parseMacroInvocationExpression();
-    } else if (check(TokenKind::BraceOpen)) {
-      recover(cp);
-      return parseStructExpression();
-    } else if (check(TokenKind::ParenOpen)) {
-      recover(cp);
-      return parseStructExpression();
-    } else if (checkPostFix()) {
-      recover(cp);
-      xxx;
-      endless loop return parseExpressionWithPostfix();
-    } else if (check(TokenKind::PathSep)) {
-      assert(eat(TokenKind::PathSep));
-    }
-  }
-}
-
-llvm::Expected<std::shared_ptr<ast::Expression>>
-Parser::parsePathInExpressionOrStructOrExpressionWithPostfix() {
-  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
-  CheckPoint cp = getCheckPoint();
-
-  while (true) {
-    llvm::outs() << "parseXXX2: " << Token2String(getToken().getKind()) << "\n";
-    if (check(TokenKind::Eof)) {
-      // abort
-      return createStringError(
-          inconvertibleErrorCode(),
-          "failed to parse PathInExpressionOrStructOrExpressionWithPostfix: "
-          "eof");
-    } else if (check(TokenKind::BraceOpen)) {
-      recover(cp);
-      return parseStructExpression();
-    } else if (check(TokenKind::ParenOpen)) {
-      recover(cp);
-      return parseStructExpression();
-    } else if (check(TokenKind::PathSep)) {
-      assert(eat(TokenKind::PathSep));
-      //    } else if (check(TokenKind::Lt)) {
-      //      xxx;
-    } else if (checkPostFix()) {
-      recover(cp);
-      return parseExpressionWithPostfix();
-    }
-  }
-}
+// StringResult<std::shared_ptr<ast::Expression>>
+// Parser::parsePathInExpressionOrStructOrExpressionWithPostfix() {
+//   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
+//   CheckPoint cp = getCheckPoint();
+//
+//   while (true) {
+//     llvm::outs() << "parseXXX2: " << Token2String(getToken().getKind()) <<
+//     "\n"; if (check(TokenKind::Eof)) {
+//       // abort
+//       return StringResult<std::shared_ptr<ast::Expression>>(
+//           "failed to parse PathInExpressionOrStructOrExpressionWithPostfix: "
+//           "eof");
+//     } else if (check(TokenKind::BraceOpen)) {
+//       recover(cp);
+//       return parseStructExpression();
+//     } else if (check(TokenKind::ParenOpen)) {
+//       recover(cp);
+//       return parseStructExpression();
+//     } else if (check(TokenKind::PathSep)) {
+//       assert(eat(TokenKind::PathSep));
+//       //    } else if (check(TokenKind::Lt)) {
+//       //      xxx;
+//     } else if (checkPostFix()) {
+//       recover(cp);
+//       return parseExpressionWithPostfix();
+//     }
+//   }
+// }
 
 } // namespace rust_compiler::parser

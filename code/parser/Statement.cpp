@@ -233,7 +233,7 @@ Parser::parseLetStatement(std::span<ast::OuterAttribute> outer,
   if (checkKeyWord(KeyWordKind::KW_ELSE)) {
     assert(eatKeyWord(KeyWordKind::KW_ELSE));
     StringResult<std::shared_ptr<ast::Expression>> block =
-        parseBlockExpression();
+      parseBlockExpression({});
     if (!block) {
       llvm::errs() << "failed to parse block expression in let statement: "
                    << block.getError() << "\n";

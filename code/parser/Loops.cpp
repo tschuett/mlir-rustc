@@ -29,7 +29,7 @@ Parser::parseLabelBlockExpression(std::span<OuterAttribute>) {
   Location loc = getLocation();
   LabelBlockExpression bloc = {loc};
 
-  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression();
+  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression({});
   if (!block) {
     llvm::errs()
         << "failed to parse block expression in label block expression: "
@@ -127,7 +127,7 @@ Parser::parseIteratorLoopExpression(std::span<OuterAttribute>) {
   }
   it.setExpression(expr.getValue());
 
-  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression();
+  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression({});
   if (!block) {
     llvm::errs()
         << "failed to parse block expression in iterator loop expression: "
@@ -180,7 +180,7 @@ Parser::parsePredicatePatternLoopExpression(std::span<ast::OuterAttribute>) {
 
   pat.setScrutinee(scrut.getValue());
 
-  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression();
+  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression({});
   if (!block) {
     llvm::errs() << "failed to parse block expression in predicate pattern "
                     "loop expression: "
@@ -207,7 +207,7 @@ Parser::parseInfiniteLoopExpression(std::span<OuterAttribute>) {
         "failed to parse loop keyword");
   assert(eatKeyWord(KeyWordKind::KW_LOOP));
 
-  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression();
+  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression({});
   if (!block) {
     llvm::errs()
         << "failed to parse block expression in infinite loop expression: "
@@ -246,7 +246,7 @@ Parser::parsePredicateLoopExpression(std::span<OuterAttribute>) {
 
   pred.setCondition(expr.getValue());
 
-  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression();
+  StringResult<std::shared_ptr<ast::Expression>> block = parseBlockExpression({});
   if (!block) {
     llvm::errs()
         << "failed to parse block expression in predicate loop expression: "

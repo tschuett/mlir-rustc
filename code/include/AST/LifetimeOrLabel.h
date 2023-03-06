@@ -11,6 +11,8 @@ class LifetimeOrLabel : public Node {
 
 public:
   LifetimeOrLabel(Location loc) : Node(loc) {}
+
+  void setLifeTime(std::string_view l) { label = l; }
 };
 
 } // namespace rust_compiler::ast

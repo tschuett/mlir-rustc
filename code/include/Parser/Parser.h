@@ -67,6 +67,7 @@
 #include "Parser/ErrorStack.h"
 #include "Parser/Precedence.h"
 #include "Parser/Restrictions.h"
+#include "Parser/TokenPointer.h"
 
 #include <span>
 #include <stack>
@@ -306,15 +307,13 @@ public:
   //                             rust_compiler::parser::Restrictions =
   //                                 rust_compiler::parser::Restrictions());
 
-  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+  adt::StringResult<std::shared_ptr<ast::Expression>>
   parseExpression(std::span<ast::OuterAttribute> outer,
-                  rust_compiler::parser::Restrictions restrictions =
-                      rust_compiler::parser::Restrictions());
-  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+                  rust_compiler::parser::Restrictions restrictions);
+  adt::StringResult<std::shared_ptr<ast::Expression>>
   parseExpression(Precedence rightBindingPower,
                   std::span<ast::OuterAttribute> outer,
-                  rust_compiler::parser::Restrictions restrictions =
-                      rust_compiler::parser::Restrictions());
+                  rust_compiler::parser::Restrictions restrictions);
 
   //  llvm::Expected<std::shared_ptr<ast::Expression>>
   //  parseExpressionExceptStruct();
@@ -323,9 +322,9 @@ public:
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseGroupedExpression(Restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
-  parseBlockExpression();
+  parseBlockExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
-  parseExpressionWithoutBlock(std::span<ast::OuterAttribute>, Restrictions);
+      parseExpressionWithoutBlock(std::span<ast::OuterAttribute>, Restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseExpressionWithoutBlockExceptStruct();
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
@@ -406,7 +405,7 @@ public:
       std::shared_ptr<ast::Expression>,
       rust_compiler::parser::Restrictions restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
-      parseQualifiedPathInExpression();
+  parseQualifiedPathInExpression();
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseLiteralExpression(std::span<ast::OuterAttribute>);
 
@@ -468,7 +467,7 @@ public:
   adt::Result<std::shared_ptr<ast::Statement>, std::string>
   parseItemDeclaration();
   adt::Result<std::shared_ptr<ast::Statement>, std::string>
-  parseExpressionStatement(std::span<ast::OuterAttribute>, Restrictions);
+      parseExpressionStatement(std::span<ast::OuterAttribute>, Restrictions);
   adt::Result<std::shared_ptr<ast::Statement>, std::string>
   parseMacroInvocationSemiStatement();
 
@@ -579,6 +578,9 @@ public:
 
   adt::Result<ast::LoopLabel, std::string> parseLoopLabel();
 
+  void pushFunction(std::string_view);
+  void popFunction(std::string_view);
+
 private:
   bool check(lexer::TokenKind token);
   bool check(lexer::TokenKind token, size_t off);
@@ -646,12 +648,16 @@ private:
 
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseUnaryExpression(std::span<ast::OuterAttribute> outer,
-                       ParseRestrictions restrictions = ParseRestrictions());
+                       Restrictions restrictions);
 
   void printFunctionStack();
-  void pushFunction(std::string_view);
-  void popFunction(std::string_view);
   std::stack<std::string> functionStack;
+
+  ConstTokenPointer getTokenPtr();
+
+  adt::StringResult<std::shared_ptr<ast::Expression>>
+  parseInfixExpression(std::shared_ptr<ast::Expression> left,
+                       std::span<ast::OuterAttribute>, Restrictions);
 };
 
 } // namespace rust_compiler::parser

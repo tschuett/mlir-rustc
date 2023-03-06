@@ -1,5 +1,8 @@
 #include "Parser/Parser.h"
 
+#include <llvm/Support/raw_ostream.h>
+
+
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
 using namespace llvm;

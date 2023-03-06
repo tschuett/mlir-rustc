@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Lexer/Token.h"
+#include "Parser/TokenPointer.h"
 
 namespace rust_compiler::parser {
 
@@ -44,6 +44,6 @@ enum class Precedence {
   Lowest = 0
 };
 
-Precedence getLeftBindingPower(lexer::Token);
+Precedence getLeftBindingPower(ConstTokenPointer);
 
 } // namespace rust_compiler::parser

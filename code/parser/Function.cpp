@@ -494,7 +494,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
                << "\n";
 
   Result<std::shared_ptr<ast::Expression>, std::string> body =
-      parseBlockExpression();
+    parseBlockExpression({});
   if (!body) {
     llvm::errs() << "failed to parse body in function: " << body.getError()
                  << "\n";

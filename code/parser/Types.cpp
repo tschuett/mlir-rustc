@@ -45,7 +45,7 @@ StringResult<ast::GenericArgsConst> Parser::parseGenericArgsConst() {
   if (check(TokenKind::BraceOpen)) {
     // block
     StringResult<std::shared_ptr<ast::Expression>> block =
-        parseBlockExpression();
+      parseBlockExpression({});
     if (!block) {
       llvm::errs() << "failed to parse block expression in generic args const: "
                    << block.getError() << "\n";
