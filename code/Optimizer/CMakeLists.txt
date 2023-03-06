@@ -16,6 +16,7 @@ add_library(optimizer
            ConvertLirToLLVM.cpp
            Loop.cpp
            SCCPPass.cpp
+           PassPipeline.cpp
            )
 
 target_include_directories(optimizer PRIVATE  ../include)

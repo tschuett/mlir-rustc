@@ -16,26 +16,14 @@ using namespace rust_compiler::codegen;
 
 namespace rust_compiler {
 
-int processMLIR(mlir::MLIRContext &context,
-                mlir::OwningOpRef<mlir::ModuleOp> &module) {
-
-  SummaryWriterPassOptions options;
-  options.summaryOutputFile = "";
-
-  mlir::PassManager pm(&context);
-  // Apply any generic pass manager command line options and run the pipeline.
-  applyPassManagerCLOptions(pm);
-
+void createDefaultOptimizerPassPipeline(mlir::PassManager &context) {
   // Hir
-
-
 
   pm.addPass(optimizer::createConvertHirToMirPass());
   // Mir
 
   pm.addPass(optimizer::createConvertMirToLirPass());
   // Lir
-
 
   pm.addPass(optimizer::createLoopPass());
 
@@ -45,7 +33,7 @@ int processMLIR(mlir::MLIRContext &context,
   // optimize
   pm.addPass(mlir::createCanonicalizerPass());
   pm.addPass(mlir::createCSEPass());
-  //pm.addPass(optimizer::createCombinerPass());
+  // pm.addPass(optimizer::createCombinerPass());
   pm.addPass(mlir::createSCCPPass());
 
   pm.addPass(createAttributer());
@@ -58,15 +46,65 @@ int processMLIR(mlir::MLIRContext &context,
   // lower
   pm.addPass(mlir::createCanonicalizerPass());
   pm.addPass(mlir::createCSEPass());
-  //pm.addPass(optimizer::createLowerErrorPropagationPass());
-  //pm.addPass(optimizer::createLowerAwaitPass());
-//  pm.addPass(mlir::createAsyncFuncToAsyncRuntimePass());
-//  pm.addPass(mlir::createAsyncToAsyncRuntimePass());
-//  pm.addPass(mlir::createConvertAsyncToLLVMPass());
-  //pm.addPass(createLowerUtilsToLLVMPass());
+  // pm.addPass(optimizer::createLowerErrorPropagationPass());
+  // pm.addPass(optimizer::createLowerAwaitPass());
+  //  pm.addPass(mlir::createAsyncFuncToAsyncRuntimePass());
+  //  pm.addPass(mlir::createAsyncToAsyncRuntimePass());
+  //  pm.addPass(mlir::createConvertAsyncToLLVMPass());
+  // pm.addPass(createLowerUtilsToLLVMPass());
 
   // Finish lowering the Mir IR to the LLVM dialect.
-  //pm.addPass(createMirToLLVMLowering());
+  // pm.addPass(createMirToLLVMLowering());
+}
+
+int processMLIR(mlir::MLIRContext &context,
+                mlir::OwningOpRef<mlir::ModuleOp> &module) {
+
+  SummaryWriterPassOptions options;
+  options.summaryOutputFile = "";
+
+  mlir::PassManager pm(&context);
+  // Apply any generic pass manager command line options and run the pipeline.
+  applyPassManagerCLOptions(pm);
+
+  // Hir
+
+  pm.addPass(optimizer::createConvertHirToMirPass());
+  // Mir
+
+  pm.addPass(optimizer::createConvertMirToLirPass());
+  // Lir
+
+  pm.addPass(optimizer::createLoopPass());
+
+  pm.addPass(optimizer::createConvertLirToLLVMPass());
+  // LLLVM Dialect
+
+  // optimize
+  pm.addPass(mlir::createCanonicalizerPass());
+  pm.addPass(mlir::createCSEPass());
+  // pm.addPass(optimizer::createCombinerPass());
+  pm.addPass(mlir::createSCCPPass());
+
+  pm.addPass(createAttributer());
+  // pm.addPass(createGVNPass());
+  // pm.addPass(createRewritePass());
+  // pm.addPass(createDeadCodeEliminationPass());
+
+  pm.addPass(createSummaryWriterPass(options));
+
+  // lower
+  pm.addPass(mlir::createCanonicalizerPass());
+  pm.addPass(mlir::createCSEPass());
+  // pm.addPass(optimizer::createLowerErrorPropagationPass());
+  // pm.addPass(optimizer::createLowerAwaitPass());
+  //  pm.addPass(mlir::createAsyncFuncToAsyncRuntimePass());
+  //  pm.addPass(mlir::createAsyncToAsyncRuntimePass());
+  //  pm.addPass(mlir::createConvertAsyncToLLVMPass());
+  // pm.addPass(createLowerUtilsToLLVMPass());
+
+  // Finish lowering the Mir IR to the LLVM dialect.
+  // pm.addPass(createMirToLLVMLowering());
 
   if (mlir::failed(pm.run(*module)))
     return 4;
@@ -74,4 +112,3 @@ int processMLIR(mlir::MLIRContext &context,
 }
 
 } // namespace rust_compiler
-

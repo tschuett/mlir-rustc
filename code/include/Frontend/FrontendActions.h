@@ -8,9 +8,19 @@
 
 namespace rust_compiler::frontend {
 
-class SyntaxAonly : public FrontendAction {};
+class SyntaxOnlyAction : public FrontendAction {
+public:
+  virtual ~SyntaxOnlyAction() = default;
 
-class SemaOnylAction : public FrontendAction {};
+  void executeAction() override;
+};
+
+class SemaOnlylAction : public FrontendAction {
+public:
+  virtual ~SemaOnlylAction() = default;
+
+  void executeAction() override;
+};
 
 class CodeGenAction : public FrontendAction {
   void executeAction() override;
@@ -25,19 +35,20 @@ class CodeGenAction : public FrontendAction {
   std::unique_ptr<mlir::ModuleOp> mlirModule;
   std::unique_ptr<mlir::MLIRContext> mlirCtx;
 
-  void generateLLVMIR();
+  /// @name LLVM IR
+  std::unique_ptr<llvm::LLVMContext> llvmCtx;
+  std::unique_ptr<llvm::Module> llvmModule;
 
   std::unique_ptr<llvm::TargetMachine> tm;
-
-  /// Sets up LLVM's TargetMachine.
-  void setUpTargetMachine();
-  /// Runs the optimization (aka middle-end) pipeline on the LLVM module
-  /// associated with this action.
-  void runOptimizationPipeline(llvm::raw_pwrite_stream &os);
 
   /// Generates an LLVM IR module from CodeGenAction::mlirModule and saves it
   /// in CodeGenAction::llvmModule.
   void generateLLVMIR();
+
+  void generateObjectFile(llvm::raw_pwrite_stream &os);
+
+  void setMLIRDataLayout(mlir::ModuleOp &mlirModule,
+                         const llvm::DataLayout &dl);
 };
 
 } // namespace rust_compiler::frontend

@@ -1,11 +1,24 @@
 #pragma once
 
+#include "Basic/Edition.h"
 #include "Frontend/CompilerInstance.h"
+#include "Frontend/FrontendOptions.h"
 
+#include <llvm/Support/Error.h>
+#include <memory>
+#include <string>
+#include <string_view>
+
+namespace rust_compiler::ast {
+class Crate;
+}
 namespace rust_compiler::frontend {
 
 class FrontendAction {
+  FrontendInput currentInput;
   CompilerInstance *instance;
+
+  std::shared_ptr<ast::Crate> crate;
 
 protected:
   /// @name Implementation Action Interface
@@ -35,7 +48,22 @@ public:
     return *instance;
   }
 
-  void setInstance(CompilerInstance *value) { instance = value; }
+  virtual ~FrontendAction() = default;
+
+  void setCurrentInput(FrontendInput currentIntput);
+
+  void setEdition(basic::Edition edition);
+
+  /// Run the action.
+  llvm::Error execute();
+
+protected:
+  // Parse the current input file. Return False if fatal errors are reported,
+  // True otherwise.
+  bool runParse();
+  // Run semantic checks for the current input file. Return False if fatal
+  // errors are reported, True otherwise.
+  bool runSemanticChecks();
 };
 
 } // namespace rust_compiler::frontend

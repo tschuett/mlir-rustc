@@ -16,7 +16,7 @@
 
 #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
-#include <llvm/Support/Host.h>
+#include <llvm/TargetParser/Host.h>
 #include <llvm/Target/TargetMachine.h>
 #include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/ControlFlow/IR/ControlFlow.h>
@@ -55,36 +55,36 @@ public:
       : builder(&context),
         serializer(OS, llvm::remarks::SerializerMode::Separate) {
 
-    // Create `Target`
-    std::string theTriple =
-        llvm::Triple::normalize(llvm::sys::getDefaultTargetTriple());
-
-    std::string error;
-    const llvm::Target *theTarget =
-        llvm::TargetRegistry::lookupTarget(theTriple, error);
-
-    std::string featuresStr;
-    std::string cpu = std::string(llvm::sys::getHostCPUName());
-    std::unique_ptr<::llvm::TargetMachine> tm;
-    tm.reset(theTarget->createTargetMachine(
-        theTriple, /*CPU=*/cpu,
-        /*Features=*/featuresStr, llvm::TargetOptions(),
-        /*Reloc::Model=*/llvm::Reloc::Model::PIC_,
-        /*CodeModel::Model=*/std::nullopt, llvm::CodeGenOpt::Aggressive));
-    assert(tm && "Failed to create TargetMachine");
-
-    Target target = {tm.get()};
-
-    // builder = {&context};
-
-    context.getOrLoadDialect<hir::HirDialect>();
-    context.getOrLoadDialect<mlir::func::FuncDialect>();
-    context.getOrLoadDialect<mlir::arith::ArithDialect>();
-    //context.getOrLoadDialect<mlir::async::AsyncDialect>();
-    //context.getOrLoadDialect<mlir::memref::MemRefDialect>();
-    context.getOrLoadDialect<mlir::cf::ControlFlowDialect>();
-
-    theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
+//    // Create `Target`
+//    std::string theTriple =
+//        llvm::Triple::normalize(llvm::sys::getDefaultTargetTriple());
+//
+//    std::string error;
+//    const llvm::Target *theTarget =
+//        llvm::TargetRegistry::lookupTarget(theTriple, error);
+//
+//    std::string featuresStr;
+//    std::string cpu = std::string(llvm::sys::getHostCPUName());
+//    std::unique_ptr<::llvm::TargetMachine> tm;
+//    tm.reset(theTarget->createTargetMachine(
+//        theTriple, /*CPU=*/cpu,
+//        /*Features=*/featuresStr, llvm::TargetOptions(),
+//        /*Reloc::Model=*/llvm::Reloc::Model::PIC_,
+//        /*CodeModel::Model=*/std::nullopt, llvm::CodeGenOpt::Aggressive));
+//    assert(tm && "Failed to create TargetMachine");
+//
+//    Target target = {tm.get()};
+//
+//    // builder = {&context};
+//
+//    context.getOrLoadDialect<hir::HirDialect>();
+//    context.getOrLoadDialect<mlir::func::FuncDialect>();
+//    context.getOrLoadDialect<mlir::arith::ArithDialect>();
+//    //context.getOrLoadDialect<mlir::async::AsyncDialect>();
+//    //context.getOrLoadDialect<mlir::memref::MemRefDialect>();
+//    context.getOrLoadDialect<mlir::cf::ControlFlowDialect>();
+//
+//    theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
   };
 
   void emitCrate(std::shared_ptr<rust_compiler::ast::Crate> crate);
