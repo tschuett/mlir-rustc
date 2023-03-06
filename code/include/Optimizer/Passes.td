@@ -89,6 +89,11 @@ def LoopPass : Pass<"Loop", "mlir::func::FuncOp"> {
   let description = "Fat loop pass";
 }
 
+def DeadArgumentEliminationPass : Pass<"DeadArgumentElimination", "mlir::ModuleOp"> {
+  let summary = "Eliminates dead arguments";
+  let description = "IPO dead argument elimination";
+}
+
 
 
 // eleminate Mir: how?

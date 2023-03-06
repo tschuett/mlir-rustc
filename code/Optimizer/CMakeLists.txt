@@ -17,6 +17,7 @@ add_library(optimizer
            Loop.cpp
            SCCPPass.cpp
            PassPipeline.cpp
+           DeadArgumentElimination.cpp
            )
 
 target_include_directories(optimizer PRIVATE  ../include)
