@@ -2,13 +2,16 @@
 
 #include "Parser/Parser.h"
 
+#include <llvm/Support/raw_ostream.h>
+
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace rust_compiler::lexer;
 using namespace llvm;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
+StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseArithmeticOrLogicalExpression(std::shared_ptr<ast::Expression> lhs,
                                            Restrictions restrictions) {
   Location loc = getLocation();
@@ -40,21 +43,26 @@ Parser::parseArithmeticOrLogicalExpression(std::shared_ptr<ast::Expression> lhs,
   } else if (check(TokenKind::Shr)) {
     arith.setKind(ArithmeticOrLogicalExpressionKind::RightShift);
   } else {
-    return createStringError(
-        inconvertibleErrorCode(),
+    return StringResult<std::shared_ptr<ast::Expression>>(
         "failed to parse arithmetic or logical expression");
   }
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> expr = parseExpression(restrictions);
-  if (auto e = expr.takeError()) {
+  // the operator
+  assert(eat(getToken().getKind()));
+  
+  StringResult<std::shared_ptr<ast::Expression>> expr =
+    parseExpression({}, restrictions);
+  if (!expr) {
     llvm::errs()
         << "failed to parse expression in arithmetic or logical expression: "
-        << std::move(e) << "\n";
+        << expr.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  arith.setRhs(*expr);
+  arith.setRhs(expr.getValue());
 
-  return std::make_shared<ArithmeticOrLogicalExpression>(arith);
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      std::make_shared<ArithmeticOrLogicalExpression>(arith));
 }
 
 } // namespace rust_compiler::parser
