@@ -98,7 +98,7 @@ StringResult<ast::EnumItem> Parser::parseEnumItem() {
   return StringResult<ast::EnumItem>(item);
 }
 
-StringResult<std::shared_ptr<ast::VisItem>>
+StringResult<std::shared_ptr<ast::Item>>
 Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
@@ -106,13 +106,13 @@ Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
   Enumeration enu = {loc, vis};
 
   if (!checkKeyWord(lexer::KeyWordKind::KW_ENUM)) {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse enum keyword in enum ");
   }
   assert(eatKeyWord(KeyWordKind::KW_ENUM));
 
   if (!check(TokenKind::Identifier)) {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse identifier token in enum ");
   }
 
@@ -143,7 +143,7 @@ Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
   }
 
   if (!check(TokenKind::BraceOpen)) {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse { token in enum ");
   }
   assert(eat(TokenKind::BraceOpen));
@@ -162,12 +162,12 @@ Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
   }
 
   if (!check(TokenKind::BraceClose)) {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse } token in enum ");
   }
   assert(eat(TokenKind::BraceClose));
 
-  return StringResult<std::shared_ptr<ast::VisItem>>(
+  return StringResult<std::shared_ptr<ast::Item>>(
       std::make_shared<Enumeration>(enu));
 }
 

@@ -101,53 +101,53 @@ public:
   adt::Result<ast::use_tree::UseTree, std::string> parseUseTree();
 
   adt::Result<std::shared_ptr<ast::Item>, std::string> parseItem();
-  adt::Result<std::shared_ptr<ast::MacroItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
       parseMacroItem(std::span<ast::OuterAttribute>);
 
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
       parseVisItem(std::span<ast::OuterAttribute>);
 
   adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern();
 
   /// VisItems
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseMod(std::optional<ast::Visibility> vis);
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseUseDeclaration(std::optional<ast::Visibility> vis);
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseTypeAlias(std::optional<ast::Visibility> vis);
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseEnumeration(std::optional<ast::Visibility> vis);
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseUnion(std::optional<ast::Visibility> vis);
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseStaticItem(std::optional<ast::Visibility> vis);
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseTrait(std::optional<ast::Visibility> vis);
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseFunction(std::optional<ast::Visibility> vis);
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseConstantItem(std::optional<ast::Visibility> vis);
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseExternBlock(std::optional<ast::Visibility> vis);
 
   adt::Result<ast::ExternalItem, std::string> parseExternalItem();
 
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseStruct(std::optional<ast::Visibility> vis);
   adt::Result<ast::StructFields, std::string> parseStructFields();
   adt::Result<ast::StructField, std::string> parseStructField();
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseStructStruct(std::optional<ast::Visibility> vis);
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseTupleStruct(std::optional<ast::Visibility> vis);
 
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseImplementation(std::optional<ast::Visibility> vis);
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseInherentImpl(std::optional<ast::Visibility> vis);
-  adt::Result<std::shared_ptr<ast::VisItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseTraitImpl(std::optional<ast::Visibility> vis);
 
   adt::Result<std::vector<ast::OuterAttribute>, std::string>
@@ -471,10 +471,10 @@ public:
   adt::Result<std::shared_ptr<ast::Statement>, std::string>
   parseMacroInvocationSemiStatement();
 
-  adt::Result<std::shared_ptr<ast::MacroItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseMacroInvocationSemiItem();
 
-  adt::Result<std::shared_ptr<ast::MacroItem>, std::string>
+  adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseMacroRulesDefinition();
   adt::Result<std::shared_ptr<ast::SelfParam>, std::string>
   parseShorthandSelf();

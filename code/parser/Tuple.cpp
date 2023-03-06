@@ -14,18 +14,18 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
-StringResult<std::shared_ptr<ast::VisItem>>
+StringResult<std::shared_ptr<ast::Item>>
 Parser::parseTupleStruct(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   class TupleStruct stru = {loc, vis};
 
   if (!checkKeyWord(KeyWordKind::KW_STRUCT))
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse struct keyword in tuple struct");
   assert(eatKeyWord(KeyWordKind::KW_STRUCT));
 
   if (!checkIdentifier())
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse struct keyword in tuple struct");
   stru.setIdentifier(getToken().getIdentifier());
   assert(eat(TokenKind::Identifier));
@@ -42,7 +42,7 @@ Parser::parseTupleStruct(std::optional<ast::Visibility> vis) {
   }
 
   if (!check(TokenKind::ParenOpen))
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse ( token in tuple struct");
   assert(eat(TokenKind::ParenOpen));
 
@@ -70,11 +70,11 @@ Parser::parseTupleStruct(std::optional<ast::Visibility> vis) {
   }
 
   if (!check(TokenKind::Semi))
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse ; token in tuple struct");
   assert(eat(TokenKind::Semi));
 
-  return StringResult<std::shared_ptr<ast::VisItem>>(
+  return StringResult<std::shared_ptr<ast::Item>>(
       std::make_shared<class TupleStruct>(stru));
 }
 

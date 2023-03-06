@@ -383,7 +383,7 @@ StringResult<ast::FunctionReturnType> Parser::parseFunctionReturnType() {
   return StringResult<ast::FunctionReturnType>(t);
 }
 
-StringResult<std::shared_ptr<ast::VisItem>>
+  StringResult<std::shared_ptr<ast::Item>>
 Parser::parseFunction(std::optional<ast::Visibility> vis) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
@@ -440,7 +440,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   }
 
   if (!check(TokenKind::ParenOpen)) {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse generic params");
   }
 
@@ -486,7 +486,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
 
   if (check(TokenKind::Semi)) {
     assert(eat(TokenKind::Semi));
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         std::make_shared<ast::VisItem>(fun));
   }
 
@@ -503,7 +503,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   }
   fun.setBody(body.getValue());
 
-  return StringResult<std::shared_ptr<ast::VisItem>>(
+  return StringResult<std::shared_ptr<ast::Item>>(
       std::make_shared<ast::VisItem>(fun));
 }
 

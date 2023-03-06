@@ -14,7 +14,7 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
-StringResult<std::shared_ptr<ast::VisItem>>
+StringResult<std::shared_ptr<ast::Item>>
 Parser::parseUseDeclaration(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   UseDeclaration use = {loc, vis};
@@ -22,7 +22,7 @@ Parser::parseUseDeclaration(std::optional<ast::Visibility> vis) {
   if (checkKeyWord(KeyWordKind::KW_USE)) {
     assert(eatKeyWord(KeyWordKind::KW_USE));
   } else {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse use keyword in use declarion");
   }
 
@@ -37,7 +37,7 @@ Parser::parseUseDeclaration(std::optional<ast::Visibility> vis) {
 
   use.setTree(tree.getValue());
 
-  return StringResult<std::shared_ptr<ast::VisItem>>(
+  return StringResult<std::shared_ptr<ast::Item>>(
       std::make_shared<UseDeclaration>(use));
 }
 

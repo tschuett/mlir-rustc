@@ -14,8 +14,8 @@ namespace rust_compiler::ast {
 
 class ItemDeclaration : public Statement {
   std::vector<OuterAttribute> outerAttributes;
-  std::shared_ptr<VisItem> visItem;
-  std::shared_ptr<MacroItem> macroItem;
+  std::shared_ptr<Item> visItem;
+  std::shared_ptr<Item> macroItem;
 
 public:
   ItemDeclaration(Location loc)
@@ -24,8 +24,8 @@ public:
   void setOuterAttributes(std::span<OuterAttribute> outer) {
     outerAttributes = {outer.begin(), outer.end()};
   }
-  void setVisItem(std::shared_ptr<VisItem> vis) { visItem = vis; }
-  void setMacroItem(std::shared_ptr<MacroItem> mac) { macroItem = mac; }
+  void setVisItem(std::shared_ptr<Item> vis) { visItem = vis; }
+  void setMacroItem(std::shared_ptr<Item> mac) { macroItem = mac; }
 };
 
 } // namespace rust_compiler::ast

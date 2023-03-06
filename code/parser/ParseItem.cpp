@@ -21,13 +21,13 @@ StringResult<std::shared_ptr<ast::Item>> Parser::parseItem() {
       exit(EXIT_FAILURE);
     }
 
+    std::vector<OuterAttribute> ot = outer.getValue();
     if (checkVisItem()) {
-      return parseVisItem(outer);
+      return parseVisItem(ot);
     } else if (checkMacroItem()) {
-      return parseMacroItem(outer);
+      return parseMacroItem(ot);
     } else {
-      return StringResult<std::shared_ptr<ast::Item>>(
-                               "failed to parse item");
+      return StringResult<std::shared_ptr<ast::Item>>("failed to parse item");
     }
   }
 

@@ -292,18 +292,18 @@ StringResult<std::shared_ptr<ast::Expression>> Parser::parseStructExprStruct() {
       std::make_shared<StructExprStruct>(str));
 }
 
-StringResult<std::shared_ptr<ast::VisItem>>
+StringResult<std::shared_ptr<ast::Item>>
 Parser::parseStructStruct(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   class StructStruct str = {loc, vis};
 
   if (!checkKeyWord(KeyWordKind::KW_STRUCT))
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse struct struct");
   assert(eatKeyWord(KeyWordKind::KW_STRUCT));
 
   if (!checkIdentifier())
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse struct struct");
 
   str.setName(getToken().getIdentifier());
@@ -333,7 +333,7 @@ Parser::parseStructStruct(std::optional<ast::Visibility> vis) {
 
   if (check(TokenKind::Semi)) {
     assert(eat(TokenKind::Semi));
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         std::make_shared<class StructStruct>(str));
   } else if (check(TokenKind::BraceOpen)) {
     assert(eat(TokenKind::BraceOpen));
@@ -346,13 +346,13 @@ Parser::parseStructStruct(std::optional<ast::Visibility> vis) {
     }
     str.setFields(fields.getValue());
     if (!check(TokenKind::BraceClose))
-      return StringResult<std::shared_ptr<ast::VisItem>>(
+      return StringResult<std::shared_ptr<ast::Item>>(
           "failed to parse struct struct");
     assert(eat(TokenKind::BraceClose));
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         std::make_shared<class StructStruct>(str));
   }
-  return StringResult<std::shared_ptr<ast::VisItem>>(
+  return StringResult<std::shared_ptr<ast::Item>>(
       "failed to parse struct struct");
 }
 

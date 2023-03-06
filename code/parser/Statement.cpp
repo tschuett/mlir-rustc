@@ -270,7 +270,7 @@ Parser::parseStatement(Restrictions restriction) {
     }
     std::vector<OuterAttribute> ot = outer.getValue();
     if (checkVisItem()) {
-      StringResult<std::shared_ptr<ast::VisItem>> visItem = parseVisItem(ot);
+      StringResult<std::shared_ptr<ast::Item>> visItem = parseVisItem(ot);
       if (!visItem) {
         llvm::errs() << "failed to parse vis item in parse statement: "
                      << visItem.getError() << "\n";
@@ -284,7 +284,7 @@ Parser::parseStatement(Restrictions restriction) {
       return StringResult<std::shared_ptr<ast::Statement>>(
           std::make_shared<ItemDeclaration>(item));
     } else if (checkMacroItem()) {
-      StringResult<std::shared_ptr<ast::MacroItem>> macroItem =
+      StringResult<std::shared_ptr<ast::Item>> macroItem =
           parseMacroItem(ot);
       if (!macroItem) {
         llvm::errs() << "failed to parse macro item in parse statement: "
@@ -308,7 +308,7 @@ Parser::parseStatement(Restrictions restriction) {
     // COPY & PASTE
     std::span<OuterAttribute> outer;
     if (checkVisItem()) {
-      StringResult<std::shared_ptr<ast::VisItem>> visItem = parseVisItem(outer);
+      StringResult<std::shared_ptr<ast::Item>> visItem = parseVisItem(outer);
       if (!visItem) {
         llvm::errs() << "failed to parse vis item in parse statement: "
                      << visItem.getError() << "\n";
@@ -320,7 +320,7 @@ Parser::parseStatement(Restrictions restriction) {
       return StringResult<std::shared_ptr<ast::Statement>>(
           std::make_shared<ItemDeclaration>(item));
     } else if (checkMacroItem()) {
-      StringResult<std::shared_ptr<ast::MacroItem>> macroItem =
+      StringResult<std::shared_ptr<ast::Item>> macroItem =
           parseMacroItem(outer);
       if (!macroItem) {
         llvm::errs() << "failed to parse macro item in parse statement: "

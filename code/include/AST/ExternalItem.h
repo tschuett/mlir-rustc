@@ -11,8 +11,8 @@ namespace rust_compiler::ast {
 
 class ExternalItem : public Node {
   std::vector<OuterAttribute> outerAttributes;
-  std::shared_ptr<ast::VisItem> stat;
-  std::shared_ptr<ast::VisItem> fun;
+  std::shared_ptr<ast::Item> stat;
+  std::shared_ptr<ast::Item> fun;
   std::shared_ptr<ast::Expression> macro;
 
 public:
@@ -22,8 +22,8 @@ public:
     outerAttributes = {outer.begin(), outer.end()};
   }
 
-  void setStaticItem(std::shared_ptr<ast::VisItem> st) { stat = st; }
-  void setFunction(std::shared_ptr<ast::VisItem> fn) { fun = fn; }
+  void setStaticItem(std::shared_ptr<ast::Item> st) { stat = st; }
+  void setFunction(std::shared_ptr<ast::Item> fn) { fun = fn; }
   void setMacroInvocation(std::shared_ptr<ast::Expression> mac) { macro = mac; }
 };
 

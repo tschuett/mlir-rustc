@@ -17,13 +17,13 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
-StringResult<std::shared_ptr<ast::VisItem>>
+StringResult<std::shared_ptr<ast::Item>>
 Parser::parseInherentImpl(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   InherentImpl impl = {loc, vis};
 
   if (!checkKeyWord(KeyWordKind::KW_IMPL)) {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse impl keyword in inherent impl");
   }
   assert(eatKeyWord(KeyWordKind::KW_IMPL));
@@ -60,7 +60,7 @@ Parser::parseInherentImpl(std::optional<ast::Visibility> vis) {
   }
 
   if (!check(TokenKind::BraceOpen)) {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse { token in inherent impl");
   }
   assert(eat(TokenKind::BraceOpen));
@@ -81,11 +81,11 @@ Parser::parseInherentImpl(std::optional<ast::Visibility> vis) {
   while (true) {
     if (check(TokenKind::Eof)) {
       // error
-      return StringResult<std::shared_ptr<ast::VisItem>>(
+      return StringResult<std::shared_ptr<ast::Item>>(
           "failed to parse inherent impl: eof");
     } else if (check(TokenKind::BraceClose)) {
       // done
-      return StringResult<std::shared_ptr<ast::VisItem>>(
+      return StringResult<std::shared_ptr<ast::Item>>(
           std::make_shared<InherentImpl>(impl));
     } else if (!check(TokenKind::BraceClose)) {
       // asso without check
@@ -98,15 +98,15 @@ Parser::parseInherentImpl(std::optional<ast::Visibility> vis) {
       }
       impl.addAssociatedItem(asso.getValue());
     } else {
-      return StringResult<std::shared_ptr<ast::VisItem>>(
+      return StringResult<std::shared_ptr<ast::Item>>(
           "failed to parse inherent impl");
     }
   }
-  return StringResult<std::shared_ptr<ast::VisItem>>(
+  return StringResult<std::shared_ptr<ast::Item>>(
       "failed to parse inherent impl");
 }
 
-StringResult<std::shared_ptr<ast::VisItem>>
+StringResult<std::shared_ptr<ast::Item>>
 Parser::parseTraitImpl(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   TraitImpl impl = {loc, vis};
@@ -117,7 +117,7 @@ Parser::parseTraitImpl(std::optional<ast::Visibility> vis) {
   }
 
   if (!checkKeyWord(KeyWordKind::KW_IMPL)) {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse impl keyword in trait impl");
   }
   assert(eatKeyWord(KeyWordKind::KW_IMPL));
@@ -149,7 +149,7 @@ Parser::parseTraitImpl(std::optional<ast::Visibility> vis) {
   impl.setTypePath(typePath.getValue());
 
   if (!checkKeyWord(KeyWordKind::KW_FOR)) {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse for keyword in trait impl");
   }
   assert(eatKeyWord(KeyWordKind::KW_FOR));
@@ -175,7 +175,7 @@ Parser::parseTraitImpl(std::optional<ast::Visibility> vis) {
   }
 
   if (!check(TokenKind::BraceOpen)) {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse { token in trait impl");
   }
   assert(eat(TokenKind::BraceOpen));
@@ -196,11 +196,11 @@ Parser::parseTraitImpl(std::optional<ast::Visibility> vis) {
   while (true) {
     if (check(TokenKind::Eof)) {
       // error
-      return StringResult<std::shared_ptr<ast::VisItem>>(
+      return StringResult<std::shared_ptr<ast::Item>>(
           "failed to parse trait impl: eof");
     } else if (check(TokenKind::BraceClose)) {
       // done
-      return StringResult<std::shared_ptr<ast::VisItem>>(
+      return StringResult<std::shared_ptr<ast::Item>>(
           std::make_shared<TraitImpl>(impl));
     } else if (!check(TokenKind::BraceClose)) {
       // asso without check
@@ -213,15 +213,15 @@ Parser::parseTraitImpl(std::optional<ast::Visibility> vis) {
       }
       impl.addAssociatedItem(asso.getValue());
     } else {
-      return StringResult<std::shared_ptr<ast::VisItem>>(
+      return StringResult<std::shared_ptr<ast::Item>>(
           "failed to parse trait impl");
     }
   }
-  return StringResult<std::shared_ptr<ast::VisItem>>(
+  return StringResult<std::shared_ptr<ast::Item>>(
       "failed to parse trait impl");
 }
 
-StringResult<std::shared_ptr<ast::VisItem>>
+StringResult<std::shared_ptr<ast::Item>>
 Parser::parseTrait(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
@@ -233,13 +233,13 @@ Parser::parseTrait(std::optional<ast::Visibility> vis) {
   }
 
   if (!checkKeyWord(KeyWordKind::KW_TRAIT)) {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse trait keyword in trait");
   }
   assert(eatKeyWord(KeyWordKind::KW_TRAIT));
 
   if (!check(TokenKind::Identifier)) {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse identifier token in trait");
   }
   trait.setIdentifier(getToken().getIdentifier());
@@ -288,7 +288,7 @@ Parser::parseTrait(std::optional<ast::Visibility> vis) {
   }
 
   if (!check(TokenKind::BraceOpen)) {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse { token in trait");
   }
   assert(eat(TokenKind::BraceOpen));
@@ -312,12 +312,12 @@ Parser::parseTrait(std::optional<ast::Visibility> vis) {
   while (true) {
     if (check(TokenKind::Eof)) {
       // abort
-      return StringResult<std::shared_ptr<ast::VisItem>>(
+      return StringResult<std::shared_ptr<ast::Item>>(
           "failed to parse trait: eof");
     } else if (check(TokenKind::BraceClose)) {
       // done
       assert(eat(TokenKind::BraceClose));
-      return StringResult<std::shared_ptr<ast::VisItem>>(
+      return StringResult<std::shared_ptr<ast::Item>>(
           std::make_shared<Trait>(trait));
     } else {
       StringResult<ast::AssociatedItem> asso = parseAssociatedItem();
@@ -332,12 +332,12 @@ Parser::parseTrait(std::optional<ast::Visibility> vis) {
   }
 
   if (!check(TokenKind::BraceClose)) {
-    return StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse } token in trait");
   }
   assert(eat(TokenKind::BraceClose));
 
-  return StringResult<std::shared_ptr<ast::VisItem>>(
+  return StringResult<std::shared_ptr<ast::Item>>(
       std::make_shared<Trait>(trait));
 }
 

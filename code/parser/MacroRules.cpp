@@ -337,25 +337,25 @@ StringResult<ast::MacroRulesDef> Parser::parseMacroRulesDef() {
   return StringResult<ast::MacroRulesDef>("failed to parse macro rules def");
 }
 
-StringResult<std::shared_ptr<ast::MacroItem>>
+StringResult<std::shared_ptr<ast::Item>>
 Parser::parseMacroRulesDefinition() {
   Location loc = getLocation();
   MacroRulesDefinition def = {loc};
 
   if (!checkKeyWord(KeyWordKind::KW_MACRO_RULES))
-    return StringResult<std::shared_ptr<ast::MacroItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse macro_rules keyword in macro "
         "rules definition");
   assert(eatKeyWord(KeyWordKind::KW_MACRO_RULES));
 
   if (!check(TokenKind::Not))
-    return StringResult<std::shared_ptr<ast::MacroItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse ! token in macro rules "
         "definition");
   assert(eat(TokenKind::Not));
 
   if (!check(TokenKind::Identifier))
-    return StringResult<std::shared_ptr<ast::MacroItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse identifier token in macro "
         "rules definition");
 
@@ -371,7 +371,7 @@ Parser::parseMacroRulesDefinition() {
   }
   def.setDefinition(rulesDef.getValue());
 
-  return StringResult<std::shared_ptr<ast::MacroItem>>(
+  return StringResult<std::shared_ptr<ast::Item>>(
       std::make_shared<MacroRulesDefinition>(def));
 }
 

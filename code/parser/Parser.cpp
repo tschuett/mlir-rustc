@@ -247,7 +247,7 @@ rust_compiler::Location Parser::getLocation() {
 
 lexer::Token Parser::getToken(uint8_t off) { return ts.getAt(offset + off); }
 
-StringResult<std::shared_ptr<ast::VisItem>>
+  StringResult<std::shared_ptr<ast::Item>>
 Parser::parseVisItem(std::span<OuterAttribute>) {
   std::optional<ast::Visibility> vis;
 
@@ -313,11 +313,11 @@ Parser::parseVisItem(std::span<OuterAttribute>) {
     return parseExternBlock(vis);
   }
   // complete?
-  return StringResult<std::shared_ptr<ast::VisItem>>(
+  return StringResult<std::shared_ptr<ast::Item>>(
       "failed to parse vis item");
 }
 
-StringResult<std::shared_ptr<ast::VisItem>>
+StringResult<std::shared_ptr<ast::Item>>
 Parser::parseMod(std::optional<ast::Visibility> vis) {
 
   Location loc = getLocation();
@@ -343,8 +343,8 @@ Parser::parseMod(std::optional<ast::Visibility> vis) {
     if (unsafe)
       mod.setUnsafe();
 
-    return StringResult<std::shared_ptr<ast::VisItem>>(
-        StringResult<std::shared_ptr<ast::VisItem>>(
+    return StringResult<std::shared_ptr<ast::Item>>(
+        StringResult<std::shared_ptr<ast::Item>>(
             std::make_shared<ast::Module>(mod)));
   }
 
@@ -376,18 +376,18 @@ Parser::parseMod(std::optional<ast::Visibility> vis) {
 
     if (check(TokenKind::BraceClose)) {
       assert(eat(lexer::TokenKind::BraceClose));
-      return StringResult<std::shared_ptr<ast::VisItem>>(
+      return StringResult<std::shared_ptr<ast::Item>>(
           std::make_shared<Module>(mod));
     }
 
     while (true) {
       if (check(TokenKind::Eof)) {
-        return StringResult<std::shared_ptr<ast::VisItem>>(
+        return StringResult<std::shared_ptr<ast::Item>>(
             "failed to parse module: eof");
       } else if (check(TokenKind::BraceClose)) {
         // done
         assert(eat(lexer::TokenKind::BraceClose));
-        return StringResult<std::shared_ptr<ast::VisItem>>(
+        return StringResult<std::shared_ptr<ast::Item>>(
             std::make_shared<Module>(mod));
       } else {
         Result<std::shared_ptr<ast::Item>, std::string> item = parseItem();
@@ -402,7 +402,7 @@ Parser::parseMod(std::optional<ast::Visibility> vis) {
     }
   }
 
-  return StringResult<std::shared_ptr<ast::VisItem>>("failed to parse module");
+  return StringResult<std::shared_ptr<ast::Item>>("failed to parse module");
 }
 
 Result<std::shared_ptr<ast::Crate>, std::string>
