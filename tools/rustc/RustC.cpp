@@ -1,19 +1,23 @@
 #include "Basic/Edition.h"
 #include "CrateBuilder.h"
 #include "CrateLoader/CrateLoader.h"
+#include "Frontend/CompilerInstance.h"
+#include "Frontend/CompilerInvocation.h"
+#include "Frontend/FrontendActions.h"
 #include "Toml/Toml.h"
-#include "llvm/Option/ArgList.h"
-#include "llvm/Option/OptTable.h"
-#include "llvm/Option/Option.h"
-#include "llvm/Support/InitLLVM.h"
-#include "llvm/Support/TargetSelect.h"
-#include "llvm/Support/raw_ostream.h"
 
 #include <fstream>
+#include <llvm/Option/ArgList.h>
+#include <llvm/Option/OptTable.h>
+#include <llvm/Option/Option.h>
+#include <llvm/Support/InitLLVM.h>
+#include <llvm/Support/TargetSelect.h>
+#include <llvm/Support/raw_ostream.h>
 #include <sstream>
 #include <string>
 
 using namespace llvm;
+using namespace rust_compiler::frontend;
 using namespace rust_compiler;
 using namespace rust_compiler::toml;
 using namespace rust_compiler::crate_loader;
@@ -46,7 +50,7 @@ const llvm::opt::OptTable::Info InfoTable[] = {
 
 class RustCOptTable : public llvm::opt::GenericOptTable {
 public:
-  RustCOptTable() : opt::GenericOptTable(InfoTable) {  }
+  RustCOptTable() : opt::GenericOptTable(InfoTable) {}
 };
 
 } // namespace
@@ -97,11 +101,38 @@ int main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
-  LoadMode mode = crate_loader::LoadMode::WithSema;
+  if (const llvm::opt::Arg *A = Args.getLastArg(OPT_syntaxonly)) {
+    CompilerInstance instance;
+    SyntaxOnlyAction action;
 
-  if (const llvm::opt::Arg *A = Args.getLastArg(OPT_syntaxonly))
-    mode = crate_loader::LoadMode::SyntaxOnly;
+    action.setInstance(&instance);
+    action.setCurrentInput();
+    action.setEdition(basic::Edition::Edition2024);
 
-  rust_compiler::rustc::buildCrate(*path, *crateName, 1,
-                                   basic::Edition::Edition2024, mode);
+    action.run();
+
+  } else if (const llvm::opt::Arg *A = Args.getLastArg(OPT_withsema)) {
+    CompilerInstance instance;
+    WithSemaAction action;
+
+    action.setInstance(&instance);
+    action.setCurrentInput();
+    action.setEdition(basic::Edition::Edition2024);
+
+    action.run();
+  } else if (const llvm::opt::Arg *A = Args.getLastArg(OPT_compile)) {
+    CompilerInstance instance;
+    CodeGenAction action;
+
+    action.setInstance(&instance);
+    action.setCurrentInput();
+    action.setEdition(basic::Edition::Edition2024);
+
+    action.run();
+  } else {
+    // error
+  }
+
+//  rust_compiler::rustc::buildCrate(*path, *crateName, 1,
+//                                   basic::Edition::Edition2024, mode);
 }
