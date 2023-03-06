@@ -33,11 +33,11 @@ int processMLIR(mlir::MLIRContext &context,
   pm.addPass(optimizer::createConvertHirToMirPass());
   // Mir
 
-  pm.addPass(optimizer::createLoopPass());
-
   pm.addPass(optimizer::createConvertMirToLirPass());
   // Lir
 
+
+  pm.addPass(optimizer::createLoopPass());
 
   pm.addPass(optimizer::createConvertLirToLLVMPass());
   // LLLVM Dialect
@@ -58,15 +58,15 @@ int processMLIR(mlir::MLIRContext &context,
   // lower
   pm.addPass(mlir::createCanonicalizerPass());
   pm.addPass(mlir::createCSEPass());
-  pm.addPass(optimizer::createLowerErrorPropagationPass());
-  pm.addPass(optimizer::createLowerAwaitPass());
-  pm.addPass(mlir::createAsyncFuncToAsyncRuntimePass());
-  pm.addPass(mlir::createAsyncToAsyncRuntimePass());
-  pm.addPass(mlir::createConvertAsyncToLLVMPass());
+  //pm.addPass(optimizer::createLowerErrorPropagationPass());
+  //pm.addPass(optimizer::createLowerAwaitPass());
+//  pm.addPass(mlir::createAsyncFuncToAsyncRuntimePass());
+//  pm.addPass(mlir::createAsyncToAsyncRuntimePass());
+//  pm.addPass(mlir::createConvertAsyncToLLVMPass());
   //pm.addPass(createLowerUtilsToLLVMPass());
 
   // Finish lowering the Mir IR to the LLVM dialect.
-  pm.addPass(createMirToLLVMLowering());
+  //pm.addPass(createMirToLLVMLowering());
 
   if (mlir::failed(pm.run(*module)))
     return 4;

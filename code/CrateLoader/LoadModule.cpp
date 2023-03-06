@@ -2,14 +2,15 @@
 
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
-#include "mlir/IR/Location.h"
-#include "mlir/Support/LogicalResult.h"
 
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/raw_ostream.h>
+//#include <mlir/IR/Location.h>
+//#include <mlir/Support/LogicalResult.h>
 
 using namespace rust_compiler::parser;
+using namespace rust_compiler::adt;
 using namespace llvm;
 
 namespace rust_compiler::crate_loader {
@@ -38,17 +39,18 @@ std::shared_ptr<ast::Crate> loadRootModule(llvm::SmallVectorImpl<char> &libPath,
 
   Parser parser = {ts};
 
-  llvm::Expected<std::shared_ptr<ast::Crate>> crate =
+  StringResult<std::shared_ptr<ast::Crate>> crate =
       parser.parseCrateModule(crateName, crateNum);
-
-  if (auto E = crate.takeError()) {
-    errs() << "Failed to parse crate module " << toString(std::move(E)) << "\n";
+  if (!crate) {
+    llvm::errs() << "failed to parse crate module in load root module: "
+                 << crate.getError() << "\n";
+    //printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
   // todo
 
-  return *crate;
+  return crate.getValue();
 }
 
 } // namespace rust_compiler::crate_loader

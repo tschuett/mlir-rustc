@@ -26,8 +26,6 @@ def Hir_Dialect : Dialect {
     static constexpr llvm::StringRef getTypeNameAttrName() { return "TypeName"; }
   }];
 
-  let useFoldAPI = kEmitFoldAdaptorFolder;
-
   //let hasConstantMaterializer = true;
 
   let dependentDialects = [
