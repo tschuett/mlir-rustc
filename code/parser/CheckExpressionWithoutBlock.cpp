@@ -1,8 +1,12 @@
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
+#include "Parser/Restrictions.h"
+
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace rust_compiler::lexer;
 using namespace llvm;
 
@@ -35,12 +39,13 @@ bool Parser::checkPathOrStructOrMacro() {
 
 bool Parser::checkExpressionWithoutBlock() {
   if (checkOuterAttribute()) {
-    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+    StringResult<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
-    if (auto e = outer.takeError()) {
+    if (!outer) {
       llvm::errs() << "failed to parse outer attributes in check expression "
-                      "without block : "
-                   << toString(std::move(e)) << "\n";
+                      "without block: "
+                   << outer.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
   }
@@ -94,15 +99,18 @@ bool Parser::checkExpressionWithoutBlock() {
   if (checkPathOrStructOrMacro())
     return true;
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> left = parseExpression();
-  if (auto e = left.takeError()) {
-    llvm::errs() << "failed to parse outer attributes in check expression "
-                    "without block : "
-                 << toString(std::move(e)) << "\n";
+  Restrictions restritions;
+  StringResult<std::shared_ptr<ast::Expression>> left =
+      parseExpression({}, restritions);
+  if (!left) {
+    llvm::errs() << "failed to parse expression in check expression "
+                    "without block: "
+                 << left.getError() << "\n";
+    printFunctionStack();
     exit(EXIT_FAILURE);
   }
 
-  return checkExpressionWithoutBlock(*left);
+  return checkExpressionWithoutBlock(left.getValue());
 }
 
 bool Parser::checkExpressionWithoutBlock(std::shared_ptr<Expression> lhs) {

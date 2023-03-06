@@ -1,7 +1,10 @@
 #include "Lexer/KeyWords.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/raw_ostream.h>
+
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace rust_compiler::lexer;
 using namespace llvm;
 
@@ -9,17 +12,20 @@ namespace rust_compiler::parser {
 
 bool Parser::checkVisItem() {
   if (checkKeyWord(KeyWordKind::KW_PUB)) {
-    llvm::Expected<ast::Visibility> vis = parseVisibility();
-    if (auto e = vis.takeError()) {
-      llvm::errs() << "failed to parse visibility in vis item: "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::Visibility> vis = parseVisibility();
+    if (!vis) {
+      llvm::errs()
+          << "failed to parse visibility in check visitem: "
+          << vis.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
   }
 
   if (checkKeyWord(KeyWordKind::KW_MOD)) {
     return true;
-  } else if (checkKeyWord(KeyWordKind::KW_EXTERN) && checkKeyWord(KeyWordKind::KW_CRATE, 1)) {
+  } else if (checkKeyWord(KeyWordKind::KW_EXTERN) &&
+             checkKeyWord(KeyWordKind::KW_CRATE, 1)) {
     return true;
   } else if (checkKeyWord(KeyWordKind::KW_USE)) {
     return true;
@@ -39,9 +45,11 @@ bool Parser::checkVisItem() {
     return true;
   } else if (checkKeyWord(KeyWordKind::KW_IMPL)) {
     return true;
-  } else if (checkKeyWord(KeyWordKind::KW_UNSAFE) && checkKeyWord(KeyWordKind::KW_IMPL, 1)) {
+  } else if (checkKeyWord(KeyWordKind::KW_UNSAFE) &&
+             checkKeyWord(KeyWordKind::KW_IMPL, 1)) {
     return true;
-  } else if (checkKeyWord(KeyWordKind::KW_UNSAFE) && checkKeyWord(KeyWordKind::KW_EXTERN, 1)) {
+  } else if (checkKeyWord(KeyWordKind::KW_UNSAFE) &&
+             checkKeyWord(KeyWordKind::KW_EXTERN, 1)) {
     return true;
   } else if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
     return true;

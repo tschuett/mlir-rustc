@@ -4,8 +4,11 @@ using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
-int getLeftBindingPower(lexer::Token token) {
+Precedence getLeftBindingPower(lexer::Token token) {
   switch (token.getKind()) {
+  case TokenKind::PathSep:
+    return Precedence::Path;
+    
   }
 }
 

@@ -1,39 +1,43 @@
 #include "AST/OuterAttribute.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/raw_ostream.h>
+
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace llvm;
 using namespace rust_compiler::lexer;
 
 namespace rust_compiler::parser {
 
-llvm::Expected<std::shared_ptr<ast::Item>> Parser::parseItem() {
+StringResult<std::shared_ptr<ast::Item>> Parser::parseItem() {
   if (checkOuterAttribute()) {
-    llvm::Expected<std::vector<ast::OuterAttribute>> outer =
+    StringResult<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
-    if (auto e = outer.takeError()) {
-      llvm::errs() << "failed to parse outer attribute in item : "
-                   << toString(std::move(e)) << "\n";
+    if (!outer) {
+      llvm::errs() << "failed to parse outer attributes in item: "
+                   << outer.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
 
     if (checkVisItem()) {
-      return parseVisItem(*outer);
+      return parseVisItem(outer);
     } else if (checkMacroItem()) {
-      return parseMacroItem(*outer);
+      return parseMacroItem(outer);
     } else {
-      return createStringError(inconvertibleErrorCode(),
+      return StringResult<std::shared_ptr<ast::Item>>(
                                "failed to parse item");
     }
   }
 
   std::vector<OuterAttribute> outer;
   if (checkVisItem()) {
-    return parseVisItem(outer);
+    return StringResult<std::shared_ptr<ast::Item>>(parseVisItem(outer));
   } else if (checkMacroItem()) {
     return parseMacroItem(outer);
   }
-  return createStringError(inconvertibleErrorCode(), "failed to parse item");
+  return StringResult<std::shared_ptr<ast::Item>>("failed to parse item");
 }
 
 } // namespace rust_compiler::parser

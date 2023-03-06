@@ -3,6 +3,7 @@
 #include "ADT/Result.h"
 #include "AST/InherentImpl.h"
 #include "AST/TraitImpl.h"
+#include "AST/Types/TypeExpression.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
@@ -137,7 +138,7 @@ Parser::parseTraitImpl(std::optional<ast::Visibility> vis) {
     impl.setNot();
   }
 
-  StringResult<std::shared_ptr<ast::types::TypePath>> typePath =
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> typePath =
       parseTypePath();
   if (!typePath) {
     llvm::errs() << "failed to parse type item in trait impl: "

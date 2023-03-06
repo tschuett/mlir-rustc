@@ -438,7 +438,7 @@ Parser::parseImplementation(std::optional<ast::Visibility> vis) {
     return parseTraitImpl(vis);
   }
 
-  StringResult<std::shared_ptr<ast::types::TypePath>> path = parseTypePath();
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> path = parseTypePath();
   if (path) {
     if (checkKeyWord(KeyWordKind::KW_FOR)) {
       recover(cp);

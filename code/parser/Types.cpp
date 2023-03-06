@@ -941,7 +941,7 @@ Parser::parseTraitBound() {
       }
       tr.setForLifetimes(forL.getValue());
     }
-    StringResult<std::shared_ptr<ast::types::TypePath>> path = parseTypePath();
+    StringResult<std::shared_ptr<ast::types::TypeExpression>> path = parseTypePath();
     if (!path) {
       llvm::errs() << "failed to parse type path in trait bound: "
                    << path.getError() << "\n";
@@ -972,7 +972,7 @@ Parser::parseTraitBound() {
       tr.setForLifetimes(forL.getValue());
     }
 
-    StringResult<std::shared_ptr<ast::types::TypePath>> path = parseTypePath();
+    StringResult<std::shared_ptr<ast::types::TypeExpression>> path = parseTypePath();
     if (!path) {
       llvm::errs() << "failed to parse type path in trait bound: "
                    << path.getError() << "\n";

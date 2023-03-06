@@ -180,7 +180,7 @@ public:
   parseTypeNoBounds();
   adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseType();
-  adt::Result<std::shared_ptr<ast::types::TypePath>, std::string>
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseTypePath();
 
   adt::Result<ast::types::TypePathSegment, std::string> parseTypePathSegment();

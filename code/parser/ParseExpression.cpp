@@ -1,14 +1,15 @@
+#include "ADT/Result.h"
 #include "Parser/Parser.h"
 
 namespace rust_compiler::parser {
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
+adt::StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseExpression(Restrictions restrictions,
                         std::span<ast::OuterAttribute> outer) {
   return parseExpression(Precedence::Lowest, restrictions);
 }
 
-llvm::Expected<std::shared_ptr<ast::Expression>>
+adt::StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseExpression(Precedence rightBindingPower,
                         std::span<ast::OuterAttribute> outer,
                         Restrictions restrictions) {
@@ -17,7 +18,7 @@ Parser::parseExpression(Precedence rightBindingPower,
   llvm::outs() << "parseExpression"
                << "\n";
 
-  llvm::Expected<std::shared_ptr<ast::Expression>> left =
+  adt::StringResult<std::shared_ptr<ast::Expression>> left =
       parseUnaryExpression({}, restrictions);
   if (auto e = failed.takeError()) {
     llvm::errs() << "failed to parse unary expression in expression: "
@@ -26,7 +27,7 @@ Parser::parseExpression(Precedence rightBindingPower,
   }
 
   // stop parsing if find lower priority token - parse higher priority first
-  while (rightBindingPower < getLeftBindingPower(lexer.peek_token())) {
+  while (rightBindingPower < getLeftBindingPower(getToken()) {
   }
 
   //  if (checkOuterAttribute()) {

@@ -19,7 +19,7 @@ class TraitImpl : public Implementation {
   std::optional<GenericParams> genericParams;
   std::shared_ptr<types::TypeExpression> type;
   std::optional<WhereClause> whereClause;
-  std::shared_ptr<ast::types::TypePath> typePath;
+  std::shared_ptr<ast::types::TypeExpression> typePath;
 
   std::vector<InnerAttribute> innerAttributes;
   std::vector<AssociatedItem> associatedItems;
@@ -33,7 +33,7 @@ public:
   void setUnsafe() { unsafe = true; }
   void setGenericParams(const GenericParams &gp) { genericParams = gp; }
   void setNot() { notKw = true; }
-  void setTypePath(std::shared_ptr<ast::types::TypePath> tp) { typePath = tp; }
+  void setTypePath(std::shared_ptr<ast::types::TypeExpression> tp) { typePath = tp; }
   void setType(std::shared_ptr<ast::types::TypeExpression> te) { type = te; }
   void setInnerAttributes(std::span<InnerAttribute> i) {
     innerAttributes = {i.begin(), i.end()};

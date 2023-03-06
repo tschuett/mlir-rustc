@@ -7,7 +7,7 @@ void QualifiedPathType::setType(
   type = _type;
 }
 
-void QualifiedPathType::setPath(std::shared_ptr<ast::types::TypePath> _path) {
+void QualifiedPathType::setPath(std::shared_ptr<ast::types::TypeExpression> _path) {
   path = _path;
 }
 

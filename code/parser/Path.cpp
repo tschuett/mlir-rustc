@@ -349,7 +349,7 @@ StringResult<ast::types::TypePathSegment> Parser::parseTypePathSegment() {
   }
 }
 
-StringResult<std::shared_ptr<ast::types::TypePath>> Parser::parseTypePath() {
+StringResult<std::shared_ptr<ast::types::TypeExpression>> Parser::parseTypePath() {
   Location loc = getLocation();
 
   class TypePath path = {loc};
@@ -381,12 +381,12 @@ StringResult<std::shared_ptr<ast::types::TypePath>> Parser::parseTypePath() {
       }
       path.addSegment(next.getValue());
     } else {
-      return StringResult<std::shared_ptr<ast::types::TypePath>>(
+      return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
           std::make_shared<ast::types::TypePath>(path));
     }
   }
 
-  return StringResult<std::shared_ptr<ast::types::TypePath>>(
+  return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
       std::make_shared<ast::types::TypePath>(path));
 }
 
@@ -450,7 +450,7 @@ StringResult<ast::types::QualifiedPathType> Parser::parseQualifiedPathType() {
 
   if (checkKeyWord(KeyWordKind::KW_AS)) {
     assert(eatKeyWord(KeyWordKind::KW_AS));
-    StringResult<std::shared_ptr<ast::types::TypePath>> typePath =
+    StringResult<std::shared_ptr<ast::types::TypeExpression>> typePath =
         parseTypePath();
     if (!typePath) {
       llvm::errs() << "failed to parse type path in parse qualified path type: "

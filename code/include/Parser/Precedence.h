@@ -6,7 +6,7 @@ namespace rust_compiler::parser {
 
 enum class Precedence {
   Highest = 100,
-  Paths = 95,
+  Path = 95,
   MethodCall = 90,
   FieldExpression = 85,
   FunctionCall = 80,

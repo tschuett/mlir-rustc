@@ -2,7 +2,10 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/raw_ostream.h>
+
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 using namespace rust_compiler::ast::types;
 using namespace rust_compiler::lexer;
 using namespace llvm;
@@ -15,15 +18,14 @@ namespace rust_compiler::parser {
   MacroInvocation: SimplePath followed by !
  */
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>>
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
   CheckPoint cp = getCheckPoint();
 
   while (true) {
-    //llvm::outs() << lexer::Token2String(getToken().getKind()) << "\n";
+    // llvm::outs() << lexer::Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Eof)) {
-      return createStringError(
-          inconvertibleErrorCode(),
+      return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
           "failed to parse "
           "raitObjectTypeOrTypePathOrMacroInvocation: eof");
     } else if (check(TokenKind::PathSep)) {
@@ -63,19 +65,20 @@ Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
       return parseTypePath();
     }
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse "
-                           "raitObjectTypeOrTypePathOrMacroInvocation");
+  return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+      "failed to parse "
+      "raitObjectTypeOrTypePathOrMacroInvocation");
 }
 
-llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
+StringResult<std::shared_ptr<ast::types::TypeExpression>> Parser::
     parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObjectTypeOrBareFunctionType() {
   Location loc = getLocation();
   CheckPoint cp = getCheckPoint();
 
-  //llvm::outs() << "parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObje"
-  //                "ctTypeOrBareFunctionType"
-  //             << "\n";
+  // llvm::outs() <<
+  // "parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObje"
+  //                 "ctTypeOrBareFunctionType"
+  //              << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_DYN)) {
     return parseTraitObjectType();
@@ -94,10 +97,12 @@ llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
   } else if (check(TokenKind::PathSep)) {
     return parseTraitObjectTypeOrTypePathOrMacroInvocation();
   } else if (checkKeyWord(KeyWordKind::KW_FOR)) {
-    llvm::Expected<ast::types::ForLifetimes> forL = parseForLifetimes();
-    if (auto e = forL.takeError()) {
-      llvm::errs() << "failed to parse for lifetimes in  : "
-                   << toString(std::move(e)) << "\n";
+    StringResult<ast::types::ForLifetimes> forL = parseForLifetimes();
+    if (!forL) {
+      llvm::errs() << "failed to parse for litetimes in check expression "
+                      "without block: "
+                   << forL.getError() << "\n";
+      printFunctionStack();
       exit(EXIT_FAILURE);
     }
     if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
@@ -118,10 +123,10 @@ llvm::Expected<std::shared_ptr<ast::types::TypeExpression>> Parser::
   } else {
     return parseTraitObjectTypeOrTypePathOrMacroInvocation();
   }
-  return createStringError(inconvertibleErrorCode(),
-                           "failed to parse "
-                           "TupleOrParensTypeOrTypePathOrMacroInvocationOrTrait"
-                           "ObjectTypeOrBareFunctionType");
+  return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+      "failed to parse "
+      "TupleOrParensTypeOrTypePathOrMacroInvocationOrTrait"
+      "ObjectTypeOrBareFunctionType");
 }
 
 } // namespace rust_compiler::parser
