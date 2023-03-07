@@ -19,18 +19,21 @@ enum class ActionKind {
 enum class InputKind { File, CargoTomlDir };
 
 class FrontendInput {
-  std::string file;
+  std::string inputFile;
+  std::string remarksOutput;
   std::string crateName;
   InputKind kind;
 
 public:
-  FrontendInput(std::string_view file, std::string_view crateName,
-                InputKind inKind)
-      : file(file), crateName(crateName), kind(inKind){};
+  FrontendInput() = default;
+  FrontendInput(std::string_view inputFile, std::string_view remarksOutput,
+                std::string_view crateName, InputKind inKind)
+      : inputFile(inputFile), remarksOutput(remarksOutput), kind(inKind){};
 
   InputKind getKind() const { return kind; }
 
-  std::string_view getFile() const { return file; }
+  std::string_view getInputFile() const { return inputFile; }
+  std::string_view getRemarksOutput() const { return remarksOutput; }
   std::string_view getCrateName() const { return crateName; }
 };
 

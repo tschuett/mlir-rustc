@@ -15,9 +15,9 @@ public:
   void executeAction() override;
 };
 
-class SemaOnlylAction : public FrontendAction {
+class SemaOnlyAction : public FrontendAction {
 public:
-  virtual ~SemaOnlylAction() = default;
+  virtual ~SemaOnlyAction() = default;
 
   void executeAction() override;
 };
@@ -49,6 +49,9 @@ class CodeGenAction : public FrontendAction {
 
   void setMLIRDataLayout(mlir::ModuleOp &mlirModule,
                          const llvm::DataLayout &dl);
+
+  void setupMLIRModule();
+  void loadDialects(mlir::MLIRContext *context);
 };
 
 } // namespace rust_compiler::frontend

@@ -9,9 +9,8 @@
 #include <mlir/Pass/Pass.h>
 #include <mlir/Pass/PassManager.h>
 #include <mlir/Transforms/Passes.h>
-
-#include <string_view>
 #include <string>
+#include <string_view>
 
 using namespace rust_compiler::optimizer;
 
@@ -31,6 +30,7 @@ void createDefaultOptimizerPassPipeline(mlir::PassManager &pm,
   pm.addPass(optimizer::createConvertMirToLirPass());
   // Lir
 
+  pm.addPass(optimizer::createDeadArgumentEliminationPass());
   pm.addPass(optimizer::createLoopPass());
 
   pm.addPass(optimizer::createConvertLirToLLVMPass());
@@ -41,6 +41,10 @@ void createDefaultOptimizerPassPipeline(mlir::PassManager &pm,
   pm.addPass(mlir::createCSEPass());
   // pm.addPass(optimizer::createCombinerPass());
   pm.addPass(mlir::createSCCPPass());
+
+  pm.addPass(mlir::createInlinerPass());
+
+  //  pm.addPass(mlir::createLoopInvariantCodeMotionPass());
 
   pm.addPass(createAttributer());
   // pm.addPass(createGVNPass());

@@ -6,6 +6,7 @@
 #include "Lir/LirDialect.h"
 #include "Mir/MirDialect.h"
 #include "Optimizer/PassPipeLine.h"
+#include "mlir/IR/BuiltinOps.h"
 
 #include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/Analysis/TargetTransformInfo.h>
@@ -36,6 +37,23 @@ using namespace rust_compiler::optimizer;
 
 namespace rust_compiler::frontend {
 
+void CodeGenAction::loadDialects(mlir::MLIRContext *context) {
+  context->getOrLoadDialect<hir::HirDialect>();
+  context->getOrLoadDialect<Mir::MirDialect>();
+  context->getOrLoadDialect<Lir::LirDialect>();
+  context->getOrLoadDialect<mlir::func::FuncDialect>();
+  context->getOrLoadDialect<mlir::arith::ArithDialect>();
+  context->getOrLoadDialect<mlir::cf::ControlFlowDialect>();
+  context->getOrLoadDialect<mlir::async::AsyncDialect>();
+  context->getOrLoadDialect<mlir::memref::MemRefDialect>();
+}
+
+void CodeGenAction::setupMLIRModule() {
+  mlir::OpBuilder builder(mlirCtx.get());
+  mlir::ModuleOp theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
+  mlirModule = std::make_unique<mlir::ModuleOp>(theModule);
+}
+
 void CodeGenAction::setMLIRDataLayout(mlir::ModuleOp &mlirModule,
                                       const llvm::DataLayout &dl) {
   mlir::MLIRContext *context = mlirModule.getContext();
@@ -49,27 +67,29 @@ void CodeGenAction::setMLIRDataLayout(mlir::ModuleOp &mlirModule,
 /// Runs parsing, sema and lowers to MLIR.
 bool CodeGenAction::beginSourceFileAction() {
   llvmCtx = std::make_unique<llvm::LLVMContext>();
-  CompilerInstance &ci = this->getInstance();
-
-  xxx;
+  // CompilerInstance &ci = this->getInstance();
 
   // Load the MLIR dialects required by rustc
   mlir::DialectRegistry registry;
   mlirCtx = std::make_unique<mlir::MLIRContext>(registry);
+  loadDialects(mlirCtx.get());
 
   bool res = runParse() && runSemanticChecks();
   if (!res)
     return res;
 
-  // Fetch module from lb, so we can set
-  mlirModule = std::make_unique<mlir::ModuleOp>(lb.getModule());
+  // Initialize module, so we can set the data layout
+  setupMLIRModule();
   setUpTargetMachine();
   const llvm::DataLayout &dl = tm->createDataLayout();
   setMLIRDataLayout(*mlirModule, dl);
 
   // lower to Hir
-  crate_builder::CrateBuilder builder = {OS, mlirCtx};
-  builder.emitCrate(crate);
+  std::error_code EC;
+  llvm::raw_fd_ostream OS = {getRemarksOutput(), EC};
+  crate_builder::CrateBuilder builder = {OS, *mlirModule.get(), *mlirCtx.get(),
+                                         tm.get()};
+  builder.emitCrate(getCrate());
 
   // run the default passes.
   mlir::PassManager pm((*mlirModule)->getName(),
@@ -121,18 +141,11 @@ void CodeGenAction::generateObjectFile(llvm::raw_pwrite_stream &os) {
 void CodeGenAction::generateLLVMIR() {
   assert(mlirModule && "The MLIR module has not been generated yet.");
 
-  CompilerInstance &ci = this->getInstance();
+  //CompilerInstance &ci = this->getInstance();
   // auto opts = ci.getInvocation().getCodeGenOpts();
   // llvm::OptimizationLevel level = llvm::OptimizationLevel::O3;
 
-  mlirCtx->getOrLoadDialect<hir::HirDialect>();
-  mlirCtx->getOrLoadDialect<Mir::MirDialect>();
-  mlirCtx->getOrLoadDialect<Lir::LirDialect>();
-  mlirCtx->getOrLoadDialect<mlir::func::FuncDialect>();
-  mlirCtx->getOrLoadDialect<mlir::arith::ArithDialect>();
-  mlirCtx->getOrLoadDialect<mlir::cf::ControlFlowDialect>();
-  mlirCtx->getOrLoadDialect<mlir::async::AsyncDialect>();
-  mlirCtx->getOrLoadDialect<mlir::memref::MemRefDialect>();
+  loadDialects(mlirCtx.get());
 
   // fir::support::loadDialects(*mlirCtx);
   // fir::support::registerLLVMTranslation(*mlirCtx);
@@ -153,9 +166,9 @@ void CodeGenAction::generateLLVMIR() {
 
   // run the pass manager
   if (!mlir::succeeded(pm.run(*mlirModule))) {
-    unsigned diagID = ci.getDiagnostics().getCustomDiagID(
-        clang::DiagnosticsEngine::Error, "Lowering to LLVM IR failed");
-    ci.getDiagnostics().Report(diagID);
+    //unsigned diagID = ci.getDiagnostics().getCustomDiagID(
+    //    clang::DiagnosticsEngine::Error, "Lowering to LLVM IR failed");
+    //ci.getDiagnostics().Report(diagID);
   }
 
   // Translate to LLVM IR
@@ -164,10 +177,10 @@ void CodeGenAction::generateLLVMIR() {
       *mlirModule, *llvmCtx, moduleName ? *moduleName : "FIRModule");
 
   if (!llvmModule) {
-    unsigned diagID = ci.getDiagnostics().getCustomDiagID(
-        clang::DiagnosticsEngine::Error, "failed to create the LLVM "
-                                         "module");
-    ci.getDiagnostics().Report(diagID);
+    //unsigned diagID = ci.getDiagnostics().getCustomDiagID(
+    //    clang::DiagnosticsEngine::Error, "failed to create the LLVM "
+    //                                     "module");
+    //ci.getDiagnostics().Report(diagID);
     return;
   }
 
@@ -203,7 +216,7 @@ void CodeGenAction::setUpTargetMachine() {
 
 void CodeGenAction::runOptimizationPipeline(llvm::raw_pwrite_stream &os) {
   // auto opts = getInstance().getInvocation().getCodeGenOpts();
-  auto &diags = getInstance().getDiagnostics();
+  // auto &diags = getInstance().getDiagnostics();
   // llvm::OptimizationLevel level = mapToLevel(opts);
 
   // Create the analysis managers.
@@ -249,8 +262,8 @@ void CodeGenAction::executeAction() {
   llvmModule->setTargetTriple(theTriple);
   llvmModule->setDataLayout(tm->createDataLayout());
 
-  std::unique_ptr<llvm::raw_pwrite_stream> output = ci.createDefaultOutputFile(
-      /*Binary=*/true, inFile, /*extension=*/"o");
+  std::unique_ptr<llvm::raw_pwrite_stream> output =
+    ci.createDefaultOutputFile(getInputFile(), /*extension=*/"o");
 
   runOptimizationPipeline(*output);
 

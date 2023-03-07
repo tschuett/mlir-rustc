@@ -15,12 +15,12 @@ bool FrontendAction::runParse() {
 
   switch (currentInput.getKind()) {
   case InputKind::File: {
-    crate = loadCrate(currentInput.getFile(), currentInput.getCrateName(),
+    crate = loadCrate(currentInput.getInputFile(), currentInput.getCrateName(),
                       crateNum, LoadMode::File);
     break;
   }
   case InputKind::CargoTomlDir: {
-    crate = loadCrate(currentInput.getFile(), currentInput.getCrateName(),
+    crate = loadCrate(currentInput.getInputFile(), currentInput.getCrateName(),
                       crateNum, LoadMode::CargoTomlDir);
     break;
   }

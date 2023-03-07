@@ -25,7 +25,7 @@ target_include_directories(optimizer PRIVATE  ../include)
 add_dependencies(optimizer OptimizerPassIncGen MirOpsIncGen CombineIncGen)
 
 
-target_link_libraries(optimizer analysis hir MirDialect LirDialect)
+target_link_libraries(optimizer analysis hir MirDialect LirDialect MLIRAsyncDialect MLIRMemRefDialect MLIRArithDialect MLIRFuncDialect)
 
 target_precompile_headers(optimizer PRIVATE )
 

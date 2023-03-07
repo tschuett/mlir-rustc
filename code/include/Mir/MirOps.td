@@ -187,11 +187,8 @@ def VTableOp: Mir_Op<"vtable", [IsolatedFromAbove, Symbol, ImplicitMirTerminator
     OptionalAttr<StrAttr>:$parent
   );
 
-  let hasCustomAssemblyFormat = 1;
-
   let regions = (region AnyRegion:$region);
 
-  let skipDefaultBuilders = 1;
   let builders = [
     OpBuilder<(ins "llvm::StringRef":$name, "mlir::Type":$type,
       "llvm::StringRef":$parent,

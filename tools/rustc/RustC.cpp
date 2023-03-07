@@ -4,6 +4,7 @@
 #include "Frontend/CompilerInstance.h"
 #include "Frontend/CompilerInvocation.h"
 #include "Frontend/FrontendActions.h"
+#include "Frontend/FrontendOptions.h"
 #include "Toml/Toml.h"
 
 #include <fstream>
@@ -11,6 +12,7 @@
 #include <llvm/Option/OptTable.h>
 #include <llvm/Option/Option.h>
 #include <llvm/Support/InitLLVM.h>
+#include <llvm/Support/Path.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/Support/raw_ostream.h>
 #include <sstream>
@@ -87,12 +89,16 @@ int main(int argc, char **argv) {
     edition = A->getValue();
   }
 
-  std::optional<std::string> path = std::nullopt;
+  std::string path;
   if (const llvm::opt::Arg *A = Args.getLastArg(OPT_path_EQ)) {
     path = A->getValue();
+  } else {
+    errs() << "the input path is missing"
+           << "\n";
+    exit(EXIT_FAILURE);
   }
 
-  std::optional<std::string> crateName = std::nullopt;
+  std::string crateName = "";
   if (const llvm::opt::Arg *A = Args.getLastArg(OPT_crate_EQ)) {
     crateName = A->getValue();
   } else {
@@ -101,38 +107,45 @@ int main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
+  std::string remarksOutput;
+  llvm::SmallVector<char, 128> libFile{path.begin(), path.end()};
+  llvm::sys::path::replace_extension(libFile, ".yaml");
+  remarksOutput = {libFile.begin(), libFile.end()};
+
+  CompilerInstance instance;
+  FrontendInput input = {path, remarksOutput, crateName, InputKind::File};
+
   if (const llvm::opt::Arg *A = Args.getLastArg(OPT_syntaxonly)) {
-    CompilerInstance instance;
     SyntaxOnlyAction action;
 
     action.setInstance(&instance);
-    action.setCurrentInput();
+    action.setCurrentInput(input);
     action.setEdition(basic::Edition::Edition2024);
 
-    action.run();
+    action.execute();
 
   } else if (const llvm::opt::Arg *A = Args.getLastArg(OPT_withsema)) {
-    CompilerInstance instance;
-    WithSemaAction action;
+    SemaOnlyAction action;
 
     action.setInstance(&instance);
-    action.setCurrentInput();
+    action.setCurrentInput(input);
     action.setEdition(basic::Edition::Edition2024);
 
-    action.run();
+    action.execute();
   } else if (const llvm::opt::Arg *A = Args.getLastArg(OPT_compile)) {
-    CompilerInstance instance;
     CodeGenAction action;
 
     action.setInstance(&instance);
-    action.setCurrentInput();
+    action.setCurrentInput(input);
     action.setEdition(basic::Edition::Edition2024);
 
-    action.run();
+    action.execute();
   } else {
     // error
   }
 
-//  rust_compiler::rustc::buildCrate(*path, *crateName, 1,
-//                                   basic::Edition::Edition2024, mode);
+  //  rust_compiler::rustc::buildCrate(*path, *crateName, 1,
+  //                                   basic::Edition::Edition2024, mode);
 }
+
+// FIXME InputKind::CargoTomlDir

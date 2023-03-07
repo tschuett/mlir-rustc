@@ -18,6 +18,7 @@ def version : Flag<["--"], "version">, HelpText<"Display the version">;
 
 def syntaxonly : Flag<["--"], "fsyntax-only">, HelpText<"Only process syntax">;
 def withsema : Flag<["--"], "fwith-sema">, HelpText<"with sema">;
+def compile : Flag<["--"], "fcompile">, HelpText<"compile">;
 
 
 def edition_EQ : Joined<["--"], "edition=">,

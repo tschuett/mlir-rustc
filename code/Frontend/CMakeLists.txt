@@ -7,7 +7,17 @@ add_library(Frontend
 
 target_include_directories(Frontend PRIVATE  ../include)
 
-llvm_map_components_to_libnames(llvm_libs)
+llvm_map_components_to_libnames(llvm_libs Passes Target Analysis)
 
 
-target_link_libraries(Frontend CrateLoader Optimizer sema ${llvm_libs})
+target_link_libraries(Frontend
+                      CrateLoader
+                      crate_builder
+                      optimizer
+                      sema
+                      ${llvm_libs}
+                      MLIRPass
+                      MLIRLLVMDialect
+                      MLIRLLVMToLLVMIRTranslation
+                      MLIRDataLayoutInterfaces
+                      )

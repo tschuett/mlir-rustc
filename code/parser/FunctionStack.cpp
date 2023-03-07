@@ -1,5 +1,7 @@
 #include "Parser/Parser.h"
 
+#include <llvm/Support/raw_ostream.h>
+
 namespace rust_compiler::parser {
 
 void Parser::printFunctionStack() {
@@ -11,7 +13,7 @@ void Parser::printFunctionStack() {
   }
 }
 
-void Parser::pushFunction(std::string_view f) { functionStack.push(f); }
+  void Parser::pushFunction(std::string_view f) { functionStack.push(std::string(f)); }
 
 void Parser::popFunction(std::string_view f) {
   assert(functionStack.top() == f);

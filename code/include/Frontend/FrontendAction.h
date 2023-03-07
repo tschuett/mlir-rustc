@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AST/Crate.h"
 #include "Basic/Edition.h"
 #include "Frontend/CompilerInstance.h"
 #include "Frontend/FrontendOptions.h"
@@ -9,9 +10,6 @@
 #include <string>
 #include <string_view>
 
-namespace rust_compiler::ast {
-class Crate;
-}
 namespace rust_compiler::frontend {
 
 class FrontendAction {
@@ -48,6 +46,8 @@ public:
     return *instance;
   }
 
+  void setInstance(CompilerInstance *value) { instance = value; }
+
   virtual ~FrontendAction() = default;
 
   void setCurrentInput(FrontendInput currentIntput);
@@ -56,6 +56,12 @@ public:
 
   /// Run the action.
   llvm::Error execute();
+
+  std::string getInputFile();
+
+  std::string getRemarksOutput();
+
+  ast::Crate *getCrate();
 
 protected:
   // Parse the current input file. Return False if fatal errors are reported,

@@ -37,6 +37,7 @@ add_library(parser
            ErrorStack.cpp
            Expression.cpp
            ParseItem.cpp
+           FunctionStack.cpp
            )
 
 
