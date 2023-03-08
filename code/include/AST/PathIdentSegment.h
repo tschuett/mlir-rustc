@@ -34,6 +34,8 @@ public:
   void setSelfType() { kind = PathIdentSegmentKind::Self; }
   void setCrate() { kind = PathIdentSegmentKind::crate; }
   void setDollarCrate() { kind = PathIdentSegmentKind::dollarCrate; }
+
+  std::string getIdentifier() const { return identifier; }
 };
 
 } // namespace rust_compiler::ast

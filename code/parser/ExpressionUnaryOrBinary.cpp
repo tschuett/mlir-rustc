@@ -43,6 +43,8 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
                              Restrictions restrictions) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
 
+  Token tok = getToken();
+
   switch (getToken().getKind()) {
   case TokenKind::Identifier: {
 
@@ -51,7 +53,10 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
     StringResult<std::shared_ptr<PathInExpression>> path =
         parsePathInExpressionPratt();
     if (!path) {
-      // FIXME: check
+      llvm::errs() << "failed to parse pathin expression pratt: "
+                   << path.getError() << "\n";
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          "failed to parse pathin expression prat");
     }
 
     switch (getToken().getKind()) {
@@ -85,9 +90,19 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
       return parseStructExpressionTuplePratt(path.getValue(), outer);
     }
     default: {
-      if (path.getValue()->isSingleSegment()) {
-        return LiteralExpression();
-      }
+      // if (path.getValue()->isSingleSegment()) {
+      //   std::vector<PathExprSegment> segments =
+      //   path.getValue().getSegments(); if (segments[0].hasGenerics()) {
+      //     return path;
+      //   }
+      //   // make it a literal expression: guaranteed to be an identifier!
+      //   std::string ident = segmens[0].getIdent().getIdentifier();
+      //   LiteralExpression lit = {getLocation()};
+      //   lit.setKind(LiteralExpressionKind::StringLiteral);
+      //   lit.setStorage(ident);
+      //   return StringResult<std::shared_ptr<ast::Expression>>(
+      //       std::make_shared<LiteralExpression>(lit));
+      // }
       return StringResult<std::shared_ptr<ast::Expression>>(path.getValue());
     }
     }
@@ -210,7 +225,40 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
     case KeyWordKind::KW_SELFVALUE:
     case KeyWordKind::KW_DOLLARCRATE:
     case KeyWordKind::KW_CRATE: {
-      xxx;
+
+      /* best option: parse as path, then extract identifier, macro,
+       * struct/enum, or just path info from it */
+      StringResult<std::shared_ptr<PathInExpression>> path =
+          parsePathInExpressionPratt();
+      if (!path) {
+        // handle error
+      }
+
+      if (tok.isKeyWord() &&
+          (tok.getKeyWordKind() == KeyWordKind::KW_SELFVALUE) &&
+          path.getValue()->isSingleSegment()) {
+        return path.getValue();
+      }
+
+      switch (getToken().getKind()) {
+      case TokenKind::Not: {
+        return parseMacroInvocationPratt(path.getValue(), outer, restrictions);
+      }
+      case TokenKind::BraceOpen: {
+
+        bool notaBlock = ;
+        // FIXME
+        xxx;
+      }
+      case TokenKind::ParenOpen: {
+        if (!restrictions.canBeStructExpr)
+          return path;
+        return parseStructExpressionTuplePratt(path.getValue(), outer);
+      }
+      default: {
+        return path;
+      }
+      }
     }
     case KeyWordKind::KW_MOVE: {
       return StringResult<std::shared_ptr<ast::Expression>>(
