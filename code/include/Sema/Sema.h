@@ -10,7 +10,6 @@
 #include "AST/LetStatement.h"
 #include "AST/LiteralExpression.h"
 #include "AST/LoopExpression.h"
-//#include "AST/MacroInvocationSemi.h"
 #include "AST/MacroInvocationSemiStatement.h"
 #include "AST/MatchArmGuard.h"
 #include "AST/MethodCallExpression.h"
@@ -74,13 +73,6 @@ private:
   bool isReachable(std::shared_ptr<ast::VisItem>,
                    std::shared_ptr<ast::VisItem>);
 
-  basic::NodeId getNodeId(std::shared_ptr<ast::Node>);
-
-  std::map<basic::ItemId, std::shared_ptr<ast::Item>> items;
-  std::map<basic::NodeId, std::shared_ptr<ast::Node>> nodes;
-  std::map<std::shared_ptr<ast::Node>, basic::NodeId> nodeIds;
-
-  basic::NodeId nextId = 0;
 };
 
 void analyzeSemantics(std::shared_ptr<ast::Crate> &ast);

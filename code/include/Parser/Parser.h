@@ -67,7 +67,6 @@
 #include "Parser/ErrorStack.h"
 #include "Parser/Precedence.h"
 #include "Parser/Restrictions.h"
-#include "Parser/TokenPointer.h"
 
 #include <span>
 #include <stack>
@@ -322,7 +321,7 @@ public:
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseGroupedExpression(Restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
-  parseBlockExpression(std::span<ast::OuterAttribute>);
+      parseBlockExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseExpressionWithoutBlock(std::span<ast::OuterAttribute>, Restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
@@ -331,6 +330,8 @@ public:
       parseExpressionWithBlock(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseClosureExpression(std::span<ast::OuterAttribute>);
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parseClosureExpressionPratt(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseReturnExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
@@ -581,6 +582,9 @@ public:
   void pushFunction(std::string_view);
   void popFunction(std::string_view);
 
+  adt::StringResult<std::shared_ptr<ast::Expression>>
+  parsePathInExpressionPratt();
+
 private:
   bool check(lexer::TokenKind token);
   bool check(lexer::TokenKind token, size_t off);
@@ -652,8 +656,6 @@ private:
 
   void printFunctionStack();
   std::stack<std::string> functionStack;
-
-  ConstTokenPointer getTokenPtr();
 
   adt::StringResult<std::shared_ptr<ast::Expression>>
   parseInfixExpression(std::shared_ptr<ast::Expression> left,

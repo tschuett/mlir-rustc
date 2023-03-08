@@ -5,6 +5,7 @@
 #include "AST/Item.h"
 #include "AST/Module.h"
 #include "Basic/Ids.h"
+#include "Sema/Mappings.h"
 
 #include <memory>
 #include <span>
@@ -26,9 +27,13 @@ class Crate {
 
   basic::CrateNum crateNum;
 
+  basic::NodeId nodeId;
+
 public:
   Crate(std::string_view crateName, basic::CrateNum crateNum)
-      : crateName(crateName), crateNum(crateNum){};
+      : crateName(crateName), crateNum(crateNum) {
+    nodeId = sema::Mappings::get()->getNextNodeId();
+  };
 
   /// how?
   void merge(std::shared_ptr<ast::Module> module, adt::CanonicalPath path);
@@ -38,6 +43,8 @@ public:
   std::string_view getCrateName() const;
 
   basic::CrateNum getCrateNum() const { return crateNum; }
+
+  basic::NodeId getNodeId();
 
   void setInnerAttributes(std::span<InnerAttribute> attr) {
     innerAttributes = {attr.begin(), attr.end()};

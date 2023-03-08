@@ -46,6 +46,8 @@ public:
   void setReturnType(const FunctionReturnType &ret) { returnType = ret; }
 
   void setIdentifier(std::string_view id) { identifier = id; }
+
+  std::string_view getName() const { return identifier; }
 };
 
 } // namespace rust_compiler::ast

@@ -28,7 +28,8 @@ CanonicalPath ScopedCanonicalPath::getCurrentPath() const {
 
   std::reverse(path.begin(), path.end());
 
-  return CanonicalPath(path, crateName);
+  // FIXME the path prefix is missing
+  //return CanonicalPath(path);
 }
 
 void ScopedCanonicalPath::registerScope(ScopedCanonicalPathScope *scope,

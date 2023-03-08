@@ -14,6 +14,7 @@ public:
 
   void setExpression(std::shared_ptr<Expression> expr);
   void setMut();
+  void setDoubleBorrow();
 
   std::shared_ptr<Expression> getExpression() const;
   bool isMutable() const;

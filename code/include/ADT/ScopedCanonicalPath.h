@@ -26,14 +26,11 @@ class ScopedCanonicalPath {
   std::stack<ScopeTy *> scopes;
 
   std::stack<std::pair<basic::NodeId, std::string>> segments;
-  std::string crateName;
 
   CanonicalPath path;
 
 public:
-  ScopedCanonicalPath(const CanonicalPath &path) : path(path) {
-    crateName = path.getCrateName();
-  }
+  ScopedCanonicalPath(const CanonicalPath &path) : path(path) {}
 
   CanonicalPath getCurrentPath() const;
 

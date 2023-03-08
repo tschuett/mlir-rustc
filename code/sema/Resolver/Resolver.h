@@ -6,6 +6,7 @@
 #include "AST/Implementation.h"
 #include "AST/InherentImpl.h"
 #include "AST/MacroItem.h"
+#include "AST/StaticItem.h"
 #include "AST/TraitImpl.h"
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
@@ -68,40 +69,77 @@ private:
 
 class Resolver {
 public:
-  Resolver() = delete;
-  Resolver(std::string_view crateName)
-      : scopedPath(adt::CanonicalPath::newSegment(getNextNodeId(), "crate",
-                                                  crateName)) {}
+  Resolver() = default;
 
   ~Resolver() = default;
 
   void resolveCrate(std::shared_ptr<ast::Crate>);
 
 private:
-  adt::ScopedCanonicalPath scopedPath;
+  // adt::ScopedCanonicalPath scopedPath;
 
-  void resolveVisItem(std::shared_ptr<ast::VisItem>);
-  void resolveMacroItem(std::shared_ptr<ast::MacroItem>);
-  void resolveImplementation(std::shared_ptr<ast::Implementation>);
-  void resolveUseDeclaration(std::shared_ptr<ast::UseDeclaration>);
+  // items no recurse
+  void resolveVisItemNoRecurse(std::shared_ptr<ast::VisItem>,
+                               const adt::CanonicalPath &prefix,
+                               const adt::CanonicalPath &canonicalPrefix);
+  void resolveMacroItemNoRecurse(std::shared_ptr<ast::MacroItem>,
+                                 const adt::CanonicalPath &prefix,
+                                 const adt::CanonicalPath &canonicalPrefix);
+  void resolveFunctionNoRecurse(std::shared_ptr<ast::Function>,
+                                const adt::CanonicalPath &prefix,
+                                const adt::CanonicalPath &canonicalPrefix);
 
-  void resolveInherentImpl(std::shared_ptr<ast::InherentImpl>);
-  void resolveTraitImpl(std::shared_ptr<ast::TraitImpl>);
+  // items
+  void resolveVisItem(std::shared_ptr<ast::VisItem>,
+                      const adt::CanonicalPath &prefix,
+                      const adt::CanonicalPath &canonicalPrefix);
+  void resolveMacroItem(std::shared_ptr<ast::MacroItem>,
+                        const adt::CanonicalPath &prefix,
+                        const adt::CanonicalPath &canonicalPrefix);
+  void resolveStaticItem(std::shared_ptr<ast::StaticItem>,
+                         const adt::CanonicalPath &prefix,
+                         const adt::CanonicalPath &canonicalPrefix);
+  void resolveConstantItem(std::shared_ptr<ast::ConstantItem>,
+                           const adt::CanonicalPath &prefix,
+                           const adt::CanonicalPath &canonicalPrefix);
+  void resolveImplementation(std::shared_ptr<ast::Implementation>,
+                             const adt::CanonicalPath &prefix,
+                             const adt::CanonicalPath &canonicalPrefix);
+  void resolveUseDeclaration(std::shared_ptr<ast::UseDeclaration>,
+                             const adt::CanonicalPath &prefix,
+                             const adt::CanonicalPath &canonicalPrefix);
+  void resolveInherentImpl(std::shared_ptr<ast::InherentImpl>,
+                           const adt::CanonicalPath &prefix,
+                           const adt::CanonicalPath &canonicalPrefix);
+  void resolveTraitImpl(std::shared_ptr<ast::TraitImpl>,
+                        const adt::CanonicalPath &prefix,
+                        const adt::CanonicalPath &canonicalPrefix);
+  void resolveFunction(std::shared_ptr<ast::Function>,
+                       const adt::CanonicalPath &prefix,
+                       const adt::CanonicalPath &canonicalPrefix);
+  void resolveModule(std::shared_ptr<ast::Module>,
+                     const adt::CanonicalPath &prefix,
+                     const adt::CanonicalPath &canonicalPrefix);
 
   std::map<basic::NodeId, std::shared_ptr<ast::UseDeclaration>> useDeclarations;
   std::map<basic::NodeId, std::shared_ptr<ast::Module>> modules;
 
-  basic::NodeId nodeId = 0;
-
-  basic::NodeId getNextNodeId();
-  void addModule(std::shared_ptr<ast::Module> mod, basic::NodeId,
-                 const adt::CanonicalPath &path);
-
   std::vector<Import> determinedImports;
 
-//  std::map<adt::CanonicalPath,
-//           std::pair<std::shared_ptr<ast::Module>, basic::NodeId>>
-//      modules;
+  //  std::map<adt::CanonicalPath,
+  //           std::pair<std::shared_ptr<ast::Module>, basic::NodeId>>
+  //      modules;
+
+  void pushNewModuleScope(basic::NodeId moduleId) {
+    currentModuleStack.push_back(moduleId);
+  }
+
+  void popModuleScope() { currentModuleStack.pop_back(); }
+
+  basic::NodeId peekCurrentModuleScope() const { return currentModuleStack.back(); }
+
+  // keep track of the current module scope ids
+  std::vector<basic::NodeId> currentModuleStack;
 };
 
 } // namespace rust_compiler::sema::resolver

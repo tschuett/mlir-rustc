@@ -23,6 +23,7 @@ add_library(sema
            ItemVisitor.cpp
            ModuleTree.cpp
            NormalizeUseTree.cpp
+           Mappings.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)

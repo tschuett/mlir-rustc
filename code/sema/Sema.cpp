@@ -36,8 +36,8 @@ void analyzeSemantics(std::shared_ptr<ast::Crate> &crate) {
 }
 
 void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
-  // FIXME
-  Resolver resolver = {crate->getCrateName()};
+  // FIXME: needs to be passed to CrateBuilder. Mappings knows everything
+  Resolver resolver = {};
 
   {
     TimeTraceScope scope("name resolution");
@@ -103,19 +103,6 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
     }
     }
   }
-}
-
-NodeId Sema::getNodeId(std::shared_ptr<ast::Node> node) {
-  auto it = nodeIds.find(node);
-  if (it != nodeIds.end())
-    return it->second;
-
-  NodeId id = ++nextId;
-
-  nodes.insert_or_assign(id, node);
-  nodeIds.insert_or_assign(node, id);
-
-  return id;
 }
 
 } // namespace rust_compiler::sema
