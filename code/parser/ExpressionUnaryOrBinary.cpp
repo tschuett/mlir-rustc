@@ -1,6 +1,7 @@
 #include "ADT/Result.h"
 #include "AST/BorrowExpression.h"
 #include "AST/DereferenceExpression.h"
+#include "AST/LiteralExpression.h"
 #include "AST/NegationExpression.h"
 #include "AST/PathExprSegment.h"
 #include "AST/PathIdentSegment.h"
@@ -47,13 +48,51 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
 
     /* best option: parse as path, then extract identifier, macro,
      * struct/enum, or just path info from it */
-    StringResult<std::shared_ptr<Expression>> path =
+    StringResult<std::shared_ptr<PathInExpression>> path =
         parsePathInExpressionPratt();
-    break;
+    if (!path) {
+      // FIXME: check
+    }
+
+    switch (getToken().getKind()) {
+    case TokenKind::Not: {
+      return parseMacroInvocationExpressionPratt(path.getValue(), outer,
+                                                 restrictions);
+    }
+    case TokenKind::BraceOpen: {
+      bool notABlock = (getToken(1).isIdentifier() &&
+                        getToken(2).getKind() == TokenKind::Comma) ||
+                       (getToken(2).getKind() == TokenKind::Colon &&
+                        getToken(4).getKind() == TokenKind::Comma) ||
+                       !canTokenStartType(3);
+
+      /* definitely not a block:
+       *  path '{' ident ','
+       *  path '{' ident ':' [anything] ','
+       *  path '{' ident ':' [not a type]
+       * otherwise, assume block expr and thus path */
+
+      if (!restrictions.canBeStructExpr && !notABlock) {
+        return StringResult<std::shared_ptr<ast::Expression>>(path.getValue());
+      }
+
+      return parseStructExpressionStructPratt(path.getValue(), outer);
+    }
+    case TokenKind::ParenOpen: {
+      if (!restrictions.canBeStructExpr) {
+        return StringResult<std::shared_ptr<ast::Expression>>(path.getValue());
+      }
+      return parseStructExpressionTuplePratt(path.getValue(), outer);
+    }
+    default: {
+      if (path.getValue()->isSingleSegment()) {
+        return LiteralExpression();
+      }
+      return StringResult<std::shared_ptr<ast::Expression>>(path.getValue());
+    }
+    }
   }
-  case TokenKind::Shl: {
-    break;
-  }
+  case TokenKind::Shl:
   case TokenKind::Lt: {
     return parseQualifiedPathInExpression();
     break;
@@ -226,7 +265,8 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
 
 ///  Note that this only parses segment-first paths, not global ones, i.e.
 ///  there is ::. */
-StringResult<std::shared_ptr<Expression>> Parser::parsePathInExpressionPratt() {
+StringResult<std::shared_ptr<PathInExpression>>
+Parser::parsePathInExpressionPratt() {
 
   PathInExpression pathIn = PathInExpression(getLocation());
 
@@ -257,14 +297,14 @@ StringResult<std::shared_ptr<Expression>> Parser::parsePathInExpressionPratt() {
       if (kind) {
         llvm::outs() << "unknown keywork: " << *kind << "\n";
       }
-      return StringResult<std::shared_ptr<Expression>>(
+      return StringResult<std::shared_ptr<PathInExpression>>(
           "unknown keyword in parsePathInExpressionPratt");
     }
     }
   } else {
     llvm::outs() << "unknown token: " << Token2String(getToken().getKind())
                  << "\n";
-    return StringResult<std::shared_ptr<Expression>>(
+    return StringResult<std::shared_ptr<PathInExpression>>(
         "unknown token in parsePathInExpressionPratt");
   }
 
@@ -276,7 +316,6 @@ StringResult<std::shared_ptr<Expression>> Parser::parsePathInExpressionPratt() {
     assert(eat(TokenKind::PathSep));
 
     adt::Result<ast::GenericArgs, std::string> arg = parseGenericArgs();
-
     if (arg)
       initialSegment.addGenerics(arg.getValue());
   }
@@ -293,7 +332,7 @@ StringResult<std::shared_ptr<Expression>> Parser::parsePathInExpressionPratt() {
       llvm::errs() << "failed to parse expected path expr segment in path in "
                       "expression pratt"
                    << "\n";
-      return StringResult<std::shared_ptr<Expression>>(
+      return StringResult<std::shared_ptr<PathInExpression>>(
           "failed to pars path expr segment");
     }
 
@@ -301,7 +340,7 @@ StringResult<std::shared_ptr<Expression>> Parser::parsePathInExpressionPratt() {
     pathIn.addSegment(seg.getValue());
   }
 
-  return StringResult<std::shared_ptr<Expression>>(
+  return StringResult<std::shared_ptr<PathInExpression>>(
       std::make_shared<PathInExpression>(pathIn));
 }
 

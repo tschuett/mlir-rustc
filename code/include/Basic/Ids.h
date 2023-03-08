@@ -15,6 +15,7 @@ using NodeId = uint32_t;
 using ItemId = uint32_t;
 
 const uint32_t UNKNOWN_CREATENUM = std::numeric_limits<uint32_t>::max();
+const uint32_t UNKNOWN_NODEID = std::numeric_limits<uint32_t>::max();
 
 /// refers to a definition
 struct DefId {

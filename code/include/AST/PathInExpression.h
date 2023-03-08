@@ -19,6 +19,8 @@ public:
   void addDoubleColon() { ++doubleColons; };
 
   std::vector<PathExprSegment> getSegments() const { return segs; }
+
+  bool isSingleSegment() const { return segs.size() == 1; }
 };
 
 } // namespace rust_compiler::ast

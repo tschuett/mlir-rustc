@@ -2,6 +2,10 @@ add_library(Resolver
             Resolver.cpp
             Function.cpp
             NoRecurse.cpp
+            Expression.cpp
+            Types.cpp
+            Generics.cpp
+            Patterns.cpp
            )
 
 target_include_directories(Resolver PRIVATE  ../../include)

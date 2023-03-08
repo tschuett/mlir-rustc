@@ -35,7 +35,7 @@ public:
 
   VisItemKind getKind() const { return kind; }
 
-  //  size_t getTokens() override;
+  std::optional<Visibility> getVisibility() const { return vis; }
 };
 
 } // namespace rust_compiler::ast

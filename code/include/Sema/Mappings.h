@@ -31,6 +31,11 @@ public:
     paths.emplace(id, path);
   }
 
+  void insertChildItemToParentModuleMapping(basic::NodeId child,
+                                            basic::NodeId parentModule) {
+    childToParentModuleMap.insert({child, parentModule});
+  }
+
   std::optional<adt::CanonicalPath> lookupCanonicalPath(basic::NodeId id) {
     auto it = paths.find(id);
     if (it == paths.end())
@@ -38,8 +43,7 @@ public:
     return it->second;
   }
 
-  void insert_module_child_item(basic::NodeId module,
-                                adt::CanonicalPath child) {
+  void insertModuleChildItem(basic::NodeId module, adt::CanonicalPath child) {
     auto it = moduleChildItems.find(module);
     if (it == moduleChildItems.end())
       moduleChildItems.insert({module, {child}});
@@ -47,10 +51,13 @@ public:
       it->second.emplace_back(child);
   }
 
+  basic::CrateNum getCurrentCrate() const;
+
 private:
   Mappings();
 
   basic::NodeId nodeIdIter = 7;
+  basic::CrateNum currentCrateNum;
 
   std::map<basic::NodeId, ast::Module *> modules;
   std::map<basic::NodeId, ast::Item *> items;

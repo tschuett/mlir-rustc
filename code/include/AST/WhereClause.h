@@ -21,6 +21,8 @@ public:
 
   bool hasTrailingComma() const { return trailingComma; }
   void setTrailingComma() { trailingComma = true; }
+
+  size_t getSize() const { return items.size(); }
 };
 
 } // namespace rust_compiler::ast

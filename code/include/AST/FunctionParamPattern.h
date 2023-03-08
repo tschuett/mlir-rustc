@@ -19,6 +19,14 @@ public:
   void setName(std::shared_ptr<ast::patterns::PatternNoTopAlt> name);
 
   void setType(std::shared_ptr<ast::types::TypeExpression> type);
+
+  std::shared_ptr<ast::patterns::PatternNoTopAlt> getPattern() const {
+    return name;
+  }
+
+  std::shared_ptr<ast::types::TypeExpression> getType() const { return *type; }
+
+  bool hasType() const { return type.has_value(); }
 };
 
 } // namespace rust_compiler::ast

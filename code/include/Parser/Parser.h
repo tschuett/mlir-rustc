@@ -31,6 +31,7 @@
 #include "AST/MatchArm.h"
 #include "AST/MatchArmGuard.h"
 #include "AST/MatchArms.h"
+#include "AST/PathInExpression.h"
 #include "AST/OuterAttribute.h"
 #include "AST/PathExprSegment.h"
 #include "AST/PathExpression.h"
@@ -582,8 +583,23 @@ public:
   void pushFunction(std::string_view);
   void popFunction(std::string_view);
 
-  adt::StringResult<std::shared_ptr<ast::Expression>>
+  // pratt parsing
+
+  adt::StringResult<std::shared_ptr<ast::PathInExpression>>
   parsePathInExpressionPratt();
+
+  adt::StringResult<std::shared_ptr<ast::Expression>>
+  parseMacroInvocationExpressionPratt(std::shared_ptr<ast::Expression> path,
+                                      std::span<ast::OuterAttribute>,
+                                      Restrictions);
+
+  adt::StringResult<std::shared_ptr<ast::Expression>>
+  parseStructExpressionStructPratt(std::shared_ptr<ast::Expression> path,
+                                   std::span<ast::OuterAttribute>);
+
+  adt::StringResult<std::shared_ptr<ast::Expression>>
+  parseStructExpressionTuplePratt(std::shared_ptr<ast::Expression> path,
+                                  std::span<ast::OuterAttribute>);
 
 private:
   bool check(lexer::TokenKind token);

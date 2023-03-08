@@ -3,16 +3,23 @@
 #include "ADT/CanonicalPath.h"
 #include "ADT/ScopedCanonicalPath.h"
 #include "AST/Crate.h"
+#include "AST/Expression.h"
 #include "AST/Implementation.h"
 #include "AST/InherentImpl.h"
 #include "AST/MacroItem.h"
+#include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/StaticItem.h"
 #include "AST/TraitImpl.h"
+#include "AST/Types/TypeExpression.h"
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
+#include "AST/Visiblity.h"
 #include "Basic/Ids.h"
 
+#include "../TypeChecking/TypeChecking.h"
+
 #include <map>
+#include <optional>
 #include <stack>
 #include <string_view>
 #include <vector>
@@ -23,7 +30,7 @@ namespace rust_compiler::sema::resolver {
 class Rib {
 public:
   // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/enum.RibKind.html
-  enum class RibKind { Type };
+  enum class RibKind { Param, Type };
 
   Rib(RibKind kind) : kind(kind) {}
 
@@ -40,6 +47,7 @@ public:
 
   Rib *peek();
   void push(basic::NodeId id);
+  Rib *pop();
 
   basic::CrateNum getCrateNum() const { return crateNum; }
 
@@ -69,7 +77,7 @@ private:
 
 class Resolver {
 public:
-  Resolver() = default;
+  Resolver() noexcept;
 
   ~Resolver() = default;
 
@@ -121,6 +129,35 @@ private:
                      const adt::CanonicalPath &prefix,
                      const adt::CanonicalPath &canonicalPrefix);
 
+  // expressions
+  void resolveExpression(std::shared_ptr<ast::Expression>,
+                         const adt::CanonicalPath &prefix,
+                         const adt::CanonicalPath &canonicalPrefix);
+  void resolveExpressionWithBlock(std::shared_ptr<ast::ExpressionWithBlock>,
+                                  const adt::CanonicalPath &prefix,
+                                  const adt::CanonicalPath &canonicalPrefix);
+  void
+  resolveExpressionWithoutBlock(std::shared_ptr<ast::ExpressionWithoutBlock>,
+                                const adt::CanonicalPath &prefix,
+                                const adt::CanonicalPath &canonicalPrefix);
+
+  // types
+  void resolveType(std::shared_ptr<ast::types::TypeExpression>);
+
+  // checks
+  void resolveVisibility(std::optional<ast::Visibility>);
+
+  // generics
+  void resolveWhereClause(const ast::WhereClause &);
+  void resolveGenericParams(const ast::GenericParams &,
+                            const adt::CanonicalPath &prefix,
+                            const adt::CanonicalPath &canonicalPrefix);
+
+  // patterns
+  void
+      resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
+                                Rib::RibKind);
+
   std::map<basic::NodeId, std::shared_ptr<ast::UseDeclaration>> useDeclarations;
   std::map<basic::NodeId, std::shared_ptr<ast::Module>> modules;
 
@@ -136,10 +173,39 @@ private:
 
   void popModuleScope() { currentModuleStack.pop_back(); }
 
-  basic::NodeId peekCurrentModuleScope() const { return currentModuleStack.back(); }
+  basic::NodeId peekCurrentModuleScope() const {
+    return currentModuleStack.back();
+  }
+
+  Mappings *mappings;
+
+  // types
+  type_checking::TypeCheckContext *tyctx;
+  void generateBuiltins();
+
+  // Scopes
+  Scope &getNameScope() { return nameScope; }
+  Scope &getTypeScope() { return typeScope; }
+  Scope &getLabelScope() { return labelScope; }
+  Scope &getMacroScope() { return macroScope; }
+
+  Scope nameScope;
+  Scope typeScope;
+  Scope labelScope;
+  Scope macroScope;
+
+  // Ribs
+  void pushNewNameRib(Rib *);
+  void pushNewTypeRib(Rib *);
+  void pushNewLabelRib(Rib *);
+  void pushNewMaroRib(Rib *);
 
   // keep track of the current module scope ids
   std::vector<basic::NodeId> currentModuleStack;
+
+  // Rest
+  basic::NodeId globalTypeNodeId;
+  basic::NodeId unitTyNodeId;
 };
 
 } // namespace rust_compiler::sema::resolver

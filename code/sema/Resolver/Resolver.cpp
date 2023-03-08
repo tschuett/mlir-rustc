@@ -11,10 +11,33 @@
 using namespace rust_compiler::basic;
 using namespace rust_compiler::adt;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::sema::type_checking;
 
 namespace rust_compiler::sema::resolver {
 
+Resolver::Resolver() noexcept
+    : mappings(Mappings::get()), tyctx(TypeCheckContext::get()),
+      nameScope(Scope(mappings->getCurrentCrate())),
+      typeScope(Scope(mappings->getCurrentCrate())),
+      labelScope(Scope(mappings->getCurrentCrate())),
+      macroScope(Scope(mappings->getCurrentCrate())),
+      globalTypeNodeId(UNKNOWN_NODEID), unitTyNodeId(UNKNOWN_NODEID) {
+  generateBuiltins();
+}
+
 void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
+  // FIXME
+
+  // setup scopes
+
+  NodeId scopeNodeId = crate->getNodeId();
+  getNameScope().push(scopeNodeId);
+  getTypeScope().push(scopeNodeId);
+  getLabelScope().push(scopeNodeId);
+  pushNewNameRib(getNameScope().peek());
+  pushNewTypeRib(getTypeScope().peek());
+  pushNewLabelRib(getLabelScope().peek());
+
   // get the root segment
   NodeId crateId = crate->getNodeId();
   CanonicalPath cratePrefix =
@@ -149,6 +172,10 @@ void Resolver::resolveInherentImpl(std::shared_ptr<ast::InherentImpl>,
 void Resolver::resolveTraitImpl(std::shared_ptr<ast::TraitImpl>,
                                 const adt::CanonicalPath &prefix,
                                 const adt::CanonicalPath &canonicalPrefix) {}
+
+void Resolver::resolveVisibility(std::optional<ast::Visibility> vis) {
+  // FIXME
+}
 
 } // namespace rust_compiler::sema::resolver
 

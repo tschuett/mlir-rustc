@@ -16,7 +16,9 @@ public:
 
   void addGenericParam(const GenericParam &gp) { genericParams.push_back(gp); }
 
-  void setTrailingComma() { trailingComma = true;}
+  void setTrailingComma() { trailingComma = true; }
+
+  size_t getNumberOfParams() const { return genericParams.size(); }
 };
 
 } // namespace rust_compiler::ast

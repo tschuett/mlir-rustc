@@ -23,7 +23,8 @@ class FunctionParam : public Node {
   FunctionParamPattern pattern;
 
 public:
-  FunctionParam(Location loc, FunctionParamKind kind) : Node(loc), kind(kind), pattern(loc) {}
+  FunctionParam(Location loc, FunctionParamKind kind)
+      : Node(loc), kind(kind), pattern(loc) {}
 
   void setOuterAttributes(std::span<OuterAttribute> out) {
     outerAttributes = {out.begin(), out.end()};
@@ -35,6 +36,8 @@ public:
   FunctionParamKind getKind() const { return kind; }
 
   void setPattern(const FunctionParamPattern &pat) { pattern = pat; }
+
+  FunctionParamPattern getPattern() const { return pattern; }
 };
 
 } // namespace rust_compiler::ast
