@@ -19,6 +19,8 @@ public:
 
   void setTail(std::shared_ptr<ast::Expression>);
   std::shared_ptr<ast::Expression> getExpression();
+
+  bool hasTailExpression() const { return (bool)expr;}
 };
 
 } // namespace rust_compiler::ast

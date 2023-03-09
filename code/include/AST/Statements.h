@@ -23,12 +23,12 @@ public:
   Statements(Location loc) : Node(loc) {}
 
   void addStmt(std::shared_ptr<Statement> stmt) { stmts.push_back(stmt); }
-  std::span<std::shared_ptr<Statement>> getStmts() { return stmts; }
+  std::vector<std::shared_ptr<Statement>> getStmts() const { return stmts; }
 
   void setTrailing(std::shared_ptr<Expression> trail) { trailing = trail; }
 
-  bool hasTrailing() { return (bool)trailing; }
-  std::shared_ptr<Expression> getTrailing() { return trailing; }
+  bool hasTrailing() const { return (bool)trailing; }
+  std::shared_ptr<Expression> getTrailing() const { return trailing; }
 
   void setOnlySemi() { onlySemi = true; };
 

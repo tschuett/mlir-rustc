@@ -585,7 +585,7 @@ public:
 
   // pratt parsing
 
-  adt::StringResult<std::shared_ptr<ast::PathInExpression>>
+  adt::StringResult<std::shared_ptr<ast::Expression>>
   parsePathInExpressionPratt();
 
   adt::StringResult<std::shared_ptr<ast::Expression>>
@@ -676,6 +676,9 @@ private:
   adt::StringResult<std::shared_ptr<ast::Expression>>
   parseInfixExpression(std::shared_ptr<ast::Expression> left,
                        std::span<ast::OuterAttribute>, Restrictions);
+
+    bool canTokenStartType(lexer::TokenKind);
+
 };
 
 } // namespace rust_compiler::parser

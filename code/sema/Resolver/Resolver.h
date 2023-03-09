@@ -7,7 +7,13 @@
 #include "AST/Implementation.h"
 #include "AST/InherentImpl.h"
 #include "AST/MacroItem.h"
+#include "AST/OperatorExpression.h"
+#include "AST/PathExpression.h"
+#include "AST/PathInExpression.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
+#include "AST/QualifiedPathInExpression.h"
+#include "AST/ReturnExpression.h"
+#include "AST/Statement.h"
 #include "AST/StaticItem.h"
 #include "AST/TraitImpl.h"
 #include "AST/Types/TypeExpression.h"
@@ -140,6 +146,19 @@ private:
   resolveExpressionWithoutBlock(std::shared_ptr<ast::ExpressionWithoutBlock>,
                                 const adt::CanonicalPath &prefix,
                                 const adt::CanonicalPath &canonicalPrefix);
+  void resolveReturnExpression(std::shared_ptr<ast::ReturnExpression>,
+                               const adt::CanonicalPath &prefix,
+                               const adt::CanonicalPath &canonicalPrefix);
+  void resolveOperatorExpression(std::shared_ptr<ast::OperatorExpression>,
+                                 const adt::CanonicalPath &prefix,
+                                 const adt::CanonicalPath &canonicalPrefix);
+  void resolvePathExpression(std::shared_ptr<ast::PathExpression>);
+  void resolveBlockExpression(std::shared_ptr<ast::BlockExpression>,
+                              const adt::CanonicalPath &prefix,
+                              const adt::CanonicalPath &canonicalPrefix);
+  void resolvePathInExpression(std::shared_ptr<ast::PathInExpression>);
+  void resolveQualifiedPathInExpression(
+      std::shared_ptr<ast::QualifiedPathInExpression>);
 
   // types
   void resolveType(std::shared_ptr<ast::types::TypeExpression>);
@@ -157,6 +176,12 @@ private:
   void
       resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
                                 Rib::RibKind);
+
+  // statements
+  void resolveStatement(std::shared_ptr<ast::Statement>,
+                        const adt::CanonicalPath &prefix,
+                        const adt::CanonicalPath &canonicalPrefix,
+                        const adt::CanonicalPath &empty);
 
   std::map<basic::NodeId, std::shared_ptr<ast::UseDeclaration>> useDeclarations;
   std::map<basic::NodeId, std::shared_ptr<ast::Module>> modules;

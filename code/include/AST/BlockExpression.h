@@ -11,7 +11,6 @@
 namespace rust_compiler::ast {
 
 class BlockExpression : public ExpressionWithBlock {
-
   Statements stmts;
 
 public:
