@@ -44,7 +44,7 @@ public:
 
   basic::CrateNum getCrateNum() const { return crateNum; }
 
-  basic::NodeId getNodeId();
+  basic::NodeId getNodeId() const { return nodeId; }
 
   void setInnerAttributes(std::span<InnerAttribute> attr) {
     innerAttributes = {attr.begin(), attr.end()};

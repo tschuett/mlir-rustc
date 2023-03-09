@@ -6,6 +6,8 @@ add_library(Resolver
             Types.cpp
             Generics.cpp
             Patterns.cpp
+            Items.cpp
+            Statements.cpp
            )
 
 target_include_directories(Resolver PRIVATE  ../../include)

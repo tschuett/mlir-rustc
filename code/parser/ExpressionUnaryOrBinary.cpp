@@ -92,19 +92,6 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
       return parseStructExpressionTuplePratt(path.getValue(), outer);
     }
     default: {
-      // if (path.getValue()->isSingleSegment()) {
-      //   std::vector<PathExprSegment> segments =
-      //   path.getValue().getSegments(); if (segments[0].hasGenerics()) {
-      //     return path;
-      //   }
-      //   // make it a literal expression: guaranteed to be an identifier!
-      //   std::string ident = segmens[0].getIdent().getIdentifier();
-      //   LiteralExpression lit = {getLocation()};
-      //   lit.setKind(LiteralExpressionKind::StringLiteral);
-      //   lit.setStorage(ident);
-      //   return StringResult<std::shared_ptr<ast::Expression>>(
-      //       std::make_shared<LiteralExpression>(lit));
-      // }
       return StringResult<std::shared_ptr<ast::Expression>>(path.getValue());
     }
     }
@@ -152,7 +139,7 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
       return StringResult<std::shared_ptr<ast::Expression>>(
           std::make_shared<NegationExpression>(neg));
     } else {
-      // report error
+xx      // report error
     }
   }
   case TokenKind::Star: {
