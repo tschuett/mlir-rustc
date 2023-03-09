@@ -139,7 +139,9 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
       return StringResult<std::shared_ptr<ast::Expression>>(
           std::make_shared<NegationExpression>(neg));
     } else {
-xx      // report error
+      // report error
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          "failed to parse expression in unary expression with UnaryNot");
     }
   }
   case TokenKind::Star: {
@@ -156,6 +158,8 @@ xx      // report error
           std::make_shared<DereferenceExpression>(der));
     } else {
       // report error
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          "failed to parse expression in unary expression with UnaryStar");
     }
   }
   case TokenKind::And: {
@@ -176,6 +180,8 @@ xx      // report error
             std::make_shared<BorrowExpression>(borrow));
       } else {
         // report error
+        return StringResult<std::shared_ptr<ast::Expression>>(
+            "failed to parse expression in unary expression with UnaryAndMut");
       }
     } else {
       StringResult<std::shared_ptr<Expression>> expr =
@@ -187,14 +193,54 @@ xx      // report error
             std::make_shared<BorrowExpression>(borrow));
       } else {
         // report error
+        return StringResult<std::shared_ptr<ast::Expression>>(
+            "failed to parse expression in unary expression with UnaryAnd");
       }
     }
   }
   case TokenKind::AndAnd: {
-    // FIXME
+    Restrictions enteredFromUnary;
+    enteredFromUnary.enteredFromUnary = true;
+    enteredFromUnary.canBeStructExpr = false;
+
+    if ((getToken(1).getKind() == TokenKind::Keyword) &&
+        (getToken(1).getKeyWordKind() == KeyWordKind::KW_MUT)) {
+      assert(eat(TokenKind::Keyword));
+      StringResult<std::shared_ptr<Expression>> expr =
+          parseExpression(Precedence::UnaryAndMut, {}, enteredFromUnary);
+      if (expr) {
+        BorrowExpression borrow = {getLocation()};
+        borrow.setMut();
+        borrow.setExpression(expr.getValue());
+        borrow.setDoubleBorrow();
+        return StringResult<std::shared_ptr<ast::Expression>>(
+            std::make_shared<BorrowExpression>(borrow));
+      } else {
+        // report error
+        return StringResult<std::shared_ptr<ast::Expression>>(
+            "failed to parse expression in unary expression with UnaryAndMut");
+      }
+    } else {
+      StringResult<std::shared_ptr<Expression>> expr =
+          parseExpression(Precedence::UnaryAnd, {}, enteredFromUnary);
+      if (expr) {
+        BorrowExpression borrow = {getLocation()};
+        borrow.setExpression(expr.getValue());
+        borrow.setDoubleBorrow();
+        return StringResult<std::shared_ptr<ast::Expression>>(
+            std::make_shared<BorrowExpression>(borrow));
+      } else {
+        // report error
+        return StringResult<std::shared_ptr<ast::Expression>>(
+            "failed to parse expression in unary expression with UnaryAnd");
+      }
+    }
+    break;
   }
   case TokenKind::PathSep: {
     // report error
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        "unexpected :: in unary expression with UnaryAnd");
   }
   case TokenKind::Or:
   case TokenKind::OrOr:
@@ -221,6 +267,8 @@ xx      // report error
           parsePathInExpressionPratt();
       if (!path) {
         // handle error
+        return StringResult<std::shared_ptr<ast::Expression>>(
+            "failed to parse pathin expression in unary expression");
       }
 
       std::shared_ptr<PathInExpression> p =
@@ -302,7 +350,10 @@ xx      // report error
           parseMatchExpression(outer));
     }
     default: {
-      // report error
+      llvm::outs() << "unexpected token: " << Token2String(getToken().getKind())
+                   << "\n";
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          "unexpected token in unary expression");
     }
     }
   }
