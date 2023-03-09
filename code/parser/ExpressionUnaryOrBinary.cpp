@@ -246,7 +246,7 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
   case TokenKind::OrOr:
     // closure expression
     return StringResult<std::shared_ptr<ast::Expression>>(
-        parseClosureExpressionPratt(outer));
+        parseClosureExpression(outer));
   default: {
     llvm::errs() << "error unhandled token kind: "
                  << Token2String(getToken().getKind()) << "\n";
@@ -307,7 +307,7 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
     }
     case KeyWordKind::KW_MOVE: {
       return StringResult<std::shared_ptr<ast::Expression>>(
-          parseClosureExpressionPratt(outer));
+          parseClosureExpression(outer));
     }
     case KeyWordKind::KW_RETURN: {
       return StringResult<std::shared_ptr<ast::Expression>>(

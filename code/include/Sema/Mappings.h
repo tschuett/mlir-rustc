@@ -20,6 +20,7 @@ public:
   basic::NodeId getNextNodeId();
 
   void insertModule(ast::Module *);
+
   ast::Module *lookupModule(basic::NodeId);
 
   void insertCanonicalPath(basic::NodeId id, const adt::CanonicalPath &path) {
@@ -54,10 +55,11 @@ public:
   basic::CrateNum getCurrentCrate() const;
 
 private:
-  Mappings();
 
+  basic::CrateNum crateNumIter = 7;
   basic::NodeId nodeIdIter = 7;
-  basic::CrateNum currentCrateNum;
+  basic::CrateNum currentCrateNum = basic::UNKNOWN_CREATENUM;
+  
 
   std::map<basic::NodeId, ast::Module *> modules;
   std::map<basic::NodeId, ast::Item *> items;

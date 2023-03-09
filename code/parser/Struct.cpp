@@ -44,7 +44,8 @@ StringResult<ast::StructExprField> Parser::parseStructExprField() {
     }
     assert(eat(TokenKind::Colon));
     Restrictions restrictions;
-    StringResult<std::shared_ptr<ast::Expression>> expr = parseExpression({}, restrictions);
+    StringResult<std::shared_ptr<ast::Expression>> expr =
+        parseExpression({}, restrictions);
     if (!expr) {
       llvm::errs() << "failed to parse expression in parse struct expr field: "
                    << expr.getError() << "\n";
@@ -62,7 +63,8 @@ StringResult<ast::StructExprField> Parser::parseStructExprField() {
     }
     assert(eat(TokenKind::Colon));
     Restrictions restrictions;
-    StringResult<std::shared_ptr<ast::Expression>> expr = parseExpression({}, restrictions);
+    StringResult<std::shared_ptr<ast::Expression>> expr =
+        parseExpression({}, restrictions);
     if (!expr) {
       llvm::errs() << "failed to parse expression in parse struct expr field: "
                    << expr.getError() << "\n";
@@ -143,8 +145,7 @@ StringResult<ast::StructBase> Parser::parseStructBase() {
     assert(eat(TokenKind::ParenOpen));
   }
 
-  StringResult<std::shared_ptr<ast::Expression>> path =
-      parsePathInExpression();
+  StringResult<std::shared_ptr<ast::Expression>> path = parsePathInExpression();
   if (!path) {
     llvm::errs() << "failed to parse path in expression in struct base: "
                  << path.getError() << "\n";
@@ -160,8 +161,7 @@ StringResult<std::shared_ptr<ast::Expression>> Parser::parseStructExprUnit() {
   Location loc = getLocation();
   StructExprUnit unit = {loc};
 
-  StringResult<std::shared_ptr<ast::Expression>> path =
-      parsePathInExpression();
+  StringResult<std::shared_ptr<ast::Expression>> path = parsePathInExpression();
   if (!path) {
     llvm::errs() << "failed to parse path in expression in struct expr unit: "
                  << path.getError() << "\n";
@@ -179,8 +179,7 @@ StringResult<std::shared_ptr<ast::Expression>> Parser::parseStructExprTuple() {
 
   StructExprTuple tuple = {loc};
 
-  StringResult<std::shared_ptr<ast::Expression>> path =
-      parsePathInExpression();
+  StringResult<std::shared_ptr<ast::Expression>> path = parsePathInExpression();
   if (!path) {
     llvm::errs() << "failed to parse path in epxression in struct expr tuple: "
                  << path.getError() << "\n";
@@ -229,7 +228,8 @@ StringResult<std::shared_ptr<ast::Expression>> Parser::parseStructExprTuple() {
             std::make_shared<StructExprTuple>(tuple));
       } else if (check(TokenKind::Comma) && !check(TokenKind::ParenClose, 1)) {
         assert(eat(TokenKind::Comma));
-        StringResult<std::shared_ptr<ast::Expression>> expr = parseExpression({}, restrictions);
+        StringResult<std::shared_ptr<ast::Expression>> expr =
+            parseExpression({}, restrictions);
         if (!expr) {
           llvm::errs() << "failed to expression in struct expr tuple: "
                        << expr.getError() << "\n";
@@ -252,8 +252,7 @@ StringResult<std::shared_ptr<ast::Expression>> Parser::parseStructExprStruct() {
 
   StructExprStruct str = {loc};
 
-  StringResult<std::shared_ptr<ast::Expression>> path =
-      parsePathInExpression();
+  StringResult<std::shared_ptr<ast::Expression>> path = parsePathInExpression();
   if (!path) {
     llvm::errs() << "failed to parse path in expression in struct expr struct: "
                  << path.getError() << "\n";
@@ -477,6 +476,18 @@ StringResult<ast::StructField> Parser::parseStructField() {
   sf.setType(type.getValue());
 
   return StringResult<ast::StructField>(sf);
+}
+
+adt::StringResult<std::shared_ptr<ast::Expression>>
+Parser::parseStructExpressionStructPratt(std::shared_ptr<ast::Expression> path,
+                                         std::span<ast::OuterAttribute>) {
+  assert(false && "to be done");
+}
+
+adt::StringResult<std::shared_ptr<ast::Expression>>
+Parser::parseStructExpressionTuplePratt(std::shared_ptr<ast::Expression> path,
+                                        std::span<ast::OuterAttribute>) {
+  assert(false && "to be done");
 }
 
 } // namespace rust_compiler::parser

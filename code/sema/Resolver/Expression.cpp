@@ -3,9 +3,11 @@
 #include "ADT/CanonicalPath.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/BlockExpression.h"
+#include "AST/LoopExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/PathExpression.h"
 #include "AST/PathInExpression.h"
+#include "AST/LoopExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Statements.h"
 #include "Resolver.h"
@@ -51,6 +53,8 @@ void Resolver::resolveExpressionWithBlock(
     assert(false && "to be handled later");
   }
   case ExpressionWithBlockKind::LoopExpression: {
+    resolveLoopExpression(std::static_pointer_cast<LoopExpression>(withBlock), prefix,
+                          canonicalPrefix);
     assert(false && "to be handled later");
   }
   case ExpressionWithBlockKind::IfExpression: {
@@ -229,7 +233,7 @@ void Resolver::resolveBlockExpression(
   pushNewTypeRib(getNameScope().peek());
   pushNewLabelRib(getLabelScope().peek());
 
-  const  Statements &stmts = block->getExpressions();
+  const Statements &stmts = block->getExpressions();
 
   for (auto &stmt : stmts.getStmts()) {
     if (stmt->getKind() == StatementKind::ItemDeclaration)
@@ -249,6 +253,12 @@ void Resolver::resolveBlockExpression(
   getNameScope().pop();
   getTypeScope().pop();
   getLabelScope().pop();
+}
+
+void Resolver::resolveLoopExpression(
+    std::shared_ptr<ast::LoopExpression>, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  assert(false && "to be handled later");
 }
 
 } // namespace rust_compiler::sema::resolver

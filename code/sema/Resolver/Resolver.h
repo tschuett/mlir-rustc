@@ -4,8 +4,11 @@
 #include "ADT/ScopedCanonicalPath.h"
 #include "AST/Crate.h"
 #include "AST/Expression.h"
+#include "AST/ExpressionStatement.h"
 #include "AST/Implementation.h"
 #include "AST/InherentImpl.h"
+#include "AST/LetStatement.h"
+#include "AST/LoopExpression.h"
 #include "AST/MacroItem.h"
 #include "AST/OperatorExpression.h"
 #include "AST/PathExpression.h"
@@ -36,20 +39,23 @@ namespace rust_compiler::sema::resolver {
 class Rib {
 public:
   // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/enum.RibKind.html
-  enum class RibKind { Param, Type };
+  enum class RibKind { Param, Type, Variable };
 
-  Rib(RibKind kind) : kind(kind) {}
+  Rib(basic::CrateNum crateNum, basic::NodeId nodeId)
+      : crateNum(crateNum), nodeId(nodeId) {}
 
-  RibKind getKind() const { return kind; }
+  basic::NodeId getNodeId() const { return nodeId; }
+  basic::CrateNum getCrateNum() const { return crateNum; }
 
 private:
+  basic::CrateNum crateNum;
+  basic::NodeId nodeId;
   std::map<std::string, basic::NodeId> bindings;
-  RibKind kind;
 };
 
 class Scope {
 public:
-  Scope(basic::CrateNum crateNum);
+  Scope(basic::CrateNum crateNum) : crateNum(crateNum) {}
 
   Rib *peek();
   void push(basic::NodeId id);
@@ -59,7 +65,7 @@ public:
 
 private:
   basic::CrateNum crateNum;
-  basic::NodeId node_id;
+  basic::NodeId nodeId;
   std::vector<Rib *> stack;
 };
 
@@ -152,6 +158,9 @@ private:
   void resolveOperatorExpression(std::shared_ptr<ast::OperatorExpression>,
                                  const adt::CanonicalPath &prefix,
                                  const adt::CanonicalPath &canonicalPrefix);
+  void resolveLoopExpression(std::shared_ptr<ast::LoopExpression>,
+                             const adt::CanonicalPath &prefix,
+                             const adt::CanonicalPath &canonicalPrefix);
   void resolvePathExpression(std::shared_ptr<ast::PathExpression>);
   void resolveBlockExpression(std::shared_ptr<ast::BlockExpression>,
                               const adt::CanonicalPath &prefix,
@@ -182,6 +191,12 @@ private:
                         const adt::CanonicalPath &prefix,
                         const adt::CanonicalPath &canonicalPrefix,
                         const adt::CanonicalPath &empty);
+  void resolveLetStatement(std::shared_ptr<ast::LetStatement>,
+                           const adt::CanonicalPath &prefix,
+                           const adt::CanonicalPath &canonicalPrefix);
+  void resolveExpressoinStatement(std::shared_ptr<ast::ExpressionStatement>,
+                                  const adt::CanonicalPath &prefix,
+                                  const adt::CanonicalPath &canonicalPrefix);
 
   std::map<basic::NodeId, std::shared_ptr<ast::UseDeclaration>> useDeclarations;
   std::map<basic::NodeId, std::shared_ptr<ast::Module>> modules;
@@ -224,6 +239,12 @@ private:
   void pushNewTypeRib(Rib *);
   void pushNewLabelRib(Rib *);
   void pushNewMaroRib(Rib *);
+
+  // map a node to a rib
+  std::map<basic::NodeId, Rib *> nameRibs;
+  std::map<basic::NodeId, Rib *> typeRibs;
+  std::map<basic::NodeId, Rib *> labelRibs;
+  std::map<basic::NodeId, Rib *> macroRibs;
 
   // keep track of the current module scope ids
   std::vector<basic::NodeId> currentModuleStack;

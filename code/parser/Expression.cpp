@@ -1870,4 +1870,11 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
 //   }
 // }
 
+adt::StringResult<std::shared_ptr<ast::Expression>>
+Parser::parseMacroInvocationExpressionPratt(
+    std::shared_ptr<ast::Expression> path, std::span<ast::OuterAttribute>,
+    Restrictions) {
+  assert(false && "to be done");
+}
+
 } // namespace rust_compiler::parser

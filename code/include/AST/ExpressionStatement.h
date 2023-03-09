@@ -24,16 +24,21 @@ public:
       : Statement(loc, StatementKind::ExpressionStatement) {}
 
   ExpressionStatementKind getKind() const { return kind; }
+
   void setExprWoBlock(std::shared_ptr<Expression> w) {
     wo = w;
     kind = ExpressionStatementKind::ExpressionWithoutBlock;
   }
+
   void setExprWithBlock(std::shared_ptr<Expression> w) {
     with = w;
     kind = ExpressionStatementKind::ExpressionWithBlock;
   }
 
   void setTrailingSemi() { trailingSemi = true; }
+
+  std::shared_ptr<Expression> getWithBlock() const { return with; }
+  std::shared_ptr<Expression> getWithoutBlock() const { return wo; }
 };
 
 } // namespace rust_compiler::ast

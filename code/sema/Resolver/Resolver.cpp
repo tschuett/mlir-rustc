@@ -15,6 +15,21 @@ using namespace rust_compiler::sema::type_checking;
 
 namespace rust_compiler::sema::resolver {
 
+Rib *Scope::peek() { return stack.back(); }
+
+void Scope::push(NodeId id) { stack.push_back(new Rib(getCrateNum(), id)); }
+
+Rib *Scope::pop() {
+  Rib *r = peek();
+  stack.pop_back();
+  return r;
+}
+
+void Resolver::pushNewNameRib(Rib *r) { nameRibs[r->getNodeId()] = r; }
+void Resolver::pushNewTypeRib(Rib *r) { typeRibs[r->getNodeId()] = r; }
+void Resolver::pushNewLabelRib(Rib *r) { labelRibs[r->getNodeId()] = r; }
+void Resolver::pushNewMaroRib(Rib *r) { macroRibs[r->getNodeId()] = r; }
+
 Resolver::Resolver() noexcept
     : mappings(Mappings::get()), tyctx(TypeCheckContext::get()),
       nameScope(Scope(mappings->getCurrentCrate())),
@@ -176,6 +191,7 @@ void Resolver::resolveTraitImpl(std::shared_ptr<ast::TraitImpl>,
 void Resolver::resolveVisibility(std::optional<ast::Visibility> vis) {
   // FIXME
 }
+
 
 } // namespace rust_compiler::sema::resolver
 

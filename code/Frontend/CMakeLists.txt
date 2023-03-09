@@ -7,7 +7,7 @@ add_library(Frontend
 
 target_include_directories(Frontend PRIVATE  ../include)
 
-llvm_map_components_to_libnames(llvm_libs Passes Target Analysis)
+llvm_map_components_to_libnames(llvm_libs Passes Target Analysis Support)
 
 
 target_link_libraries(Frontend
@@ -18,6 +18,10 @@ target_link_libraries(Frontend
                       ${llvm_libs}
                       MLIRPass
                       MLIRLLVMDialect
+                      MLIRLLVMIRToLLVMTranslation
                       MLIRLLVMToLLVMIRTranslation
                       MLIRDataLayoutInterfaces
+                      MLIRControlFlowToLLVM
+                      MLIRMemRefToLLVM
+                      MLIRFuncToLLVM
                       )

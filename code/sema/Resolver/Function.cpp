@@ -19,7 +19,6 @@ void Resolver::resolveFunction(std::shared_ptr<ast::Function> fun,
 
   resolveVisibility(fun->getVisibility());
 
-  // FIXME
   NodeId scopeNodeId = fun->getNodeId();
   getNameScope().push(scopeNodeId);
   getTypeScope().push(scopeNodeId);

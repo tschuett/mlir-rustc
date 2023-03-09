@@ -14,7 +14,7 @@
 
 using namespace rust_compiler::optimizer;
 
-namespace rust_compiler {
+namespace rust_compiler::optimizer {
 
 void createDefaultOptimizerPassPipeline(mlir::PassManager &pm,
                                         std::string_view summaryFile) {
@@ -67,4 +67,4 @@ void createDefaultOptimizerPassPipeline(mlir::PassManager &pm,
   // pm.addPass(createMirToLLVMLowering());
 }
 
-} // namespace rust_compiler
+} // namespace rust_compiler::optimizer

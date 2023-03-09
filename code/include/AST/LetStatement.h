@@ -34,7 +34,17 @@ public:
   void setExpression(std::shared_ptr<ast::Expression> expr);
   void setElseExpr(std::shared_ptr<ast::Expression> exp) { elseExpr = exp; }
 
+  bool hasInit() const { return (bool)expr; }
+
+  std::shared_ptr<ast::Expression> getInit() const { return *expr; };
+
   std::shared_ptr<ast::patterns::PatternNoTopAlt> getPattern();
+
+  bool hasType() const { return type.has_value(); }
+
+  std::shared_ptr<ast::types::TypeExpression> getType() const {
+    return *type;
+  };
 };
 
 } // namespace rust_compiler::ast

@@ -302,11 +302,6 @@ public:
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parsePathInExpressionOrStructOrExpressionWithPostfix();
 
-  //  adt::Result<std::shared_ptr<ast::Expression>, std::string>
-  //  parseExpressionWithPostfix(std::shared_ptr<ast::Expression> left,
-  //                             rust_compiler::parser::Restrictions =
-  //                                 rust_compiler::parser::Restrictions());
-
   adt::StringResult<std::shared_ptr<ast::Expression>>
   parseExpression(std::span<ast::OuterAttribute> outer,
                   rust_compiler::parser::Restrictions restrictions);
@@ -315,8 +310,6 @@ public:
                   std::span<ast::OuterAttribute> outer,
                   rust_compiler::parser::Restrictions restrictions);
 
-  //  llvm::Expected<std::shared_ptr<ast::Expression>>
-  //  parseExpressionExceptStruct();
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseTupleExpression(Restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
@@ -331,8 +324,6 @@ public:
       parseExpressionWithBlock(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseClosureExpression(std::span<ast::OuterAttribute>);
-  adt::Result<std::shared_ptr<ast::Expression>, std::string>
-      parseClosureExpressionPratt(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseReturnExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
