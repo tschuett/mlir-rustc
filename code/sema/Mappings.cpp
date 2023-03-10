@@ -30,4 +30,10 @@ ast::Module *Mappings::lookupModule(basic::NodeId id) {
   return it->second;
 }
 
+basic::CrateNum Mappings::getCurrentCrate() const { return currentCrateNum; }
+
+void Mappings::setCurrentCrate(basic::CrateNum crateNum) {
+  currentCrateNum = crateNum;
+}
+
 } // namespace rust_compiler::sema

@@ -1,6 +1,7 @@
 #include "CrateLoader/CrateLoader.h"
 
 #include "LoadModule.h"
+#include "Sema/Mappings.h"
 
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/Support/FileSystem.h>
@@ -15,6 +16,8 @@ std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
                                       std::string_view crateName,
                                       basic::CrateNum crateNum, LoadMode mode) {
   llvm::SmallVector<char, 128> libFile{path.begin(), path.end()};
+
+  sema::Mappings::get()->setCurrentCrate(crateNum);
 
   if (mode == LoadMode::File) {
     if (not llvm::sys::fs::exists(libFile)) {

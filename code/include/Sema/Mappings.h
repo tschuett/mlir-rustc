@@ -53,13 +53,12 @@ public:
   }
 
   basic::CrateNum getCurrentCrate() const;
+  void setCurrentCrate(basic::CrateNum);
 
 private:
-
   basic::CrateNum crateNumIter = 7;
   basic::NodeId nodeIdIter = 7;
   basic::CrateNum currentCrateNum = basic::UNKNOWN_CREATENUM;
-  
 
   std::map<basic::NodeId, ast::Module *> modules;
   std::map<basic::NodeId, ast::Item *> items;

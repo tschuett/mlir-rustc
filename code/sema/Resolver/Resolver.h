@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ADT/CanonicalPath.h"
-#include "ADT/ScopedCanonicalPath.h"
 #include "AST/Crate.h"
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
@@ -99,8 +98,6 @@ public:
   void resolveCrate(std::shared_ptr<ast::Crate>);
 
 private:
-  // adt::ScopedCanonicalPath scopedPath;
-
   // items no recurse
   void resolveVisItemNoRecurse(std::shared_ptr<ast::VisItem>,
                                const adt::CanonicalPath &prefix,

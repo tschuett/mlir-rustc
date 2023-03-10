@@ -235,14 +235,14 @@ void Resolver::resolveBlockExpression(
 
   const Statements &stmts = block->getExpressions();
 
+//  for (auto &stmt : stmts.getStmts()) {
+//    if (stmt->getKind() == StatementKind::ItemDeclaration)
+//      resolveStatement(stmt, prefix, canonicalPrefix,
+//                       CanonicalPath::createEmpty());
+//  }
+//
   for (auto &stmt : stmts.getStmts()) {
-    if (stmt->getKind() == StatementKind::ItemDeclaration)
-      resolveStatement(stmt, prefix, canonicalPrefix,
-                       CanonicalPath::createEmpty());
-  }
-
-  for (auto &stmt : stmts.getStmts()) {
-    if (stmt->getKind() != StatementKind::ItemDeclaration)
+    //  if (stmt->getKind() != StatementKind::ItemDeclaration)
       resolveStatement(stmt, prefix, canonicalPrefix,
                        CanonicalPath::createEmpty());
   }
