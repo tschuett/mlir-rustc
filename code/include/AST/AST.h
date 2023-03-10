@@ -2,7 +2,7 @@
 
 #include "Basic/Ids.h"
 #include "Location.h"
-#include "Sema/Mappings.h"
+#include "Mappings/Mappings.h"
 
 #include <cstddef>
 #include <vector>
@@ -17,7 +17,7 @@ class Node {
 
 public:
   explicit Node(Location location) : location(location) {
-    nodeId = sema::Mappings::get()->getNextNodeId();
+    nodeId = mappings::Mappings::get()->getNextNodeId();
   }
 
   virtual ~Node() = default;

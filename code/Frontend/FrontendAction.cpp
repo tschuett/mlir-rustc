@@ -4,6 +4,7 @@
 #include "CrateLoader/CrateLoader.h"
 #include "Frontend/FrontendOptions.h"
 #include "Sema/Sema.h"
+#include "llvm/Support/Error.h"
 
 using namespace rust_compiler::sema;
 using namespace rust_compiler::crate_loader;
@@ -51,6 +52,8 @@ std::string FrontendAction::getInputFile() {
 std::string FrontendAction::getRemarksOutput() {
   return std::string(currentInput.getRemarksOutput());
 }
+
+llvm::Error FrontendAction::execute() { executeAction(); }
 
 } // namespace rust_compiler::frontend
 

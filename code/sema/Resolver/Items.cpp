@@ -1,21 +1,16 @@
 #include "ADT/CanonicalPath.h"
 #include "Resolver.h"
-#include "Sema/Mappings.h"
+#include "Mappings/Mappings.h"
 
 using namespace rust_compiler::adt;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::mappings;
 
 namespace rust_compiler::sema::resolver {
 
 void Resolver::resolveModule(std::shared_ptr<ast::Module>,
                              const adt::CanonicalPath &prefix,
                              const adt::CanonicalPath &canonicalPrefix) {
-  assert(false && "to be handled later");
-}
-
-void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem>,
-                              const adt::CanonicalPath &prefix,
-                              const adt::CanonicalPath &canonicalPrefix) {
   assert(false && "to be handled later");
 }
 

@@ -24,6 +24,8 @@ public:
   void addPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat) {
     pattern = pat;
   }
+
+  std::string getIdentifier() const { return identifier; }
 };
 
 } // namespace rust_compiler::ast::patterns

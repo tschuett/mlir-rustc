@@ -11,7 +11,7 @@ class Module;
 class Item;
 } // namespace rust_compiler::ast
 
-namespace rust_compiler::sema {
+namespace rust_compiler::mappings {
 
 class Mappings {
 public:

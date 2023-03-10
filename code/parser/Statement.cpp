@@ -180,9 +180,13 @@ Parser::parseMacroInvocationSemiStatement() {
 StringResult<std::shared_ptr<ast::Statement>>
 Parser::parseLetStatement(std::span<ast::OuterAttribute> outer,
                           Restrictions restrictions) {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   LetStatement let = {loc};
+
+  llvm::outs() << "parse let statement"
+               << "\n";
 
   let.setOuterAttributes(outer);
 
@@ -233,7 +237,7 @@ Parser::parseLetStatement(std::span<ast::OuterAttribute> outer,
   if (checkKeyWord(KeyWordKind::KW_ELSE)) {
     assert(eatKeyWord(KeyWordKind::KW_ELSE));
     StringResult<std::shared_ptr<ast::Expression>> block =
-      parseBlockExpression({});
+        parseBlockExpression({});
     if (!block) {
       llvm::errs() << "failed to parse block expression in let statement: "
                    << block.getError() << "\n";
@@ -284,8 +288,7 @@ Parser::parseStatement(Restrictions restriction) {
       return StringResult<std::shared_ptr<ast::Statement>>(
           std::make_shared<ItemDeclaration>(item));
     } else if (checkMacroItem()) {
-      StringResult<std::shared_ptr<ast::Item>> macroItem =
-          parseMacroItem(ot);
+      StringResult<std::shared_ptr<ast::Item>> macroItem = parseMacroItem(ot);
       if (!macroItem) {
         llvm::errs() << "failed to parse macro item in parse statement: "
                      << macroItem.getError() << "\n";

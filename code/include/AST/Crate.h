@@ -5,7 +5,7 @@
 #include "AST/Item.h"
 #include "AST/Module.h"
 #include "Basic/Ids.h"
-#include "Sema/Mappings.h"
+#include "Mappings/Mappings.h"
 
 #include <memory>
 #include <span>
@@ -32,7 +32,7 @@ class Crate {
 public:
   Crate(std::string_view crateName, basic::CrateNum crateNum)
       : crateName(crateName), crateNum(crateNum) {
-    nodeId = sema::Mappings::get()->getNextNodeId();
+    nodeId = mappings::Mappings::get()->getNextNodeId();
   };
 
   /// how?

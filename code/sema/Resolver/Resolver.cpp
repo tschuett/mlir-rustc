@@ -7,6 +7,7 @@
 #include "Basic/Ids.h"
 
 #include <memory>
+#include <optional>
 
 using namespace rust_compiler::basic;
 using namespace rust_compiler::adt;
@@ -14,6 +15,27 @@ using namespace rust_compiler::ast;
 using namespace rust_compiler::sema::type_checking;
 
 namespace rust_compiler::sema::resolver {
+
+void Rib::insertName(const adt::CanonicalPath &path, basic::NodeId id,
+                     Location loc, bool shadow, RibKind kind) {
+  auto it = pathMappings.find(path);
+  if (it != pathMappings.end() && !shadow)
+    return;
+
+  pathMappings[path] = id;
+  reversePathMappings.insert({id, path});
+  declsWithinRib.insert({id, loc});
+  references[id] = {};
+  declTypeMappings.insert({id, kind});
+}
+
+std::optional<basic::NodeId> Rib::lookupName(const adt::CanonicalPath &ident) {
+  auto it = pathMappings.find(ident);
+  if (it == pathMappings.end())
+    return std::nullopt;
+
+  return it->second;
+}
 
 Rib *Scope::peek() { return stack.back(); }
 
@@ -25,13 +47,18 @@ Rib *Scope::pop() {
   return r;
 }
 
+void Scope::insert(const adt::CanonicalPath &path, basic::NodeId id,
+                   Location loc, Rib::RibKind kind) {
+  peek()->insertName(path, id, loc, true /*shadow*/, kind);
+}
+
 void Resolver::pushNewNameRib(Rib *r) { nameRibs[r->getNodeId()] = r; }
 void Resolver::pushNewTypeRib(Rib *r) { typeRibs[r->getNodeId()] = r; }
 void Resolver::pushNewLabelRib(Rib *r) { labelRibs[r->getNodeId()] = r; }
 void Resolver::pushNewMaroRib(Rib *r) { macroRibs[r->getNodeId()] = r; }
 
 Resolver::Resolver() noexcept
-    : mappings(Mappings::get()), tyctx(TypeCheckContext::get()),
+    : mappings(mappings::Mappings::get()), tyctx(TypeCheckContext::get()),
       nameScope(Scope(mappings->getCurrentCrate())),
       typeScope(Scope(mappings->getCurrentCrate())),
       labelScope(Scope(mappings->getCurrentCrate())),
@@ -105,7 +132,7 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
     std::shared_ptr<ast::Module> mod =
         std::static_pointer_cast<Module>(visItem);
     basic::NodeId modNodeId = mod->getNodeId();
-    Mappings::get()->insertModule(mod.get());
+    mappings::Mappings::get()->insertModule(mod.get());
     pushNewModuleScope(modNodeId);
     resolveModule(mod, prefix, canonicalPrefix);
     popModuleScope();

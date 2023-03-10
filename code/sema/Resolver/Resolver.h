@@ -25,15 +25,17 @@
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
 #include "Basic/Ids.h"
+#include "Location.h"
 
-#include "../TypeChecking/TypeChecking.h"
 #include "../TypeChecking/TyTy.h"
+#include "../TypeChecking/TypeChecking.h"
 
 #include <map>
 #include <optional>
 #include <stack>
 #include <string_view>
 #include <vector>
+#include <set>
 
 namespace rust_compiler::sema::resolver {
 
@@ -49,10 +51,18 @@ public:
   basic::NodeId getNodeId() const { return nodeId; }
   basic::CrateNum getCrateNum() const { return crateNum; }
 
+  void insertName(const adt::CanonicalPath &path, basic::NodeId id,
+                  Location loc, bool shadow, RibKind kind);
+  std::optional<basic::NodeId> lookupName(const adt::CanonicalPath &ident);
+
 private:
   basic::CrateNum crateNum;
   basic::NodeId nodeId;
-  std::map<std::string, basic::NodeId> bindings;
+  std::map<adt::CanonicalPath, basic::NodeId> pathMappings;
+  std::map<basic::NodeId, RibKind> declTypeMappings;
+  std::map<basic::NodeId, std::set<basic::NodeId>> references;
+  std::map<basic::NodeId, Location> declsWithinRib;
+  std::map<basic::NodeId, adt::CanonicalPath> reversePathMappings;
 };
 
 class Scope {
@@ -64,6 +74,9 @@ public:
   Rib *pop();
 
   basic::CrateNum getCrateNum() const { return crateNum; }
+
+  void insert(const adt::CanonicalPath &, basic::NodeId, Location,
+              Rib::RibKind);
 
 private:
   basic::CrateNum crateNum;
@@ -223,7 +236,7 @@ private:
     return currentModuleStack.back();
   }
 
-  Mappings *mappings;
+  mappings::Mappings *mappings;
 
   // types
   type_checking::TypeCheckContext *tyctx;

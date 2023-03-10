@@ -1,3 +1,5 @@
+#include "ADT/CanonicalPath.h"
+#include "AST/Patterns/IdentifierPattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/PatternWithoutRange.h"
 #include "Resolver.h"
@@ -5,6 +7,7 @@
 #include <memory>
 
 using namespace rust_compiler::ast::patterns;
+using namespace rust_compiler::adt;
 
 namespace rust_compiler::sema::resolver {
 
@@ -31,7 +34,12 @@ void Resolver::resolvePatternDeclarationWithoutRange(
     assert(false && "to be handled later");
   }
   case PatternWithoutRangeKind::IdentifierPattern: {
-    assert(false && "to be handled later");
+    std::shared_ptr<ast::patterns::IdentifierPattern> id =
+        std::static_pointer_cast<IdentifierPattern>(pat);
+    getNameScope().insert(
+        CanonicalPath::newSegment(id->getNodeId(), id->getIdentifier()),
+        id->getNodeId(), id->getLocation(), rib);
+    break;
   }
   case PatternWithoutRangeKind::WildcardPattern: {
     assert(false && "to be handled later");

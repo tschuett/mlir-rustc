@@ -1,11 +1,11 @@
-#include "Sema/Mappings.h"
+#include "Mappings/Mappings.h"
 
 #include <memory>
 
 using namespace rust_compiler::basic;
 using namespace rust_compiler::ast;
 
-namespace rust_compiler::sema {
+namespace rust_compiler::mappings {
 
 Mappings *Mappings::get() {
   static std::unique_ptr<Mappings> instance;
@@ -36,4 +36,4 @@ void Mappings::setCurrentCrate(basic::CrateNum crateNum) {
   currentCrateNum = crateNum;
 }
 
-} // namespace rust_compiler::sema
+} // namespace rust_compiler::mappings

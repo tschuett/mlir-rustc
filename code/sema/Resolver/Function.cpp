@@ -1,9 +1,10 @@
 #include "Resolver.h"
-#include "Sema/Mappings.h"
+#include "Mappings/Mappings.h"
 
 using namespace rust_compiler::adt;
 using namespace rust_compiler::ast;
 using namespace rust_compiler::basic;
+using namespace rust_compiler::mappings;
 
 namespace rust_compiler::sema::resolver {
 

@@ -61,6 +61,8 @@ public:
     return true;
   }
 
+  bool operator< (const CanonicalPath &b) const { return asString () < b.asString (); }
+
 private:
   explicit CanonicalPath(
       std::vector<std::pair<basic::NodeId, std::string>> path,

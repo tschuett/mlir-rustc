@@ -35,6 +35,10 @@ target_link_libraries(optimizer
                 MLIRArithDialect
                 MLIRFuncDialect
                 MLIRIR
+                MLIRReduce
+                MLIRControlFlowToLLVM
+                MLIRMemRefToLLVM
+                MLIRFuncToLLVM
                 )
 
 target_precompile_headers(optimizer PRIVATE )

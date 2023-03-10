@@ -45,6 +45,9 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
                              Restrictions restrictions) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
 
+  llvm::outs() << "parseUnaryExpression"
+               << "\n";
+
   Token tok = getToken();
 
   switch (getToken().getKind()) {
@@ -95,6 +98,7 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
       return StringResult<std::shared_ptr<ast::Expression>>(path.getValue());
     }
     }
+    break;
   }
   case TokenKind::Lt: {
     return parseQualifiedPathInExpression();
@@ -362,6 +366,9 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
 ///  there is ::. */
 StringResult<std::shared_ptr<Expression>> Parser::parsePathInExpressionPratt() {
 
+  llvm::outs() << "parse pathin expression pratt"
+               << "\n";
+
   PathInExpression pathIn = PathInExpression(getLocation());
 
   PathIdentSegment ident = PathIdentSegment(getLocation());
@@ -397,7 +404,7 @@ StringResult<std::shared_ptr<Expression>> Parser::parsePathInExpressionPratt() {
     }
   } else {
     llvm::outs() << "unknown token: " << Token2String(getToken().getKind())
-                 << "\n";
+                 << "in start of pathin expression" << "\n";
     return StringResult<std::shared_ptr<Expression>>(
         "unknown token in parsePathInExpressionPratt");
   }
