@@ -956,18 +956,45 @@ Result<ast::Visibility, std::string> Parser::parseVisibility() {
   return Result<ast::Visibility, std::string>(vis);
 }
 
-//bool Parser::canTokenStartType(lexer::TokenKind kind) {
-//  xxx;
-//  switch (kind) {
-//  case TokenKind::Not:
-//  case TokenKind::SquareOpen:
-//  case TokenKind::Lt:
-//  case TokenKind::Underscore:
-//  case TokenKind::Star:
-//  case TokenKind:::
-//  default:
-//    return false;
-//  }
-//}
+bool Parser::canTokenStartType(const Token &tok) {
+  if (tok.isKeyWord()) {
+    switch (tok.getKeyWordKind()) {
+    case KeyWordKind::KW_SUPER:
+    case KeyWordKind::KW_SELFVALUE:
+    case KeyWordKind::KW_SELFTYPE:
+    case KeyWordKind::KW_CRATE:
+    case KeyWordKind::KW_FOR:
+    case KeyWordKind::KW_ASYNC:
+    case KeyWordKind::KW_CONST:
+    case KeyWordKind::KW_UNSAFE:
+    case KeyWordKind::KW_EXTERN:
+    case KeyWordKind::KW_FN:
+    case KeyWordKind::KW_IMPL:
+    case KeyWordKind::KW_DYN:
+      return true;
+    default:
+      return false;
+    }
+  } else {
+    switch (tok.getKind()) {
+    case TokenKind::Not:
+    case TokenKind::SquareOpen:
+    case TokenKind::Lt:
+    case TokenKind::Underscore:
+    case TokenKind::Star:
+    case TokenKind::And:
+    case TokenKind::Identifier:
+    case TokenKind::PathSep:
+    case TokenKind::ParenOpen:
+    case TokenKind::QMark:
+    case TokenKind::LIFETIME_TOKEN:
+    case TokenKind::LIFETIME_OR_LABEL:
+    case TokenKind::Dollar:
+      return true;
+    default:
+      return false;
+    }
+  }
+}
 
 } // namespace rust_compiler::parser

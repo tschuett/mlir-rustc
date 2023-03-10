@@ -668,7 +668,7 @@ private:
   parseInfixExpression(std::shared_ptr<ast::Expression> left,
                        std::span<ast::OuterAttribute>, Restrictions);
 
-  bool canTokenStartType(lexer::TokenKind);
+  bool canTokenStartType(const lexer::Token& tok);
 };
 
 } // namespace rust_compiler::parser

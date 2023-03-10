@@ -8,6 +8,7 @@ add_library(Resolver
             Patterns.cpp
             Items.cpp
             Statements.cpp
+            Builtins.cpp
            )
 
 target_include_directories(Resolver PRIVATE  ../../include)

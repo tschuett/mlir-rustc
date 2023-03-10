@@ -28,6 +28,7 @@
 #include "Basic/Ids.h"
 
 #include "../TypeChecking/TypeChecking.h"
+#include "../TypeChecking/TyTy.h"
 
 #include <map>
 #include <optional>
@@ -230,6 +231,7 @@ private:
   // types
   type_checking::TypeCheckContext *tyctx;
   void generateBuiltins();
+  void setupBuiltin(std::string_view name, type_checking::TyTy::BaseType *tyty);
 
   // modules
   basic::NodeId peekCrateModuleScope();

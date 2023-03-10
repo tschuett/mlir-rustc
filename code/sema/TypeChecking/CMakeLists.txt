@@ -1,5 +1,6 @@
 add_library(TypeChecking
             TypeChecking.cpp
+            TyTy.cpp
            )
 
 target_include_directories(TypeChecking PRIVATE  ../../include)

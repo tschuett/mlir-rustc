@@ -112,9 +112,11 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
     break;
   }
   case VisItemKind::ExternCrate: {
+    assert(false && "to be handled later");
     break;
   }
   case VisItemKind::UseDeclaration: {
+    assert(false && "to be handled later");
     break;
   }
   case VisItemKind::Function: {
@@ -123,15 +125,19 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
     break;
   }
   case VisItemKind::TypeAlias: {
+    assert(false && "to be handled later");
     break;
   }
   case VisItemKind::Struct: {
+    assert(false && "to be handled later");
     break;
   }
   case VisItemKind::Enumeration: {
+    assert(false && "to be handled later");
     break;
   }
   case VisItemKind::Union: {
+    assert(false && "to be handled later");
     break;
   }
   case VisItemKind::ConstantItem: {
@@ -145,6 +151,7 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
     break;
   }
   case VisItemKind::Trait: {
+    assert(false && "to be handled later");
     break;
   }
   case VisItemKind::Implementation: {
@@ -154,6 +161,7 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
     break;
   }
   case VisItemKind::ExternBlock: {
+    assert(false && "to be handled later");
     break;
   }
   }
@@ -178,20 +186,26 @@ void Resolver::resolveImplementation(
 
 void Resolver::resolveMacroItem(std::shared_ptr<ast::MacroItem>,
                                 const adt::CanonicalPath &prefix,
-                                const adt::CanonicalPath &canonicalPrefix) {}
+                                const adt::CanonicalPath &canonicalPrefix) {
+  assert(false && "to be handled later");
+}
 
 void Resolver::resolveInherentImpl(std::shared_ptr<ast::InherentImpl>,
                                    const adt::CanonicalPath &prefix,
-                                   const adt::CanonicalPath &canonicalPrefix) {}
+                                   const adt::CanonicalPath &canonicalPrefix) {
+  assert(false && "to be handled later");
+}
 
 void Resolver::resolveTraitImpl(std::shared_ptr<ast::TraitImpl>,
                                 const adt::CanonicalPath &prefix,
-                                const adt::CanonicalPath &canonicalPrefix) {}
+                                const adt::CanonicalPath &canonicalPrefix) {
+  assert(false && "to be handled later");
+}
 
 void Resolver::resolveVisibility(std::optional<ast::Visibility> vis) {
   // FIXME
+  assert(false && "to be handled later");
 }
-
 
 } // namespace rust_compiler::sema::resolver
 

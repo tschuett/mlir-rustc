@@ -71,7 +71,7 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
                         getToken(2).getKind() == TokenKind::Comma) ||
                        (getToken(2).getKind() == TokenKind::Colon &&
                         getToken(4).getKind() == TokenKind::Comma) ||
-                       !canTokenStartType(getToken(3).getKind());
+                       !canTokenStartType(getToken(3));
 
       /* definitely not a block:
        *  path '{' ident ','
@@ -289,7 +289,7 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
                           getToken(2).getKind() == TokenKind::Comma) ||
                          (getToken(2).getKind() == TokenKind::Colon &&
                           getToken(4).getKind() == TokenKind::Comma) ||
-                         !canTokenStartType(getToken(3).getKind());
+                         !canTokenStartType(getToken(3));
         if (!restrictions.canBeStructExpr && !notaBlock)
           return path;
         return parseStructExpressionStructPratt(path.getValue(), outer);
