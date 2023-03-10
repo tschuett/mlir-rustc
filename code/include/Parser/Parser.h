@@ -31,10 +31,10 @@
 #include "AST/MatchArm.h"
 #include "AST/MatchArmGuard.h"
 #include "AST/MatchArms.h"
-#include "AST/PathInExpression.h"
 #include "AST/OuterAttribute.h"
 #include "AST/PathExprSegment.h"
 #include "AST/PathExpression.h"
+#include "AST/PathInExpression.h"
 #include "AST/Patterns/Pattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/SlicePatternItems.h"
@@ -668,8 +668,7 @@ private:
   parseInfixExpression(std::shared_ptr<ast::Expression> left,
                        std::span<ast::OuterAttribute>, Restrictions);
 
-    bool canTokenStartType(lexer::TokenKind);
-
+  bool canTokenStartType(lexer::TokenKind);
 };
 
 } // namespace rust_compiler::parser

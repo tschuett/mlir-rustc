@@ -2,6 +2,6 @@
 
 namespace rust_compiler::ast {
 
-class PathIdentSegment {};
+  //class PathIdentSegment {};
 
 } // namespace rust_compiler::ast

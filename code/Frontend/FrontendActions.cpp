@@ -37,6 +37,13 @@ using namespace rust_compiler::optimizer;
 
 namespace rust_compiler::frontend {
 
+void SyntaxOnlyAction::executeAction() { runParse(); }
+
+void SemaOnlyAction::executeAction() {
+  runParse();
+  runSemanticChecks();
+}
+
 void CodeGenAction::loadDialects(mlir::MLIRContext *context) {
   context->getOrLoadDialect<hir::HirDialect>();
   context->getOrLoadDialect<Mir::MirDialect>();
@@ -141,9 +148,9 @@ void CodeGenAction::generateObjectFile(llvm::raw_pwrite_stream &os) {
 void CodeGenAction::generateLLVMIR() {
   assert(mlirModule && "The MLIR module has not been generated yet.");
 
-  //CompilerInstance &ci = this->getInstance();
-  // auto opts = ci.getInvocation().getCodeGenOpts();
-  // llvm::OptimizationLevel level = llvm::OptimizationLevel::O3;
+  // CompilerInstance &ci = this->getInstance();
+  //  auto opts = ci.getInvocation().getCodeGenOpts();
+  //  llvm::OptimizationLevel level = llvm::OptimizationLevel::O3;
 
   loadDialects(mlirCtx.get());
 
@@ -166,9 +173,9 @@ void CodeGenAction::generateLLVMIR() {
 
   // run the pass manager
   if (!mlir::succeeded(pm.run(*mlirModule))) {
-    //unsigned diagID = ci.getDiagnostics().getCustomDiagID(
-    //    clang::DiagnosticsEngine::Error, "Lowering to LLVM IR failed");
-    //ci.getDiagnostics().Report(diagID);
+    // unsigned diagID = ci.getDiagnostics().getCustomDiagID(
+    //     clang::DiagnosticsEngine::Error, "Lowering to LLVM IR failed");
+    // ci.getDiagnostics().Report(diagID);
   }
 
   // Translate to LLVM IR
@@ -177,10 +184,10 @@ void CodeGenAction::generateLLVMIR() {
       *mlirModule, *llvmCtx, moduleName ? *moduleName : "FIRModule");
 
   if (!llvmModule) {
-    //unsigned diagID = ci.getDiagnostics().getCustomDiagID(
-    //    clang::DiagnosticsEngine::Error, "failed to create the LLVM "
-    //                                     "module");
-    //ci.getDiagnostics().Report(diagID);
+    // unsigned diagID = ci.getDiagnostics().getCustomDiagID(
+    //     clang::DiagnosticsEngine::Error, "failed to create the LLVM "
+    //                                      "module");
+    // ci.getDiagnostics().Report(diagID);
     return;
   }
 
@@ -263,7 +270,7 @@ void CodeGenAction::executeAction() {
   llvmModule->setDataLayout(tm->createDataLayout());
 
   std::unique_ptr<llvm::raw_pwrite_stream> output =
-    ci.createDefaultOutputFile(getInputFile(), /*extension=*/"o");
+      ci.createDefaultOutputFile(getInputFile(), /*extension=*/"o");
 
   runOptimizationPipeline(*output);
 

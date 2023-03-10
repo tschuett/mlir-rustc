@@ -14,12 +14,14 @@
 #include "AST/PathExpression.h"
 #include "AST/PathInExpression.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
+#include "AST/Patterns/PatternWithoutRange.h"
 #include "AST/QualifiedPathInExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Statement.h"
 #include "AST/StaticItem.h"
 #include "AST/TraitImpl.h"
 #include "AST/Types/TypeExpression.h"
+#include "AST/Types/TypePathFn.h"
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
@@ -65,7 +67,7 @@ public:
 
 private:
   basic::CrateNum crateNum;
-  basic::NodeId nodeId;
+  // basic::NodeId nodeId;
   std::vector<Rib *> stack;
 };
 
@@ -171,6 +173,9 @@ private:
 
   // types
   void resolveType(std::shared_ptr<ast::types::TypeExpression>);
+  void resolveTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>);
+  void resolveRelativeTypePath(std::shared_ptr<ast::types::TypePath>);
+  void resolveTypePathFunction(const ast::types::TypePathFn &);
 
   // checks
   void resolveVisibility(std::optional<ast::Visibility>);
@@ -180,11 +185,14 @@ private:
   void resolveGenericParams(const ast::GenericParams &,
                             const adt::CanonicalPath &prefix,
                             const adt::CanonicalPath &canonicalPrefix);
+  void resolveGenericArgs(const ast::GenericArgs &);
 
   // patterns
   void
       resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
                                 Rib::RibKind);
+  void resolvePatternDeclarationWithoutRange(
+      std::shared_ptr<ast::patterns::PatternWithoutRange>, Rib::RibKind);
 
   // statements
   void resolveStatement(std::shared_ptr<ast::Statement>,
@@ -222,6 +230,9 @@ private:
   // types
   type_checking::TypeCheckContext *tyctx;
   void generateBuiltins();
+
+  // modules
+  basic::NodeId peekCrateModuleScope();
 
   // Scopes
   Scope &getNameScope() { return nameScope; }

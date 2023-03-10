@@ -22,6 +22,8 @@ public:
   void addSegment(const TypePathSegment &seg) {
     typePathSegments.push_back(seg);
   }
+
+  std::vector<TypePathSegment> getSegments() const { return typePathSegments; }
 };
 
 } // namespace rust_compiler::ast::types

@@ -13,9 +13,9 @@ public:
   TypeExpression(Location loc, TypeExpressionKind kind)
       : Node(loc), kind(kind) {}
 
-  TypeExpressionKind getKind() const;
+  TypeExpressionKind getKind() const { return kind; }
 
-  //size_t getTokens() override;
+  // size_t getTokens() override;
 };
 
 } // namespace rust_compiler::ast::types

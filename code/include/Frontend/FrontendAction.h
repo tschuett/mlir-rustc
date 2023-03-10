@@ -15,7 +15,7 @@ namespace rust_compiler::frontend {
 class FrontendAction {
   FrontendInput currentInput;
   CompilerInstance *instance;
-
+  basic::Edition edition;
   std::shared_ptr<ast::Crate> crate;
 
 protected:
@@ -25,12 +25,6 @@ protected:
   /// Callback to run the program action, using the initialized
   /// compiler instance.
   virtual void executeAction() = 0;
-
-  /// Callback at the end of processing a single input, to determine
-  /// if the output files should be erased or not.
-  ///
-  /// By default it returns true if a compiler error occurred.
-  virtual bool shouldEraseOutputFiles();
 
   /// Callback at the start of processing a single input.
   ///

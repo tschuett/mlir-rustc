@@ -6,6 +6,7 @@
 #include "AST/Types/TypePathFn.h"
 
 #include <optional>
+#include <variant>
 #include <vector>
 
 namespace rust_compiler::ast::types {
@@ -20,12 +21,25 @@ public:
 
   void setSegment(const PathIdentSegment &seg) { pathIdentSegment = seg; }
 
-  void setDoubleColon() { doubleColon = true;}
+  void setDoubleColon() { doubleColon = true; }
 
-  void setGenericArgs(const GenericArgs& a) { tail = a; }
+  void setGenericArgs(const GenericArgs &a) { tail = a; }
 
-    void setTypePathFn(const TypePathFn& f) { tail = f; }
+  void setTypePathFn(const TypePathFn &f) { tail = f; }
 
+  PathIdentSegment getSegment() const { return pathIdentSegment; }
+
+  bool hasGenerics() const {
+    return tail.has_value() && std::holds_alternative<GenericArgs>(*tail);
+  }
+
+  bool hasTypeFunction() const {
+    return tail.has_value() && std::holds_alternative<TypePathFn>(*tail);
+  }
+
+  TypePathFn getTypePathFn() const { return std::get<TypePathFn>(*tail); }
+
+  GenericArgs getGenericArgs() const { return std::get<GenericArgs>(*tail); }
 };
 
 } // namespace rust_compiler::ast::types

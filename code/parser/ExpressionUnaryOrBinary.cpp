@@ -96,7 +96,6 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
     }
     }
   }
-  case TokenKind::Shl:
   case TokenKind::Lt: {
     return parseQualifiedPathInExpression();
     break;

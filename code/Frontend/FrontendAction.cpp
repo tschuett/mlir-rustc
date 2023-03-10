@@ -36,6 +36,22 @@ bool FrontendAction::runSemanticChecks() {
   return true;
 }
 
+void FrontendAction::setEdition(basic::Edition _edition) { edition = _edition; }
+
+ast::Crate *FrontendAction::getCrate() { return crate.get(); }
+
+void FrontendAction::setCurrentInput(FrontendInput _currentIntput) {
+  currentInput = _currentIntput;
+}
+
+std::string FrontendAction::getInputFile() {
+  return std::string(currentInput.getInputFile());
+}
+
+std::string FrontendAction::getRemarksOutput() {
+  return std::string(currentInput.getRemarksOutput());
+}
+
 } // namespace rust_compiler::frontend
 
 // FIXME: pcms

@@ -247,7 +247,7 @@ rust_compiler::Location Parser::getLocation() {
 
 lexer::Token Parser::getToken(uint8_t off) { return ts.getAt(offset + off); }
 
-  StringResult<std::shared_ptr<ast::Item>>
+StringResult<std::shared_ptr<ast::Item>>
 Parser::parseVisItem(std::span<OuterAttribute>) {
   std::optional<ast::Visibility> vis;
 
@@ -313,8 +313,7 @@ Parser::parseVisItem(std::span<OuterAttribute>) {
     return parseExternBlock(vis);
   }
   // complete?
-  return StringResult<std::shared_ptr<ast::Item>>(
-      "failed to parse vis item");
+  return StringResult<std::shared_ptr<ast::Item>>("failed to parse vis item");
 }
 
 StringResult<std::shared_ptr<ast::Item>>
@@ -617,7 +616,7 @@ Result<ast::ConstParam, std::string> Parser::parseConstParam() {
 
     if (check(TokenKind::BraceOpen)) {
       Result<std::shared_ptr<ast::Expression>, std::string> block =
-        parseBlockExpression({});
+          parseBlockExpression({});
       if (!block) {
         llvm::errs() << "failed to parse block expression in const param: "
                      << block.getError() << "\n";
@@ -956,5 +955,19 @@ Result<ast::Visibility, std::string> Parser::parseVisibility() {
   vis.setKind(VisibilityKind::Private);
   return Result<ast::Visibility, std::string>(vis);
 }
+
+//bool Parser::canTokenStartType(lexer::TokenKind kind) {
+//  xxx;
+//  switch (kind) {
+//  case TokenKind::Not:
+//  case TokenKind::SquareOpen:
+//  case TokenKind::Lt:
+//  case TokenKind::Underscore:
+//  case TokenKind::Star:
+//  case TokenKind:::
+//  default:
+//    return false;
+//  }
+//}
 
 } // namespace rust_compiler::parser
