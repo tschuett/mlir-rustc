@@ -1,5 +1,6 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
+
 #include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
@@ -15,10 +16,10 @@ TEST(BorrowExpressionTest, CheckBorrowExpr1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
-      parser.tryParseBorrowExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseBorrowExpression({});
 
-  EXPECT_TRUE(borrow.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(BorrowExpressionTest, CheckBorrowExpr2) {
@@ -29,10 +30,10 @@ TEST(BorrowExpressionTest, CheckBorrowExpr2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
-      parser.tryParseBorrowExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseBorrowExpression({});
 
-  EXPECT_TRUE(borrow.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(BorrowExpressionTest, CheckBorrowExpr3) {
@@ -43,10 +44,10 @@ TEST(BorrowExpressionTest, CheckBorrowExpr3) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
-      parser.tryParseBorrowExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseBorrowExpression({});
 
-  EXPECT_TRUE(borrow.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(BorrowExpressionTest, CheckBorrowExpr4) {
@@ -57,8 +58,8 @@ TEST(BorrowExpressionTest, CheckBorrowExpr4) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> borrow =
-      parser.tryParseBorrowExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseBorrowExpression({});
 
-  EXPECT_TRUE(borrow.has_value());
+  EXPECT_TRUE(result.isOk());
 };

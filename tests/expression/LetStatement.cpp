@@ -15,18 +15,13 @@ TEST(LetStatementTest, CheckLetStatement1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expected = 3;
-
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
-      parser.tryParseStatement(ts.getAsView());
+  Restrictions restriction;
+  Result<std::shared_ptr<rust_compiler::ast::Statement>, std::string> result =
+      parser.parseStatement(restriction);
 
-  EXPECT_TRUE(loop.has_value());
-
-  if (loop) {
-    EXPECT_EQ((*loop)->getTokens(), expected);
-  }
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(LetStatementTest, CheckLetStatement2) {
@@ -35,56 +30,41 @@ TEST(LetStatementTest, CheckLetStatement2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expected = 5;
-
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
-      parser.tryParseStatement(ts.getAsView());
+  Restrictions restriction;
+  Result<std::shared_ptr<rust_compiler::ast::Statement>, std::string> result =
+      parser.parseStatement(restriction);
 
-  EXPECT_TRUE(loop.has_value());
-
-  if (loop) {
-    EXPECT_EQ((*loop)->getTokens(), expected);
-  }
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(LetStatementTest, CheckLetStatement3) {
 
   std::string text = "let i: i64 = 5;";
 
-  size_t expected = 7;
-
   TokenStream ts = lex(text, "lib.rs");
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
-      parser.tryParseStatement(ts.getAsView());
+  Restrictions restriction;
+  Result<std::shared_ptr<rust_compiler::ast::Statement>, std::string> result =
+      parser.parseStatement(restriction);
 
-  EXPECT_TRUE(loop.has_value());
-
-  if (loop) {
-    EXPECT_EQ((*loop)->getTokens(), expected);
-  }
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(LetStatementTest, CheckLetStatement4) {
 
   std::string text = "let mut i: i64 = 5;";
 
-  size_t expected = 8;
-
   TokenStream ts = lex(text, "lib.rs");
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Statement>> loop =
-      parser.tryParseStatement(ts.getAsView());
+  Restrictions restriction;
+  Result<std::shared_ptr<rust_compiler::ast::Statement>, std::string> result =
+      parser.parseStatement(restriction);
 
-  EXPECT_TRUE(loop.has_value());
-
-  if (loop) {
-    EXPECT_EQ((*loop)->getTokens(), expected);
-  }
+  EXPECT_TRUE(result.isOk());
 };

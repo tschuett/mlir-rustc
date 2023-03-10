@@ -16,8 +16,9 @@ TEST(RestPatternTest, CheckRestPattern1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>>
-      pattern = parser.tryParseRestPattern(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
+         std::string>
+      result = parser.parseRestPattern();
 
-  EXPECT_TRUE(pattern.has_value());
+  EXPECT_TRUE(result.isOk());
 }

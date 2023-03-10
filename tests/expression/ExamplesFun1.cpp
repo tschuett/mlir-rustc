@@ -17,10 +17,10 @@ TEST(ExamplesFun1Test, CheckFun5) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExamplesFun1Test, CheckFun4a) {
@@ -31,10 +31,10 @@ TEST(ExamplesFun1Test, CheckFun4a) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExamplesFun1Test, CheckFun4) {
@@ -45,10 +45,10 @@ TEST(ExamplesFun1Test, CheckFun4) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExamplesFun1Test, CheckFun3a) {
@@ -59,10 +59,10 @@ TEST(ExamplesFun1Test, CheckFun3a) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExamplesFun1Test, CheckFun3b) {
@@ -73,10 +73,10 @@ TEST(ExamplesFun1Test, CheckFun3b) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExamplesFun1Test, CheckFun3c) {
@@ -87,10 +87,10 @@ TEST(ExamplesFun1Test, CheckFun3c) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExamplesFun1Test, CheckFun1) {
@@ -101,10 +101,10 @@ TEST(ExamplesFun1Test, CheckFun1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Item>> item =
-      parser.tryParseItem(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  EXPECT_TRUE(item.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExamplesFun1Test, CheckFun2) {
@@ -116,14 +116,10 @@ TEST(ExamplesFun1Test, CheckFun2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Item>> item =
-      parser.tryParseItem(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  size_t expectedLendth = 17;
-
-  EXPECT_EQ((*item)->getTokens(), expectedLendth);
-
-  EXPECT_TRUE(item.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExamplesFun1Test, CheckModule1) {
@@ -135,13 +131,8 @@ TEST(ExamplesFun1Test, CheckModule1) {
 
   Parser parser = {ts};
 
-  std::shared_ptr<rust_compiler::ast::Module> mod;
+  Result<std::shared_ptr<rust_compiler::ast::Crate>, std::string> result =
+      parser.parseCrateModule("crateName", 5);
 
-  mlir::LogicalResult result = parser.parseFile(mod);
-
-  size_t expectedLendth = 17;
-
-  EXPECT_EQ((*mod).getTokens(), expectedLendth);
-
-  //EXPECT_TRUE(mod.has_value());
+  EXPECT_TRUE(result.isOk());
 };

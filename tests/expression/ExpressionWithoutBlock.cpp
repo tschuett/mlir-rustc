@@ -1,7 +1,7 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
-#include <gtest/gtest.h>
 
+#include <gtest/gtest.h>
 #include <string>
 
 using namespace rust_compiler::lexer;
@@ -17,10 +17,11 @@ TEST(ExpressionWithoutBlockTest, CheckLiteralBlock) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
-      parser.tryParseExpressionWithoutBlock(ts.getAsView());
+  Restrictions restrictions;
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseExpressionWithoutBlock({}, restrictions);
 
-  EXPECT_TRUE(wo.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExpressionWithoutBlockTest, CheckPathBlock1) {
@@ -31,10 +32,11 @@ TEST(ExpressionWithoutBlockTest, CheckPathBlock1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
-      parser.tryParseExpressionWithoutBlock(ts.getAsView());
+  Restrictions restrictions;
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseExpressionWithoutBlock({}, restrictions);
 
-  EXPECT_TRUE(wo.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExpressionWithoutBlockTest, CheckPathBlock2) {
@@ -45,10 +47,11 @@ TEST(ExpressionWithoutBlockTest, CheckPathBlock2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
-      parser.tryParseExpressionWithoutBlock(ts.getAsView());
+  Restrictions restrictions;
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseExpressionWithoutBlock({}, restrictions);
 
-  EXPECT_TRUE(wo.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExpressionWithoutBlockTest, CheckOperatorBlock1) {
@@ -59,10 +62,11 @@ TEST(ExpressionWithoutBlockTest, CheckOperatorBlock1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
-      parser.tryParseExpressionWithoutBlock(ts.getAsView());
+  Restrictions restrictions;
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseExpressionWithoutBlock({}, restrictions);
 
-  EXPECT_TRUE(wo.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExpressionWithoutBlockTest, CheckOperatorBlock2) {
@@ -73,8 +77,9 @@ TEST(ExpressionWithoutBlockTest, CheckOperatorBlock2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> wo =
-      parser.tryParseExpressionWithoutBlock(ts.getAsView());
+  Restrictions restrictions;
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseExpressionWithoutBlock({}, restrictions);
 
-  EXPECT_TRUE(wo.has_value());
+  EXPECT_TRUE(result.isOk());
 };

@@ -1,5 +1,6 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
+
 #include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
@@ -16,11 +17,11 @@ TEST(PatternTest, CheckIdentifierPattern1) {
 
   Parser parser = {ts};
 
-  std::optional<
-      std::shared_ptr<rust_compiler::ast::patterns::PatternWithoutRange>>
-      pattern = parser.tryParseIdentifierPattern(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>, std::string>
+      result = parser.parseIdentifierPattern();
 
-  EXPECT_TRUE(pattern.has_value());
+
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(PatternTest, CheckIdentifierPattern2) {
@@ -31,11 +32,11 @@ TEST(PatternTest, CheckIdentifierPattern2) {
 
   Parser parser = {ts};
 
-  std::optional<
-      std::shared_ptr<rust_compiler::ast::patterns::PatternWithoutRange>>
-      pattern = parser.tryParseIdentifierPattern(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>, std::string>
+      result = parser.parseIdentifierPattern();
 
-  EXPECT_TRUE(pattern.has_value());
+
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(PatternTest, CheckIdentifierPattern3) {
@@ -46,9 +47,8 @@ TEST(PatternTest, CheckIdentifierPattern3) {
 
   Parser parser = {ts};
 
-  std::optional<
-      std::shared_ptr<rust_compiler::ast::patterns::PatternWithoutRange>>
-      pattern = parser.tryParseIdentifierPattern(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>, std::string>
+      result = parser.parseIdentifierPattern();
 
-  EXPECT_TRUE(pattern.has_value());
+  EXPECT_TRUE(result.isOk());
 };

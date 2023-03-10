@@ -1,12 +1,8 @@
-#include "Function.h"
-
-#include "BlockExpression.h"
-#include "FunctionParam.h"
-#include "FunctionParameters.h"
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
 
 #include <gtest/gtest.h>
+#include <optional>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
@@ -21,14 +17,10 @@ TEST(FunctionTest, CheckFunctionReturnType1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::types::TypeExpression>> type =
-      parser.tryParseFunctionReturnType(ts.getAsView());
+  Result<rust_compiler::ast::FunctionReturnType, std::string> result =
+      parser.parseFunctionReturnType();
 
-  EXPECT_TRUE(type.has_value());
-
-  size_t expectedLendth = 1; // ->
-
-  EXPECT_EQ((*type)->getTokens(), expectedLendth);
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(FunctionTest, CheckFunctionReturnType2) {
@@ -39,14 +31,10 @@ TEST(FunctionTest, CheckFunctionReturnType2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::types::TypeExpression>>
-      type = parser.tryParseFunctionReturnType(ts.getAsView());
+  Result<rust_compiler::ast::FunctionReturnType, std::string> result =
+      parser.parseFunctionReturnType();
 
-  EXPECT_TRUE(type.has_value());
-
-  size_t expectedLendth = 1; // ->
-
-  EXPECT_EQ((*type)->getTokens(), expectedLendth);
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(FunctionTest, CheckFunctionQual1) {
@@ -57,14 +45,10 @@ TEST(FunctionTest, CheckFunctionQual1) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::FunctionQualifiers> fun =
-      parser.tryParseFunctionQualifiers(ts.getAsView());
+  Result<rust_compiler::ast::FunctionQualifiers, std::string> result =
+      parser.parseFunctionQualifiers();
 
-  EXPECT_TRUE(fun.has_value());
-
-  size_t expectedLendth = 2;
-
-  EXPECT_EQ((*fun).getTokens(), expectedLendth);
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(FunctionTest, CheckFunctionParameters1) {
@@ -75,14 +59,10 @@ TEST(FunctionTest, CheckFunctionParameters1) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::FunctionParameters> fun =
-      parser.tryParseFunctionParameters(ts.getAsView());
+  Result<rust_compiler::ast::FunctionParameters, std::string> result =
+      parser.parseFunctionParameters();
 
-  EXPECT_TRUE(fun.has_value());
-
-  size_t expectedLendth = 7;
-
-  EXPECT_EQ((*fun).getTokens(), expectedLendth);
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(FunctionTest, CheckFunctionParam1) {
@@ -93,122 +73,10 @@ TEST(FunctionTest, CheckFunctionParam1) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::FunctionParam> fun =
-      parser.tryParseFunctionParam(ts.getAsView());
+  Result<rust_compiler::ast::FunctionParameters, std::string> result =
+      parser.parseFunctionParameters();
 
-  EXPECT_TRUE(fun.has_value());
-
-  size_t expectedLendth = 3;
-
-  EXPECT_EQ((*fun).getTokens(), expectedLendth);
-};
-
-TEST(FunctionTest, CheckFunctionSig0) {
-
-  std::string text = "fn add()";
-
-  TokenStream ts = lex(text, "lib.rs");
-
-  Parser parser = {ts};
-
-  std::optional<rust_compiler::ast::FunctionSignature> fun =
-      parser.tryParseFunctionSignature(ts.getAsView());
-
-  EXPECT_TRUE(fun.has_value());
-
-  size_t expectedLendth = 4;
-
-  EXPECT_EQ((*fun).getTokens(), expectedLendth);
-};
-
-TEST(FunctionTest, CheckFunctionSig0b) {
-
-  std::string text = "fn add() -> usize";
-
-  TokenStream ts = lex(text, "lib.rs");
-
-  Parser parser = {ts};
-
-  std::optional<rust_compiler::ast::FunctionSignature> fun =
-      parser.tryParseFunctionSignature(ts.getAsView());
-
-  EXPECT_TRUE(fun.has_value());
-
-  size_t expectedLendth = 6;
-
-  EXPECT_EQ((*fun).getTokens(), expectedLendth);
-};
-
-TEST(FunctionTest, CheckFunctionSig1a) {
-
-  std::string text = "fn add(right: usize)";
-
-  TokenStream ts = lex(text, "lib.rs");
-
-  Parser parser = {ts};
-
-  std::optional<rust_compiler::ast::FunctionSignature> fun =
-      parser.tryParseFunctionSignature(ts.getAsView());
-
-  EXPECT_TRUE(fun.has_value());
-
-  size_t expectedLendth = 7;
-
-  EXPECT_EQ((*fun).getTokens(), expectedLendth);
-};
-
-TEST(FunctionTest, CheckFunctionSig1b) {
-
-  std::string text = "fn add(right: usize) -> usize";
-
-  TokenStream ts = lex(text, "lib.rs");
-
-  Parser parser = {ts};
-
-  std::optional<rust_compiler::ast::FunctionSignature> fun =
-      parser.tryParseFunctionSignature(ts.getAsView());
-
-  EXPECT_TRUE(fun.has_value());
-
-  size_t expectedLendth = 9;
-
-  EXPECT_EQ((*fun).getTokens(), expectedLendth);
-};
-
-TEST(FunctionTest, CheckFunctionSig2) {
-
-  std::string text = "fn add(right: usize, left: i128)";
-
-  TokenStream ts = lex(text, "lib.rs");
-
-  Parser parser = {ts};
-
-  std::optional<rust_compiler::ast::FunctionSignature> fun =
-      parser.tryParseFunctionSignature(ts.getAsView());
-
-  EXPECT_TRUE(fun.has_value());
-
-  size_t expectedLendth = 11;
-
-  EXPECT_EQ((*fun).getTokens(), expectedLendth);
-};
-
-TEST(FunctionTest, CheckFunctionSig3) {
-
-  std::string text = "fn add(right: usize, left: i128) -> usize";
-
-  TokenStream ts = lex(text, "lib.rs");
-
-  Parser parser = {ts};
-
-  std::optional<rust_compiler::ast::FunctionSignature> fun =
-      parser.tryParseFunctionSignature(ts.getAsView());
-
-  EXPECT_TRUE(fun.has_value());
-
-  size_t expectedLendth = 13;
-
-  EXPECT_EQ((*fun).getTokens(), expectedLendth);
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(FunctionTest, CheckFunctionBody1) {
@@ -219,14 +87,10 @@ TEST(FunctionTest, CheckFunctionBody1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<BlockExpression>> block =
-      parser.tryParseBlockExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseBlockExpression({});
 
-  EXPECT_TRUE(block.has_value());
-
-  size_t expectedLendth = 6;
-
-  EXPECT_EQ((*block)->getTokens(), expectedLendth);
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(FunctionTest, CheckFunctionBody2) {
@@ -237,14 +101,10 @@ TEST(FunctionTest, CheckFunctionBody2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<BlockExpression>> block =
-      parser.tryParseBlockExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseBlockExpression({});
 
-  EXPECT_TRUE(block.has_value());
-
-  size_t expectedLendth = 7;
-
-  EXPECT_EQ((*block)->getTokens(), expectedLendth);
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(FunctionTest, CheckFunction1) {
@@ -255,12 +115,8 @@ TEST(FunctionTest, CheckFunction1) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  EXPECT_TRUE(fun.has_value());
-
-  size_t expectedLendth = 16;
-
-  EXPECT_EQ((*fun).getTokens(), expectedLendth);
+  EXPECT_TRUE(result.isOk());
 };

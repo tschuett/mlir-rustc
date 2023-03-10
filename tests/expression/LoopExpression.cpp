@@ -1,5 +1,6 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
+
 #include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
@@ -15,14 +16,10 @@ TEST(LoopExpressionTest, CheckLoopExpr1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> loop =
-      parser.tryParsePredicateLoopExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+    parser.parsePredicateLoopExpression({});
 
-  size_t expected = 11;
-
-  EXPECT_TRUE(loop.has_value());
-
-  EXPECT_EQ(expected, (*loop)->getTokens());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(LoopExpressionTest, CheckLoopExpr2) {
@@ -33,14 +30,8 @@ TEST(LoopExpressionTest, CheckLoopExpr2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> loop =
-      parser.tryParsePredicateLoopExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+    parser.parsePredicateLoopExpression({});
 
-  size_t expected = 17;
-
-  EXPECT_TRUE(loop.has_value());
-
-  EXPECT_EQ(expected, (*loop)->getTokens());
+  EXPECT_TRUE(result.isOk());
 };
-
-

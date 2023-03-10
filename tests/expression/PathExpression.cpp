@@ -16,10 +16,10 @@ TEST(PathExpressionTest, CheckPathInExpr1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> pathIn =
-      parser.tryParsePathInExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parsePathInExpression();
 
-  EXPECT_TRUE(pathIn.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(PathExpressionTest, CheckPathInExpr2) {
@@ -30,10 +30,10 @@ TEST(PathExpressionTest, CheckPathInExpr2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> pathIn =
-      parser.tryParsePathInExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parsePathInExpression();
 
-  EXPECT_TRUE(pathIn.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(PathExpressionTest, CheckPathInExpr3) {
@@ -44,8 +44,8 @@ TEST(PathExpressionTest, CheckPathInExpr3) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> pathIn =
-      parser.tryParsePathInExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parsePathInExpression();
 
-  EXPECT_TRUE(pathIn.has_value());
+  EXPECT_TRUE(result.isOk());
 };

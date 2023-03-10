@@ -3,6 +3,7 @@
 #include "ADT/CanonicalPath.h"
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
+
 #include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
@@ -22,10 +23,11 @@ TEST(OperatorExpressionTest, CheckOperatorExprSimple) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> op =
-      parser.tryParseOperatorExpression(ts.getAsView());
+  rust_compiler::parser::Restrictions restrictions;
+  StringResult<std::shared_ptr<rust_compiler::ast::Expression>> result =
+      parser.parseExpression({}, restrictions);
 
-  EXPECT_TRUE(op.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(OperatorExpressionTest, CheckOperatorExprSimple2) {
@@ -40,10 +42,11 @@ TEST(OperatorExpressionTest, CheckOperatorExprSimple2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> op =
-      parser.tryParseOperatorExpression(ts.getAsView());
+  rust_compiler::parser::Restrictions restrictions;
+  StringResult<std::shared_ptr<rust_compiler::ast::Expression>> result =
+      parser.parseExpression({}, restrictions);
 
-  EXPECT_TRUE(op.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(OperatorExpressionTest, CheckOperatorExprSimple3) {
@@ -58,8 +61,9 @@ TEST(OperatorExpressionTest, CheckOperatorExprSimple3) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> op =
-      parser.tryParseOperatorExpression(ts.getAsView());
+  rust_compiler::parser::Restrictions restrictions;
+  StringResult<std::shared_ptr<rust_compiler::ast::Expression>> result =
+      parser.parseExpression({}, restrictions);
 
-  EXPECT_TRUE(op.has_value());
+  EXPECT_TRUE(result.isOk());
 };

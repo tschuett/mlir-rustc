@@ -17,10 +17,10 @@ TEST(ExamplesFun3Test, CheckFun1) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExamplesFun3Test, CheckFun2) {
@@ -31,10 +31,10 @@ TEST(ExamplesFun3Test, CheckFun2) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExamplesFun3Test, CheckFun3) {
@@ -45,10 +45,10 @@ TEST(ExamplesFun3Test, CheckFun3) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExamplesFun3Test, CheckFun4) {
@@ -59,10 +59,10 @@ TEST(ExamplesFun3Test, CheckFun4) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExamplesFun3Test, CheckFun5) {
@@ -74,10 +74,10 @@ TEST(ExamplesFun3Test, CheckFun5) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExamplesFun3Test, CheckFun6) {
@@ -89,8 +89,8 @@ TEST(ExamplesFun3Test, CheckFun6) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::Function> fun =
-      parser.tryParseFunction(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };

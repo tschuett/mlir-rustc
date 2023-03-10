@@ -25,10 +25,10 @@ TEST(IfExpressionTest, CheckIfExpression) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
-      parser.tryParseIfExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseIfExpression({});
 
-  EXPECT_TRUE(ifExpr.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(IfExpressionTest, CheckIfExpression1) {
@@ -45,10 +45,10 @@ TEST(IfExpressionTest, CheckIfExpression1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
-      parser.tryParseIfExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseIfExpression({});
 
-  EXPECT_TRUE(ifExpr.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(IfExpressionTest, CheckIfExpression2) {
@@ -65,10 +65,10 @@ TEST(IfExpressionTest, CheckIfExpression2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
-      parser.tryParseIfExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseIfExpression({});
 
-  EXPECT_TRUE(ifExpr.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(IfExpressionTest, CheckIfExpression3) {
@@ -85,10 +85,10 @@ TEST(IfExpressionTest, CheckIfExpression3) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
-      parser.tryParseIfExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseIfExpression({});
 
-  EXPECT_TRUE(ifExpr.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(IfExpressionTest, CheckIfExpression4) {
@@ -105,8 +105,8 @@ TEST(IfExpressionTest, CheckIfExpression4) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
-      parser.tryParseIfExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseIfExpression({});
 
-  EXPECT_TRUE(ifExpr.has_value());
+  EXPECT_TRUE(result.isOk());
 };

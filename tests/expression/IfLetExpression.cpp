@@ -24,8 +24,8 @@ TEST(IfLetExpressionTest, CheckIfLetExpression) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ifExpr =
-      parser.tryParseIfLetExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseIfLetExpression({});
 
-  EXPECT_TRUE(ifExpr.has_value());
+  EXPECT_TRUE(result.isOk());
 };

@@ -1,5 +1,5 @@
-#include "FunctionParam.h"
-#include "FunctionParameters.h"
+#include "AST/FunctionParam.h"
+#include "AST/FunctionParameters.h"
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
 
@@ -18,10 +18,10 @@ TEST(FunctionParameterExpressionTest, CheckFunctionParameter) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::FunctionParam> param =
-      parser.tryParseFunctionParam(ts.getAsView());
+  Result<rust_compiler::ast::FunctionParam, std::string> result =
+      parser.parseFunctionParam();
 
-  EXPECT_TRUE(param.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(FunctionParameterExpressionTest, CheckFunctionParameters) {
@@ -32,8 +32,8 @@ TEST(FunctionParameterExpressionTest, CheckFunctionParameters) {
 
   Parser parser = {ts};
 
-  std::optional<rust_compiler::ast::FunctionParameters> params =
-      parser.tryParseFunctionParameters(ts.getAsView());
+  Result<rust_compiler::ast::FunctionParameters, std::string> result =
+      parser.parseFunctionParameters();
 
-  EXPECT_TRUE(params.has_value());
+  EXPECT_TRUE(result.isOk());
 };

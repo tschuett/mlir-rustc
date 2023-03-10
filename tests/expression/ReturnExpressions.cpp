@@ -2,6 +2,7 @@
 #include "AST/ReturnExpression.h"
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
+
 #include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
@@ -21,10 +22,10 @@ TEST(ReturnExpressionTest, CheckReturnExpr) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ret =
-      parser.tryParseReturnExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseReturnExpression({});
 
-  EXPECT_TRUE(ret.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ReturnExpressionTest, CheckReturnExpr1) {
@@ -39,10 +40,10 @@ TEST(ReturnExpressionTest, CheckReturnExpr1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ret =
-      parser.tryParseReturnExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseReturnExpression({});
 
-  EXPECT_TRUE(ret.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ReturnExpressionTest, CheckReturnExpr2) {
@@ -57,8 +58,8 @@ TEST(ReturnExpressionTest, CheckReturnExpr2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> ret =
-      parser.tryParseReturnExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseReturnExpression({});
 
-  EXPECT_TRUE(ret.has_value());
+  EXPECT_TRUE(result.isOk());
 };

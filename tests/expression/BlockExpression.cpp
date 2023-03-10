@@ -1,5 +1,6 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
+
 #include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
@@ -15,10 +16,10 @@ TEST(BlockExpressionTest, CheckBlockExpr1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
-      parser.tryParseBlockExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseBlockExpression({});
 
-  EXPECT_TRUE(block.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(BlockExpressionTest, CheckBlockExpr2) {
@@ -29,10 +30,10 @@ TEST(BlockExpressionTest, CheckBlockExpr2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
-      parser.tryParseBlockExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseBlockExpression({});
 
-  EXPECT_TRUE(block.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(BlockExpressionTest, CheckBlockExpr3) {
@@ -43,10 +44,10 @@ TEST(BlockExpressionTest, CheckBlockExpr3) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
-      parser.tryParseBlockExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseBlockExpression({});
 
-  EXPECT_TRUE(block.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(BlockExpressionTest, CheckBlockExpr4) {
@@ -57,10 +58,10 @@ TEST(BlockExpressionTest, CheckBlockExpr4) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
-      parser.tryParseBlockExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseBlockExpression({});
 
-  EXPECT_TRUE(block.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(BlockExpressionTest, CheckBlockExpr5) {
@@ -71,10 +72,10 @@ TEST(BlockExpressionTest, CheckBlockExpr5) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
-      parser.tryParseBlockExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseBlockExpression({});
 
-  EXPECT_TRUE(block.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(BlockExpressionTest, CheckBlockExpr40) {
@@ -85,8 +86,8 @@ TEST(BlockExpressionTest, CheckBlockExpr40) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::BlockExpression>> block =
-      parser.tryParseBlockExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseBlockExpression({});
 
-  EXPECT_TRUE(block.has_value());
+  EXPECT_TRUE(result.isOk());
 };

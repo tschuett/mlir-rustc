@@ -1,6 +1,5 @@
-#include "ArithmeticOrLogicalExpression.h"
-
 #include "AST/ArithmeticOrLogicalExpression.h"
+
 #include "Lexer/Lexer.h"
 #include "Util.h"
 #include <gtest/gtest.h>
@@ -26,10 +25,11 @@ TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> arith =
-      parser.tryParseArithmeticOrLogicalExpresion(ts.getAsView());
+  rust_compiler::parser::Restrictions restrictions;
+  StringResult<std::shared_ptr<rust_compiler::ast::Expression>> result =
+      parser.parseExpression({}, restrictions);
 
-  EXPECT_TRUE(arith.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple2) {
@@ -44,10 +44,11 @@ TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> arith =
-      parser.tryParseArithmeticOrLogicalExpresion(ts.getAsView());
+  rust_compiler::parser::Restrictions restrictions;
+  StringResult<std::shared_ptr<rust_compiler::ast::Expression>> result =
+      parser.parseExpression({}, restrictions);
 
-  EXPECT_TRUE(arith.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple3) {
@@ -62,8 +63,9 @@ TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple3) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> arith =
-      parser.tryParseArithmeticOrLogicalExpresion(ts.getAsView());
+  rust_compiler::parser::Restrictions restrictions;
+  StringResult<std::shared_ptr<rust_compiler::ast::Expression>> result =
+      parser.parseExpression({}, restrictions);
 
-  EXPECT_TRUE(arith.has_value());
+  EXPECT_TRUE(result.isOk());
 };

@@ -15,10 +15,10 @@ TEST(PatternTupleTest, CheckTuplePattern1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>>
-      pattern = parser.tryParseTuplePattern(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>, std::string>
+      result = parser.parseTuplePattern();
 
-  EXPECT_TRUE(pattern.has_value());
+  EXPECT_TRUE(result.isOk());
 }
 
 TEST(PatternTupleTest, CheckTuplePattern2) {
@@ -29,8 +29,8 @@ TEST(PatternTupleTest, CheckTuplePattern2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>>
-      pattern = parser.tryParseTuplePattern(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>, std::string>
+      result = parser.parseTuplePattern();
 
-  EXPECT_TRUE(pattern.has_value());
+  EXPECT_TRUE(result.isOk());
 }

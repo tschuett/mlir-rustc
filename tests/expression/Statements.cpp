@@ -1,8 +1,8 @@
 #include "AST/Statements.h"
 
+#include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
 
-#include "Lexer/Lexer.h"
 #include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
@@ -10,29 +10,29 @@ using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
 using namespace rust_compiler::adt;
 
-//TEST(StatementsTest, CheckStatements1) {
+// TEST(StatementsTest, CheckStatements1) {
 //
-//  std::string text = "{return left + right;}";
+//   std::string text = "{return left + right;}";
 //
-//  TokenStream ts = lex(text, "lib.rs");
+//   TokenStream ts = lex(text, "lib.rs");
 //
-//  std::optional<std::shared_ptr<rust_compiler::ast::Statements>> stmts =
-//      tryParseStatements(ts.getAsView());
+//   std::optional<std::shared_ptr<rust_compiler::ast::Statements>> stmts =
+//       tryParseStatements(ts.getAsView());
 //
-//  EXPECT_TRUE(stmts.has_value());
-//};
+//   EXPECT_TRUE(stmts.has_value());
+// };
 //
-//TEST(StatementsTest, CheckStatements2) {
+// TEST(StatementsTest, CheckStatements2) {
 //
-//  std::string text = "return left + right;";
+//   std::string text = "return left + right;";
 //
-//  TokenStream ts = lex(text, "lib.rs");
+//   TokenStream ts = lex(text, "lib.rs");
 //
-//  std::optional<std::shared_ptr<rust_compiler::ast::Statements>> stmts =
-//      tryParseStatements(ts.getAsView());
+//   std::optional<std::shared_ptr<rust_compiler::ast::Statements>> stmts =
+//       tryParseStatements(ts.getAsView());
 //
-//  EXPECT_TRUE(stmts.has_value());
-//};
+//   EXPECT_TRUE(stmts.has_value());
+// };
 
 TEST(StatementsTest, CheckFun0a) {
 
@@ -42,10 +42,11 @@ TEST(StatementsTest, CheckFun0a) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Statement>> fun =
-      parser.tryParseStatement(ts.getAsView());
+  Restrictions restriction;
+  Result<std::shared_ptr<rust_compiler::ast::Statement>, std::string> result =
+      parser.parseStatement(restriction);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(StatementsTest, CheckFun0c) {
@@ -56,10 +57,11 @@ TEST(StatementsTest, CheckFun0c) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Statements>> fun =
-      parser.tryParseStatements(ts.getAsView());
+  Restrictions restriction;
+  Result<std::shared_ptr<rust_compiler::ast::Statement>, std::string> result =
+      parser.parseStatement(restriction);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(StatementsTest, CheckFun0d) {
@@ -70,10 +72,11 @@ TEST(StatementsTest, CheckFun0d) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Statement>> fun =
-      parser.tryParseLetStatement(ts.getAsView());
+  Restrictions restrictions;
+  Result<std::shared_ptr<rust_compiler::ast::Statement>, std::string> result =
+      parser.parseLetStatement({}, restrictions);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(StatementsTest, CheckFun1) {
@@ -84,10 +87,11 @@ TEST(StatementsTest, CheckFun1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Statements>> fun =
-      parser.tryParseStatements(ts.getAsView());
+  Restrictions restrictions;
+  Result<std::shared_ptr<rust_compiler::ast::Statement>, std::string> result =
+      parser.parseLetStatement({}, restrictions);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(StatementsTest, CheckFun2) {
@@ -98,10 +102,11 @@ TEST(StatementsTest, CheckFun2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Statement>> fun =
-      parser.tryParseStatement(ts.getAsView());
+  Restrictions restriction;
+  Result<std::shared_ptr<rust_compiler::ast::Statement>, std::string> result =
+      parser.parseStatement(restriction);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(StatementsTest, CheckFun3) {
@@ -112,8 +117,9 @@ TEST(StatementsTest, CheckFun3) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Statement>> fun =
-      parser.tryParseLetStatement(ts.getAsView());
+  Restrictions restrictions;
+  Result<std::shared_ptr<rust_compiler::ast::Statement>, std::string> result =
+      parser.parseLetStatement({}, restrictions);
 
-  EXPECT_TRUE(fun.has_value());
+  EXPECT_TRUE(result.isOk());
 };

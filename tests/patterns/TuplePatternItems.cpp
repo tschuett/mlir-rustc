@@ -15,10 +15,10 @@ TEST(PatternTupleItemsTest, CheckTuplePatternItems1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::patterns::TuplePatternItems>>
-      pattern = parser.tryParseTuplePatternItems(ts.getAsView());
+  Result<rust_compiler::ast::patterns::TuplePatternItems, std::string> result =
+      parser.parseTuplePatternItems();
 
-  EXPECT_TRUE(pattern.has_value());
+  EXPECT_TRUE(result.isOk());
 }
 
 TEST(PatternTupleItemsTest, CheckTuplePatternItems2) {
@@ -29,10 +29,10 @@ TEST(PatternTupleItemsTest, CheckTuplePatternItems2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::patterns::TuplePatternItems>>
-      pattern = parser.tryParseTuplePatternItems(ts.getAsView());
+  Result<rust_compiler::ast::patterns::TuplePatternItems, std::string> result =
+      parser.parseTuplePatternItems();
 
-  EXPECT_TRUE(pattern.has_value());
+  EXPECT_TRUE(result.isOk());
 }
 
 TEST(PatternTupleItemsTest, CheckTuplePatternItems3) {
@@ -43,10 +43,10 @@ TEST(PatternTupleItemsTest, CheckTuplePatternItems3) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::patterns::TuplePatternItems>>
-      pattern = parser.tryParseTuplePatternItems(ts.getAsView());
+  Result<rust_compiler::ast::patterns::TuplePatternItems, std::string> result =
+      parser.parseTuplePatternItems();
 
-  EXPECT_TRUE(pattern.has_value());
+  EXPECT_TRUE(result.isOk());
 }
 
 TEST(PatternTupleItemsTest, CheckTuplePatternItems4) {
@@ -57,10 +57,10 @@ TEST(PatternTupleItemsTest, CheckTuplePatternItems4) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::patterns::TuplePatternItems>>
-      pattern = parser.tryParseTuplePatternItems(ts.getAsView());
+  Result<rust_compiler::ast::patterns::TuplePatternItems, std::string> result =
+      parser.parseTuplePatternItems();
 
-  EXPECT_TRUE(pattern.has_value());
+  EXPECT_TRUE(result.isOk());
 }
 
 TEST(PatternTupleItemsTest, CheckTuplePatternItems5) {
@@ -71,8 +71,8 @@ TEST(PatternTupleItemsTest, CheckTuplePatternItems5) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::patterns::TuplePatternItems>>
-      pattern = parser.tryParseTuplePatternItems(ts.getAsView());
+  Result<rust_compiler::ast::patterns::TuplePatternItems, std::string> result =
+      parser.parseTuplePatternItems();
 
-  EXPECT_TRUE(pattern.has_value());
+  EXPECT_TRUE(result.isOk());
 }

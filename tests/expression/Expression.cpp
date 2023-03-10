@@ -1,5 +1,6 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
+
 #include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
@@ -15,10 +16,10 @@ TEST(ExpressionTest, CheckLiteralExpr) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> lit =
-      parser.tryParseLiteralExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseLiteralExpression({});
 
-  EXPECT_TRUE(lit.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExpressionTest, CheckNegationExpr1) {
@@ -29,10 +30,10 @@ TEST(ExpressionTest, CheckNegationExpr1) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> neg =
-      parser.tryParseNegationExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseNegationExpression({});
 
-  EXPECT_TRUE(neg.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExpressionTest, CheckNegationExpr2) {
@@ -43,10 +44,10 @@ TEST(ExpressionTest, CheckNegationExpr2) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> neg =
-      parser.tryParseNegationExpression(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
+      parser.parseNegationExpression({});
 
-  EXPECT_TRUE(neg.has_value());
+  EXPECT_TRUE(result.isOk());
 };
 
 TEST(ExpressionTest, CheckExprSmaller) {
@@ -57,8 +58,10 @@ TEST(ExpressionTest, CheckExprSmaller) {
 
   Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::Expression>> neg =
-      parser.tryParseExpression(ts.getAsView());
+  rust_compiler::parser::Restrictions restrictions;
+  StringResult<std::shared_ptr<rust_compiler::ast::Expression>> result =
+      parser.parseExpression({}, restrictions);
 
-  EXPECT_TRUE(neg.has_value());
+
+  EXPECT_TRUE(result.isOk());
 };
