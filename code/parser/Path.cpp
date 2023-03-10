@@ -154,7 +154,7 @@ Parser::parsePathInExpression() {
   while (true) {
     if (check(TokenKind::Eof)) {
       return StringResult<std::shared_ptr<ast::Expression>>(
-          "failed to parse path in expression: eof");
+          std::make_shared<PathInExpression>(path));
     } else if (check(TokenKind::PathSep)) {
       assert(eat(TokenKind::PathSep));
       StringResult<ast::PathExprSegment> next = parsePathExprSegment();

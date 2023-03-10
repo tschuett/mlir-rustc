@@ -158,7 +158,7 @@ Parser::parseTuplePattern() {
   if (!check(TokenKind::ParenClose))
     return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
         "failed to parse ) token in tuple pattern");
-  assert(eat(TokenKind::ParenOpen));
+  assert(eat(TokenKind::ParenClose));
 
   return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
       std::make_shared<TuplePattern>(tuple));
@@ -662,8 +662,7 @@ Parser::parseTupleStructPattern() {
   Location loc = getLocation();
   TupleStructPattern pat = {loc};
 
-  StringResult<std::shared_ptr<ast::Expression>> path =
-      parsePathInExpression();
+  StringResult<std::shared_ptr<ast::Expression>> path = parsePathInExpression();
   if (!path) {
     llvm::errs() << "failed to parse path in expression in "
                     "parse tuple struct pattern: "
@@ -788,8 +787,7 @@ Parser::parseStructPattern() {
 
   StructPattern pat = {loc};
 
-  StringResult<std::shared_ptr<ast::Expression>> path =
-      parsePathInExpression();
+  StringResult<std::shared_ptr<ast::Expression>> path = parsePathInExpression();
   if (!path) {
     llvm::errs() << "failed to parse path in expression in "
                     "parse struct pattern: "
@@ -882,6 +880,8 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
     return parseIdentifierPattern();
   } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
     return parseIdentifierPattern();
+  } else if (check(TokenKind::Identifier)) {
+    return parseIdentifierOrPathPattern();
   }
 
   /*
@@ -1026,6 +1026,13 @@ Parser::parsePatternNoTopAlt() {
 
 //  if (check(lexer::TokenKind::Underscore))
 //    return parseWildCardPattern(); // maybe range literal
+
+adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
+Parser::parseIdentifierOrPathPattern() {
+  if (checkIdentifier() && (getToken(1).getKind() == TokenKind::PathSep))
+    return parsePathPattern();
+  return parseIdentifierPattern();
+}
 
 } // namespace rust_compiler::parser
 

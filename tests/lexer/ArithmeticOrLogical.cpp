@@ -8,7 +8,7 @@ TEST(ArithmeticLexerTest, CheckPlus) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -21,7 +21,7 @@ TEST(ArithmeticLexerTest, CheckMinus) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -34,7 +34,7 @@ TEST(ArithmeticLexerTest, CheckStar) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -47,7 +47,7 @@ TEST(ArithmeticLexerTest, CheckSlash) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -59,7 +59,7 @@ TEST(ArithmeticLexerTest, CheckPercent) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -71,7 +71,7 @@ TEST(ArithmeticLexerTest, CheckAnd) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -83,7 +83,7 @@ TEST(ArithmeticLexerTest, CheckOr) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -95,7 +95,7 @@ TEST(ArithmeticLexerTest, CheckCaret) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -107,7 +107,7 @@ TEST(ArithmeticLexerTest, CheckShl) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -119,7 +119,9 @@ TEST(ArithmeticLexerTest, CheckShr) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  ts.print(5);
+  
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 

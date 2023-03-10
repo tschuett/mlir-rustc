@@ -281,6 +281,8 @@ public:
   parseMacroInvocationPattern();
   adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parsePathPattern();
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
+  parseIdentifierOrPathPattern();
 
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parsePathInExpressionOrStructExprStructOrStructExprTupleOrStructExprUnitOrMacroInvocationOrExpressionWithPostfix();
@@ -668,7 +670,7 @@ private:
   parseInfixExpression(std::shared_ptr<ast::Expression> left,
                        std::span<ast::OuterAttribute>, Restrictions);
 
-  bool canTokenStartType(const lexer::Token& tok);
+  bool canTokenStartType(const lexer::Token &tok);
 };
 
 } // namespace rust_compiler::parser

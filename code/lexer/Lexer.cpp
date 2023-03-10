@@ -423,11 +423,11 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
           Token(Location(fileName, lineNumber, columnNumber), TokenKind::Not));
       code.remove_prefix(1);
       columnNumber += 1;
-    } else if (code.starts_with(">")) {
-      ts.append(
-          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Gt));
-      code.remove_prefix(1);
-      columnNumber += 1;
+    } else if (code.starts_with("$crate")) {
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::Identifier, "$crate"));
+      code.remove_prefix(6);
+      columnNumber += 6;
     } else if (code.starts_with("->")) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
                       TokenKind::RArrow));
@@ -478,6 +478,11 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
           Token(Location(fileName, lineNumber, columnNumber), TokenKind::Shr));
       code.remove_prefix(2);
       columnNumber += 2;
+    } else if (code.starts_with(">")) {
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Gt));
+      code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("<<")) {
       ts.append(
           Token(Location(fileName, lineNumber, columnNumber), TokenKind::Shl));
@@ -583,11 +588,6 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
                       TokenKind::Slash));
       code.remove_prefix(1);
       columnNumber += 1;
-    } else if (code.starts_with("<")) {
-      ts.append(
-          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Lt));
-      code.remove_prefix(1);
-      columnNumber += 1;
     } else if (code.starts_with(">=")) {
       ts.append(
           Token(Location(fileName, lineNumber, columnNumber), TokenKind::Ge));
@@ -598,6 +598,11 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
           Token(Location(fileName, lineNumber, columnNumber), TokenKind::Le));
       code.remove_prefix(2);
       columnNumber += 2;
+    } else if (code.starts_with("<")) {
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Lt));
+      code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("..")) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
                       TokenKind::DotDot));
@@ -608,8 +613,11 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       ++lineNumber;
       columnNumber = 0;
     } else {
-      if (code.size() == 0)
+      if (code.size() == 0) {
+        ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                        TokenKind::Eof));
         return ts;
+      }
       printf("unknown token: x%sx\n", code.data());
       llvm::outs() << "remaining chars:" << code.size() << "\n";
       ts.print(50);
@@ -622,7 +630,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
   ts.append(
       Token(Location(fileName, lineNumber, columnNumber), TokenKind::Eof));
 
-  //ts.print(50);
+  // ts.print(50);
   return ts;
 }
 

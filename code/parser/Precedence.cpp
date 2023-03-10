@@ -14,7 +14,9 @@ Precedence getLeftBindingPower(const Token &token) {
   case TokenKind::PathSep:
     return Precedence::Path;
   default: {
-    llvm::outs() << "unknown token: " << Token2String(token.getKind()) << "\n";
+    llvm::outs() << "getLeftBindingPower: unknown token: "
+                 << Token2String(token.getKind()) << "\n";
+    return Precedence::Lowest;
     exit(EXIT_FAILURE);
   }
   }

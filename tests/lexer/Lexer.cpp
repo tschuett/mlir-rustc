@@ -12,7 +12,7 @@ TEST(LexerTest, CheckKeyWord) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 2;
+  size_t expectedLendth = 3;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 };
@@ -24,7 +24,7 @@ TEST(LexerTest, CheckUse) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 22;
+  size_t expectedLendth = 23;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 };
@@ -34,7 +34,7 @@ TEST(LexerTest, CheckInteger) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -46,7 +46,7 @@ TEST(LexerTest, CheckDecInteger) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -58,7 +58,9 @@ TEST(LexerTest, CheckDollarCrate) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
+
+  ts.print(5);
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -70,7 +72,7 @@ TEST(LexerTest, CheckKeyword) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -88,7 +90,7 @@ TEST(LexerTest, CheckIf) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 9;
+  size_t expectedLendth = 10;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -106,7 +108,7 @@ TEST(LexerTest, CheckIf1) {
 
   ts.print(10);
 
-  size_t expectedLendth = 5;
+  size_t expectedLendth = 6;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -121,9 +123,7 @@ TEST(LexerTest, CheckFive) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  ts.print(10);
-
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -137,7 +137,7 @@ TEST(LexerTest, CheckTen) {
 
   ts.print(10);
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -151,7 +151,7 @@ TEST(LexerTest, CheckHundred) {
 
   ts.print(10);
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -165,7 +165,7 @@ TEST(LexerTest, CheckThousand) {
 
   ts.print(10);
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -179,7 +179,7 @@ TEST(LexerTest, CheckLoop) {
 
   ts.print(10);
 
-  size_t expectedLendth = 12;
+  size_t expectedLendth = 13;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -193,7 +193,7 @@ TEST(LexerTest, CheckAnd) {
 
   ts.print(10);
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -207,7 +207,7 @@ TEST(LexerTest, CheckAndAnd) {
 
   ts.print(10);
 
-  size_t expectedLendth = 2;
+  size_t expectedLendth = 3;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 

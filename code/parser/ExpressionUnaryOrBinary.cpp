@@ -45,9 +45,9 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
                              Restrictions restrictions) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
 
-  llvm::outs() << "parseUnaryExpression"
-               << "\n";
-
+//  llvm::outs() << "parseUnaryExpression"
+//               << "\n";
+//
   Token tok = getToken();
 
   switch (getToken().getKind()) {
@@ -355,6 +355,7 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
     default: {
       llvm::outs() << "unexpected token: " << Token2String(getToken().getKind())
                    << "\n";
+      llvm::outs() << "in parseUnaryExpression" << "\n";
       return StringResult<std::shared_ptr<ast::Expression>>(
           "unexpected token in unary expression");
     }

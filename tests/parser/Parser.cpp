@@ -20,6 +20,8 @@ TEST(ParserTest, CheckModuleDecl) {
 
   Parser parser = {ts};
 
+  ts.print(10);
+  
   Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
       parser.parseStructExprTuple();
 

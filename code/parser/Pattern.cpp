@@ -216,15 +216,19 @@ Parser::parseTupleOrGroupedPattern() {
   Location loc = getLocation();
 
   if (!check(TokenKind::ParenOpen)) {
+    llvm::errs() << "failed to parse token ( in tuple or group pattern "
+                 << "\n";
     // report error
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse (");
   }
   assert(check(TokenKind::ParenOpen));
 
   if (check(TokenKind::DotDot) && check(TokenKind::ParenClose, 1)) {
     TuplePattern tuple = {loc};
 
-    assert(check(TokenKind::DotDot));
-    assert(check(TokenKind::ParenClose));
+    assert(eat(TokenKind::DotDot));
+    assert(eat(TokenKind::ParenClose));
 
     TuplePatternItems items = {loc};
     items.setRestPattern();
@@ -240,7 +244,9 @@ Parser::parseTupleOrGroupedPattern() {
     llvm::errs() << "failed to parse pattern in pattern: " << pattern.getError()
                  << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse pattern in tuple or group pattern");
+    // exit(EXIT_FAILURE);
   }
   if (check(TokenKind::ParenClose)) {
     assert(check(TokenKind::ParenClose));
@@ -264,6 +270,10 @@ Parser::parseTupleOrGroupedPattern() {
     // continue
   } else {
     // report error ?
+    llvm::errs() << "found unexpected token in tuple or grouped pattern"
+                 << Token2String(getToken().getKind()) << "\n";
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse pattern in tuple or group pattern: unexpected token");
   }
 
   TuplePatternItems items = {loc};
@@ -277,7 +287,9 @@ Parser::parseTupleOrGroupedPattern() {
       llvm::errs() << "failed to parse pattern in turple or grouped pattern: "
                    << pattern.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse pattern in tuple or group pattern");
+      //exit(EXIT_FAILURE);
     }
     items.addPattern(pattern.getValue());
 

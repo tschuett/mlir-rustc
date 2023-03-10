@@ -181,7 +181,7 @@ StringResult<std::shared_ptr<ast::Expression>> Parser::parseStructExprTuple() {
 
   StringResult<std::shared_ptr<ast::Expression>> path = parsePathInExpression();
   if (!path) {
-    llvm::errs() << "failed to parse path in epxression in struct expr tuple: "
+    llvm::outs() << "failed to parse path in epxression in struct expr tuple: "
                  << path.getError() << "\n";
     printFunctionStack();
     exit(EXIT_FAILURE);
@@ -204,7 +204,7 @@ StringResult<std::shared_ptr<ast::Expression>> Parser::parseStructExprTuple() {
       StringResult<std::shared_ptr<ast::Expression>> expr =
           parseExpression({}, restrictions);
       if (!expr) {
-        llvm::errs() << "failed to parse expression in struct expr tuple: "
+        llvm::outs() << "failed to parse expression in struct expr tuple: "
                      << expr.getError() << "\n";
         printFunctionStack();
         exit(EXIT_FAILURE);
