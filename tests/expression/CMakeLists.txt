@@ -24,6 +24,7 @@ add_executable(ExpressionTests
         IfLetExpression.cpp
         LoopExpression.cpp
         LetStatement.cpp
+        Axum.cpp
 )
 
 llvm_map_components_to_libnames(llvm_libs Support)

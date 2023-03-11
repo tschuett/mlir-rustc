@@ -45,6 +45,11 @@ public:
   std::shared_ptr<ast::types::TypeExpression> getType() const {
     return *type;
   };
+
+  bool hasElse() const { return (bool)elseExpr;}
+
+  std::shared_ptr<ast::Expression> getElse() const { return *elseExpr; };
+  
 };
 
 } // namespace rust_compiler::ast

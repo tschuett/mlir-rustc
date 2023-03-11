@@ -77,6 +77,7 @@
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_parse/parser/struct.Parser.html#method.new
 namespace rust_compiler::parser {
 
+/// a checkpoint in a stream of tokens
 class CheckPoint {
   size_t offset = 0;
 
@@ -87,6 +88,7 @@ public:
 
 enum PathKind { TypePath, SimplePath, Unknown };
 
+/// Parses a stream of tokens into an abstract syntax tree: a crate
 class Parser {
   lexer::TokenStream ts;
 

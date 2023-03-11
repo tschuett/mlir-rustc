@@ -9,6 +9,65 @@ using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
 using namespace rust_compiler::adt;
 
+TEST(PatternNoTopAltTest, CheckIdentifierPattern12) {
+
+  std::string text = "(mut v, w)";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts};
+
+  ts.print(10);
+
+  Result<std::shared_ptr<rust_compiler::ast::patterns::Pattern>, std::string>
+      result = parser.parsePattern();
+
+  if (result.isErr())
+    llvm::errs() << result.getError() << "\n";
+
+  EXPECT_TRUE(result.isOk());
+}
+
+TEST(PatternNoTopAltTest, CheckIdentifierPattern11) {
+
+  std::string text = "(w)";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts};
+
+  ts.print(10);
+
+  Result<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
+         std::string>
+      result = parser.parseTupleOrGroupedPattern();
+
+  if (result.isErr())
+    llvm::errs() << result.getError() << "\n";
+
+  EXPECT_TRUE(result.isOk());
+}
+
+TEST(PatternNoTopAltTest, CheckIdentifierPattern10) {
+
+  std::string text = "(w)";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts};
+
+  ts.print(10);
+
+  Result<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
+         std::string>
+      result = parser.parseGroupedPattern();
+
+  if (result.isErr())
+    llvm::errs() << result.getError() << "\n";
+
+  EXPECT_TRUE(result.isOk());
+}
+
 TEST(PatternNoTopAltTest, CheckIdentifierPattern9) {
 
   std::string text = "(w, v)";
@@ -173,7 +232,6 @@ TEST(PatternNoTopAltTest, CheckIdentifierPattern1) {
 
   if (result.isErr())
     llvm::errs() << result.getError() << "\n";
-
 
   EXPECT_TRUE(result.isOk());
 }

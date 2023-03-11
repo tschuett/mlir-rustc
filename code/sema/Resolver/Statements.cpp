@@ -1,4 +1,5 @@
 #include "AST/ExpressionStatement.h"
+#include "AST/BlockExpression.h"
 #include "AST/LetStatement.h"
 #include "AST/Statement.h"
 #include "Resolver.h"
@@ -26,7 +27,6 @@ void Resolver::resolveStatement(std::shared_ptr<ast::Statement> stmt,
     break;
   }
   case StatementKind::ExpressionStatement: {
-    assert(false && "to be handled later");
     resolveExpressoinStatement(
         std::static_pointer_cast<ExpressionStatement>(stmt), prefix,
         canonicalPrefix);
@@ -50,7 +50,10 @@ void Resolver::resolveLetStatement(std::shared_ptr<ast::LetStatement> let,
   if (let->hasType())
     resolveType(let->getType());
 
-  // FIXME else block
+  if (let->hasElse())
+    resolveBlockExpression(
+        std::static_pointer_cast<BlockExpression>(let->getElse()), prefix,
+        canonicalPrefix);
 }
 
 void Resolver::resolveExpressoinStatement(

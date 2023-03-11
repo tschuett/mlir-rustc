@@ -9,7 +9,7 @@ TypeCheckContext *TypeCheckContext::get() {
   return instance;
 }
 
-void TypeCheckContext::resolveCrate(std::shared_ptr<ast::Crate>) {
+void TypeCheckContext::checkCrate(std::shared_ptr<ast::Crate>) {
   assert(false && "to be done");
 }
 

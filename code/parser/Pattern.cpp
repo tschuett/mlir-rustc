@@ -7,6 +7,7 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::ast;
@@ -174,10 +175,17 @@ StringResult<std::shared_ptr<ast::patterns::Pattern>> Parser::parsePattern() {
   StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>> first =
       parsePatternNoTopAlt();
   if (!first) {
-    llvm::errs() << "failed to parse pattern to top alt in pattern: "
+    llvm::outs() << "failed to parse pattern to top alt in pattern: "
                  << first.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv(
+            "{0} {1}",
+            "failed to parse not top alt pattern in parse pattern: first",
+            first.getError())
+            .str();
+    return StringResult<std::shared_ptr<ast::patterns::Pattern>>(s);
   }
   pattern.addPattern(first.getValue());
 
@@ -188,10 +196,17 @@ StringResult<std::shared_ptr<ast::patterns::Pattern>> Parser::parsePattern() {
       StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
           patternNoTopAlt = parsePatternNoTopAlt();
       if (!patternNoTopAlt) {
-        llvm::errs() << "failed to parse pattern to top alt in pattern: "
+        llvm::outs() << "failed to parse pattern to top alt in pattern: "
                      << patternNoTopAlt.getError() << "\n";
         printFunctionStack();
-        exit(EXIT_FAILURE);
+        std::string s =
+            llvm::formatv(
+                "{0} {1}",
+                "failed to parse not top alt pattern in parse pattern: next",
+                patternNoTopAlt.getError())
+                .str();
+        return StringResult<std::shared_ptr<ast::patterns::Pattern>>(s);
+        // exit(EXIT_FAILURE);
       }
       pattern.addPattern(patternNoTopAlt.getValue());
       if (check(TokenKind::Or)) {
@@ -222,7 +237,7 @@ Parser::parseTupleOrGroupedPattern() {
     return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
         "failed to parse (");
   }
-  assert(check(TokenKind::ParenOpen));
+  assert(eat(TokenKind::ParenOpen));
 
   if (check(TokenKind::DotDot) && check(TokenKind::ParenClose, 1)) {
     TuplePattern tuple = {loc};
@@ -241,21 +256,23 @@ Parser::parseTupleOrGroupedPattern() {
   StringResult<std::shared_ptr<ast::patterns::Pattern>> pattern =
       parsePattern();
   if (!pattern) {
-    llvm::errs() << "failed to parse pattern in pattern: " << pattern.getError()
-                 << "\n";
+    llvm::errs() << "failed to parse pattern in pattern in tuple or group: "
+                 << pattern.getError() << "\n";
     printFunctionStack();
     return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
-        "failed to parse pattern in tuple or group pattern");
+        "failed to parse pattern in tuple or group pattern: first pattern");
     // exit(EXIT_FAILURE);
   }
   if (check(TokenKind::ParenClose)) {
-    assert(check(TokenKind::ParenClose));
+    assert(eat(TokenKind::ParenClose));
     // done GroupedPattern
     GroupedPattern group = {loc};
     group.setPattern(pattern.getValue());
     return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
         std::make_shared<GroupedPattern>(group));
   } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
+    assert(eat(TokenKind::Comma));
+    assert(eat(TokenKind::ParenClose));
     TuplePatternItems items = {loc};
 
     items.addPattern(pattern.getValue());
@@ -268,9 +285,11 @@ Parser::parseTupleOrGroupedPattern() {
         std::make_shared<TuplePattern>(tuple));
   } else if (check(TokenKind::Comma) && !check(TokenKind::ParenClose, 1)) {
     // continue
+    assert(eat(TokenKind::Comma));
   } else {
-    // report error ?
-    llvm::errs() << "found unexpected token in tuple or grouped pattern"
+    // report
+    // error ?
+    llvm::outs() << "found unexpected token in tuple or grouped pattern"
                  << Token2String(getToken().getKind()) << "\n";
     return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
         "failed to parse pattern in tuple or group pattern: unexpected token");
@@ -287,27 +306,34 @@ Parser::parseTupleOrGroupedPattern() {
       llvm::errs() << "failed to parse pattern in turple or grouped pattern: "
                    << pattern.getError() << "\n";
       printFunctionStack();
-      return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
-        "failed to parse pattern in tuple or group pattern");
-      //exit(EXIT_FAILURE);
+
+      std::string S = llvm::formatv("{0} {1}",
+                                    "failed to parse pattern in tuple or group "
+                                    "pattern, in while loop: ",
+                                    pattern.getError())
+                          .str();
+      return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(S);
+      // exit(EXIT_FAILURE);
     }
     items.addPattern(pattern.getValue());
 
     if (check(TokenKind::ParenClose)) {
+      assert(eat(TokenKind::ParenClose));
       // done
       TuplePattern pattern = {loc};
       pattern.setItems(items);
       return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
           std::make_shared<TuplePattern>(pattern));
     } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
-      assert(check(TokenKind::Comma));
+      assert(eat(TokenKind::Comma));
+      assert(eat(TokenKind::ParenClose));
       TuplePattern pattern = {loc};
       pattern.setItems(items);
       items.setTrailingComma();
       return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
           std::make_shared<TuplePattern>(pattern));
     } else if (check(TokenKind::Comma)) {
-      assert(check(TokenKind::Comma));
+      assert(eat(TokenKind::Comma));
       continue;
     } else if (check(TokenKind::Eof)) {
       // abort

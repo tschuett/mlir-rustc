@@ -32,12 +32,16 @@
 
 #include <map>
 #include <optional>
+#include <set>
 #include <stack>
 #include <string_view>
 #include <vector>
-#include <set>
 
 namespace rust_compiler::sema::resolver {
+
+/// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/index.html
+/// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/index.html
+///  https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/struct.Resolver.html
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/struct.Rib.html
 class Rib {
@@ -102,6 +106,7 @@ private:
   llvm::SmallVector<Segment> modulePath;
 };
 
+/// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/struct.SelfVisitor.html
 class Resolver {
 public:
   Resolver() noexcept;

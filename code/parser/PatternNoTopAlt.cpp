@@ -17,6 +17,7 @@
 #include "Parser/Parser.h"
 
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/FormatVariadic.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
@@ -188,7 +189,7 @@ Parser::parseGroupedPattern() {
   if (!check(TokenKind::ParenClose))
     return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
         "failed to parse ) token in grouped pattern");
-  assert(eat(TokenKind::ParenOpen));
+  assert(eat(TokenKind::ParenClose));
 
   return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
       std::make_shared<GroupedPattern>(grouped));
@@ -222,7 +223,9 @@ Parser::parseGroupedOrTuplePattern() {
     llvm::errs() << "failed to parse pattern in grouped or tuple pattern: "
                  << pattern.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse pattern in grouped or tuple pattern");
+    // exit(EXIT_FAILURE);
   }
 
   if (check(TokenKind::ParenClose)) {
@@ -939,11 +942,13 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
       return parsePathOrStructOrTupleStructPattern();
     } else {
       // error
+      std::string s = llvm::formatv("{0} {1}",
+                                    "failed to parse RangeOrIdentifierOrStructOrTupleStructOrMa"
+                                    "croInvocationPattern with unknown token",
+                                    Token2String(getToken().getKind()))
+                          .str();
       llvm::outs() << Token2String(getToken().getKind()) << "\n";
-      return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
-          "failed to parse "
-          "RangeOrIdentifierOrStructOrTupleStructOrMa"
-          "croInvocationPattern");
+      return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(s);
     }
   }
 }
