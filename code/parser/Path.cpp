@@ -12,7 +12,8 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
-#include <llvm/Support/Error.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/FormatVariadic.h>
 #include <span>
 
 using namespace rust_compiler::lexer;
@@ -53,8 +54,7 @@ StringResult<ast::SimplePathSegment> Parser::parseSimplePathSegment() {
       "failed to parse simple path segment");
 }
 
-StringResult<std::shared_ptr<ast::Expression>>
-Parser::parsePathExpression() {
+StringResult<std::shared_ptr<ast::Expression>> Parser::parsePathExpression() {
   if (check(TokenKind::Lt))
     return parseQualifiedPathInExpression();
 
@@ -132,8 +132,7 @@ StringResult<ast::PathExprSegment> Parser::parsePathExprSegment() {
   return StringResult<ast::PathExprSegment>(seg);
 }
 
-StringResult<std::shared_ptr<ast::Expression>>
-Parser::parsePathInExpression() {
+StringResult<std::shared_ptr<ast::Expression>> Parser::parsePathInExpression() {
   Location loc = getLocation();
   PathInExpression path = {loc};
 
@@ -349,8 +348,12 @@ StringResult<ast::types::TypePathSegment> Parser::parseTypePathSegment() {
   }
 }
 
-StringResult<std::shared_ptr<ast::types::TypeExpression>> Parser::parseTypePath() {
+StringResult<std::shared_ptr<ast::types::TypeExpression>>
+Parser::parseTypePath() {
   Location loc = getLocation();
+
+  llvm::errs() << "parseTypePath"
+               << "\n";
 
   class TypePath path = {loc};
 
@@ -402,31 +405,66 @@ StringResult<ast::SimplePath> Parser::parseSimplePath() {
     assert(eat(TokenKind::PathSep));
   }
 
+  SimplePathSegment segment = {getLocation()};
   if (check(TokenKind::Identifier)) {
+    segment.setIdentifier(getToken().getIdentifier());
   } else if (checkKeyWord(KeyWordKind::KW_SUPER)) {
+    segment.setKeyWord(KeyWordKind::KW_SUPER);
   } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
+    segment.setKeyWord(KeyWordKind::KW_SELFVALUE);
   } else if (checkKeyWord(KeyWordKind::KW_CRATE)) {
+    segment.setKeyWord(KeyWordKind::KW_CRATE);
   } else if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE)) {
-    return StringResult<ast::SimplePath>(path);
+    segment.setKeyWord(KeyWordKind::KW_DOLLARCRATE);
+  } else {
+    // error: there are no empty paths
+    std::string s =
+        llvm::formatv("{0} {1}", "parseSimplePath; empty path: unknown token: ",
+                      Token2String(getToken().getKind()))
+            .str();
+    return StringResult<ast::SimplePath>(s);
   }
+
+  path.addPathSegment(segment);
 
   if (!check(TokenKind::PathSep)) {
     // done
+    return StringResult<ast::SimplePath>(path);
   }
   assert(eat(TokenKind::PathSep));
 
   while (true) {
-    if (check(TokenKind::Identifier)) {
-    } else if (checkKeyWord(KeyWordKind::KW_SUPER)) {
-    } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
-    } else if (checkKeyWord(KeyWordKind::KW_CRATE)) {
-    } else if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE)) {
-    } else if (check(TokenKind::Eof)) {
-    } else {
+    if (check(TokenKind::Eof)) {
+      // done
       return StringResult<ast::SimplePath>(path);
     }
 
-    // PathSep ??
+    if (check(TokenKind::PathSep)) {
+      assert(eat(TokenKind::PathSep));
+      SimplePathSegment segment = {getLocation()};
+
+      if (check(TokenKind::Identifier)) {
+        segment.setIdentifier(getToken().getIdentifier());
+      } else if (checkKeyWord(KeyWordKind::KW_SUPER)) {
+        segment.setKeyWord(KeyWordKind::KW_SUPER);
+      } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
+        segment.setKeyWord(KeyWordKind::KW_SELFVALUE);
+      } else if (checkKeyWord(KeyWordKind::KW_CRATE)) {
+        segment.setKeyWord(KeyWordKind::KW_CRATE);
+      } else if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE)) {
+        segment.setKeyWord(KeyWordKind::KW_DOLLARCRATE);
+      } else {
+        std::string s =
+            llvm::formatv("{0} {1}", "parseSimplePath; unknown token: ",
+                          Token2String(getToken().getKind()))
+                .str();
+        return StringResult<ast::SimplePath>(s);
+      }
+      path.addPathSegment(segment);
+    } else {
+      // done
+      return StringResult<ast::SimplePath>(path);
+    }
   }
 }
 

@@ -41,6 +41,7 @@
 #include "Parser/Restrictions.h"
 
 #include <cassert>
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
@@ -1492,6 +1493,10 @@ Parser::parseReturnExpression(std::span<OuterAttribute>) {
     return Result<std::shared_ptr<ast::Expression>, std::string>(
         std::make_shared<ReturnExpression>(ret));
 
+  if (check(TokenKind::Eof)) // for gtest
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        std::make_shared<ReturnExpression>(ret));
+
   Restrictions restrictions;
   Result<std::shared_ptr<ast::Expression>, std::string> expr =
       parseExpression({}, restrictions);
@@ -1499,12 +1504,17 @@ Parser::parseReturnExpression(std::span<OuterAttribute>) {
     llvm::errs() << "failed to parse return tail expression: "
                  << expr.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0} {1}", "failed to parse return tail expression: ",
+                      expr.getError())
+            .str();
+    return Result<std::shared_ptr<ast::Expression>, std::string>(s);
+    // exit(EXIT_FAILURE);
   }
 
   ret.setTail(expr.getValue());
 
-  llvm::outs() << "end of return expression: "
+  llvm::errs() << "end of return expression: "
                << Token2String(getToken().getKind()) << "\n";
 
   return Result<std::shared_ptr<ast::Expression>, std::string>(
@@ -1579,7 +1589,7 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
 
   BlockExpression bloc = {loc};
 
-  llvm::outs() << "parseBlockExpression"
+  llvm::errs() << "parseBlockExpression"
                << "\n";
 
   if (!check(TokenKind::BraceOpen)) {
@@ -1606,7 +1616,13 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
     llvm::errs() << "failed to parse statements in block expression: "
                  << stmts.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0} {1}",
+                      "failed to parse statements in block expression: ",
+                      stmts.getError())
+            .str();
+    //exit(EXIT_FAILURE);
+    return Result<std::shared_ptr<ast::Expression>, std::string>(s);
   }
 
   bloc.setStatements(stmts.getValue());

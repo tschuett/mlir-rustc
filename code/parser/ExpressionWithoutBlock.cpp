@@ -27,11 +27,16 @@ Parser::parseExpressionWithoutBlock(std::span<ast::OuterAttribute> outer,
     case KeyWordKind::KW_MOVE: {
       return parseClosureExpression(outer);
     }
+    case KeyWordKind::KW_TRUE:
+    case KeyWordKind::KW_FALSE: {
+      return parseLiteralExpression(outer);
+    }
     default:
       if (auto kw = KeyWord2String(getToken().getKeyWordKind())) {
-        llvm::errs() << "unknown keyword: " << *kw << "\n";
+        llvm::errs() << "parseExpressionWithoutBlock: unknown keyword: " << *kw
+                     << "\n";
       } else {
-        llvm::errs() << "unknown keyword: "
+        llvm::errs() << "parseExpressionWithoutBlock : unknown keyword: "
                      << "\n";
       }
       exit(EXIT_FAILURE);
@@ -72,7 +77,7 @@ Parser::parseExpressionWithoutBlock(std::span<ast::OuterAttribute> outer,
     }
     default:
       llvm::errs() << "unknown token: " << Token2String(getToken().getKind())
-                                       << "\n";
+                   << "\n";
       exit(EXIT_FAILURE);
     }
     }

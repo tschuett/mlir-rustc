@@ -19,20 +19,23 @@ StringResult<ast::Statements> Parser::parseStatements() {
 
   Statements stmts = {loc};
 
-  llvm::outs() << "parseStatements"
+  llvm::errs() << "parseStatements"
                << "\n";
 
   Restrictions restrictions;
 
   while (true) {
-    llvm::outs() << Token2String(getToken().getKind()) << "\n";
+    llvm::errs() << "parseStatements: " << Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Eof)) {
       return StringResult<ast::Statements>("failed to parse statements: eof");
+    } else if (check(TokenKind::Semi)) {
+      // eat
+      assert(eat(TokenKind::Semi));
     } else if (check(TokenKind::BraceClose)) {
       // done
       return StringResult<ast::Statements>(stmts);
     } else if (checkStatement()) {
-      llvm::outs() << "parseStatements: statement"
+      llvm::errs() << "parseStatements: statement"
                    << "\n";
       StringResult<std::shared_ptr<ast::Statement>> stmt =
           parseStatement(restrictions);
@@ -44,10 +47,10 @@ StringResult<ast::Statements> Parser::parseStatements() {
       }
       stmts.addStmt(stmt.getValue());
     } else if (checkExpressionWithoutBlock()) {
-      llvm::outs() << "parseStatements: wo block"
+      llvm::errs() << "parseStatements: wo block"
                    << "\n";
       StringResult<std::shared_ptr<ast::Expression>> woBlock =
-        parseExpressionWithoutBlock({}, restrictions);
+          parseExpressionWithoutBlock({}, restrictions);
       if (!woBlock) {
         llvm::errs()
             << "failed to parse expression without block in statements: "
@@ -57,6 +60,8 @@ StringResult<ast::Statements> Parser::parseStatements() {
       }
       stmts.setTrailing(woBlock.getValue());
     } else {
+      llvm::errs() << "failed to parse statements"
+                   << "\n";
       return StringResult<ast::Statements>("failed to parse statements");
     }
   }

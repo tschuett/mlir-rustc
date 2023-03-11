@@ -82,9 +82,9 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::AndAnd: {
     return std::string("&&");
   }
-  case TokenKind::String: {
-    return std::string("string");
-  }
+//  case TokenKind::String: {
+//    return std::string("string");
+//  }
 //  case TokenKind::Pipe: {
 //    return std::string("|");
 //  }

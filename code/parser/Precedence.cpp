@@ -13,6 +13,10 @@ Precedence getLeftBindingPower(const Token &token) {
   switch (token.getKind()) {
   case TokenKind::PathSep:
     return Precedence::Path;
+  case TokenKind::Plus:
+    return Precedence::Plus;
+  case TokenKind::Minus:
+    return Precedence::Minus;
   default: {
     llvm::outs() << "getLeftBindingPower: unknown token: "
                  << Token2String(token.getKind()) << "\n";

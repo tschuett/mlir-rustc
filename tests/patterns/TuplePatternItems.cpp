@@ -2,6 +2,8 @@
 #include "Parser/Parser.h"
 #include "gtest/gtest.h"
 
+#include <llvm/Support/raw_ostream.h>
+
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
@@ -13,10 +15,15 @@ TEST(PatternTupleItemsTest, CheckTuplePatternItems1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
+  ts.print(10);
+
   Parser parser = {ts};
 
   Result<rust_compiler::ast::patterns::TuplePatternItems, std::string> result =
       parser.parseTuplePatternItems();
+
+  if (result.isErr())
+    llvm::errs() << result.getError() << "\n";
 
   EXPECT_TRUE(result.isOk());
 }

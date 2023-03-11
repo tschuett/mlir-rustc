@@ -38,7 +38,7 @@ TEST(BlockExpressionTest, CheckBlockExpr2) {
 
 TEST(BlockExpressionTest, CheckBlockExpr3) {
 
-  std::string text = "{ true }";
+  std::string text = "{ true; }";
 
   TokenStream ts = lex(text, "lib.rs");
 
@@ -50,7 +50,7 @@ TEST(BlockExpressionTest, CheckBlockExpr3) {
   EXPECT_TRUE(result.isOk());
 };
 
-TEST(BlockExpressionTest, CheckBlockExpr4) {
+TEST(BlockExpressionTest, CheckBlockExpr41) {
 
   std::string text = "{ super }";
 

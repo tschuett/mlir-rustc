@@ -9,6 +9,7 @@
 #include "Parser/Parser.h"
 
 #include <cstdlib>
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
@@ -74,6 +75,9 @@ Parser::parseExpressionStatement(std::span<ast::OuterAttribute> outer,
 }
 
 bool Parser::checkStatement() {
+  llvm::errs() << "checkStatement"
+               << "\n";
+
   if (checkOuterAttribute()) {
     StringResult<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
@@ -193,7 +197,9 @@ Parser::parseLetStatement(std::span<ast::OuterAttribute> outer,
   if (!checkKeyWord(KeyWordKind::KW_LET)) {
     llvm::errs() << "failed to let token: "
                  << "\n";
-    exit(EXIT_FAILURE);
+    std::string s = llvm::formatv("{0}", "failed to parse let token").str();
+    // exit(EXIT_FAILURE);
+    return StringResult<std::shared_ptr<ast::Statement>>(s);
   }
 
   assert(eatKeyWord(KeyWordKind::KW_LET));
@@ -213,10 +219,15 @@ Parser::parseLetStatement(std::span<ast::OuterAttribute> outer,
     StringResult<std::shared_ptr<ast::types::TypeExpression>> type =
         parseType();
     if (!type) {
-      llvm::errs() << "failed to type in let statement: " << type.getError()
-                   << "\n";
+      llvm::errs() << "failed to parse type in let statement: "
+                   << type.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      // exit(EXIT_FAILURE);
+      std::string s =
+          llvm::formatv("{0} {1}", "failed to parse type in let statement: ",
+                        type.getError())
+              .str();
+      return StringResult<std::shared_ptr<ast::Statement>>(s);
     }
     let.setType(type.getValue());
   }
@@ -229,7 +240,13 @@ Parser::parseLetStatement(std::span<ast::OuterAttribute> outer,
       llvm::errs() << "failed to parse expression in let statement: "
                    << expr.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      std::string s =
+          llvm::formatv(
+              "{0} {1}",
+              "failed to parse expression in let statement: ", expr.getError())
+              .str();
+      return StringResult<std::shared_ptr<ast::Statement>>(s);
+      // exit(EXIT_FAILURE);
     }
     let.setExpression(expr.getValue());
   }
@@ -242,7 +259,13 @@ Parser::parseLetStatement(std::span<ast::OuterAttribute> outer,
       llvm::errs() << "failed to parse block expression in let statement: "
                    << block.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      std::string s =
+          llvm::formatv("{0} {1}",
+                        "failed to parse block expression in let statement: ",
+                        block.getError())
+              .str();
+      return StringResult<std::shared_ptr<ast::Statement>>(s);
+      // exit(EXIT_FAILURE);
     }
     let.setElseExpr(block.getValue());
   }
@@ -250,7 +273,9 @@ Parser::parseLetStatement(std::span<ast::OuterAttribute> outer,
   if (!check(TokenKind::Semi)) {
     llvm::errs() << "failed to parse ; token:"
                  << "\n";
-    exit(EXIT_FAILURE);
+    return StringResult<std::shared_ptr<ast::Statement>>(
+        "failed to parse ; token:");
+    // exit(EXIT_FAILURE);
   }
 
   assert(eat(TokenKind::Semi));

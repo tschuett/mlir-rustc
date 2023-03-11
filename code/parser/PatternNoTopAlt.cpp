@@ -16,8 +16,8 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
-#include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/FormatVariadic.h>
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
@@ -96,7 +96,13 @@ StringResult<TuplePatternItems> Parser::parseTuplePatternItems() {
     llvm::errs() << "failed to parse pattern in wildcard pattern: "
                  << first.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0} {1}",
+                      "failed to parse pattern in tuple pattern items pattern",
+                      first.getError())
+            .str();
+    return StringResult<TuplePatternItems>(s);
+    // exit(EXIT_FAILURE);
   }
   items.addPattern(first.getValue());
 
@@ -124,11 +130,18 @@ StringResult<TuplePatternItems> Parser::parseTuplePatternItems() {
     } else {
       StringResult<std::shared_ptr<ast::patterns::Pattern>> next =
           parsePattern();
+
       if (!next) {
         llvm::errs() << "failed to parse pattern in tuple pattern items: "
                      << next.getError() << "\n";
         printFunctionStack();
-        exit(EXIT_FAILURE);
+        std::string s =
+            llvm::formatv("{0} {1}",
+                          "failed to parse pattern in tuple pattern items",
+                          next.getError())
+                .str();
+        return StringResult<TuplePatternItems>(s);
+        //exit(EXIT_FAILURE);
       }
       items.addPattern(next.getValue());
     }
@@ -937,16 +950,22 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
       recover(point);
       return parsePathOrStructOrTupleStructPattern();
     } else if (check(TokenKind::INTEGER_LITERAL)) {
-      // lieral
+      // literal
       recover(point);
       return parsePathOrStructOrTupleStructPattern();
+    } else if (check(TokenKind::STRING_LITERAL)) {
+      // literal
+      recover(point);
+      return parseLiteralPattern();
     } else {
       // error
-      std::string s = llvm::formatv("{0} {1}",
-                                    "failed to parse RangeOrIdentifierOrStructOrTupleStructOrMa"
-                                    "croInvocationPattern with unknown token",
-                                    Token2String(getToken().getKind()))
-                          .str();
+      std::string s =
+          llvm::formatv(
+              "{0} {1}",
+              "failed to parse RangeOrIdentifierOrStructOrTupleStructOrMa"
+              "croInvocationPattern with unknown token",
+              Token2String(getToken().getKind()))
+              .str();
       llvm::outs() << Token2String(getToken().getKind()) << "\n";
       return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(s);
     }

@@ -386,7 +386,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
     std::optional<std::string> str = tryLexString(code);
     if (str) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::String, *str));
+                      TokenKind::STRING_LITERAL, *str));
       code.remove_prefix(str->size());
       columnNumber += str->size();
       continue;

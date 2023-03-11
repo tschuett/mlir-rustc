@@ -53,7 +53,7 @@ enum class TokenKind {
   BraceClose,
   // Amp,
   // DoubleAmp,
-  String,
+  //String,
   // Pipe,
   Star,
   // Dash,

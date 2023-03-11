@@ -22,9 +22,15 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
   CheckPoint cp = getCheckPoint();
 
+  llvm::outs() << "parseTraitObjectTypeOrTypePathOrMacroInvocation"
+               << "\n";
+
   while (true) {
-    // llvm::outs() << lexer::Token2String(getToken().getKind()) << "\n";
+    llvm::outs() << lexer::Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Eof)) {
+      //// terminator for gtest
+      // recover(cp);
+      // return parseTypePath();
       return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
           "failed to parse "
           "raitObjectTypeOrTypePathOrMacroInvocation: eof");
@@ -63,6 +69,18 @@ Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
       // terminator
       recover(cp);
       return parseTypePath();
+    } else if (check(TokenKind::Eof)) {
+      // terminator for gtest
+      recover(cp);
+      return parseTypePath();
+    } else if (check(TokenKind::Semi)) {
+      // terminator
+      recover(cp);
+      return parseTypePath();
+    } else if (check(TokenKind::Eq)) {
+      // terminator
+      recover(cp);
+      return parseTypePath();
     }
   }
   return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
@@ -75,10 +93,9 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>> Parser::
   Location loc = getLocation();
   CheckPoint cp = getCheckPoint();
 
-  // llvm::outs() <<
-  // "parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObje"
-  //                 "ctTypeOrBareFunctionType"
-  //              << "\n";
+  llvm::outs() << "parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObje"
+                  "ctTypeOrBareFunctionType"
+               << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_DYN)) {
     return parseTraitObjectType();

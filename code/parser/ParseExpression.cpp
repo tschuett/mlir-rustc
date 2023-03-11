@@ -4,6 +4,7 @@
 #include "Parser/Parser.h"
 
 #include <cstdlib>
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
 #include <span>
 
@@ -26,17 +27,24 @@ Parser::parseExpression(Precedence rightBindingPower,
                         Restrictions restrictions) {
   CheckPoint cp = getCheckPoint();
 
-//  llvm::outs() << "parseExpression"
-//               << "\n";
-//
+  llvm::errs() << "parseExpression"
+               << "\n";
+
   adt::StringResult<std::shared_ptr<ast::Expression>> expr =
       parseUnaryExpression({}, restrictions);
   if (!expr) {
     llvm::errs() << "failed to parse unary expression in expression: "
                  << expr.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv(
+            "{0} {1}",
+            "failed to parse unary expression in expression: ", expr.getError())
+            .str();
+    return adt::StringResult<std::shared_ptr<ast::Expression>>(s);
   }
+
+  llvm::errs() << "token: " << Token2String(getToken().getKind()) << "\n";
 
   // stop parsing if find lower priority token - parse higher priority first
   while (rightBindingPower < getLeftBindingPower(getToken())) {
@@ -48,7 +56,13 @@ Parser::parseExpression(Precedence rightBindingPower,
       llvm::errs() << "returning nullptr"
                    << "\n";
       recover(cp);
-      return adt::StringResult<std::shared_ptr<ast::Expression>>("");
+      std::string s =
+          llvm::formatv("{0} {1}",
+                        "failed to parse unary expression in expression: ",
+                        expr.getError())
+              .str();
+
+      return adt::StringResult<std::shared_ptr<ast::Expression>>(s);
     }
   }
 
@@ -73,10 +87,23 @@ Parser::parseInfixExpression(std::shared_ptr<Expression> left,
   case TokenKind::Minus: {
     return parseArithmeticOrLogicalExpression(left, restrictions);
   }
+  case TokenKind::Eof: {
+    std::string s =
+        llvm::formatv("{0} {1}", "found eof token in parse infix expression",
+                      "eof")
+            .str();
+    return StringResult<std::shared_ptr<ast::Expression>>(s);
+  }
   default: {
-    llvm::errs() << "error unhandled token kind: "
+    std::string s =
+        llvm::formatv("{0} {1}",
+                      "error unhandled token kind in parse infix expression: ",
+                      Token2String(getToken().getKind()))
+            .str();
+    llvm::errs() << "error unhandled token kind in parse infix expression: "
                  << Token2String(getToken().getKind()) << "\n";
-    exit(EXIT_FAILURE);
+    return StringResult<std::shared_ptr<ast::Expression>>(s);
+    // exit(EXIT_FAILURE);
   }
   }
 }

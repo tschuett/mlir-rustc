@@ -4,6 +4,7 @@
 #include "Parser/Parser.h"
 
 #include <gtest/gtest.h>
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
@@ -21,6 +22,9 @@ TEST(FunctionParameterExpressionTest, CheckFunctionParameter) {
   Result<rust_compiler::ast::FunctionParam, std::string> result =
       parser.parseFunctionParam();
 
+  if (result.isErr())
+    llvm::errs() << result.getError() << "\n";
+
   EXPECT_TRUE(result.isOk());
 };
 
@@ -34,6 +38,9 @@ TEST(FunctionParameterExpressionTest, CheckFunctionParameters) {
 
   Result<rust_compiler::ast::FunctionParameters, std::string> result =
       parser.parseFunctionParameters();
+
+  if (result.isErr())
+    llvm::errs() << result.getError() << "\n";
 
   EXPECT_TRUE(result.isOk());
 };

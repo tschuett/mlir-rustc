@@ -19,7 +19,7 @@ TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple) {
 
   printTokenState(ts.getAsView());
 
-  size_t expectedLendth = 3;
+  size_t expectedLendth = 4;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -38,7 +38,7 @@ TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 3;
+  size_t expectedLendth = 4;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -57,7 +57,7 @@ TEST(ArithmeticOrLogicalExpressionTest, CheckOperatorExprSimple3) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 3;
+  size_t expectedLendth = 4;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 

@@ -13,8 +13,19 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 bool Parser::checkPathOrStructOrMacro() {
+  llvm::errs() << "checkPathOrStructOrMacro"
+               << "\n";
+
+  if (check(TokenKind::Semi))
+    return false;
+
+  if (check(TokenKind::Eof))
+    return false;
+
   CheckPoint cp = getCheckPoint();
   while (true) {
+    llvm::errs() << "checkPathOrStructOrMacro: "
+                 << Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Eof)) {
       return false;
     } else if (check(TokenKind::Not)) {
@@ -38,6 +49,8 @@ bool Parser::checkPathOrStructOrMacro() {
 }
 
 bool Parser::checkExpressionWithoutBlock() {
+  llvm::errs() << "checkExpressionWithoutBlock"
+               << "\n";
   if (checkOuterAttribute()) {
     StringResult<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();

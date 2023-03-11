@@ -5,7 +5,7 @@ add_executable(ExpressionTests
         Expression.cpp
         ReturnExpressions.cpp
         PathExpression.cpp
-        FunctionParameter.cpp
+#        FunctionParameter.cpp
         OperatorExpression.cpp
         ArithmeticOrLogicalExpression.cpp
         Utils.cpp
@@ -25,6 +25,7 @@ add_executable(ExpressionTests
         LoopExpression.cpp
         LetStatement.cpp
         Axum.cpp
+        SimplePath.cpp
 )
 
 llvm_map_components_to_libnames(llvm_libs Support)

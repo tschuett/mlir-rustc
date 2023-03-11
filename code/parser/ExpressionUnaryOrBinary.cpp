@@ -45,9 +45,9 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
                              Restrictions restrictions) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
 
-//  llvm::outs() << "parseUnaryExpression"
-//               << "\n";
-//
+  //  llvm::outs() << "parseUnaryExpression"
+  //               << "\n";
+  //
   Token tok = getToken();
 
   switch (getToken().getKind()) {
@@ -251,7 +251,7 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
     return StringResult<std::shared_ptr<ast::Expression>>(
         parseClosureExpression(outer));
   default: {
-    llvm::errs() << "error unhandled token kind: "
+    llvm::errs() << "parseUnaryExpression: error unhandled token kind: "
                  << Token2String(getToken().getKind()) << "\n";
     exit(EXIT_FAILURE);
   }
@@ -355,7 +355,8 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
     default: {
       llvm::outs() << "unexpected token: " << Token2String(getToken().getKind())
                    << "\n";
-      llvm::outs() << "in parseUnaryExpression" << "\n";
+      llvm::outs() << "in parseUnaryExpression"
+                   << "\n";
       return StringResult<std::shared_ptr<ast::Expression>>(
           "unexpected token in unary expression");
     }
@@ -376,6 +377,7 @@ StringResult<std::shared_ptr<Expression>> Parser::parsePathInExpressionPratt() {
 
   if (getToken().isIdentifier()) {
     ident.setIdentifier(getToken().getIdentifier());
+    assert(eat(TokenKind::Identifier));
   } else if (getToken().isKeyWord()) {
     switch (getToken().getKeyWordKind()) {
     case KeyWordKind::KW_SUPER:
@@ -397,15 +399,17 @@ StringResult<std::shared_ptr<Expression>> Parser::parsePathInExpressionPratt() {
       std::optional<std::string> kind =
           KeyWord2String(getToken().getKeyWordKind());
       if (kind) {
-        llvm::outs() << "unknown keywork: " << *kind << "\n";
+        llvm::outs() << "unknown keyword: " << *kind << "\n";
       }
       return StringResult<std::shared_ptr<Expression>>(
           "unknown keyword in parsePathInExpressionPratt");
     }
     }
+    assert(eat(TokenKind::Keyword));
   } else {
     llvm::outs() << "unknown token: " << Token2String(getToken().getKind())
-                 << "in start of pathin expression" << "\n";
+                 << "in start of pathin expression"
+                 << "\n";
     return StringResult<std::shared_ptr<Expression>>(
         "unknown token in parsePathInExpressionPratt");
   }

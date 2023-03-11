@@ -5,6 +5,8 @@
 
 #include <gtest/gtest.h>
 
+#include <llvm/Support/raw_ostream.h>
+
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
@@ -16,7 +18,7 @@ TEST(ReturnExpressionTest, CheckReturnExpr) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 4;
+  size_t expectedLendth = 5;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -24,6 +26,9 @@ TEST(ReturnExpressionTest, CheckReturnExpr) {
 
   Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
       parser.parseReturnExpression({});
+
+  if (result.isErr())
+    llvm::errs() << result.getError() << "\n";
 
   EXPECT_TRUE(result.isOk());
 };
@@ -34,7 +39,7 @@ TEST(ReturnExpressionTest, CheckReturnExpr1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 2;
+  size_t expectedLendth = 3;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
@@ -52,7 +57,7 @@ TEST(ReturnExpressionTest, CheckReturnExpr2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  size_t expectedLendth = 1;
+  size_t expectedLendth = 2;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 
