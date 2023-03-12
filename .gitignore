@@ -137,3 +137,5 @@ code/include/Lir/LirTypes.cpp.inc
 code/include/Lir/LirTypes.h.inc
 
 html
+
+tests/items/ItemsTests
