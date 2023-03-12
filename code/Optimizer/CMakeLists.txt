@@ -18,6 +18,7 @@ add_library(optimizer
            SCCPPass.cpp
            PassPipeline.cpp
            DeadArgumentElimination.cpp
+           FuncSpecialization.cpp
            )
 
 target_include_directories(optimizer PRIVATE  ../include)

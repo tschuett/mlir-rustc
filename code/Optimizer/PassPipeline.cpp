@@ -30,8 +30,10 @@ void createDefaultOptimizerPassPipeline(mlir::PassManager &pm,
   pm.addPass(optimizer::createConvertMirToLirPass());
   // Lir
 
+  pm.addPass(mlir::createSCCPPass());
   pm.addPass(optimizer::createDeadArgumentEliminationPass());
   pm.addPass(optimizer::createLoopPass());
+  pm.addPass(optimizer::createFuncSpecialPass());
 
   pm.addPass(optimizer::createConvertLirToLLVMPass());
   // LLLVM Dialect

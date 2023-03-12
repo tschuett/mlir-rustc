@@ -94,6 +94,11 @@ def DeadArgumentEliminationPass : Pass<"DeadArgumentElimination", "mlir::ModuleO
   let description = "IPO dead argument elimination";
 }
 
+def FuncSpecialPass : Pass<"FuncSpecial", "mlir::ModuleOp"> {
+  let summary = "specializes funcs";
+  let description = "specializes funcs after SCCP";
+}
+
 
 
 // eleminate Mir: how?
