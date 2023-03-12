@@ -495,8 +495,17 @@ Parser::parseStructExpressionTuplePratt(std::shared_ptr<ast::Expression> path,
 
   if (!check(TokenKind::ParenOpen)) {
     // error
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        "failed to parse token ( in parse struct expression tuple pratt");
   }
   assert(eat(TokenKind::ParenOpen));
+
+  if (check(TokenKind::ParenClose)) {
+    // done: eat
+    assert(eat(TokenKind::ParenClose));
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        std::make_shared<StructExprTuple>(tuple));
+  }
 
   Restrictions restrictions;
   StringResult<std::shared_ptr<ast::Expression>> first =

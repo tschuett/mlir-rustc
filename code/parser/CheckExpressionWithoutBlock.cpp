@@ -27,10 +27,14 @@ bool Parser::checkPathOrStructOrMacro() {
     llvm::errs() << "checkPathOrStructOrMacro: "
                  << Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Eof)) {
+      recover(cp);
       return false;
     } else if (check(TokenKind::Not)) {
       recover(cp);
       return true;
+    } else if (check(TokenKind::Keyword)) {
+      recover(cp);
+      return false;
     } else if (check(TokenKind::PathSep)) {
       assert((eat(TokenKind::PathSep)));
     } else if (check(TokenKind::BraceOpen)) {

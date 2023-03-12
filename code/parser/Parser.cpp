@@ -72,6 +72,12 @@ bool Parser::checkMacroItem() {
     } else if (check(TokenKind::Eq)) {
       recover(cp);
       return false;
+    } else if (check(TokenKind::SquareOpen)) {
+      recover(cp);
+      return false;
+    } else if (check(TokenKind::Keyword)) {
+      recover(cp);
+      return false;
     } else {
       llvm::errs() << "checkMacroItem: unknown token: "
                    << Token2String(getToken().getKind()) << "\n";

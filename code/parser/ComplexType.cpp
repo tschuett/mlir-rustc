@@ -51,6 +51,9 @@ Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
     } else if (check(TokenKind::Lt)) {
       recover(cp);
       return parseTypePath();
+    } else if (check(TokenKind::Gt)) {
+      recover(cp);
+      return parseTypePath();
     } else if (check(TokenKind::Plus)) {
       recover(cp);
       return parseTraitObjectType();

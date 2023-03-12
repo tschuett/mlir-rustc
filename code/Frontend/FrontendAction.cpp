@@ -53,7 +53,10 @@ std::string FrontendAction::getRemarksOutput() {
   return std::string(currentInput.getRemarksOutput());
 }
 
-llvm::Error FrontendAction::execute() { executeAction(); }
+llvm::Error FrontendAction::execute() {
+  executeAction();
+  return llvm::Error::success();
+}
 
 } // namespace rust_compiler::frontend
 

@@ -372,7 +372,7 @@ Parser::parseArrayExpression(std::span<OuterAttribute>) {
   if (!check(TokenKind::SquareClose))
     return Result<std::shared_ptr<ast::Expression>, std::string>(
         "failed to parse ] token in array elements");
-  assert(eat(TokenKind::SquareOpen));
+  assert(eat(TokenKind::SquareClose));
   return Result<std::shared_ptr<ast::Expression>, std::string>(
       std::make_shared<ArrayExpression>(array));
 }

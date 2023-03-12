@@ -257,10 +257,12 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
       // closure expression
       return StringResult<std::shared_ptr<ast::Expression>>(
           parseClosureExpression(outer));
+    case TokenKind::SquareOpen: {
+      return parseArrayExpression(outer);
+    }
     default: {
       llvm::errs() << "parseUnaryExpressio2n: error unhandled token kind: "
                    << Token2String(getToken().getKind()) << "\n";
-      // exit(EXIT_FAILURE);
       std::string s =
           llvm::formatv("{0} {1}",
                         "parseUnaryExpression: error unhandled token kind: ",
@@ -374,8 +376,8 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
     default: {
       llvm::outs() << "unexpected token: " << Token2String(getToken().getKind())
                    << "\n";
-      llvm::outs() << "in parseUnaryExpression"
-                   << "\n";
+      llvm::outs() << "in parseUnaryExpression: "
+                   << KeyWord2String(getToken().getKeyWordKind()) << "\n";
       return StringResult<std::shared_ptr<ast::Expression>>(
           "unexpected token in unary expression");
     }
