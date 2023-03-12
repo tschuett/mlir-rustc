@@ -9,6 +9,7 @@
 #include "Parser/Parser.h"
 #include "Parser/Restrictions.h"
 
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
 
@@ -486,7 +487,77 @@ Parser::parseStructExpressionStructPratt(std::shared_ptr<ast::Expression> path,
 
 adt::StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseStructExpressionTuplePratt(std::shared_ptr<ast::Expression> path,
-                                        std::span<ast::OuterAttribute>) {
+                                        std::span<ast::OuterAttribute> outer) {
+  llvm::errs() << "parseStructExpressionTuplePratt"
+               << "\n";
+  StructExprTuple tuple = {getLocation()};
+  tuple.setPath(path);
+
+  if (!check(TokenKind::ParenOpen)) {
+    // error
+  }
+  assert(eat(TokenKind::ParenOpen));
+
+  Restrictions restrictions;
+  StringResult<std::shared_ptr<ast::Expression>> first =
+      parseExpression(outer, restrictions);
+  if (!first) {
+    // error
+    std::string s =
+        llvm::formatv("{0} {1}",
+                      "failed to parse first expression in struct expr tuple",
+                      first.getError())
+            .str();
+    return StringResult<std::shared_ptr<ast::Expression>>(s);
+  }
+
+  tuple.addExpression(first.getValue());
+
+  if (check(TokenKind::ParenClose)) {
+    // done: eat
+    assert(eat(TokenKind::ParenClose));
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        std::make_shared<StructExprTuple>(tuple));
+  } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
+    // done: eat
+    tuple.setTrailingComma();
+    assert(eat(TokenKind::Comma));
+    assert(eat(TokenKind::ParenClose));
+    return StringResult<std::shared_ptr<ast::Expression>>(
+        std::make_shared<StructExprTuple>(tuple));
+  }
+  while (true) {
+    if (check(TokenKind::ParenClose)) {
+      // done eat
+      assert(eat(TokenKind::ParenClose));
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          std::make_shared<StructExprTuple>(tuple));
+    } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
+      // done eat
+      tuple.setTrailingComma();
+      assert(eat(TokenKind::Comma));
+      assert(eat(TokenKind::ParenClose));
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          std::make_shared<StructExprTuple>(tuple));
+    } else if (check(TokenKind::Eof)) {
+      // error
+      std::string s = "failed to parse struct expr tuple: eof";
+      return StringResult<std::shared_ptr<ast::Expression>>(s);
+    }
+    StringResult<std::shared_ptr<ast::Expression>> next =
+        parseExpression(outer, restrictions);
+    if (!next) {
+      // error
+      std::string s =
+          llvm::formatv("{0} {1}",
+                        "failed to parse next expression in struct expr tuple",
+                        first.getError())
+              .str();
+      return StringResult<std::shared_ptr<ast::Expression>>(s);
+    }
+    tuple.addExpression(next.getValue());
+  }
+
   assert(false && "to be done");
 }
 

@@ -68,3 +68,17 @@ TEST(LetStatementTest, CheckLetStatement4) {
 
   EXPECT_TRUE(result.isOk());
 };
+
+TEST(LetStatementTest, CheckLetStatement5) {
+  std::string text = "let x = Option::Some(3);";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts};
+
+  Restrictions restriction;
+  Result<std::shared_ptr<rust_compiler::ast::Statement>, std::string> result =
+      parser.parseStatement(restriction);
+
+  EXPECT_TRUE(result.isOk());
+};
