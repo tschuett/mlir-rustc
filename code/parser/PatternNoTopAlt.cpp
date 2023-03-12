@@ -83,6 +83,10 @@ Parser::parseWildCardPattern() {
 
 StringResult<TuplePatternItems> Parser::parseTuplePatternItems() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
+
+  llvm::errs() << "parseTuplePatternItems"
+               << "\n";
+
   Location loc = getLocation();
   TuplePatternItems items = {loc};
 
@@ -93,12 +97,12 @@ StringResult<TuplePatternItems> Parser::parseTuplePatternItems() {
 
   StringResult<std::shared_ptr<ast::patterns::Pattern>> first = parsePattern();
   if (!first) {
-    llvm::errs() << "failed to parse pattern in wildcard pattern: "
+    llvm::errs() << "failed to parse first pattern in tuple pattern items: "
                  << first.getError() << "\n";
     printFunctionStack();
     std::string s =
         llvm::formatv("{0} {1}",
-                      "failed to parse pattern in tuple pattern items pattern",
+                      "failed to parse first pattern in tuple pattern items",
                       first.getError())
             .str();
     return StringResult<TuplePatternItems>(s);
@@ -132,12 +136,12 @@ StringResult<TuplePatternItems> Parser::parseTuplePatternItems() {
           parsePattern();
 
       if (!next) {
-        llvm::errs() << "failed to parse pattern in tuple pattern items: "
+        llvm::errs() << "failed to parse next pattern in tuple pattern items: "
                      << next.getError() << "\n";
         printFunctionStack();
         std::string s =
             llvm::formatv("{0} {1}",
-                          "failed to parse pattern in tuple pattern items",
+                          "failed to parse next pattern in tuple pattern items",
                           next.getError())
                 .str();
         return StringResult<TuplePatternItems>(s);
@@ -166,6 +170,9 @@ Parser::parseTuplePattern() {
   Location loc = getLocation();
   TuplePattern tuple = {loc};
 
+  llvm::errs() << "parseTuplePattern"
+               << "\n";
+
   if (!check(TokenKind::ParenOpen))
     return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
         "failed to parse ( token in tuple pattern");
@@ -176,7 +183,13 @@ Parser::parseTuplePattern() {
     llvm::errs() << "failed to parse tuple pattern items in tuple pattern: "
                  << items.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0} {1}",
+                      "failed to parse tuple pattern items in tuple pattern: ",
+                      items.getError())
+            .str();
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(s);
+    // exit(EXIT_FAILURE);
   }
   tuple.setItems(items.getValue());
 
@@ -986,11 +999,19 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
       // GenericArgs
       recover(point);
       return parsePathOrStructOrTupleStructPattern();
+    } else if (check(TokenKind::Comma)) {
+      // GenericArgs
+      recover(point);
+      return parsePathOrStructOrTupleStructPattern();
     } else if (check(TokenKind::Eq)) {
       // terminator
       recover(point);
       return parsePathOrStructOrTupleStructPattern();
     } else if (check(TokenKind::Colon)) {
+      // terminator
+      recover(point);
+      return parsePathOrStructOrTupleStructPattern();
+    } else if (check(TokenKind::Semi)) {
       // terminator
       recover(point);
       return parsePathOrStructOrTupleStructPattern();
@@ -1003,9 +1024,9 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
       recover(point);
       return parseLiteralPattern();
     } else if (check(TokenKind::ParenClose)) {
+      // terminator
       recover(point);
-      return parseTupleOrTupleStructPattern();
-      // return parseTupleStructPattern();
+      return parsePathOrStructOrTupleStructPattern();
     } else {
       // error
       std::string s =
@@ -1024,7 +1045,7 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
 StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parsePatternNoTopAlt() {
 
-  llvm::errs() << "parsePatternNoTopAlt"
+  llvm::errs() << "parsePatternNoTopAlt: " << Token2String(getToken().getKind())
                << "\n";
 
   if (check(TokenKind::And) || check(TokenKind::AndAnd)) {

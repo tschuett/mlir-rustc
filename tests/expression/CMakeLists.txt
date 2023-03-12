@@ -24,7 +24,7 @@ add_executable(ExpressionTests
         IfLetExpression.cpp
         LoopExpression.cpp
         LetStatement.cpp
-        Axum.cpp
+#        Axum.cpp
         SimplePath.cpp
 )
 

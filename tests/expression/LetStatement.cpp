@@ -24,7 +24,7 @@ TEST(LetStatementTest, CheckLetStatement1) {
   EXPECT_TRUE(result.isOk());
 };
 
-TEST(LetStatementTest, CheckLetStatement2) {
+TEST(LetStatementTest, CheckLetStatement122) {
 
   std::string text = "let i: i64;";
 

@@ -230,6 +230,9 @@ StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseTupleOrGroupedPattern() {
   Location loc = getLocation();
 
+  llvm::errs() << "parseTupleOrGroupedPattern"
+               << "\n";
+
   if (!check(TokenKind::ParenOpen)) {
     llvm::errs() << "failed to parse token ( in tuple or group pattern "
                  << "\n";
@@ -256,7 +259,7 @@ Parser::parseTupleOrGroupedPattern() {
   StringResult<std::shared_ptr<ast::patterns::Pattern>> pattern =
       parsePattern();
   if (!pattern) {
-    llvm::errs() << "failed to parse pattern in pattern in tuple or group: "
+    llvm::errs() << "failed to parse pattern in tuple or group: "
                  << pattern.getError() << "\n";
     printFunctionStack();
     return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(

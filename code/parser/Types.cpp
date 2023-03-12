@@ -518,7 +518,7 @@ StringResult<ast::GenericArgs> Parser::parseGenericArgs() {
   GenericArgs args = {loc};
 
   llvm::errs() << "parseGenericArgs"
-               << "\n ";
+               << "\n";
 
   if (!check(TokenKind::Lt)) {
     return StringResult<ast::GenericArgs>(
@@ -626,6 +626,22 @@ Parser::parseGenericArg(std::optional<GenericArgKind> last) {
     }
     arg.setArgsConst(constArgs.getValue());
     return StringResult<ast::GenericArg>(arg);
+  } else if (canTokenStartType(getToken())) {
+    StringResult<std::shared_ptr<ast::types::TypeExpression>> type =
+        parseType();
+    if (!type) {
+      llvm::errs() << "failed to parse type in generic arg: " << type.getError()
+                   << "\n";
+      printFunctionStack();
+      std::string s =
+          llvm::formatv("{0} {1}", "failed to parse type in generic arg: ",
+                        type.getError())
+              .str();
+      // exit(EXIT_FAILURE);
+      return StringResult<ast::GenericArg>(s);
+    }
+    arg.setType(type.getValue());
+    return StringResult<ast::GenericArg>(arg);
   } else if (checkSimplePathSegment() && check(TokenKind::Comma, 1)) {
     StringResult<ast::GenericArgsConst> constArgs = parseGenericArgsConst();
     if (!constArgs) {
@@ -645,17 +661,6 @@ Parser::parseGenericArg(std::optional<GenericArgKind> last) {
       exit(EXIT_FAILURE);
     }
     arg.setArgsConst(constArgs.getValue());
-    return StringResult<ast::GenericArg>(arg);
-  } else {
-    StringResult<std::shared_ptr<ast::types::TypeExpression>> type =
-        parseType();
-    if (!type) {
-      llvm::errs() << "failed to parse type in generic arg: " << type.getError()
-                   << "\n";
-      printFunctionStack();
-      exit(EXIT_FAILURE);
-    }
-    arg.setType(type.getValue());
     return StringResult<ast::GenericArg>(arg);
   }
   return StringResult<ast::GenericArg>("failed to parse generic arg");
