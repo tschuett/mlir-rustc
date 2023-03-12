@@ -1,9 +1,12 @@
+#include "AST/Expression.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
 #include <cstdlib>
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
+#include <memory>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::adt;
@@ -30,6 +33,11 @@ Parser::parseExpressionWithoutBlock(std::span<ast::OuterAttribute> outer,
     case KeyWordKind::KW_TRUE:
     case KeyWordKind::KW_FALSE: {
       return parseLiteralExpression(outer);
+    }
+    case KeyWordKind::KW_SUPER:
+    case KeyWordKind::KW_SELFVALUE:
+    case KeyWordKind::KW_SELFTYPE: {
+      return parsePathInExpression();
     }
     default:
       if (auto kw = KeyWord2String(getToken().getKeyWordKind())) {
@@ -76,9 +84,52 @@ Parser::parseExpressionWithoutBlock(std::span<ast::OuterAttribute> outer,
           parseExpression(Precedence::UnaryMinus, {}, enteredFromUnary));
     }
     default:
-      llvm::errs() << "unknown token: " << Token2String(getToken().getKind())
-                   << "\n";
-      exit(EXIT_FAILURE);
+      adt::StringResult<std::shared_ptr<ast::Expression>> expr =
+          parseExpression(outer, restrictions);
+      if (!expr) {
+        llvm::errs() << "parseExpressionWithoutBlock: failed to parse "
+                        "expression: "
+                     << expr.getError() << "\n";
+        std::string s =
+            llvm::formatv("{0} {1}",
+                          "parseExpressionWithoutBlock: failed to parse "
+                          "expression ",
+                          expr.getError())
+                .str();
+        return adt::Result<std::shared_ptr<ast::Expression>, std::string>(s);
+      }
+
+      switch (expr.getValue()->getExpressionKind()) {
+      case ast::ExpressionKind::ExpressionWithBlock: {
+        llvm::errs() << "parseExpressionWithoutBlock: expected expression "
+                        "without block but:"
+                     << "\n";
+        std::string s =
+            llvm::formatv(
+                "{0} {1}",
+                "parseExpressionWithoutBlock: expected expression "
+                "without block but:",
+                ExpressionWithBlockKind2String(
+                    std::static_pointer_cast<ast::ExpressionWithBlock>(
+                        expr.getValue())
+                        ->getWithBlockKind()))
+                .str();
+        return adt::Result<std::shared_ptr<ast::Expression>, std::string>(s);
+      }
+      case ast::ExpressionKind::ExpressionWithoutBlock: {
+        return expr;
+      }
+      }
+
+      // llvm::errs() << "parseExpressionWithoutBlock: unknown token: "
+      //              << Token2String(getToken().getKind()) << "\n";
+      // exit(EXIT_FAILURE);
+      // std::string s =
+      //     llvm::formatv("{0} {1}",
+      //                   "parseExpressionWithoutBlock: unknown token: ",
+      //                   Token2String(getToken().getKind()))
+      //         .str();
+      // return adt::Result<std::shared_ptr<ast::Expression>, std::string>(s);
     }
     }
   }

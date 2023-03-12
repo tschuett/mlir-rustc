@@ -12,13 +12,13 @@ using namespace rust_compiler::adt;
 
 TEST(IfLetExpressionTest, CheckIfLetExpression) {
 
-  std::string text = "if let (a) = 4 { 4 }";
+  std::string text = "if let (a) = 4 { 4; }";
 
   TokenStream ts = lex(text, "lib.rs");
 
   printTokenState(ts.getAsView());
 
-  size_t expectedLendth = 10;
+  size_t expectedLendth = 12;
 
   EXPECT_EQ(ts.getLength(), expectedLendth);
 

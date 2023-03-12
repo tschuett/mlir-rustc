@@ -141,12 +141,23 @@ StringResult<TuplePatternItems> Parser::parseTuplePatternItems() {
                           next.getError())
                 .str();
         return StringResult<TuplePatternItems>(s);
-        //exit(EXIT_FAILURE);
+        // exit(EXIT_FAILURE);
       }
       items.addPattern(next.getValue());
     }
   }
   return StringResult<TuplePatternItems>("failed to parse tuple pattern items");
+}
+
+Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
+Parser::parseTupleOrTupleStructPattern() {
+  llvm::errs() << "parseTupleOrTupleStructPattern"
+               << "\n";
+
+  if (check(TokenKind::ParenOpen))
+    return parseTuplePattern();
+
+  return parseTupleStructPattern();
 }
 
 StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
@@ -551,14 +562,23 @@ StringResult<ast::patterns::TupleStructItems> Parser::parseTupleStructItems() {
   Location loc = getLocation();
   TupleStructItems items = {loc};
 
+  llvm::errs() << "parseTupleStructItems"
+               << "\n";
+
   StringResult<std::shared_ptr<ast::patterns::Pattern>> pattern =
       parsePattern();
   if (!pattern) {
     llvm::errs() << "failed to parse  pattern in "
-                    "parse tuple struct items: "
+                    "parse tuple struct item1s: "
                  << pattern.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s = llvm::formatv("{0} {1}",
+                                  "failed to parse  pattern in "
+                                  "parse tuple struct item1s: ",
+                                  pattern.getError())
+                        .str();
+    return StringResult<ast::patterns::TupleStructItems>(s);
   }
   items.addPattern(pattern.getValue());
 
@@ -578,7 +598,7 @@ StringResult<ast::patterns::TupleStructItems> Parser::parseTupleStructItems() {
           parsePattern();
       if (!pattern) {
         llvm::errs() << "failed to parse  pattern in "
-                        "parse tuple struct items: "
+                        "parse tuple struct ite2ms: "
                      << pattern.getError() << "\n";
         printFunctionStack();
         exit(EXIT_FAILURE);
@@ -678,19 +698,30 @@ Parser::parseTupleStructPattern() {
   Location loc = getLocation();
   TupleStructPattern pat = {loc};
 
+  llvm::errs() << "parseTupleStructPattern"
+               << "\n";
+
   StringResult<std::shared_ptr<ast::Expression>> path = parsePathInExpression();
   if (!path) {
     llvm::errs() << "failed to parse path in expression in "
                     "parse tuple struct pattern: "
                  << path.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s = llvm::formatv("{0} {1}",
+                                  "failed to parse path in expression in "
+                                  "parse tuple struct pattern: ",
+                                  path.getError())
+                        .str();
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(s);
   }
   pat.setPath(path.getValue());
 
-  if (!check(TokenKind::ParenOpen))
+  if (!check(TokenKind::ParenOpen)) {
+    llvm::errs() << Token2String(getToken().getKind()) << "\n";
     return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
-        "failed to parse tuple struct pattern");
+        "failed to parse ( token in tuple struct pattern");
+  }
   assert(eat(TokenKind::ParenOpen));
 
   if (check(TokenKind::ParenClose)) {
@@ -705,13 +736,19 @@ Parser::parseTupleStructPattern() {
                     "parse tuple struct pattern: "
                  << items.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s = llvm::formatv("{0} {1}",
+                                  "failed to parse tuple struct items in "
+                                  "parse tuple struct pattern: ",
+                                  items.getError())
+                        .str();
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(s);
   }
   pat.setItems(items.getValue());
 
   if (!check(TokenKind::ParenClose))
     return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
-        "failed to parse tuple struct pattern");
+        "failed to parse ) token tuple struct pattern");
   assert(eat(TokenKind::ParenClose));
 
   return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
@@ -888,6 +925,10 @@ StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
   Location loc = getLocation();
 
+  llvm::errs()
+      << "parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern"
+      << "\n";
+
   CheckPoint point = getCheckPoint();
 
   if (check(TokenKind::Identifier) && check(TokenKind::At, 1)) {
@@ -896,9 +937,13 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
     return parseIdentifierPattern();
   } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
     return parseIdentifierPattern();
-  } else if (check(TokenKind::Identifier)) {
+  }
+
+  /*
+     else if (check(TokenKind::Identifier)) {
     return parseIdentifierOrPathPattern();
   }
+  */
 
   /*
     PathExpression   -> RangePattern, PathPattern
@@ -957,6 +1002,10 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
       // literal
       recover(point);
       return parseLiteralPattern();
+    } else if (check(TokenKind::ParenClose)) {
+      recover(point);
+      return parseTupleOrTupleStructPattern();
+      // return parseTupleStructPattern();
     } else {
       // error
       std::string s =
@@ -974,6 +1023,9 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
 
 StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parsePatternNoTopAlt() {
+
+  llvm::errs() << "parsePatternNoTopAlt"
+               << "\n";
 
   if (check(TokenKind::And) || check(TokenKind::AndAnd)) {
     return parseReferencePattern();

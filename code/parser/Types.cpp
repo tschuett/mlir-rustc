@@ -19,6 +19,7 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
 #include <optional>
 
@@ -516,8 +517,12 @@ StringResult<ast::GenericArgs> Parser::parseGenericArgs() {
   Location loc = getLocation();
   GenericArgs args = {loc};
 
+  llvm::errs() << "parseGenericArgs"
+               << "\n ";
+
   if (!check(TokenKind::Lt)) {
-    return StringResult<ast::GenericArgs>("failed to parse generic args");
+    return StringResult<ast::GenericArgs>(
+        "failed to parse < token in generic args");
   }
   assert(eat(TokenKind::Lt));
 
@@ -546,7 +551,13 @@ StringResult<ast::GenericArgs> Parser::parseGenericArgs() {
         llvm::errs() << "failed to parse generic arg in generic args: "
                      << arg.getError() << "\n";
         printFunctionStack();
-        exit(EXIT_FAILURE);
+        // exit(EXIT_FAILURE);
+        std::string s =
+            llvm::formatv(
+                "{0} {1}",
+                "failed to parse generic arg in generic args: ", arg.getError())
+                .str();
+        return StringResult<ast::GenericArgs>(s);
       }
       args.addArg(arg.getValue());
       last = arg.getValue().getKind();
@@ -559,6 +570,9 @@ StringResult<ast::GenericArg>
 Parser::parseGenericArg(std::optional<GenericArgKind> last) {
   Location loc = getLocation();
   GenericArg arg = {loc};
+
+  llvm::errs() << "parseGenericArg"
+               << "\n";
 
   if (checkLifetime()) {
     // lifetime

@@ -4,6 +4,7 @@
 #include "Parser/Parser.h"
 #include "Parser/Restrictions.h"
 
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
@@ -25,7 +26,8 @@ StringResult<ast::Statements> Parser::parseStatements() {
   Restrictions restrictions;
 
   while (true) {
-    llvm::errs() << "parseStatements: " << Token2String(getToken().getKind()) << "\n";
+    llvm::errs() << "parseStatements: " << Token2String(getToken().getKind())
+                 << "\n";
     if (check(TokenKind::Eof)) {
       return StringResult<ast::Statements>("failed to parse statements: eof");
     } else if (check(TokenKind::Semi)) {
@@ -40,10 +42,16 @@ StringResult<ast::Statements> Parser::parseStatements() {
       StringResult<std::shared_ptr<ast::Statement>> stmt =
           parseStatement(restrictions);
       if (!stmt) {
+        std::string s =
+            llvm::formatv(
+                "{0} {1}",
+                "failed to parse statement in statements: ", stmt.getError())
+                .str();
         llvm::errs() << "failed to parse statement in statements: "
                      << stmt.getError() << "\n";
         printFunctionStack();
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
+        return StringResult<ast::Statements>(s);
       }
       stmts.addStmt(stmt.getValue());
     } else if (checkExpressionWithoutBlock()) {

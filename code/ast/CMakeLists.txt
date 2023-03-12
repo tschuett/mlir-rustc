@@ -54,6 +54,7 @@ add_library(ast
            ConstantItem.cpp
            AsyncBlockExpression.cpp
            FunctionParamPattern.cpp
+           Expression.cpp
            )
 
 

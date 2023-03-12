@@ -39,7 +39,7 @@ TEST(ExamplesFun3Test, CheckFun2) {
 
 TEST(ExamplesFun3Test, CheckFun3) {
 
-  std::string text = "fn add(left: usize) -> usize {let i: i64}";
+  std::string text = "fn add(left: usize) -> usize {let i: i64;}";
 
   TokenStream ts = lex(text, "lib.rs");
 
@@ -53,7 +53,7 @@ TEST(ExamplesFun3Test, CheckFun3) {
 
 TEST(ExamplesFun3Test, CheckFun4) {
 
-  std::string text = "fn add(left: usize) -> usize {let i: i64 = 5}";
+  std::string text = "fn add(left: usize) -> usize {let i: i64 = 5;}";
 
   TokenStream ts = lex(text, "lib.rs");
 
@@ -68,7 +68,7 @@ TEST(ExamplesFun3Test, CheckFun4) {
 TEST(ExamplesFun3Test, CheckFun5) {
 
   std::string text =
-      "fn add(left: usize, right: usize) -> usize {let i: i64 = 5}";
+      "fn add(left: usize, right: usize) -> usize {let i: i64 = 5;}";
 
   TokenStream ts = lex(text, "lib.rs");
 

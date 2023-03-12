@@ -91,6 +91,8 @@ bool Parser::checkStatement() {
 
   if (checkKeyWord(KeyWordKind::KW_LET))
     return true;
+  if (checkKeyWord(KeyWordKind::KW_RETURN))
+    return false;
   if (checkExpressionWithBlock())
     return true;
   if (checkExpressionWithoutBlock())
@@ -189,7 +191,7 @@ Parser::parseLetStatement(std::span<ast::OuterAttribute> outer,
 
   LetStatement let = {loc};
 
-  llvm::outs() << "parse let statement"
+  llvm::errs() << "parse let statement"
                << "\n";
 
   let.setOuterAttributes(outer);
@@ -271,10 +273,10 @@ Parser::parseLetStatement(std::span<ast::OuterAttribute> outer,
   }
 
   if (!check(TokenKind::Semi)) {
-    llvm::errs() << "failed to parse ; token:"
+    llvm::errs() << "let statement; failed to parse ; token:"
                  << "\n";
     return StringResult<std::shared_ptr<ast::Statement>>(
-        "failed to parse ; token:");
+        "let statement: failed to parse ; token:");
     // exit(EXIT_FAILURE);
   }
 
@@ -286,6 +288,9 @@ Parser::parseLetStatement(std::span<ast::OuterAttribute> outer,
 
 StringResult<std::shared_ptr<ast::Statement>>
 Parser::parseStatement(Restrictions restriction) {
+  llvm::errs() << "parse statement"
+               << "\n";
+
   Location loc = getLocation();
   CheckPoint cp = getCheckPoint();
   if (checkOuterAttribute()) {
@@ -348,6 +353,8 @@ Parser::parseStatement(Restrictions restriction) {
       return StringResult<std::shared_ptr<ast::Statement>>(
           std::make_shared<ItemDeclaration>(item));
     } else if (checkMacroItem()) {
+      llvm::errs() << "parse statement: macro item"
+                   << "\n";
       StringResult<std::shared_ptr<ast::Item>> macroItem =
           parseMacroItem(outer);
       if (!macroItem) {
@@ -363,6 +370,8 @@ Parser::parseStatement(Restrictions restriction) {
     } else if (checkKeyWord(KeyWordKind::KW_LET)) {
       return parseLetStatement(outer, restriction);
     } else if (checkExpressionWithBlock() || checkExpressionWithoutBlock()) {
+      llvm::errs() << "parse statement: expr stmt"
+                   << "\n";
       return parseExpressionStatement(outer, restriction);
     } else if (check(TokenKind::PathSep) || checkSimplePathSegment()) {
       return parseMacroInvocationSemiStatement();

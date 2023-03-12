@@ -9,49 +9,53 @@ using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
 using namespace rust_compiler::adt;
 
-TEST(AxumTest, CheckFunctionParam3) {
-  std::string text = "headers: HeaderMap";
+TEST(AxumTest, CheckPattern2) {
+  std::string text = "OriginalUri(original_uri)";
 
   TokenStream ts = lex(text, "lib.rs");
 
   Parser parser = {ts};
 
-  Result<rust_compiler::ast::FunctionParameters, std::string> result =
-      parser.parseFunctionParameters();
+  Result<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
+         std::string>
+      result = parser.parseTupleStructPattern();
 
   EXPECT_TRUE(result.isOk());
 };
 
-TEST(AxumTest, CheckFunctionParam2) {
-  std::string text = "OriginalUri(original_uri): OriginalUri";
+TEST(AxumTest, CheckPattern1) {
+  std::string text = "State(state)";
 
   TokenStream ts = lex(text, "lib.rs");
 
   Parser parser = {ts};
 
-  Result<rust_compiler::ast::FunctionParameters, std::string> result =
-      parser.parseFunctionParameters();
+  Result<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
+         std::string>
+      result = parser.parseTupleStructPattern();
 
   EXPECT_TRUE(result.isOk());
 };
 
-TEST(AxumTest, CheckFunctionParam1) {
-
-  std::string text = "State(state): State<Arc<GitHuBCIState>>";
+TEST(AxumTest, CheckType1) {
+  std::string text = "State<Arc<GitHuBCIState>>";
 
   TokenStream ts = lex(text, "lib.rs");
 
   Parser parser = {ts};
 
-  Result<rust_compiler::ast::FunctionParameters, std::string> result =
-      parser.parseFunctionParameters();
+  Result<std::shared_ptr<rust_compiler::ast::types::TypeExpression>,
+         std::string>
+      result = parser.parseType();
 
   EXPECT_TRUE(result.isOk());
 };
 
 TEST(AxumTest, CheckFunctionParameters1) {
 
-  std::string text = "State(state): State<Arc<GitHuBCIState>>, OriginalUri(original_uri): OriginalUri, headers: HeaderMap,";
+  std::string text =
+      "State(state): State<Arc<GitHuBCIState>>, OriginalUri(original_uri): "
+      "OriginalUri, headers: HeaderMap,";
 
   TokenStream ts = lex(text, "lib.rs");
 
@@ -63,9 +67,10 @@ TEST(AxumTest, CheckFunctionParameters1) {
   EXPECT_TRUE(result.isOk());
 };
 
-
 TEST(AxumTest, CheckFunction2) {
-  std::string text = "async fn root(State(state): State<Arc<GitHuBCIState>>, OriginalUri(original_uri): OriginalUri, headers: HeaderMap,) -> impl IntoResponse {}";
+  std::string text = "async fn root(State(state): State<Arc<GitHuBCIState>>, "
+                     "OriginalUri(original_uri): OriginalUri, headers: "
+                     "HeaderMap,) -> impl IntoResponse {}";
 
   TokenStream ts = lex(text, "lib.rs");
 
@@ -78,7 +83,9 @@ TEST(AxumTest, CheckFunction2) {
 };
 
 TEST(AxumTest, CheckFunction1) {
-  std::string text = "async fn root(State(state): State<Arc<GitHuBCIState>>, OriginalUri(original_uri): OriginalUri, headers: HeaderMap,) -> impl IntoResponse {}";
+  std::string text = "async fn root(State(state): State<Arc<GitHuBCIState>>, "
+                     "OriginalUri(original_uri): OriginalUri, headers: "
+                     "HeaderMap,) -> impl IntoResponse {}";
 
   TokenStream ts = lex(text, "lib.rs");
 

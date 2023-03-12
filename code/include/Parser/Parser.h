@@ -286,6 +286,9 @@ public:
   adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseIdentifierOrPathPattern();
 
+  adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
+  parseTupleOrTupleStructPattern();
+
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parsePathInExpressionOrStructExprStructOrStructExprTupleOrStructExprUnitOrMacroInvocationOrExpressionWithPostfix();
   adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>

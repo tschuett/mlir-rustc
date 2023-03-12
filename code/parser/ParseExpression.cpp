@@ -71,7 +71,7 @@ Parser::parseExpression(Precedence rightBindingPower,
 
 StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseInfixExpression(std::shared_ptr<Expression> left,
-                             std::span<OuterAttribute>,
+                             std::span<OuterAttribute> outer,
                              Restrictions restrictions) {
   switch (getToken().getKind()) {
   case TokenKind::QMark: {
@@ -86,6 +86,12 @@ Parser::parseInfixExpression(std::shared_ptr<Expression> left,
   }
   case TokenKind::Minus: {
     return parseArithmeticOrLogicalExpression(left, restrictions);
+  }
+  case TokenKind::Lt: {
+    return parseComparisonExpression(left, restrictions);
+  }
+  case TokenKind::Eq: {
+    return parseAssignmentExpression(left, outer, restrictions);
   }
   case TokenKind::Eof: {
     std::string s =

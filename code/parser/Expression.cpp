@@ -714,6 +714,8 @@ Parser::parseComparisonExpression(std::shared_ptr<ast::Expression> lhs,
   Location loc = getLocation();
   ComparisonExpression comp = {loc};
 
+  llvm::errs() << "parse comparison expression"
+               << "\n";
   comp.setLhs(lhs);
 
   Precedence pred;
@@ -740,13 +742,23 @@ Parser::parseComparisonExpression(std::shared_ptr<ast::Expression> lhs,
         "failed to parse kind in comparison expression");
   }
 
+  assert(eat(getToken().getKind())); // cheating
+
   Result<std::shared_ptr<ast::Expression>, std::string> first =
       parseExpression(pred, {}, restrictions);
   if (!first) {
     llvm::errs() << "failed to parse expression in comparison expression: "
                  << first.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0} {1}",
+                      "failed to parse expression in comparison expression: ",
+                      first.getError())
+            .str();
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        s);
+
+    // exit(EXIT_FAILURE);
   }
   comp.setRhs(first.getValue());
 
@@ -1621,7 +1633,7 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
                       "failed to parse statements in block expression: ",
                       stmts.getError())
             .str();
-    //exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
     return Result<std::shared_ptr<ast::Expression>, std::string>(s);
   }
 

@@ -8,6 +8,7 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_os_ostream.h>
 #include <optional>
 
@@ -227,17 +228,31 @@ StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
+  llvm::errs() << "parseFunctionParamPattern"
+               << "\n";
+
   StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>> pattern =
       parsePatternNoTopAlt();
   if (!pattern) {
     llvm::errs()
-        << "failed to parse pattern no top al in function param pattern: "
+        << "failed to parse pattern no top alt in function param pattern: "
         << pattern.getError() << "\n";
+    std::string s =
+        llvm::formatv(
+            "{0} {1}",
+            "failed to parse pattern no top alt in function param pattern: ",
+            pattern.getError())
+            .str();
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    return StringResult<ast::FunctionParamPattern>(s);
   }
   if (!check(TokenKind::Colon)) {
     // error
+    llvm::errs() << "parseFunctionParamPattern: "
+                 << Token2String(getToken().getKind()) << "\n";
+    std::string s = "failed to parse : token in function param pattern";
+    return StringResult<ast::FunctionParamPattern>(s);
   }
 
   assert(eat(TokenKind::Colon));
@@ -277,7 +292,13 @@ StringResult<ast::FunctionParam> Parser::parseFunctionParam() {
       llvm::errs() << "failed to parse outer attributes in function param: "
                    << parsedOuterAttributes.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      std::string s =
+          llvm::formatv("{0} {1}",
+                        "failed to parse outer attributes in function param: ",
+                        parsedOuterAttributes.getError())
+              .str();
+      // exit(EXIT_FAILURE);
+      return StringResult<ast::FunctionParam>(s);
     }
     outerAttributes = parsedOuterAttributes.getValue();
   }
@@ -297,7 +318,13 @@ StringResult<ast::FunctionParam> Parser::parseFunctionParam() {
       llvm::errs() << "failed to parse pattern in function param: "
                    << pattern.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      std::string s =
+          llvm::formatv(
+              "{0} {1}",
+              "failed to parse pattern in function param: ", pattern.getError())
+              .str();
+      // exit(EXIT_FAILURE);
+      return StringResult<ast::FunctionParam>(s);
     }
     param.setPattern(pattern.getValue());
     param.setOuterAttributes(outerAttributes);
@@ -383,7 +410,7 @@ StringResult<ast::FunctionReturnType> Parser::parseFunctionReturnType() {
   return StringResult<ast::FunctionReturnType>(t);
 }
 
-  StringResult<std::shared_ptr<ast::Item>>
+StringResult<std::shared_ptr<ast::Item>>
 Parser::parseFunction(std::optional<ast::Visibility> vis) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
@@ -494,7 +521,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
                << "\n";
 
   Result<std::shared_ptr<ast::Expression>, std::string> body =
-    parseBlockExpression({});
+      parseBlockExpression({});
   if (!body) {
     llvm::errs() << "failed to parse body in function: " << body.getError()
                  << "\n";

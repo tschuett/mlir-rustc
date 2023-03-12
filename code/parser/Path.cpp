@@ -12,8 +12,8 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
-#include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/FormatVariadic.h>
+#include <llvm/Support/raw_ostream.h>
 #include <span>
 
 using namespace rust_compiler::lexer;
@@ -364,10 +364,18 @@ Parser::parseTypePath() {
 
   StringResult<ast::types::TypePathSegment> first = parseTypePathSegment();
   if (!first) {
-    llvm::errs() << "failed to parse type path segment in parse type path: "
-                 << first.getError() << "\n";
+    llvm::errs()
+        << "failed to first parse type path segment in parse type path: "
+        << first.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv(
+            "{0} {1}",
+            "failed to first parse type path segment in parse type path: ",
+            first.getError())
+            .str();
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(s);
   }
   path.addSegment(first.getValue());
 
@@ -380,7 +388,14 @@ Parser::parseTypePath() {
         llvm::errs() << "failed to parse type path segment in parse type path: "
                      << next.getError() << "\n";
         printFunctionStack();
-        exit(EXIT_FAILURE);
+        // exit(EXIT_FAILURE);
+        std::string s =
+            llvm::formatv(
+                "{0} {1}",
+                "failed to parse next type path segment in parse type path: ",
+                next.getError())
+                .str();
+        return StringResult<std::shared_ptr<ast::types::TypeExpression>>(s);
       }
       path.addSegment(next.getValue());
     } else {

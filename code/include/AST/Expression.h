@@ -1,10 +1,10 @@
 #pragma once
 
 #include "AST/AST.h"
-//#include "AST/Types/Types.h"
-//#include "Location.h"
+// #include "AST/Types/Types.h"
+// #include "Location.h"
 
-//#include <llvm/Support/raw_ostream.h>
+// #include <llvm/Support/raw_ostream.h>
 
 namespace rust_compiler::ast {
 
@@ -71,6 +71,8 @@ enum class ExpressionWithBlockKind {
   IfLetExpression,
   MatchExpression
 };
+
+std::string ExpressionWithBlockKind2String(ExpressionWithBlockKind);
 
 class ExpressionWithBlock : public Expression {
 

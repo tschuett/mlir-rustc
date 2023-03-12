@@ -52,7 +52,7 @@ TEST(BlockExpressionTest, CheckBlockExpr3) {
 
 TEST(BlockExpressionTest, CheckBlockExpr41) {
 
-  std::string text = "{ super }";
+  std::string text = "{ super; }";
 
   TokenStream ts = lex(text, "lib.rs");
 

@@ -95,7 +95,7 @@ TEST(ExamplesFun1Test, CheckFun3c) {
 
 TEST(ExamplesFun1Test, CheckFun1) {
 
-  std::string text = "pub fn add(left: usize, right: usize) -> usize { }";
+  std::string text = "fn add(left: usize, right: usize) -> usize { }";
 
   TokenStream ts = lex(text, "lib.rs");
 
@@ -110,7 +110,7 @@ TEST(ExamplesFun1Test, CheckFun1) {
 TEST(ExamplesFun1Test, CheckFun2) {
 
   std::string text =
-      "pub fn add(right: usize) -> usize { return right + right;}";
+      "fn add(right: usize) -> usize { return right + right;}";
 
   TokenStream ts = lex(text, "lib.rs");
 

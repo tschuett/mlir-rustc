@@ -44,10 +44,39 @@ bool Parser::checkMacroItem() {
   if (checkKeyWord(KeyWordKind::KW_MACRO_RULES))
     return true;
 
-  if (checkSimplePathSegment())
-    return true;
+  CheckPoint cp = getCheckPoint();
 
-  return false;
+  while (true) {
+    if (check(TokenKind::Eof)) {
+      recover(cp);
+      return false;
+    } else if (checkSimplePathSegment()) {
+      assert(eat(getToken().getKind()));
+    } else if (check(TokenKind::PathSep)) {
+      assert(eat(TokenKind::PathSep));
+    } else if (check(TokenKind::Not)) {
+      recover(cp);
+      return true;
+    } else if (check(TokenKind::BraceClose)) {
+      recover(cp);
+      return false;
+    } else if (check(TokenKind::Semi)) {
+      recover(cp);
+      return false;
+    } else if (check(TokenKind::Keyword)) {
+      recover(cp);
+      return false;
+    } else if (check(TokenKind::INTEGER_LITERAL)) {
+      recover(cp);
+      return false;
+    } else if (check(TokenKind::Eq)) {
+      recover(cp);
+      return false;
+    } else {
+      llvm::errs() << "checkMacroItem: unknown token: "
+                   << Token2String(getToken().getKind()) << "\n";
+    }
+  }
 }
 
 bool Parser::checkStaticOrUnderscore() {
