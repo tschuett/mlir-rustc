@@ -16,10 +16,10 @@ Parser::parseStructPatternFields() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
-  llvm::errs() << "parseStructPatternFields"
-               << "\n";
-  llvm::errs() << "parseStructPatternFields: "
-               << Token2String(getToken().getKind()) << "\n";
+//  llvm::errs() << "parseStructPatternFields"
+//               << "\n";
+//  llvm::errs() << "parseStructPatternFields: "
+//               << Token2String(getToken().getKind()) << "\n";
 
   StructPatternFields fields = {loc};
 
@@ -41,8 +41,8 @@ Parser::parseStructPatternFields() {
   fields.addPattern(first.getValue());
 
   while (true) {
-    llvm::errs() << "parseStructPatternfields loop: "
-                 << Token2String(getToken().getKind()) << "\n";
+//    llvm::errs() << "parseStructPatternfields loop: "
+//                 << Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Eof)) {
       return StringResult<ast::patterns::StructPatternFields>(
           "failed to parse struct pattern fields: eof");
@@ -82,10 +82,10 @@ Parser::parseStructPatternField() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
-  llvm::errs() << "parseStructPatternField"
-               << "\n";
-  llvm::errs() << "parseStructPatternField: "
-               << Token2String(getToken().getKind()) << "\n";
+//  llvm::errs() << "parseStructPatternField"
+//               << "\n";
+//  llvm::errs() << "parseStructPatternField: "
+//               << Token2String(getToken().getKind()) << "\n";
 
   StructPatternField field = {loc};
 
@@ -220,11 +220,11 @@ Parser::parseStructPatternElements() {
 
   CheckPoint cp = getCheckPoint();
 
-  llvm::errs() << "parseStructPatternElements"
-               << "\n";
-
-  llvm::errs() << "parseStructPatternElements: "
-               << Token2String(getToken().getKind()) << "\n";
+//  llvm::errs() << "parseStructPatternElements"
+//               << "\n";
+//
+//  llvm::errs() << "parseStructPatternElements: "
+//               << Token2String(getToken().getKind()) << "\n";
 
   if (checkOuterAttribute()) {
     StringResult<std::vector<ast::OuterAttribute>> outer =
@@ -499,8 +499,8 @@ Parser::parseStructPattern() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
-  llvm::errs() << "parseStructPattern"
-               << "\n";
+//  llvm::errs() << "parseStructPattern"
+//               << "\n";
 
   StructPattern pat = {loc};
 

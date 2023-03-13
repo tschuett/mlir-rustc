@@ -8,6 +8,7 @@
 #include "Parser/Parser.h"
 #include "Parser/Restrictions.h"
 
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
@@ -33,7 +34,12 @@ StringResult<ast::MatchArmGuard> Parser::parseMatchArmGuard() {
     llvm::errs() << "failed to parse expression in match arm guard: "
                  << expr.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv(
+            "{0} {1}",
+            "failed to parse expression in match arm guard: ", expr.getError())
+            .str();
+    return StringResult<ast::MatchArmGuard>(s);
   }
 
   guard.setGuard(expr.getValue());
@@ -45,6 +51,9 @@ StringResult<ast::MatchArm> Parser::parseMatchArm() {
   Location loc = getLocation();
   MatchArm arm = {loc};
 
+  llvm::errs() << "parseMatchArm"
+               << "\n";
+
   if (checkOuterAttribute()) {
     StringResult<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
@@ -52,7 +61,13 @@ StringResult<ast::MatchArm> Parser::parseMatchArm() {
       llvm::errs() << "failed to parse outer attributes in match arm: "
                    << outer.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      // exit(EXIT_FAILURE);
+      std::string s =
+          llvm::formatv("{0} {1}",
+                        "failed to parse outer attributes in match arms: ",
+                        outer.getError())
+              .str();
+      return StringResult<ast::MatchArm>(s);
     }
     std::vector<ast::OuterAttribute> ot = outer.getValue();
     arm.setOuterAttributes(ot);
@@ -64,7 +79,11 @@ StringResult<ast::MatchArm> Parser::parseMatchArm() {
     llvm::errs() << "failed to parse pattern in match arm: "
                  << pattern.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0} {1}", "failed to parse pattern in match arm: ",
+                      pattern.getError())
+            .str();
+    return StringResult<ast::MatchArm>(s);
   }
   arm.setPattern(pattern.getValue());
 
@@ -74,7 +93,12 @@ StringResult<ast::MatchArm> Parser::parseMatchArm() {
       llvm::errs() << "failed to parse match arm guard in match arm: "
                    << guard.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      std::string s =
+          llvm::formatv("{0} {1}",
+                        "failed to parse match arm guard in match arm: ",
+                        guard.getError())
+              .str();
+      return StringResult<ast::MatchArm>(s);
     }
     arm.setGuard(guard.getValue());
   }
@@ -86,15 +110,23 @@ StringResult<ast::MatchArms> Parser::parseMatchArms() {
   Location loc = getLocation();
   MatchArms arms = {loc};
 
+  llvm::errs() << "parseMatchArms"
+               << "\n";
+
   StringResult<ast::MatchArm> arm = parseMatchArm();
   if (!arm) {
     llvm::errs() << "failed to parse match arm in match arms: "
                  << arm.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0} {1}", "failed to parse match arm in match arms: ",
+                      arm.getError())
+            .str();
+    return StringResult<ast::MatchArms>(s);
   }
 
   if (!check(TokenKind::FatArrow)) {
+    llvm::errs() << Token2String(getToken().getKind()) << "\n";
     return StringResult<ast::MatchArms>(
         "failed to parse fat arrow in match arms");
   }
@@ -107,7 +139,11 @@ StringResult<ast::MatchArms> Parser::parseMatchArms() {
     llvm::errs() << "failed to parse expression in match arms: "
                  << expr.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0} {1}", "failed to parse expression in match arms: ",
+                      expr.getError())
+            .str();
+    return StringResult<ast::MatchArms>(s);
   }
 
   arms.addArm(arm.getValue(), expr.getValue());
@@ -121,6 +157,7 @@ StringResult<ast::MatchArms> Parser::parseMatchArms() {
       return StringResult<ast::MatchArms>(arms);
     } else if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
       // done
+      assert(eat(TokenKind::Comma));
       return StringResult<ast::MatchArms>(arms);
     } else {
       StringResult<ast::MatchArm> arm = parseMatchArm();
@@ -128,7 +165,12 @@ StringResult<ast::MatchArms> Parser::parseMatchArms() {
         llvm::errs() << "failed to parse match arm in match arms: "
                      << arm.getError() << "\n";
         printFunctionStack();
-        exit(EXIT_FAILURE);
+        std::string s =
+            llvm::formatv(
+                "{0} {1}",
+                "failed to parse match arm in match arms: ", arm.getError())
+                .str();
+        return StringResult<ast::MatchArms>(s);
       }
       if (!check(TokenKind::FatArrow)) {
         return StringResult<ast::MatchArms>(
@@ -143,7 +185,12 @@ StringResult<ast::MatchArms> Parser::parseMatchArms() {
         llvm::errs() << "failed to parse expression in match arms: "
                      << expr.getError() << "\n";
         printFunctionStack();
-        exit(EXIT_FAILURE);
+        std::string s =
+            llvm::formatv(
+                "{0} {1}",
+                "failed to parse expression in match arms: ", expr.getError())
+                .str();
+        return StringResult<ast::MatchArms>(s);
       }
       arms.addArm(arm.getValue(), expr.getValue());
 
@@ -184,7 +231,12 @@ Parser::parseMatchExpression(std::span<ast::OuterAttribute>) {
     llvm::errs() << "failed to parse scrutinee in match expression: "
                  << scrutinee.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0} {1}",
+                      "failed to parse scrutinee in match expression: ",
+                      scrutinee.getError())
+            .str();
+    return StringResult<std::shared_ptr<ast::Expression>>(s);
   }
   ma.setScrutinee(scrutinee.getValue());
 
@@ -202,7 +254,12 @@ Parser::parseMatchExpression(std::span<ast::OuterAttribute>) {
       llvm::errs() << "failed to parse inner attribute in match expression: "
                    << inner.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      std::string s =
+          llvm::formatv("{0} {1}",
+                        "failed to parse inner attribute in match expression: ",
+                        inner.getError())
+              .str();
+      return StringResult<std::shared_ptr<ast::Expression>>(s);
     }
     std::vector<ast::InnerAttribute> in = inner.getValue();
     ma.setInnerAttributes(in);
@@ -219,7 +276,12 @@ Parser::parseMatchExpression(std::span<ast::OuterAttribute>) {
     llvm::errs() << "failed to parse match arms in match expression: "
                  << arms.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv(
+            "{0} {1}",
+            "failed to parse match arms in match expression: ", arms.getError())
+            .str();
+    return StringResult<std::shared_ptr<ast::Expression>>(s);
   }
   ma.setMatchArms(arms.getValue());
 
@@ -229,6 +291,8 @@ Parser::parseMatchExpression(std::span<ast::OuterAttribute>) {
         std::make_shared<MatchExpression>(ma));
   }
 
+  llvm::errs() << "parseMatchExpression: " << Token2String(getToken().getKind())
+               << "\n";
   return StringResult<std::shared_ptr<ast::Expression>>(
       "failed to parse match expression");
 }

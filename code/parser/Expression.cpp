@@ -755,8 +755,7 @@ Parser::parseComparisonExpression(std::shared_ptr<ast::Expression> lhs,
                       "failed to parse expression in comparison expression: ",
                       first.getError())
             .str();
-    return Result<std::shared_ptr<ast::Expression>, std::string>(
-        s);
+    return Result<std::shared_ptr<ast::Expression>, std::string>(s);
 
     // exit(EXIT_FAILURE);
   }
@@ -828,12 +827,24 @@ Parser::parseTupleExpression(Restrictions restrictions) {
         "failed to parse ( token in tuple expression");
   assert(eat(TokenKind::ParenOpen));
 
+  if (check(TokenKind::ParenClose)) {
+    // done
+    assert(eat(TokenKind::ParenClose));
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        std::make_shared<TupleExpression>(tuple));
+  }
+
   Result<TupleElements, std::string> tupleEl = parseTupleElements(restrictions);
   if (!tupleEl) {
     llvm::errs() << "failed to parse tuple elements in tuple expression: "
                  << tupleEl.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0} {1}",
+                      "failed to parse tuple elements in tuple expression: ",
+                      tupleEl.getError())
+            .str();
+    return Result<std::shared_ptr<ast::Expression>, std::string>(s);
   }
   tuple.setElements(tupleEl.getValue());
 
@@ -889,6 +900,12 @@ Parser::parseGroupedOrTupleExpression(Restrictions restrictions) {
         "failed to parse ( token in grouped or tuple expression");
   assert(eat(TokenKind::ParenOpen));
 
+  if (check(TokenKind::ParenClose)) {
+    assert(eat(TokenKind::ParenClose));
+    recover(cp);
+    return parseTupleExpression(restrictions);
+  }
+
   Result<std::shared_ptr<ast::Expression>, std::string> first =
       parseExpression({}, restrictions);
   if (!first) {
@@ -896,7 +913,14 @@ Parser::parseGroupedOrTupleExpression(Restrictions restrictions) {
         << "failed to parse expression in grouped or tuple expression: "
         << first.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv(
+            "{0} {1}",
+            "failed to parse expression in grouped or tuple expression: ",
+            first.getError())
+            .str();
+    return Result<std::shared_ptr<ast::Expression>, std::string>(s);
   }
 
   if (check(TokenKind::ParenClose)) {
@@ -904,6 +928,7 @@ Parser::parseGroupedOrTupleExpression(Restrictions restrictions) {
     return parseGroupedExpression(restrictions);
   }
 
+  recover(cp);
   return parseTupleExpression(restrictions);
 }
 

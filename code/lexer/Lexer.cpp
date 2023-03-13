@@ -463,6 +463,11 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
           Token(Location(fileName, lineNumber, columnNumber), TokenKind::Ne));
       code.remove_prefix(2);
       columnNumber += 2;
+    } else if (code.starts_with("=>")) {
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::FatArrow));
+      code.remove_prefix(2);
+      columnNumber += 2;
     } else if (code.starts_with("=")) {
       ts.append(
           Token(Location(fileName, lineNumber, columnNumber), TokenKind::Eq));
