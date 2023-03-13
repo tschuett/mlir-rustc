@@ -148,7 +148,24 @@ StringResult<ast::MatchArms> Parser::parseMatchArms() {
 
   arms.addArm(arm.getValue(), expr.getValue());
 
+  if ((expr.getValue())->getExpressionKind() ==
+      ExpressionKind::ExpressionWithoutBlock) {
+    if (!check(TokenKind::Comma)) {
+      return StringResult<ast::MatchArms>(
+          "failed to parse , after parse expression without "
+          "block in match arms");
+    }
+    assert(eat(TokenKind::Comma));
+  } else {
+    if (check(TokenKind::Comma))
+      assert(eat(TokenKind::Comma));
+  }
+
   while (true) {
+    llvm::errs() << "parseMatchArms: " << Token2String(getToken().getKind())
+                 << "\n";
+    llvm::errs() << "parseMatchArms: " << Token2String(getToken(1).getKind())
+                 << "\n";
     if (check(TokenKind::Eof)) {
       // abort
       return StringResult<ast::MatchArms>("failed to parse match arms: eof");
@@ -159,7 +176,7 @@ StringResult<ast::MatchArms> Parser::parseMatchArms() {
       // done
       assert(eat(TokenKind::Comma));
       return StringResult<ast::MatchArms>(arms);
-    } else {
+    } else if (!check(TokenKind::BraceClose)) {
       StringResult<ast::MatchArm> arm = parseMatchArm();
       if (!arm) {
         llvm::errs() << "failed to parse match arm in match arms: "
@@ -206,6 +223,12 @@ StringResult<ast::MatchArms> Parser::parseMatchArms() {
         if (check(TokenKind::Comma))
           assert(eat(TokenKind::Comma));
       }
+    } else {
+      // error
+      llvm::errs() << "parseMatchArms unknown token: "
+                   << Token2String(getToken().getKind()) << "\n";
+      return StringResult<ast::MatchArms>(
+          "failed to parse match arms with unknown token");
     }
   }
   return StringResult<ast::MatchArms>("failed to parse match arms");

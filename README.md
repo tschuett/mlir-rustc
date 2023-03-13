@@ -43,6 +43,7 @@
 - [ ] outer attributes on item
 - [ ] macros
 - [ ] precedence
+- [ ] rustc prefers One-symbol tokens. Solution for Axum?
 
 # References
 

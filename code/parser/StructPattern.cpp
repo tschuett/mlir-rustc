@@ -16,10 +16,10 @@ Parser::parseStructPatternFields() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
-//  llvm::errs() << "parseStructPatternFields"
-//               << "\n";
-//  llvm::errs() << "parseStructPatternFields: "
-//               << Token2String(getToken().getKind()) << "\n";
+  //  llvm::errs() << "parseStructPatternFields"
+  //               << "\n";
+  //  llvm::errs() << "parseStructPatternFields: "
+  //               << Token2String(getToken().getKind()) << "\n";
 
   StructPatternFields fields = {loc};
 
@@ -41,8 +41,8 @@ Parser::parseStructPatternFields() {
   fields.addPattern(first.getValue());
 
   while (true) {
-//    llvm::errs() << "parseStructPatternfields loop: "
-//                 << Token2String(getToken().getKind()) << "\n";
+    //    llvm::errs() << "parseStructPatternfields loop: "
+    //                 << Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Eof)) {
       return StringResult<ast::patterns::StructPatternFields>(
           "failed to parse struct pattern fields: eof");
@@ -82,10 +82,10 @@ Parser::parseStructPatternField() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
-//  llvm::errs() << "parseStructPatternField"
-//               << "\n";
-//  llvm::errs() << "parseStructPatternField: "
-//               << Token2String(getToken().getKind()) << "\n";
+  //  llvm::errs() << "parseStructPatternField"
+  //               << "\n";
+  //  llvm::errs() << "parseStructPatternField: "
+  //               << Token2String(getToken().getKind()) << "\n";
 
   StructPatternField field = {loc};
 
@@ -220,11 +220,11 @@ Parser::parseStructPatternElements() {
 
   CheckPoint cp = getCheckPoint();
 
-//  llvm::errs() << "parseStructPatternElements"
-//               << "\n";
-//
-//  llvm::errs() << "parseStructPatternElements: "
-//               << Token2String(getToken().getKind()) << "\n";
+  llvm::errs() << "parseStructPatternElements"
+               << "\n";
+
+  llvm::errs() << "parseStructPatternElements: "
+               << Token2String(getToken().getKind()) << "\n";
 
   if (checkOuterAttribute()) {
     StringResult<std::vector<ast::OuterAttribute>> outer =
@@ -263,230 +263,51 @@ Parser::parseStructPatternElements() {
     }
     elements.setEtCetera(etcetera.getValue());
     return StringResult<ast::patterns::StructPatternElements>(elements);
-  } else if (check(TokenKind::INTEGER_LITERAL) && check(TokenKind::Colon, 1)) {
-    // StructPatternField
-    recover(cp);
-    StringResult<ast::patterns::StructPatternFields> fields =
-        parseStructPatternFields();
-    if (!fields) {
-      llvm::errs() << "failed to parse struct pattern fields in "
-                      "parse struct elements: "
-                   << fields.getError() << "\n";
-      printFunctionStack();
-      std::string s = llvm::formatv("{0} {1}",
-                                    "failed to parse struct pattern fields in "
-                                    "parse struct elements: ",
-                                    fields.getError())
-                          .str();
-      return StringResult<ast::patterns::StructPatternElements>(s);
-    }
-    elements.setFields(fields.getValue());
-    if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
-      assert(eat(TokenKind::Comma));
-      // done
-      return StringResult<ast::patterns::StructPatternElements>(elements);
-    } else if (check(TokenKind::BraceClose)) {
-      // done
-      return StringResult<ast::patterns::StructPatternElements>(elements);
-    } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
-      assert(eat(TokenKind::Comma));
-      // StructPatterrnEtCetera
-      StringResult<ast::patterns::StructPatternEtCetera> etcetera =
-          parseStructPatternEtCetera();
-      if (!etcetera) {
-        llvm::errs() << "failed to parse struct pattern etcetera in "
-                        "parse struct elements: "
-                     << etcetera.getError() << "\n";
-        printFunctionStack();
-        std::string s =
-            llvm::formatv("{0} {1}",
-                          "failed to parse struct pattern etcetera in "
-                          "parse struct elements: ",
-                          etcetera.getError())
-                .str();
-        return StringResult<ast::patterns::StructPatternElements>(s);
-      }
-      elements.setEtCetera(etcetera.getValue());
-      return StringResult<ast::patterns::StructPatternElements>(elements);
-    } else {
-      // error
-      llvm::errs() << "parseStructPatternElements: "
-                   << Token2String(getToken().getKind()) << "\n";
-
-      return StringResult<ast::patterns::StructPatternElements>(
-          "failed to parse struct pattern elements");
-    }
-  } else if (checkIdentifier() && check(TokenKind::Colon, 1)) {
-    // StructPatternField
-    recover(cp);
-    StringResult<ast::patterns::StructPatternFields> fields =
-        parseStructPatternFields();
-    if (!fields) {
-      llvm::errs() << "failed to parse struct pattern fields in "
-                      "parse struct elements: "
-                   << fields.getError() << "\n";
-      printFunctionStack();
-      std::string s = llvm::formatv("{0} {1}",
-                                    "failed to parse struct pattern fields in "
-                                    "parse struct elements: ",
-                                    fields.getError())
-                          .str();
-      return StringResult<ast::patterns::StructPatternElements>(s);
-    }
-    elements.setFields(fields.getValue());
-    if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
-      assert(eat(TokenKind::Comma));
-      // done
-      return StringResult<ast::patterns::StructPatternElements>(elements);
-    } else if (check(TokenKind::BraceClose)) {
-      // done
-      return StringResult<ast::patterns::StructPatternElements>(elements);
-    } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
-      assert(eat(TokenKind::Comma));
-      // StructPatterrnEtCetera
-      StringResult<ast::patterns::StructPatternEtCetera> etcetera =
-          parseStructPatternEtCetera();
-      if (!etcetera) {
-        llvm::errs() << "failed to parse struct pattern etcetera in "
-                        "parse struct elements: "
-                     << etcetera.getError() << "\n";
-        printFunctionStack();
-        std::string s =
-            llvm::formatv("{0} {1}",
-                          "failed to parse struct pattern etcetera in "
-                          "parse struct elements: ",
-                          etcetera.getError())
-                .str();
-        return StringResult<ast::patterns::StructPatternElements>(s);
-      }
-      elements.setEtCetera(etcetera.getValue());
-      return StringResult<ast::patterns::StructPatternElements>(elements);
-    } else {
-      // error
-      llvm::errs() << "parseStructPatternElements: "
-                   << Token2String(getToken().getKind()) << "\n";
-
-      return StringResult<ast::patterns::StructPatternElements>(
-          "failed to parse struct pattern elements");
-    }
-  } else if (checkKeyWord(KeyWordKind::KW_REF) ||
-             checkKeyWord(KeyWordKind::KW_MUT)) {
-    // StructPatternField
-    // COPY && PASTE
-    recover(cp);
-    StringResult<ast::patterns::StructPatternFields> fields =
-        parseStructPatternFields();
-    if (!fields) {
-      llvm::errs()
-          << "failed to parse struct pattern fields in struct pattern fields: "
-          << fields.getError() << "\n";
-      printFunctionStack();
-      std::string s = llvm::formatv("{0} {1}",
-                                    "failed to parse struct pattern fields in "
-                                    "struct pattern fields: ",
-                                    fields.getError())
-                          .str();
-      return StringResult<ast::patterns::StructPatternElements>(s);
-    }
-    elements.setFields(fields.getValue());
-    if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
-      assert(eat(TokenKind::Comma));
-      // done
-      return StringResult<ast::patterns::StructPatternElements>(elements);
-    } else if (check(TokenKind::BraceClose)) {
-      // done
-      return StringResult<ast::patterns::StructPatternElements>(elements);
-    } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
-      assert(eat(TokenKind::Comma));
-      // StructPatterrnEtCetera
-      StringResult<ast::patterns::StructPatternEtCetera> etcetera =
-          parseStructPatternEtCetera();
-      if (!etcetera) {
-        llvm::errs() << "failed to parse struct pattern etcetera in "
-                        "parse struct elements: "
-                     << etcetera.getError() << "\n";
-        printFunctionStack();
-        std::string s =
-            llvm::formatv("{0} {1}",
-                          "failed to parse struct pattern etcetera in "
-                          "parse struct elements: ",
-                          etcetera.getError())
-                .str();
-        return StringResult<ast::patterns::StructPatternElements>(s);
-      }
-      elements.setEtCetera(etcetera.getValue());
-      return StringResult<ast::patterns::StructPatternElements>(elements);
-    } else {
-      // error
-
-      llvm::errs() << "parseStructPatternElements: "
-                   << Token2String(getToken().getKind()) << "\n";
-
-      return StringResult<ast::patterns::StructPatternElements>(
-          "failed to parse struct pattern elements");
-    }
-  } else if (checkIdentifier() && !check(TokenKind::Colon, 1)) {
-    // StructPatternField
-    // COPY && PASTE
-    recover(cp);
-    StringResult<ast::patterns::StructPatternFields> fields =
-        parseStructPatternFields();
-    if (!fields) {
-      llvm::errs() << "failed to parse struct pattern fields in "
-                      "parse struct elements: "
-                   << fields.getError() << "\n";
-      printFunctionStack();
-      std::string s = llvm::formatv("{0} {1}",
-                                    "failed to parse struct pattern fields in "
-                                    "parse struct elements: ",
-                                    fields.getError())
-                          .str();
-      return StringResult<ast::patterns::StructPatternElements>(s);
-    }
-    elements.setFields(fields.getValue());
-    if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
-      assert(eat(TokenKind::Comma));
-      // done
-      return StringResult<ast::patterns::StructPatternElements>(elements);
-    } else if (check(TokenKind::BraceClose)) {
-      // done
-      return StringResult<ast::patterns::StructPatternElements>(elements);
-    } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
-      assert(eat(TokenKind::Comma));
-      // StructPatterrnEtCetera
-      StringResult<ast::patterns::StructPatternEtCetera> etcetera =
-          parseStructPatternEtCetera();
-      if (!etcetera) {
-        llvm::errs() << "failed to parse struct pattern etcetera in "
-                        "parse struct elements: "
-                     << etcetera.getError() << "\n";
-        printFunctionStack();
-        std::string s =
-            llvm::formatv("{0} {1}",
-                          "failed to parse struct pattern etcetera in "
-                          "parse struct elements: ",
-                          etcetera.getError())
-                .str();
-        return StringResult<ast::patterns::StructPatternElements>(s);
-      }
-      elements.setEtCetera(etcetera.getValue());
-      return StringResult<ast::patterns::StructPatternElements>(elements);
-    } else {
-      // error
-      llvm::errs() << "parseStructPatternElements: "
-                   << Token2String(getToken().getKind()) << "\n";
-
-      return StringResult<ast::patterns::StructPatternElements>(
-          "failed to parse struct pattern elements");
-    }
   } else {
-    // error
-    llvm::errs() << "parseStructPatternElements: "
-                 << Token2String(getToken().getKind()) << "\n";
+    // StructPatternFields
+    recover(cp);
+    StringResult<ast::patterns::StructPatternFields> fields =
+        parseStructPatternFields();
+    if (!fields) {
+      llvm::errs() << "failed to parse struct pattern fields in "
+                      "parse struct elements: "
+                   << fields.getError() << "\n";
+      printFunctionStack();
+      std::string s = llvm::formatv("{0} {1}",
+                                    "failed to parse struct pattern fields in "
+                                    "parse struct elements: ",
+                                    fields.getError())
+                          .str();
+      return StringResult<ast::patterns::StructPatternElements>(s);
+    }
+    elements.setFields(fields.getValue());
 
-    return StringResult<ast::patterns::StructPatternElements>(
-        "failed to parse struct pattern elements");
+    if (check(TokenKind::BraceClose))
+      return StringResult<ast::patterns::StructPatternElements>(elements);
+    if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
+      assert(eat(TokenKind::Comma));
+      return StringResult<ast::patterns::StructPatternElements>(elements);
+    }
+
+    StringResult<ast::patterns::StructPatternEtCetera> etcetera =
+        parseStructPatternEtCetera();
+    if (!etcetera) {
+      llvm::errs() << "failed to parse struct pattern etcetera in "
+                      "parse struct elements: "
+                   << etcetera.getError() << "\n";
+      printFunctionStack();
+      std::string s =
+          llvm::formatv("{0} {1}",
+                        "failed to parse struct pattern etcetera in "
+                        "parse struct elements: ",
+                        etcetera.getError())
+              .str();
+      return StringResult<ast::patterns::StructPatternElements>(s);
+    }
+    elements.setEtCetera(etcetera.getValue());
+    return StringResult<ast::patterns::StructPatternElements>(elements);
   }
+
   llvm::errs() << "parseStructPatternElements: "
                << Token2String(getToken().getKind()) << "\n";
 
@@ -499,8 +320,8 @@ Parser::parseStructPattern() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
-//  llvm::errs() << "parseStructPattern"
-//               << "\n";
+  //  llvm::errs() << "parseStructPattern"
+  //               << "\n";
 
   StructPattern pat = {loc};
 

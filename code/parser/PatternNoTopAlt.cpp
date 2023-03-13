@@ -648,6 +648,10 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
       // terminator
       recover(point);
       return parsePathOrStructOrTupleStructPattern();
+    } else if (check(TokenKind::BraceClose)) {
+      // terminator
+      recover(point);
+      return parsePathOrStructOrTupleStructPattern();
     } else {
       // error
       std::string s =
