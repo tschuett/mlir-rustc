@@ -9,6 +9,7 @@
 #include "Parser/Parser.h"
 
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/FormatVariadic.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
@@ -21,6 +22,9 @@ StringResult<std::shared_ptr<ast::Item>>
 Parser::parseInherentImpl(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   InherentImpl impl = {loc, vis};
+
+  llvm::errs() << "parseInherentImpl"
+               << "\n";
 
   if (!checkKeyWord(KeyWordKind::KW_IMPL)) {
     return StringResult<std::shared_ptr<ast::Item>>(
@@ -44,7 +48,12 @@ Parser::parseInherentImpl(std::optional<ast::Visibility> vis) {
     llvm::errs() << "failed to parse type in inherent impl: " << type.getError()
                  << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0} {1}", "failed to parse type in inherent impl: ",
+                      type.getError())
+            .str();
+    return StringResult<std::shared_ptr<ast::Item>>(s);
   }
   impl.setType(type.getValue());
 
@@ -85,6 +94,7 @@ Parser::parseInherentImpl(std::optional<ast::Visibility> vis) {
           "failed to parse inherent impl: eof");
     } else if (check(TokenKind::BraceClose)) {
       // done
+      assert(eat(TokenKind::BraceClose));
       return StringResult<std::shared_ptr<ast::Item>>(
           std::make_shared<InherentImpl>(impl));
     } else if (!check(TokenKind::BraceClose)) {
@@ -217,8 +227,7 @@ Parser::parseTraitImpl(std::optional<ast::Visibility> vis) {
           "failed to parse trait impl");
     }
   }
-  return StringResult<std::shared_ptr<ast::Item>>(
-      "failed to parse trait impl");
+  return StringResult<std::shared_ptr<ast::Item>>("failed to parse trait impl");
 }
 
 StringResult<std::shared_ptr<ast::Item>>

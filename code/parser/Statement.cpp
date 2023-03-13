@@ -97,6 +97,14 @@ bool Parser::checkStatement() {
     return true;
   if (checkKeyWord(KeyWordKind::KW_STATIC))
     return true;
+  if (checkKeyWord(KeyWordKind::KW_TYPE))
+    return true;
+  if (checkKeyWord(KeyWordKind::KW_MOD))
+    return true;
+  if (checkKeyWord(KeyWordKind::KW_USE))
+    return true;
+  if (checkKeyWord(KeyWordKind::KW_STRUCT))
+    return true;
   if (checkExpressionWithBlock())
     return true;
   if (checkExpressionWithoutBlock())

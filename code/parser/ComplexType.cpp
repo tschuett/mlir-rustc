@@ -22,11 +22,11 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
   CheckPoint cp = getCheckPoint();
 
-  llvm::outs() << "parseTraitObjectTypeOrTypePathOrMacroInvocation"
+  llvm::errs() << "parseTraitObjectTypeOrTypePathOrMacroInvocation"
                << "\n";
 
   while (true) {
-    llvm::outs() << lexer::Token2String(getToken().getKind()) << "\n";
+    llvm::errs() << lexer::Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Eof)) {
       //// terminator for gtest
       // recover(cp);
@@ -46,7 +46,7 @@ Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
       recover(cp);
       return parseMacroInvocationType();
     } else if (check(TokenKind::ParenClose)) {
-      recover(cp);
+      recover(cp); // terminator
       return parseTypePath();
     } else if (check(TokenKind::Lt)) {
       recover(cp);

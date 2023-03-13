@@ -13,8 +13,10 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include <llvm/Support/Error.h>
+#include <llvm/Support/FormatVariadic.h>
 #include <optional>
 
 using namespace llvm;
@@ -221,8 +223,7 @@ StringResult<ast::AssociatedItem> Parser::parseAssociatedItem() {
              checkKeyWord(KeyWordKind::KW_EXTERN) ||
              checkKeyWord(KeyWordKind::KW_FN)) {
     // fun
-    StringResult<std::shared_ptr<ast::Item>> fun =
-        parseFunction(std::nullopt);
+    StringResult<std::shared_ptr<ast::Item>> fun = parseFunction(std::nullopt);
     if (!fun) {
       llvm::errs() << "failed to parse function in associated item: "
                    << fun.getError() << "\n";
@@ -308,8 +309,7 @@ StringResult<ast::ExternalItem> Parser::parseExternalItem() {
              checkKeyWord(KeyWordKind::KW_EXTERN) ||
              checkKeyWord(KeyWordKind::KW_FN) ||
              checkKeyWord(KeyWordKind::KW_UNSAFE)) {
-    StringResult<std::shared_ptr<ast::Item>> fn =
-        parseFunction(std::nullopt);
+    StringResult<std::shared_ptr<ast::Item>> fn = parseFunction(std::nullopt);
     if (!fn) {
       llvm::errs() << "failed to parse function item in external item: "
                    << fn.getError() << "\n";
@@ -409,6 +409,9 @@ StringResult<std::shared_ptr<ast::Item>>
 Parser::parseImplementation(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
+  llvm::errs() << "parseImplementation"
+               << "\n";
+
   CheckPoint cp = getCheckPoint();
 
   if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
@@ -438,23 +441,38 @@ Parser::parseImplementation(std::optional<ast::Visibility> vis) {
     return parseTraitImpl(vis);
   }
 
-  StringResult<std::shared_ptr<ast::types::TypeExpression>> path = parseTypePath();
+  StringResult<std::shared_ptr<ast::types::TypeExpression>> path = parseType();
   if (path) {
     if (checkKeyWord(KeyWordKind::KW_FOR)) {
       recover(cp);
       return parseTraitImpl(vis);
+    } else { // no for
+      recover(cp);
+      return parseInherentImpl(vis);
     }
+  } else {
+    // report error
+    std::string s =
+        llvm::formatv("{0} {1}", "failed to parse type in implementation",
+                      path.getError())
+            .str();
+    return StringResult<std::shared_ptr<ast::Item>>(s);
   }
 
+  // dead code?
   recover(cp);
   return parseInherentImpl(vis);
 }
 
 StringResult<std::shared_ptr<ast::Item>>
 Parser::parseTypeAlias(std::optional<ast::Visibility> vis) {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   TypeAlias alias = {loc, vis};
+
+  llvm::errs() << "parseTypeAlias"
+               << "\n";
 
   if (!checkKeyWord(KeyWordKind::KW_TYPE))
     return StringResult<std::shared_ptr<ast::Item>>(
@@ -526,6 +544,8 @@ Parser::parseTypeAlias(std::optional<ast::Visibility> vis) {
   } else if (check(TokenKind::Eq)) {
     assert(eat(TokenKind::Eq));
   } else {
+    llvm::errs() << "failed to parse where keyword or ; token in type alias 1: "
+                 << Token2String(getToken().getKind()) << "\n";
     return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse where keyword or ; token in type alias");
   }
@@ -554,8 +574,9 @@ Parser::parseTypeAlias(std::optional<ast::Visibility> vis) {
     assert(eat(TokenKind::Semi));
     return StringResult<std::shared_ptr<ast::Item>>(
         std::make_shared<TypeAlias>(alias));
-  }
-  {
+  } else {
+    llvm::errs() << "failed to parse where keyword or ; token in type alias 2: "
+                 << Token2String(getToken().getKind()) << "\n";
     return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse where keyword or ; token in type alias");
   }
@@ -565,7 +586,7 @@ Parser::parseTypeAlias(std::optional<ast::Visibility> vis) {
       std::make_shared<TypeAlias>(alias));
 }
 
-  StringResult<std::shared_ptr<ast::Item>>
+StringResult<std::shared_ptr<ast::Item>>
 Parser::parseStaticItem(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
@@ -761,25 +782,27 @@ Parser::parseUnion(std::optional<ast::Visibility> vis) {
   uni.setStructfields(fields.getValue());
   assert(check(TokenKind::BraceClose));
 
-  return StringResult<std::shared_ptr<ast::Item>>(
-      std::make_shared<Union>(uni));
+  return StringResult<std::shared_ptr<ast::Item>>(std::make_shared<Union>(uni));
 }
 
 StringResult<std::shared_ptr<ast::Item>>
 Parser::parseStruct(std::optional<ast::Visibility> vis) {
   CheckPoint cp = getCheckPoint();
 
+  llvm::errs() << "parseStruct"
+               << "\n";
+
   if (!checkKeyWord(KeyWordKind::KW_STRUCT))
     return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse struct keyword in struct");
 
-  assert(checkKeyWord(KeyWordKind::KW_STRUCT));
+  assert(eatKeyWord(KeyWordKind::KW_STRUCT));
 
   if (!check(TokenKind::Identifier)) {
     return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse identifier in struct");
   }
-  assert(check(TokenKind::Identifier));
+  assert(eat(TokenKind::Identifier));
 
   if (check(TokenKind::Lt)) {
     StringResult<ast::GenericParams> genericParams = parseGenericParams();

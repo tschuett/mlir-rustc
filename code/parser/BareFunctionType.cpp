@@ -5,6 +5,7 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
@@ -15,6 +16,7 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
+/// , MaybeNamedParam ?
 bool Parser::checkMaybeNamedParamLeadingComma() {
   if (!check(TokenKind::Comma))
     return false;
@@ -35,7 +37,7 @@ bool Parser::checkMaybeNamedParamLeadingComma() {
       return true;
     if (check(TokenKind::Underscore) && check(TokenKind::Colon, 1))
       return true;
-    if (check(TokenKind::Colon))
+    if (canTokenStartType(getToken()))
       return true;
     return false;
   }
@@ -44,7 +46,7 @@ bool Parser::checkMaybeNamedParamLeadingComma() {
     return true;
   if (check(TokenKind::Underscore) && check(TokenKind::Colon, 1))
     return true;
-  if (check(TokenKind::Colon))
+  if (canTokenStartType(getToken()))
     return true;
 
   return false;
@@ -179,14 +181,14 @@ StringResult<ast::types::MaybeNamedParam> Parser::parseMaybeNamedParam() {
     param.setOuterAttributes(ot);
   }
 
-  if (check(TokenKind::Identifier)) {
+  if (check(TokenKind::Identifier) && check(TokenKind::Colon, 1)) {
     param.setIdentifier(getToken().getIdentifier());
     assert(eat(TokenKind::Identifier));
     if (!check(TokenKind::Colon))
       return StringResult<ast::types::MaybeNamedParam>(
           "failed to parse : in maybe named param");
     assert(eat(TokenKind::Colon));
-  } else if (check(TokenKind::Underscore)) {
+  } else if (check(TokenKind::Underscore) && check(TokenKind::Colon, 1)) {
     assert(eat(TokenKind::Underscore));
     param.setUnderscore();
     if (!check(TokenKind::Colon))
@@ -201,7 +203,12 @@ StringResult<ast::types::MaybeNamedParam> Parser::parseMaybeNamedParam() {
                     "parameter: "
                  << type.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s = llvm::formatv("{0} {1}",
+                                  "failed to parse type in parse maybe named "
+                                  "parameter: ",
+                                  type.getError())
+                        .str();
+    return StringResult<ast::types::MaybeNamedParam>(s);
   }
   param.setType(type.getValue());
 
@@ -218,9 +225,21 @@ Parser::parseFunctionParametersMaybeNamedVariadic() {
                     "maybe varadic pattern: "
                  << namedParam.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv(
+            "{0} {1}",
+            "failed to parse maybe named param  in function parameters "
+            "maybe varadic pattern: ",
+            namedParam.getError())
+            .str();
+    return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(s);
   }
   while (true) {
+    llvm::errs() << "parseFunctionParametersMaybeNamedVariadic "
+                 << Token2String(getToken().getKind()) << "\n";
+    if (getToken().isIdentifier())
+      llvm::errs() << getToken().getIdentifier() << "\n";
     if (check(TokenKind::Eof)) {
       return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
           "failed to parse in function parameters maybe named variadic: "
@@ -234,7 +253,7 @@ Parser::parseFunctionParametersMaybeNamedVariadic() {
       return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
           parseMaybeNamedFunctionParameters());
     } else if (checkMaybeNamedParamLeadingComma()) {
-      assert(eat(TokenKind::Comma));
+      // assert(eat(TokenKind::Comma));
       StringResult<ast::types::MaybeNamedParam> namedParam =
           parseMaybeNamedParam();
       if (!namedParam) {
@@ -243,7 +262,16 @@ Parser::parseFunctionParametersMaybeNamedVariadic() {
                         "maybe varadic: "
                      << namedParam.getError() << "\n";
         printFunctionStack();
-        exit(EXIT_FAILURE);
+        std::string s =
+            llvm::formatv(
+                "{0} {1}",
+                "failed to parse maybe named param  in function parameters "
+                "maybe varadic pattern: ",
+                namedParam.getError())
+                .str();
+        return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+            s);
+        // exit(EXIT_FAILURE);
       }
     } else if (check(TokenKind::Comma) && checkOuterAttribute(1)) {
       recover(cp);
@@ -317,6 +345,9 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseBareFunctionType() {
   Location loc = getLocation();
 
+  llvm::errs() << "parse bare function type"
+               << "\n";
+
   BareFunctionType bare = {loc};
 
   if (checkKeyWord(KeyWordKind::KW_FOR)) {
@@ -343,17 +374,17 @@ Parser::parseBareFunctionType() {
 
   if (!checkKeyWord(KeyWordKind::KW_FN))
     return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
-        "failed to parse fn keywordk in bare function type");
+        "failed to parse fn keyword in bare function type");
   assert(eatKeyWord(KeyWordKind::KW_FN));
 
   if (!check(TokenKind::ParenOpen))
     return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
-        "failed to parse ( in bare function type");
+        "failed to parse ( token in bare function type");
   assert(eat(TokenKind::ParenOpen));
 
   if (check(TokenKind::ParenClose)) {
     assert(eat(TokenKind::ParenClose));
-    if (check((TokenKind::FatArrow))) {
+    if (check((TokenKind::RArrow))) {
       StringResult<ast::types::BareFunctionReturnType> ret =
           parseBareFunctionReturnType();
       if (!ret) {
@@ -376,9 +407,37 @@ Parser::parseBareFunctionType() {
                       "bare function type"
                    << varadic.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      // exit(EXIT_FAILURE);
+      std::string s =
+          llvm::formatv("{0} {1}",
+                        "failed to parse function parameters maybe named "
+                        "variadic in parse "
+                        "bare function type",
+                        varadic.getError())
+              .str();
+
+      return StringResult<std::shared_ptr<ast::types::TypeExpression>>(s);
     }
     bare.setParameters(varadic.getValue());
+
+    if (!check(TokenKind::ParenClose))
+      return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+          "failed to parse ) token in bare function type");
+    assert(eat(TokenKind::ParenClose));
+
+    if (check((TokenKind::RArrow))) {
+      StringResult<ast::types::BareFunctionReturnType> ret =
+          parseBareFunctionReturnType();
+      if (!ret) {
+        llvm::errs() << "failed to parse bare function return type in parse "
+                        "bare function type"
+                     << ret.getError() << "\n";
+        printFunctionStack();
+        exit(EXIT_FAILURE);
+      }
+      bare.setReturnType(ret.getValue());
+    }
+
     return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
         std::make_shared<BareFunctionType>(bare));
   }

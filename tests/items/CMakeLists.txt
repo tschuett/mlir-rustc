@@ -3,6 +3,10 @@ include(GoogleTest)
 add_executable(ItemsTests
         ItemTests.cpp
         Const.cpp
+        Struct.cpp
+        Implementation.cpp
+        Function.cpp
+        TypeAlias.cpp
 )
 
 llvm_map_components_to_libnames(llvm_libs Support)

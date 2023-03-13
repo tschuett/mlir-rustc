@@ -1,3 +1,4 @@
+
 #include "AST/MatchExpression.h"
 
 #include "AST/Expression.h"
@@ -167,6 +168,9 @@ StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseMatchExpression(std::span<ast::OuterAttribute>) {
   Location loc = getLocation();
   MatchExpression ma = {loc};
+
+  llvm::errs() << "parseMatchExpression"
+               << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_MATCH)) {
     assert(eatKeyWord(KeyWordKind::KW_MATCH));

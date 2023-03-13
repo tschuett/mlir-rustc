@@ -506,7 +506,11 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
       llvm::errs() << "failed to parse where clause in function: "
                    << whereClause.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      std::string s =
+          llvm::formatv("{0} {1}", "failed to parse where clause in function",
+                        whereClause.getError())
+              .str();
+      return StringResult<std::shared_ptr<ast::Item>>(s);
     }
     fun.setWhereClasue(whereClause.getValue());
   }
@@ -526,12 +530,15 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
     llvm::errs() << "failed to parse body in function: " << body.getError()
                  << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s = llvm::formatv("{0} {1}", "failed to parse body in function",
+                                  body.getError())
+                        .str();
+    return StringResult<std::shared_ptr<ast::Item>>(s);
   }
   fun.setBody(body.getValue());
 
   return StringResult<std::shared_ptr<ast::Item>>(
-      std::make_shared<ast::VisItem>(fun));
+      std::make_shared<Function>(fun));
 }
 
 } // namespace rust_compiler::parser

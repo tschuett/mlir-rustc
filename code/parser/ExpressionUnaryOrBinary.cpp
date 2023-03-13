@@ -374,9 +374,9 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
       return parseLiteralExpression(outer);
     }
     default: {
-      llvm::outs() << "unexpected token: " << Token2String(getToken().getKind())
+      llvm::errs() << "unexpected token: " << Token2String(getToken().getKind())
                    << "\n";
-      llvm::outs() << "in parseUnaryExpression: "
+      llvm::errs() << "in parseUnaryExpression: "
                    << KeyWord2String(getToken().getKeyWordKind()) << "\n";
       return StringResult<std::shared_ptr<ast::Expression>>(
           "unexpected token in unary expression");

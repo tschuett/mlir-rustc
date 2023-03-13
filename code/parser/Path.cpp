@@ -380,7 +380,9 @@ Parser::parseTypePath() {
   path.addSegment(first.getValue());
 
   while (true) {
+    llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Eof)) {
+      // error
     } else if (check(TokenKind::PathSep)) {
       assert(eat(TokenKind::PathSep));
       StringResult<ast::types::TypePathSegment> next = parseTypePathSegment();

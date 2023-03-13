@@ -27,7 +27,7 @@ StringResult<std::shared_ptr<ast::Item>> Parser::parseItem() {
     } else if (checkMacroItem()) {
       return parseMacroItem(ot);
     } else {
-      return StringResult<std::shared_ptr<ast::Item>>("failed to parse item");
+      return StringResult<std::shared_ptr<ast::Item>>("failed to parse item2");
     }
   }
 
@@ -37,7 +37,8 @@ StringResult<std::shared_ptr<ast::Item>> Parser::parseItem() {
   } else if (checkMacroItem()) {
     return parseMacroItem(outer);
   }
-  return StringResult<std::shared_ptr<ast::Item>>("failed to parse item");
+
+  return StringResult<std::shared_ptr<ast::Item>>("failed to parse item1");
 }
 
 } // namespace rust_compiler::parser

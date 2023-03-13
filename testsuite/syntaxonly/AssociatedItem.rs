@@ -4,7 +4,7 @@ struct Struct {
 
 impl Struct {
     fn new() -> Struct {
-        Struct { field: 0i32 }
+        Struct { field: 32 };
     }
 }
 

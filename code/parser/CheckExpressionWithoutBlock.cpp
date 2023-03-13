@@ -3,6 +3,7 @@
 #include "Parser/Parser.h"
 #include "Parser/Restrictions.h"
 
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::ast;
@@ -26,13 +27,18 @@ bool Parser::checkPathOrStructOrMacro() {
   while (true) {
     llvm::errs() << "checkPathOrStructOrMacro: "
                  << Token2String(getToken().getKind()) << "\n";
+    if (getToken().isKeyWord())
+      llvm::errs() << KeyWord2String(getToken().getKeyWordKind()) << "\n";
     if (check(TokenKind::Eof)) {
       recover(cp);
       return false;
     } else if (check(TokenKind::Not)) {
       recover(cp);
       return true;
-    } else if (check(TokenKind::Keyword)) {
+    } else if (checkKeyWord(KeyWordKind::KW_STRUCT)) {
+      recover(cp);
+      return true;
+    } else if (checkKeyWord(KeyWordKind::KW_TYPE)) {
       recover(cp);
       return false;
     } else if (check(TokenKind::PathSep)) {
@@ -116,6 +122,8 @@ bool Parser::checkExpressionWithoutBlock() {
   if (checkPathOrStructOrMacro())
     return true;
 
+  llvm::errs() << Token2String(getToken().getKind()) << "\n";
+
   Restrictions restritions;
   StringResult<std::shared_ptr<ast::Expression>> left =
       parseExpression({}, restritions);
@@ -124,7 +132,6 @@ bool Parser::checkExpressionWithoutBlock() {
                     "without block: "
                  << left.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
   }
 
   return checkExpressionWithoutBlock(left.getValue());
