@@ -40,6 +40,7 @@ add_library(parser
            FunctionStack.cpp
            ExpressionWithoutBlock.cpp
            StructPattern.cpp
+           Range.cpp
            )
 
 

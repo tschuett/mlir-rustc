@@ -81,6 +81,12 @@ bool Parser::checkMacroItem() {
     } else if (check(TokenKind::BraceOpen)) {
       recover(cp);
       return false;
+    } else if (check(TokenKind::DotDot)) {
+      recover(cp);
+      return false;
+    } else if (check(TokenKind::DotDotEq)) {
+      recover(cp);
+      return false;
     } else if (check(TokenKind::Plus)) {
       recover(cp);
       return false;
@@ -286,7 +292,10 @@ rust_compiler::Location Parser::getLocation() {
   return ts.getAt(offset).getLocation();
 }
 
-lexer::Token Parser::getToken(uint8_t off) { return ts.getAt(offset + off); }
+lexer::Token Parser::getToken(uint8_t off) {
+  assert(offset + off < ts.getLength() && "out of range access in getToken");
+  return ts.getAt(offset + off);
+}
 
 StringResult<std::shared_ptr<ast::Item>>
 Parser::parseVisItem(std::span<OuterAttribute>) {

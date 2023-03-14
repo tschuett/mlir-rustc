@@ -1,3 +1,4 @@
+#include "AST/Expression.h"
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
 
@@ -10,74 +11,10 @@ using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
 using namespace rust_compiler::adt;
 
-TEST(MatchTest, CheckMatch8) {
+TEST(RangeTest, CheckRange7) {
   std::string text = R"del(
-fn main() {
-  match s{
-      Point{x : 10, y : 20} => (),
-      Point{y : 10, x : 20} => (),
-      Point{x : 10, z : 10} => (),
-  }
-}
-)del";
-
-  TokenStream ts = lex(text, "lib.rs");
-
-  Parser parser = {ts};
-
-  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
-      parser.parseFunction(std::nullopt);
-
-  EXPECT_TRUE(result.isOk());
-};
-
-TEST(MatchTest, CheckMatch7) {
-  std::string text = R"del(
-fn main() {
-  match s{
-      Point{x : 10, y : 20} => (),
-      Point{y : 10, x : 20} => (),
-      Point{x : 10, ..} => (),
-  }
-}
-)del";
-
-  TokenStream ts = lex(text, "lib.rs");
-
-  Parser parser = {ts};
-
-  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
-      parser.parseFunction(std::nullopt);
-
-  EXPECT_TRUE(result.isOk());
-};
-
-TEST(MatchTest, CheckMatch6) {
-  std::string text = R"del(
-fn main() {
-  match s{
-      Point{x : 10, y : 20} => (),
-      Point{y : 10, x : 20} => (),
-  }
-}
-)del";
-
-  TokenStream ts = lex(text, "lib.rs");
-
-  Parser parser = {ts};
-
-  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
-      parser.parseFunction(std::nullopt);
-
-  EXPECT_TRUE(result.isOk());
-};
-
-TEST(MatchTest, CheckMatch5) {
-  std::string text = R"del(
-fn main() {
-  match s {
-      1 => 1,
-  };
+fn foo() {
+    1..2;
 }
 )del";
 
@@ -94,12 +31,11 @@ fn main() {
   EXPECT_TRUE(result.isOk());
 };
 
-TEST(MatchTest, CheckMatch4) {
+TEST(RangeTest, CheckRange6) {
   std::string text = R"del(
-fn main() {
-  match s{
-      Point{x : 10, y : 20} => 1,
-  }
+fn foo() {
+    1..2;
+    3..;
 }
 )del";
 
@@ -111,17 +47,17 @@ fn main() {
       parser.parseFunction(std::nullopt);
 
   if (result.isErr())
-    llvm::errs() << result.getError() << "\n";
+    llvm::outs() << result.getError() << "\n";
 
   EXPECT_TRUE(result.isOk());
 };
 
-TEST(MatchTest, CheckMatch3) {
+TEST(RangeTest, CheckRange5) {
   std::string text = R"del(
-fn main() {
-  match s{
-      Point{x : 10, y : 20} => (),
-  }
+fn foo() {
+    1..2;
+    3..;
+    ..4;
 }
 )del";
 
@@ -133,20 +69,18 @@ fn main() {
       parser.parseFunction(std::nullopt);
 
   if (result.isErr())
-    llvm::errs() << result.getError() << "\n";
+    llvm::outs() << result.getError() << "\n";
 
   EXPECT_TRUE(result.isOk());
 };
 
-TEST(MatchTest, CheckMatch2) {
+TEST(RangeTest, CheckRange4) {
   std::string text = R"del(
-fn main() {
-  match s{
-      Point{x : 10, y : 20} => (),
-      Point{y : 10, x : 20} => (),
-      Point{x : 10, ..} => (),
-      Point{..} => (),
-  }
+fn foo() {
+    1..2;
+    3..;
+    ..4;
+    ..;
 }
 )del";
 
@@ -157,24 +91,24 @@ fn main() {
   Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
       parser.parseFunction(std::nullopt);
 
+  if (result.isErr())
+    llvm::outs() << result.getError() << "\n";
+
   EXPECT_TRUE(result.isOk());
 };
 
-TEST(MatchTest, CheckMatch1) {
+TEST(RangeTest, CheckRange3) {
   std::string text = R"del(
-fn main() {
-  match s{
-      Point{x : 10, y : 20} => (),
-      Point{y : 10, x : 20} => (),
-      Point{x : 10, ..} => (),
-      Point{..} => (),
-  }
+fn foo() {
+    1..2;
+    3..;
+    ..4;
+    ..;
+    5..=6;
+    ..=7;
 
-  match t {
-    PointTuple{0 : 10, 1 : 20} => (),
-    PointTuple{1 : 10, 0 : 20} => (),
-    PointTuple{0 : 10, ..} => (), PointTuple{..} => (),
-  }
+    let x = std::ops::Range { start: 0, end: 10 };
+    let y = 0..10;
 }
 )del";
 
@@ -184,6 +118,62 @@ fn main() {
 
   Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
       parser.parseFunction(std::nullopt);
+
+  if (result.isErr())
+    llvm::outs() << result.getError() << "\n";
+
+  EXPECT_TRUE(result.isOk());
+};
+
+TEST(RangeTest, CheckRange2) {
+  std::string text = R"del(
+fn foo() {
+    1..2; // std::ops::Range
+    3..; // std::ops::RangeFrom
+    ..4; // std::ops::RangeTo
+    ..; // std::ops::RangeFull
+    5..=6; // std::ops::RangeInclusive
+    ..=7; // std::ops::RangeToInclusive
+
+    let x = std::ops::Range { start: 0, end: 10 };
+    let y = 0..10;
+}
+)del";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts};
+
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
+
+  if (result.isErr())
+    llvm::outs() << result.getError() << "\n";
+
+  EXPECT_TRUE(result.isOk());
+};
+
+TEST(RangeTest, CheckRange1) {
+  std::string text = R"del(
+fn foo() {
+    1..2; // std::ops::Range
+    3..; // std::ops::RangeFrom
+    ..4; // std::ops::RangeTo
+    ..; // std::ops::RangeFull
+    5..=6; // std::ops::RangeInclusive
+    ..=7; // std::ops::RangeToInclusive
+
+    let x = std::ops::Range { start: 0, end: 10 };
+    let y = 0..10;
+}
+)del";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts};
+
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseItem();
 
   EXPECT_TRUE(result.isOk());
 };

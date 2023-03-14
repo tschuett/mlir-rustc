@@ -26,21 +26,6 @@ using namespace llvm;
 
 namespace rust_compiler::parser {
 
-// StringResult<std::shared_ptr<ast::Expression>>
-// Parser::parseBinaryExpression(std::shared_ptr<ast::Expression> left,
-//                               std::span<ast::OuterAttribute> outer,
-//                               Restrictions restrictions) {
-//   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
-//
-//   if (check(TokenKind::QMark)) {
-//     return parseErrorPropagationExpression(left, outer);
-//   } else if (check(TokenKind::Plus)) {
-//     return parseArithmeticOrLogicalExpression(left, restrictions);
-//   } else if (check(TokenKind::Minus)) {
-//     return parseArithmeticOrLogicalExpression(left, restrictions);
-//   }
-// }
-
 StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
                              Restrictions restrictions) {
@@ -85,18 +70,18 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
          *  path '{' ident ':' [not a type]
          * otherwise, assume block expr and thus path */
 
-        //llvm::errs() << "notABlock: " << notABlock
-        //             << " canbeStruct: " << restrictions.canBeStructExpr
-        //             << "\n";
-        
+        // llvm::errs() << "notABlock: " << notABlock
+        //              << " canbeStruct: " << restrictions.canBeStructExpr
+        //              << "\n";
+
         if (!restrictions.canBeStructExpr)
           return StringResult<std::shared_ptr<ast::Expression>>(
               path.getValue());
 
-        //if (!restrictions.canBeStructExpr && !notABlock) {
-        //  return StringResult<std::shared_ptr<ast::Expression>>(
-        //      path.getValue());
-        //}
+        // if (!restrictions.canBeStructExpr && !notABlock) {
+        //   return StringResult<std::shared_ptr<ast::Expression>>(
+        //       path.getValue());
+        // }
 
         return parseStructExpressionStructPratt(path.getValue(), outer);
       }
@@ -260,6 +245,11 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
       return StringResult<std::shared_ptr<ast::Expression>>(
           "unexpected :: in unary expression with UnaryAnd");
     }
+    case TokenKind::DotDot:
+    case TokenKind::DotDotEq:
+      // range expression
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          parseRangeExpression(outer));
     case TokenKind::Or:
     case TokenKind::OrOr:
       // closure expression

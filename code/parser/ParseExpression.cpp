@@ -44,7 +44,8 @@ Parser::parseExpression(Precedence rightBindingPower,
     return adt::StringResult<std::shared_ptr<ast::Expression>>(s);
   }
 
-  llvm::errs() << "token: " << Token2String(getToken().getKind()) << "\n";
+  llvm::errs() << "token found after unary expression: "
+               << Token2String(getToken().getKind()) << "\n";
 
   // stop parsing if find lower priority token - parse higher priority first
   while (rightBindingPower < getLeftBindingPower(getToken())) {
@@ -92,6 +93,12 @@ Parser::parseInfixExpression(std::shared_ptr<Expression> left,
   }
   case TokenKind::Eq: {
     return parseAssignmentExpression(left, outer, restrictions);
+  }
+  case TokenKind::DotDot: {
+    return parseRangeExpression(left, outer, restrictions);
+  }
+  case TokenKind::DotDotEq: {
+    return parseRangeExpression(left, outer, restrictions);
   }
   case TokenKind::Eof: {
     std::string s =

@@ -21,8 +21,12 @@ Precedence getLeftBindingPower(const Token &token) {
     return Precedence::LessThan;
   case TokenKind::Eq:
     return Precedence::Equal;
+  case TokenKind::DotDot:
+    return Precedence::DotDot;
+  case TokenKind::DotDotEq:
+    return Precedence::DotDotEq;
   default: {
-    llvm::outs() << "getLeftBindingPower: unknown token: "
+    llvm::errs() << "getLeftBindingPower: unknown token: "
                  << Token2String(token.getKind()) << "\n";
     return Precedence::Lowest;
     exit(EXIT_FAILURE);

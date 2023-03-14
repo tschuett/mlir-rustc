@@ -24,7 +24,7 @@ Parser::parseExpressionStatement(std::span<ast::OuterAttribute> outer,
                                  Restrictions restrictions) {
   Location loc = getLocation();
 
-  llvm::outs() << "parseExpressionStatement"
+  llvm::errs() << "parseExpressionStatement"
                << "\n";
 
   ExpressionStatement exr = {loc};

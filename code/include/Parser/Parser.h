@@ -362,9 +362,10 @@ public:
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseFieldExpression(std::shared_ptr<ast::Expression>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
-      parseRangeExpression(std::shared_ptr<ast::Expression>);
+      parseRangeExpression(std::shared_ptr<ast::Expression>,
+                           std::span<ast::OuterAttribute>, Restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
-  parseRangeExpression();
+  parseRangeExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseUnderScoreExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
