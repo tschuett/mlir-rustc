@@ -165,7 +165,7 @@ TEST(MatchTest, CheckMatch1) {
 fn main() {
   match s{
       Point{x : 10, y : 20} => (),
-      Point{y : 10, x : 20} => (), 
+      Point{y : 10, x : 20} => (),
       Point{x : 10, ..} => (),
       Point{..} => (),
   }
@@ -173,7 +173,7 @@ fn main() {
   match t {
     PointTuple{0 : 10, 1 : 20} => (),
     PointTuple{1 : 10, 0 : 20} => (),
-    PointTuple{0 : 10, ..} => (), PointTuple{..} = > (),
+    PointTuple{0 : 10, ..} => (), PointTuple{..} => (),
   }
 }
 )del";
