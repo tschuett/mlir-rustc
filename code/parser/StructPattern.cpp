@@ -31,7 +31,7 @@ Parser::parseStructPatternFields() {
                  << first.getError() << "\n";
     printFunctionStack();
     std::string s =
-        llvm::formatv("{0} {1}",
+        llvm::formatv("{0}\n{1}",
                       "failed to parse first struct pattern field in "
                       "parse struct pattern fields: ",
                       first.getError())
@@ -41,24 +41,60 @@ Parser::parseStructPatternFields() {
   fields.addPattern(first.getValue());
 
   while (true) {
-    //    llvm::errs() << "parseStructPatternfields loop: "
-    //                 << Token2String(getToken().getKind()) << "\n";
+    llvm::errs() << "parseStructPatternfields loop: "
+                 << Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Eof)) {
       return StringResult<ast::patterns::StructPatternFields>(
           "failed to parse struct pattern fields: eof");
-    } else if (check(TokenKind::Comma)) {
+    } else if (check(TokenKind::Comma) && check(TokenKind::BraceClose, 1)) {
+      // done
       assert(eat((TokenKind::Comma)));
+      return StringResult<ast::patterns::StructPatternFields>(fields);
+    } else if (check(TokenKind::DotDot)) {
+      // done EtCetera comming soon
+      return StringResult<ast::patterns::StructPatternFields>(fields);
+    } else if (check(TokenKind::Comma)) {
+
+      // could be etcetera or continue
+      assert(eat((TokenKind::Comma)));
+
+      CheckPoint cp = getCheckPoint();
+
+      if (checkOuterAttribute()) {
+        StringResult<std::vector<ast::OuterAttribute>> outer =
+            parseOuterAttributes();
+        if (!outer) {
+          llvm::errs() << "failed to parse  outer attributes in "
+                          "parse struct pattern fields\n"
+                       << outer.getError() << "\n";
+          printFunctionStack();
+          std::string s = llvm::formatv("{0}\n{1}",
+                                        "failed to parse  outer attributes in "
+                                        "parse struct pattern fields: ",
+                                        outer.getError())
+                              .str();
+          return StringResult<ast::patterns::StructPatternFields>(s);
+        }
+      }
+
+      if (check(TokenKind::DotDot)) {
+        // done
+        return StringResult<ast::patterns::StructPatternFields>(fields);
+      }
+
+      recover(cp);
+
       StringResult<ast::patterns::StructPatternField> next =
           parseStructPatternField();
       if (!next) {
         std::string s =
-            llvm::formatv("{0} {1}",
+            llvm::formatv("{0}\n{1}",
                           "failed to parse next struct pattern field in "
                           "parse struct pattern fields: ",
                           next.getError())
                 .str();
         llvm::errs() << "failed to parse next struct pattern field in "
-                        "parse struct pattern fields: "
+                        "parse struct pattern fields\n"
                      << next.getError() << "\n";
         printFunctionStack();
         return StringResult<ast::patterns::StructPatternFields>(s);
@@ -69,7 +105,8 @@ Parser::parseStructPatternFields() {
       return StringResult<ast::patterns::StructPatternFields>(fields);
     } else {
       // error
-      return StringResult<ast::patterns::StructPatternFields>(fields);
+      return StringResult<ast::patterns::StructPatternFields>(
+          "failed to parse struct pattern fields");
     }
   }
 
@@ -94,10 +131,10 @@ Parser::parseStructPatternField() {
         parseOuterAttributes();
     if (!outer) {
       llvm::errs() << "failed to parse  outer attributes in "
-                      "parse struct pattern field: "
+                      "parse struct pattern field\n"
                    << outer.getError() << "\n";
       printFunctionStack();
-      std::string s = llvm::formatv("{0} {1}",
+      std::string s = llvm::formatv("{0}\n{1}",
                                     "failed to parse  outer attributes in "
                                     "parse struct pattern field: ",
                                     outer.getError())
@@ -116,10 +153,10 @@ Parser::parseStructPatternField() {
         parsePattern();
     if (!patterns) {
       llvm::errs() << "failed to parse  pattern in "
-                      "parse struct pattern field: "
+                      "parse struct pattern field\n"
                    << patterns.getError() << "\n";
       printFunctionStack();
-      std::string s = llvm::formatv("{0} {1}",
+      std::string s = llvm::formatv("{0}\n{1}",
                                     "failed to parse  pattern in "
                                     "parse struct pattern field: ",
                                     patterns.getError())
@@ -137,10 +174,10 @@ Parser::parseStructPatternField() {
         parsePattern();
     if (!patterns) {
       llvm::errs() << "failed to parse  pattern in "
-                      "parse struct pattern field: "
+                      "parse struct pattern field\n"
                    << patterns.getError() << "\n";
       printFunctionStack();
-      std::string s = llvm::formatv("{0} {1}",
+      std::string s = llvm::formatv("{0}\n{1}",
                                     "failed to parse  pattern in "
                                     "parse struct pattern field: ",
                                     patterns.getError())
@@ -190,10 +227,10 @@ Parser::parseStructPatternEtCetera() {
         parseOuterAttributes();
     if (!outer) {
       llvm::errs() << "failed to parse outer attributes in "
-                      "parse struct pattern etcetera  pattern: "
+                      "parse struct pattern etcetera  pattern\n"
                    << outer.getError() << "\n";
       printFunctionStack();
-      std::string s = llvm::formatv("{0} {1}",
+      std::string s = llvm::formatv("{0}\n{1}",
                                     "failed to parse outer attributes in "
                                     "parse struct pattern etcetera  pattern: ",
                                     outer.getError())
@@ -220,21 +257,21 @@ Parser::parseStructPatternElements() {
 
   CheckPoint cp = getCheckPoint();
 
-  llvm::errs() << "parseStructPatternElements"
-               << "\n";
-
-  llvm::errs() << "parseStructPatternElements: "
-               << Token2String(getToken().getKind()) << "\n";
+//  llvm::errs() << "parseStructPatternElements"
+//               << "\n";
+//
+//  llvm::errs() << "parseStructPatternElements: "
+//               << Token2String(getToken().getKind()) << "\n";
 
   if (checkOuterAttribute()) {
     StringResult<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
     if (!outer) {
       llvm::errs() << "failed to parse outer attributes in "
-                      "parse struct elements: "
+                      "parse struct elements\n"
                    << outer.getError() << "\n";
       printFunctionStack();
-      std::string s = llvm::formatv("{0} {1}",
+      std::string s = llvm::formatv("{0}\n{1}",
                                     "failed to parse outer attributes in "
                                     "parse struct elements: ",
                                     outer.getError())
@@ -250,11 +287,11 @@ Parser::parseStructPatternElements() {
         parseStructPatternEtCetera();
     if (!etcetera) {
       llvm::errs() << "failed to parse struct pattern etcetera in "
-                      "parse struct elements: "
+                      "parse struct elements\n"
                    << etcetera.getError() << "\n";
       printFunctionStack();
       std::string s =
-          llvm::formatv("{0} {1}",
+          llvm::formatv("{0}\n{1}",
                         "failed to parse struct pattern etcetera in "
                         "parse struct elements: ",
                         etcetera.getError())
@@ -270,10 +307,10 @@ Parser::parseStructPatternElements() {
         parseStructPatternFields();
     if (!fields) {
       llvm::errs() << "failed to parse struct pattern fields in "
-                      "parse struct elements: "
+                      "parse struct elements\n"
                    << fields.getError() << "\n";
       printFunctionStack();
-      std::string s = llvm::formatv("{0} {1}",
+      std::string s = llvm::formatv("{0}\n{1}",
                                     "failed to parse struct pattern fields in "
                                     "parse struct elements: ",
                                     fields.getError())
@@ -293,11 +330,11 @@ Parser::parseStructPatternElements() {
         parseStructPatternEtCetera();
     if (!etcetera) {
       llvm::errs() << "failed to parse struct pattern etcetera in "
-                      "parse struct elements: "
+                      "parse struct elements\n"
                    << etcetera.getError() << "\n";
       printFunctionStack();
       std::string s =
-          llvm::formatv("{0} {1}",
+          llvm::formatv("{0}\n{1}",
                         "failed to parse struct pattern etcetera in "
                         "parse struct elements: ",
                         etcetera.getError())
@@ -328,10 +365,10 @@ Parser::parseStructPattern() {
   StringResult<std::shared_ptr<ast::Expression>> path = parsePathInExpression();
   if (!path) {
     llvm::errs() << "failed to parse path in expression in "
-                    "parse struct pattern: "
+                    "parse struct pattern\n"
                  << path.getError() << "\n";
     printFunctionStack();
-    std::string s = llvm::formatv("{0} {1}",
+    std::string s = llvm::formatv("{0}\n{1}",
                                   "failed to parse path in expression in "
                                   "parse struct pattern: ",
                                   path.getError())
@@ -354,10 +391,10 @@ Parser::parseStructPattern() {
   StringResult<StructPatternElements> pattern = parseStructPatternElements();
   if (!pattern) {
     llvm::errs() << "failed to parse struct pattern elements in "
-                    "parse struct pattern: "
+                    "parse struct pattern\n"
                  << pattern.getError() << "\n";
     printFunctionStack();
-    std::string s = llvm::formatv("{0} {1}",
+    std::string s = llvm::formatv("{0}\n{1}",
                                   "failed to parse struct pattern elements in "
                                   "parse struct pattern: ",
                                   pattern.getError())
