@@ -24,8 +24,17 @@ Parser::parseRestPattern() {
 
   RestPattern pattern = {loc};
 
+  if (check(TokenKind::DotDot)) {
+    assert(eat(TokenKind::DotDot));
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        std::make_shared<RestPattern>(pattern));
+  }
+
+  llvm::errs() << "failed to parse rest pattern: unknown token "
+               << Token2String(getToken().getKind()) << "\n";
+
   return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
-      std::make_shared<RestPattern>(pattern));
+      "failed to parse rest pattern: unknown token");
 }
 
 StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
@@ -46,6 +55,8 @@ Parser::parseIdentifierPattern() {
 
   if (!check(TokenKind::Identifier)) {
     // report errro
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
+        "failed to parse identifier in identifier pattern");
   }
 
   Token tok = getToken();
@@ -151,15 +162,6 @@ Parser::parseLiteralPattern() {
   }
   return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
       "failed to parse literal pattern");
-}
-
-StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
-Parser::parseRangePattern() {
-  Location loc = getLocation();
-
-  RangePattern pattern = {loc};
-
-  assert(false);
 }
 
 StringResult<std::shared_ptr<ast::patterns::Pattern>> Parser::parsePattern() {
@@ -342,61 +344,6 @@ Parser::parseTupleOrGroupedPattern() {
       // abort
     }
   }
-}
-
-StringResult<ast::patterns::SlicePatternItems>
-Parser::parseSlicePatternItems() {
-  Location loc = getLocation();
-
-  SlicePatternItems items = {loc};
-
-  StringResult<std::shared_ptr<ast::patterns::Pattern>> first = parsePattern();
-  if (!first) {
-    llvm::errs() << "failed to parse pattern in slice pattern items: "
-                 << first.getError() << "\n";
-    printFunctionStack();
-    exit(EXIT_FAILURE);
-  }
-  items.addPattern(first.getValue());
-
-  // TODO
-
-  assert(false);
-}
-
-StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
-Parser::parseSlicePattern() {
-  Location loc = getLocation();
-
-  SlicePattern slice = {loc};
-
-  if (!check(TokenKind::SquareOpen)) {
-    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
-        "failed to parse [ token in slice pattern");
-  }
-  assert(check(TokenKind::SquareOpen));
-
-  if (check(TokenKind::SquareClose)) {
-    // done
-    assert(check(TokenKind::SquareClose));
-    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
-        std::make_shared<SlicePattern>(slice));
-  }
-
-  StringResult<ast::patterns::SlicePatternItems> items =
-      parseSlicePatternItems();
-  if (!items) {
-    llvm::errs() << "failed to parse slice pattern items in slice pattern: "
-                 << items.getError() << "\n";
-    printFunctionStack();
-    exit(EXIT_FAILURE);
-  }
-  slice.setPatternItems(items.getValue());
-
-  assert(check(TokenKind::SquareClose));
-
-  return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
-      std::make_shared<SlicePattern>(slice));
 }
 
 } // namespace rust_compiler::parser

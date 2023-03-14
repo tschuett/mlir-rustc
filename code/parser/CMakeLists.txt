@@ -41,6 +41,9 @@ add_library(parser
            ExpressionWithoutBlock.cpp
            StructPattern.cpp
            Range.cpp
+           SlicePattern.cpp
+           RangePattern.cpp
+           TuplePattern.cpp
            )
 
 

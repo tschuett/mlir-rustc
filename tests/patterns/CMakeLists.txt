@@ -8,6 +8,8 @@ add_executable(PatternTests
         RestPattern.cpp
         #TuplePatternItems.cpp
         StructPattern.cpp
+        SlicePattern.cpp
+        RangePattern.cpp
 )
 
 llvm_map_components_to_libnames(llvm_libs Support)

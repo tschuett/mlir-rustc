@@ -37,6 +37,7 @@
 #include "AST/PathInExpression.h"
 #include "AST/Patterns/Pattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
+#include "AST/Patterns/RangePatternBound.h"
 #include "AST/Patterns/SlicePatternItems.h"
 #include "AST/Patterns/StructPattern.h"
 #include "AST/Patterns/StructPatternElements.h"
@@ -271,6 +272,8 @@ public:
 
   adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseRangePattern();
+  adt::StringResult<ast::patterns::RangePatternBound>
+  parseRangePatternBound();
   adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseStructPattern();
   adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
@@ -365,7 +368,7 @@ public:
       parseRangeExpression(std::shared_ptr<ast::Expression>,
                            std::span<ast::OuterAttribute>, Restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
-  parseRangeExpression(std::span<ast::OuterAttribute>);
+      parseRangeExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseUnderScoreExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>

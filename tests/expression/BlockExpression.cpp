@@ -2,6 +2,7 @@
 #include "Parser/Parser.h"
 
 #include <gtest/gtest.h>
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::parser;
@@ -36,7 +37,7 @@ TEST(BlockExpressionTest, CheckBlockExpr2) {
   EXPECT_TRUE(result.isOk());
 };
 
-TEST(BlockExpressionTest, CheckBlockExpr3) {
+TEST(BlockExpressionTest, CheckBlockExpr37) {
 
   std::string text = "{ true; }";
 
@@ -46,6 +47,9 @@ TEST(BlockExpressionTest, CheckBlockExpr3) {
 
   Result<std::shared_ptr<rust_compiler::ast::Expression>, std::string> result =
       parser.parseBlockExpression({});
+
+  if (!result)
+    llvm::errs() << result.getError() << "\n";
 
   EXPECT_TRUE(result.isOk());
 };

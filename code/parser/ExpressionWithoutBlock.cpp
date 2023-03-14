@@ -20,8 +20,11 @@ Parser::parseExpressionWithoutBlock(std::span<ast::OuterAttribute> outer,
                << "\n";
 
   llvm::errs() << Token2String(getToken().getKind()) << "\n";
+  llvm::errs() << getToken().isKeyWord() << "\n";
 
-  if (getToken().isKeyWord()) {
+  bool isKeyWord = getToken().isKeyWord();
+
+  if (isKeyWord) {
     switch (getToken().getKeyWordKind()) {
     case KeyWordKind::KW_RETURN: {
       return parseReturnExpression(outer);
