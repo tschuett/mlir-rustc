@@ -41,51 +41,50 @@ Parser::parseExpressionWithoutBlock(std::span<ast::OuterAttribute> outer,
     default: {
     }
     }
-  } else { // normal Token
-    switch (getToken().getKind()) {
-    case TokenKind::Lt: {
-      return parseQualifiedPathInExpression();
+  }
+  // normal Token
+  switch (getToken().getKind()) {
+  case TokenKind::Lt: {
+    return parseQualifiedPathInExpression();
+  }
+  case TokenKind::SquareOpen: {
+    return parseArrayExpression(outer);
+  }
+  default:
+    adt::StringResult<std::shared_ptr<ast::Expression>> expr =
+        parseExpression(outer, restrictions);
+    if (!expr) {
+      llvm::errs() << "parseExpressionWithoutBlock: failed to parse "
+                      "expression: "
+                   << expr.getError() << "\n";
+      std::string s =
+          llvm::formatv("{0} {1}",
+                        "parseExpressionWithoutBlock: failed to parse "
+                        "expression ",
+                        expr.getError())
+              .str();
+      return adt::Result<std::shared_ptr<ast::Expression>, std::string>(s);
     }
-    case TokenKind::SquareOpen: {
-      return parseArrayExpression(outer);
-    }
-    default:
-      adt::StringResult<std::shared_ptr<ast::Expression>> expr =
-          parseExpression(outer, restrictions);
-      if (!expr) {
-        llvm::errs() << "parseExpressionWithoutBlock: failed to parse "
-                        "expression: "
-                     << expr.getError() << "\n";
-        std::string s =
-            llvm::formatv("{0} {1}",
-                          "parseExpressionWithoutBlock: failed to parse "
-                          "expression ",
-                          expr.getError())
-                .str();
-        return adt::Result<std::shared_ptr<ast::Expression>, std::string>(s);
-      }
 
-      switch (expr.getValue()->getExpressionKind()) {
-      case ast::ExpressionKind::ExpressionWithBlock: {
-        llvm::errs() << "parseExpressionWithoutBlock: expected expression "
-                        "without block but:"
-                     << "\n";
-        std::string s =
-            llvm::formatv(
-                "{0} {1}",
-                "parseExpressionWithoutBlock: expected expression "
-                "without block but:",
-                ExpressionWithBlockKind2String(
-                    std::static_pointer_cast<ast::ExpressionWithBlock>(
-                        expr.getValue())
-                        ->getWithBlockKind()))
-                .str();
-        return adt::Result<std::shared_ptr<ast::Expression>, std::string>(s);
-      }
-      case ast::ExpressionKind::ExpressionWithoutBlock: {
-        return expr;
-      }
-      }
+    switch (expr.getValue()->getExpressionKind()) {
+    case ast::ExpressionKind::ExpressionWithBlock: {
+      llvm::errs() << "parseExpressionWithoutBlock: expected expression "
+                      "without block but:"
+                   << "\n";
+      std::string s =
+          llvm::formatv("{0} {1}",
+                        "parseExpressionWithoutBlock: expected expression "
+                        "without block but:",
+                        ExpressionWithBlockKind2String(
+                            std::static_pointer_cast<ast::ExpressionWithBlock>(
+                                expr.getValue())
+                                ->getWithBlockKind()))
+              .str();
+      return adt::Result<std::shared_ptr<ast::Expression>, std::string>(s);
+    }
+    case ast::ExpressionKind::ExpressionWithoutBlock: {
+      return expr;
+    }
     }
   }
 }

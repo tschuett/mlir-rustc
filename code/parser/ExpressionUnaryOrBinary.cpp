@@ -278,7 +278,8 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
     case KeyWordKind::KW_SELFTYPE:
     case KeyWordKind::KW_SELFVALUE:
     case KeyWordKind::KW_DOLLARCRATE:
-    case KeyWordKind::KW_CRATE: {
+    case KeyWordKind::KW_CRATE:
+    case KeyWordKind::KW_SUPER: {
 
       /* best option: parse as path, then extract identifier, macro,
        * struct/enum, or just path info from it */
