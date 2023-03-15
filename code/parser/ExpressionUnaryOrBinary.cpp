@@ -369,6 +369,10 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
       return StringResult<std::shared_ptr<ast::Expression>>(
           parseMatchExpression(outer));
     }
+    case KeyWordKind::KW_UNSAFE: {
+      return StringResult<std::shared_ptr<ast::Expression>>(
+          parseUnsafeBlockExpression(outer));
+    }
     case KeyWordKind::KW_TRUE:
     case KeyWordKind::KW_FALSE: {
       return parseLiteralExpression(outer);

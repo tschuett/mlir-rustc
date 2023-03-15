@@ -6,6 +6,7 @@
 namespace rust_compiler::ast {
 
 enum class StatementKind {
+  EmptyStatement,
   ItemDeclaration,
   LetStatement,
   ExpressionStatement,

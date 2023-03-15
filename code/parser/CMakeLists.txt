@@ -44,6 +44,7 @@ add_library(parser
            SlicePattern.cpp
            RangePattern.cpp
            TuplePattern.cpp
+           BlockExpression.cpp
            )
 
 

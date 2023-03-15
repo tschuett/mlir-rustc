@@ -38,6 +38,9 @@ bool Parser::checkPathOrStructOrMacro() {
     } else if (checkKeyWord(KeyWordKind::KW_STRUCT)) {
       recover(cp);
       return true;
+    } else if (checkKeyWord(KeyWordKind::KW_UNSAFE)) {
+      recover(cp);
+      return false;
     } else if (checkKeyWord(KeyWordKind::KW_TYPE)) {
       recover(cp);
       return false;

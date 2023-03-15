@@ -7,7 +7,6 @@
 #include "AST/Statement.h"
 #include "AST/Types/TypeExpression.h"
 
-#include <mlir/IR/Location.h>
 #include <span>
 
 namespace rust_compiler::ast {
@@ -42,14 +41,11 @@ public:
 
   bool hasType() const { return type.has_value(); }
 
-  std::shared_ptr<ast::types::TypeExpression> getType() const {
-    return *type;
-  };
+  std::shared_ptr<ast::types::TypeExpression> getType() const { return *type; };
 
-  bool hasElse() const { return (bool)elseExpr;}
+  bool hasElse() const { return (bool)elseExpr; }
 
   std::shared_ptr<ast::Expression> getElse() const { return *elseExpr; };
-  
 };
 
 } // namespace rust_compiler::ast

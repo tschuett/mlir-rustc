@@ -30,6 +30,7 @@
 
 namespace rust_compiler::crate_builder {
 
+/// Lowers an AST Crate into a mix of Hir, Arith, MemRef, ... dialects into an MLIR module
 class CrateBuilder {
   std::string moduleName;
   // mlir::MLIRContext context;

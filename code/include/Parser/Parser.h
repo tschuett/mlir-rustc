@@ -67,6 +67,7 @@
 #include "Lexer/TokenStream.h"
 #include "Location.h"
 #include "Parser/ErrorStack.h"
+#include "Parser/ExpressionOrStatement.h"
 #include "Parser/Precedence.h"
 #include "Parser/Restrictions.h"
 
@@ -277,8 +278,7 @@ public:
 
   adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseRangePattern();
-  adt::StringResult<ast::patterns::RangePatternBound>
-  parseRangePatternBound();
+  adt::StringResult<ast::patterns::RangePatternBound> parseRangePatternBound();
   adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
   parseStructPattern();
   adt::Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
@@ -333,8 +333,6 @@ public:
       parseBlockExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseExpressionWithoutBlock(std::span<ast::OuterAttribute>, Restrictions);
-  adt::Result<std::shared_ptr<ast::Expression>, std::string>
-  parseExpressionWithoutBlockExceptStruct();
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseExpressionWithBlock(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
@@ -607,6 +605,11 @@ public:
   adt::StringResult<std::shared_ptr<ast::Expression>>
   parseStructExpressionTuplePratt(std::shared_ptr<ast::Expression> path,
                                   std::span<ast::OuterAttribute>);
+
+  adt::StringResult<ExpressionOrStatement>
+      parseStatementOrExpressionWithoutBlock();
+  adt::StringResult<ExpressionOrStatement>
+  parseStatementOrExpressionWithBlock(std::span<ast::OuterAttribute>);
 
 private:
   bool check(lexer::TokenKind token);

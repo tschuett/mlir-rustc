@@ -11,6 +11,7 @@
 
 namespace rust_compiler::ast {
 
+/// Base class for all AST nodes except the Crate. Each node has an id and a location.
 class Node {
   Location location;
   basic::NodeId nodeId;

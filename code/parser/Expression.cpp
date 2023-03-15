@@ -1509,61 +1509,6 @@ Parser::parseExpressionWithBlock(std::span<OuterAttribute> outer) {
       "failed to parse expression with block");
 }
 
-Result<std::shared_ptr<ast::Expression>, std::string>
-Parser::parseBlockExpression(std::span<OuterAttribute>) {
-  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
-  Location loc = getLocation();
-
-  BlockExpression bloc = {loc};
-
-  llvm::errs() << "parseBlockExpression"
-               << "\n";
-
-  if (!check(TokenKind::BraceOpen)) {
-    return Result<std::shared_ptr<ast::Expression>, std::string>(
-        "failed to parse { in block expression");
-  }
-
-  assert(eat(TokenKind::BraceOpen));
-
-  if (check(TokenKind::Hash) && check(TokenKind::Not, 1) &&
-      check(TokenKind::SquareOpen, 2)) {
-    StringResult<std::vector<ast::InnerAttribute>> innerAttributes =
-        parseInnerAttributes();
-    if (!innerAttributes) {
-      llvm::errs() << "failed to parse inner attributes in block expression: "
-                   << innerAttributes.getError() << "\n";
-      printFunctionStack();
-      exit(EXIT_FAILURE);
-    }
-  }
-
-  StringResult<ast::Statements> stmts = parseStatements();
-  if (!stmts) {
-    llvm::errs() << "failed to parse statements in block expression: "
-                 << stmts.getError() << "\n";
-    printFunctionStack();
-    std::string s =
-        llvm::formatv("{0} {1}",
-                      "failed to parse statements in block expression: ",
-                      stmts.getError())
-            .str();
-    // exit(EXIT_FAILURE);
-    return Result<std::shared_ptr<ast::Expression>, std::string>(s);
-  }
-
-  bloc.setStatements(stmts.getValue());
-
-  if (!check(TokenKind::BraceClose)) {
-    return Result<std::shared_ptr<ast::Expression>, std::string>(
-        "failed to parse } in block expression");
-  }
-
-  assert(eat(TokenKind::BraceClose));
-
-  return Result<std::shared_ptr<ast::Expression>, std::string>(
-      std::make_shared<BlockExpression>(bloc));
-}
 
 // Result<std::shared_ptr<ast::Expression>, std::string>
 // Parser::parseExpressionWithoutBlock() {
