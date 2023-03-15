@@ -39,6 +39,143 @@ bool Parser::checkPathExprSegment(uint8_t offset) {
   return true;
 }
 
+// Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
+// Parser::parseArrayOrSliceType() {
+//   CheckPoint cp = getCheckPoint();
+//
+//   if (!check(TokenKind::SquareOpen)) {
+//     // report error
+//     return Result<std::shared_ptr<ast::types::TypeExpression>, std::string>(
+//         "failed to parse array or slice type: missed [ token");
+//   }
+//   assert(eat(TokenKind::SquareOpen));
+//
+//   Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
+//       parseType();
+//   if (!type) {
+//     // report error
+//     llvm::errs() << "failed to parse type in array or slice type: "
+//                  << type.getError() << "\n";
+//     std::string s =
+//         llvm::formatv("{0}\n{1}", "failed to parse type in array or slice
+//         type",
+//                       type.getError())
+//             .str();
+//     return Result<std::shared_ptr<ast::types::TypeExpression>,
+//     std::string>(s);
+//   }
+//
+//   if (check(TokenKind::Semi)) {
+//     recover(cp);
+//     return parseArrayType();
+//   } else if (check(TokenKind::SquareClose)) {
+//     recover(cp);
+//     return parseSliceType();
+//   }
+//   llvm::errs() << "failed to parse array or slice type"
+//                << "\n";
+//       return Result<std::shared_ptr<ast::types::TypeExpression>,
+//       std::string>(
+//           "failed to parse array or slice type");
+// }
+
+Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
+Parser::parseSliceType() {
+  SliceType slice = {getLocation()};
+
+  llvm::errs() << "parseSliceType"
+               << "\n";
+
+  if (!check(TokenKind::SquareOpen)) {
+    // report error
+    return Result<std::shared_ptr<ast::types::TypeExpression>, std::string>(
+        "failed to parse slice type: missed [ token");
+  }
+  assert(eat(TokenKind::SquareOpen));
+
+  Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
+      parseType();
+  if (!type) {
+    // report error
+    llvm::errs() << "failed to parse type in slice type: " << type.getError()
+                 << "\n";
+    std::string s =
+        llvm::formatv("{0}\n{1}", "failed to parse type in slice type",
+                      type.getError())
+            .str();
+    return Result<std::shared_ptr<ast::types::TypeExpression>, std::string>(s);
+  }
+  slice.setType(type.getValue());
+
+  if (!check(TokenKind::SquareClose)) {
+    // report error
+    return Result<std::shared_ptr<ast::types::TypeExpression>, std::string>(
+        "failed to parse slice type: missed ] token");
+  }
+  assert(eat(TokenKind::SquareClose));
+
+  return Result<std::shared_ptr<ast::types::TypeExpression>, std::string>(
+      std::make_shared<SliceType>(slice));
+}
+
+Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
+Parser::parseArrayType() {
+  ArrayType ar = {getLocation()};
+
+  if (!check(TokenKind::SquareOpen)) {
+    // report error
+    return Result<std::shared_ptr<ast::types::TypeExpression>, std::string>(
+        "failed to parse slice type: missed [ token");
+  }
+  assert(eat(TokenKind::SquareOpen));
+
+  Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
+      parseType();
+  if (!type) {
+    // report error
+    llvm::errs() << "failed to parse type in array type: " << type.getError()
+                 << "\n";
+    std::string s =
+        llvm::formatv("{0}\n{1}", "failed to parse type in array type",
+                      type.getError())
+            .str();
+    return Result<std::shared_ptr<ast::types::TypeExpression>, std::string>(s);
+  }
+  ar.setType(type.getValue());
+
+  if (!check(TokenKind::Semi)) {
+    // report error
+    return Result<std::shared_ptr<ast::types::TypeExpression>, std::string>(
+        "failed to parse array type: missed ; token");
+  }
+  assert(eat(TokenKind::Semi));
+
+  Restrictions restrictions;
+  StringResult<std::shared_ptr<ast::Expression>> expr =
+      parseExpression({}, restrictions);
+  if (!expr) {
+    // report error
+    llvm::errs() << "failed to parse expression in array type: "
+                 << expr.getError() << "\n";
+    std::string s =
+        llvm::formatv("{0}\n{1}", "failed to parse expression in array type",
+                      expr.getError())
+            .str();
+    return Result<std::shared_ptr<ast::types::TypeExpression>, std::string>(s);
+  }
+  ar.setExpression(expr.getValue());
+
+  if (!check(TokenKind::SquareClose)) {
+    // report error
+    return Result<std::shared_ptr<ast::types::TypeExpression>, std::string>(
+        "failed to parse array type: missed ] token");
+  }
+  assert(eat(TokenKind::SquareClose));
+
+  return Result<std::shared_ptr<ast::types::TypeExpression>, std::string>(
+      std::make_shared<ArrayType>(ar));
+}
+
 StringResult<ast::GenericArgsConst> Parser::parseGenericArgsConst() {
   Location loc = getLocation();
   GenericArgsConst cons = {loc};
@@ -429,6 +566,9 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseArrayOrSliceType() {
   Location loc = getLocation();
 
+  llvm::errs() << "parseArrayOrSliceType"
+               << "\n";
+
   if (!check(TokenKind::SquareOpen)) {
     return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
         "failed to parse array or slice type");
@@ -441,10 +581,17 @@ Parser::parseArrayOrSliceType() {
     llvm::errs() << "failed to parse type in array or slice type: "
                  << type.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv(
+            "{0}\n{1}",
+            "failed to parse type in array or slice type: ", type.getError())
+            .str();
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(s);
   }
 
   if (check(TokenKind::SquareClose)) {
+    assert(eat(TokenKind::SquareClose));
     // slice type
     SliceType slice = {loc};
     slice.setType(type.getValue());
@@ -453,10 +600,13 @@ Parser::parseArrayOrSliceType() {
         std::make_shared<SliceType>(slice));
   } else if (check(TokenKind::Semi)) {
     // array type
-    // slice type
     ArrayType arr = {loc};
     arr.setType(type.getValue());
 
+    if (!check(TokenKind::Semi)) {
+      return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+          "failed to parse ; token in array or slice type");
+    }
     assert(eat(TokenKind::Semi));
 
     Restrictions restrictions;
@@ -466,15 +616,23 @@ Parser::parseArrayOrSliceType() {
       llvm::errs() << "failed to parse expression in array or slice type: "
                    << expr.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      // exit(EXIT_FAILURE);
+      std::string s =
+          llvm::formatv("{0}\n{1}",
+                        "failed to parse expression in array or slice type: ",
+                        expr.getError())
+              .str();
+      return StringResult<std::shared_ptr<ast::types::TypeExpression>>(s);
     }
     arr.setExpression(expr.getValue());
 
-    if (check(TokenKind::SquareClose)) {
-      assert(eat(TokenKind::SquareClose));
+    if (!check(TokenKind::SquareClose)) {
       return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
-          std::make_shared<ArrayType>(arr));
+          "failed to parse ] token in array or slice type");
     }
+    assert(eat(TokenKind::SquareClose));
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+        std::make_shared<ArrayType>(arr));
   }
 
   return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
@@ -896,7 +1054,7 @@ PathKind Parser::testTypePathOrSimplePath() {
 
 StringResult<std::shared_ptr<ast::types::TypeExpression>> Parser::parseType() {
 
-  llvm::outs() << "parseType: " << Token2String(getToken().getKind()) << "\n";
+  llvm::errs() << "parseType: " << Token2String(getToken().getKind()) << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_IMPL))
     return parseImplType();

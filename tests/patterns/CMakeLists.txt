@@ -10,6 +10,7 @@ add_executable(PatternTests
         StructPattern.cpp
         SlicePattern.cpp
         RangePattern.cpp
+        ReferencePattern.cpp
 )
 
 llvm_map_components_to_libnames(llvm_libs Support)

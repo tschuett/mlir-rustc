@@ -5,6 +5,7 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
@@ -55,6 +56,9 @@ Parser::parseReferenceType() {
   Location loc = getLocation();
   ReferenceType refType = {loc};
 
+  llvm::errs() << "parseReferenceType"
+               << "\n";
+
   if (!check(TokenKind::And))
     return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
         "failed to parse & token in reference type");
@@ -73,7 +77,13 @@ Parser::parseReferenceType() {
     llvm::errs() << "failed to parse type no bounds in reference type: "
                  << noBounds.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0} {1}",
+                      "failed to parse type no bounds in reference type: ",
+                      noBounds.getError())
+            .str();
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(s);
   }
 
   refType.setType(noBounds.getValue());

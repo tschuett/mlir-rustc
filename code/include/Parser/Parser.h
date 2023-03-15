@@ -181,6 +181,11 @@ public:
 
   // Types
   adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
+  parseSliceType();
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
+  parseArrayType();
+
+  adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseTypeNoBounds();
   adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseType();

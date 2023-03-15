@@ -255,9 +255,10 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
       // closure expression
       return StringResult<std::shared_ptr<ast::Expression>>(
           parseClosureExpression(outer));
-    case TokenKind::SquareOpen: {
+    case TokenKind::SquareOpen:
       return parseArrayExpression(outer);
-    }
+    case TokenKind::BraceOpen:
+      return parseBlockExpression(outer);
     default: {
       llvm::errs() << "parseUnaryExpressio2n: error unhandled token kind: "
                    << Token2String(getToken().getKind()) << "\n";

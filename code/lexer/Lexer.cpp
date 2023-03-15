@@ -198,6 +198,9 @@ std::optional<std::string> tryLexIdentifier(std::string_view code) {
   if (isdigit(view.front()))
     return std::nullopt;
 
+  if ('_' == view[0] && !isalpha(view[1]))
+    return std::nullopt;
+
   while (view.size() > 0) {
     if (isalpha(view[0])) {
       id.push_back(view[0]);
@@ -439,23 +442,28 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("..=")) {
-      ts.append(
-          Token(Location(fileName, lineNumber, columnNumber), TokenKind::DotDotEq));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::DotDotEq));
       code.remove_prefix(3);
       columnNumber += 3;
     } else if (code.starts_with("...")) {
-      ts.append(
-          Token(Location(fileName, lineNumber, columnNumber), TokenKind::DotDotDot));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::DotDotDot));
       code.remove_prefix(3);
       columnNumber += 3;
     } else if (code.starts_with("..")) {
-      ts.append(
-          Token(Location(fileName, lineNumber, columnNumber), TokenKind::DotDot));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::DotDot));
       code.remove_prefix(2);
       columnNumber += 2;
     } else if (code.starts_with(".")) {
       ts.append(
           Token(Location(fileName, lineNumber, columnNumber), TokenKind::Dot));
+      code.remove_prefix(1);
+      columnNumber += 1;
+    } else if (code.starts_with("_")) {
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::Underscore));
       code.remove_prefix(1);
       columnNumber += 1;
     } else if (code.starts_with("?")) {
@@ -479,8 +487,8 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       code.remove_prefix(2);
       columnNumber += 2;
     } else if (code.starts_with("=>")) {
-      ts.append(
-          Token(Location(fileName, lineNumber, columnNumber), TokenKind::FatArrow));
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::FatArrow));
       code.remove_prefix(2);
       columnNumber += 2;
     } else if (code.starts_with("=")) {

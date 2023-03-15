@@ -106,13 +106,23 @@ StringResult<ast::PathExprSegment> Parser::parsePathExprSegment() {
   Location loc = getLocation();
   PathExprSegment seg = {loc};
 
+  llvm::errs() << "parsePathExprSegment: " << Token2String(getToken().getKind())
+               << "\n";
+
   StringResult<ast::PathIdentSegment> first = parsePathIdentSegment();
   if (!first) {
     llvm::errs()
         << "failed to parse path ident segment in parse path expr segment: "
         << first.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv(
+            "{0} {1}",
+            "failed to parse path ident segment in parse path expr segment: ",
+            first.getError())
+            .str();
+    return StringResult<ast::PathExprSegment>(s);
   }
   seg.addIdentSegment(first.getValue());
 
@@ -202,6 +212,7 @@ StringResult<ast::PathIdentSegment> Parser::parsePathIdentSegment() {
     seg.setDollarCrate();
     assert(eatKeyWord(KeyWordKind::KW_DOLLARCRATE));
   } else {
+    llvm::errs() << Token2String(getToken().getKind()) << "\n";
     return StringResult<ast::PathIdentSegment>(
         "failed to parse path ident segment");
   }
@@ -354,6 +365,8 @@ Parser::parseTypePath() {
 
   llvm::errs() << "parseTypePath"
                << "\n";
+  llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind())
+               << "\n";
 
   class TypePath path = {loc};
 
@@ -380,9 +393,12 @@ Parser::parseTypePath() {
   path.addSegment(first.getValue());
 
   while (true) {
-    llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind()) << "\n";
+    llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind())
+                 << "\n";
     if (check(TokenKind::Eof)) {
       // error
+      return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+          "failed to parse type path (loop): eof");
     } else if (check(TokenKind::PathSep)) {
       assert(eat(TokenKind::PathSep));
       StringResult<ast::types::TypePathSegment> next = parseTypePathSegment();

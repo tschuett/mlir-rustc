@@ -1,5 +1,8 @@
 #include "Lexer/KeyWords.h"
+#include "Lexer/Token.h"
 #include "Parser/Parser.h"
+
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
@@ -11,6 +14,9 @@ namespace rust_compiler::parser {
 
 StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTypeNoBounds() {
+
+  llvm::errs() << "parseTypeNoBounds: " << Token2String(getToken().getKind())
+               << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_IMPL))
     return parseImplType();
@@ -32,6 +38,9 @@ Parser::parseTypeNoBounds() {
 
   if (check(TokenKind::And))
     return parseReferenceType();
+
+  if (check(TokenKind::SquareOpen))
+    return parseArrayOrSliceType();
 
   if (checkKeyWord(KeyWordKind::KW_UNSAFE))
     return parseBareFunctionType();

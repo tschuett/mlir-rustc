@@ -231,6 +231,9 @@ StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
   llvm::errs() << "parseFunctionParamPattern"
                << "\n";
 
+  llvm::errs() << "parseFunctionParamPattern: pattern"
+               << "\n";
+
   StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>> pattern =
       parsePatternNoTopAlt();
   if (!pattern) {
@@ -244,12 +247,11 @@ StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
             pattern.getError())
             .str();
     printFunctionStack();
-    // exit(EXIT_FAILURE);
     return StringResult<ast::FunctionParamPattern>(s);
   }
   if (!check(TokenKind::Colon)) {
     // error
-    llvm::errs() << "parseFunctionParamPattern: "
+    llvm::errs() << "failed to parse : token in function param pattern: "
                  << Token2String(getToken().getKind()) << "\n";
     std::string s = "failed to parse : token in function param pattern";
     return StringResult<ast::FunctionParamPattern>(s);
@@ -265,13 +267,26 @@ StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
     return StringResult<ast::FunctionParamPattern>(pat);
   }
 
+  llvm::errs() << "parseFunctionParamPattern: type"
+               << "\n";
+
   Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
       parseType();
   if (!type) {
-    llvm::errs() << "failed to parse type: " << type.getError() << "\n";
+    llvm::errs() << "failed to parse type in function param pattern: "
+                 << type.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv(
+            "{0}\n{1}",
+            "failed to parse type in function param pattern: ", type.getError())
+            .str();
+    return StringResult<ast::FunctionParamPattern>(s);
   }
+
+  llvm::errs() << "parseFunctionParamPattern: done: "
+               << Token2String(getToken().getKind()) << "\n";
 
   FunctionParamPattern pat = (loc);
   pat.setName(pattern.getValue());

@@ -88,6 +88,10 @@ Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
       // terminator
       recover(cp);
       return parseTypePath();
+    } else if (check(TokenKind::SquareClose)) {
+      // terminator
+      recover(cp);
+      return parseTypePath();
     }
   }
   return StringResult<std::shared_ptr<ast::types::TypeExpression>>(

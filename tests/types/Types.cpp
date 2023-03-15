@@ -1,5 +1,6 @@
 #include "Lexer/Lexer.h"
 #include "Parser/Parser.h"
+
 #include <gtest/gtest.h>
 
 using namespace rust_compiler::lexer;
@@ -13,12 +14,12 @@ TEST(TypesTest, Checki128) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      parser.tryParsePrimitiveType(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::types::TypeExpression>, std::string> type =
+      parser.parseType();
 
-  EXPECT_TRUE(type.has_value());
+  EXPECT_TRUE(type.isOk());
 };
 
 TEST(TypesTest, Checkf64) {
@@ -27,12 +28,12 @@ TEST(TypesTest, Checkf64) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      parser.tryParsePrimitiveType(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::types::TypeExpression>, std::string> type =
+      parser.parseType();
 
-  EXPECT_TRUE(type.has_value());
+  EXPECT_TRUE(type.isOk());
 };
 
 TEST(TypesTest, Checkisize) {
@@ -41,12 +42,12 @@ TEST(TypesTest, Checkisize) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      parser.tryParsePrimitiveType(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::types::TypeExpression>, std::string> type =
+      parser.parseType();
 
-  EXPECT_TRUE(type.has_value());
+  EXPECT_TRUE(type.isOk());
 };
 
 TEST(TypesTest, CheckBool) {
@@ -55,12 +56,12 @@ TEST(TypesTest, CheckBool) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      parser.tryParsePrimitiveType(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::types::TypeExpression>, std::string> type =
+      parser.parseType();
 
-  EXPECT_TRUE(type.has_value());
+  EXPECT_TRUE(type.isOk());
 };
 
 TEST(TypesTest, CheckBoolAsType) {
@@ -69,12 +70,12 @@ TEST(TypesTest, CheckBoolAsType) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      parser.tryParseType(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::types::TypeExpression>, std::string> type =
+      parser.parseType();
 
-  EXPECT_TRUE(type.has_value());
+  EXPECT_TRUE(type.isOk());
 };
 
 TEST(TypesTest, CheckI128AsType) {
@@ -83,10 +84,10 @@ TEST(TypesTest, CheckI128AsType) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  Parser parser = {ts, CanonicalPath("")};
+  Parser parser = {ts};
 
-  std::optional<std::shared_ptr<rust_compiler::ast::types::Type>> type =
-      parser.tryParseType(ts.getAsView());
+  Result<std::shared_ptr<rust_compiler::ast::types::TypeExpression>, std::string> type =
+      parser.parseType();
 
-  EXPECT_TRUE(type.has_value());
+  EXPECT_TRUE(type.isOk());
 };

@@ -71,6 +71,9 @@ Parser::parseWildCardPattern() {
   Location loc = getLocation();
   WildcardPattern pat = {loc};
 
+  llvm::errs() << "parseWildcardPattern"
+               << "\n";
+
   if (check(TokenKind::Underscore)) {
     assert(eat(TokenKind::Underscore));
     return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
@@ -80,7 +83,6 @@ Parser::parseWildCardPattern() {
   return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
       "failed to parse wild card pattern");
 }
-
 
 Result<std::shared_ptr<ast::patterns::PatternNoTopAlt>, std::string>
 Parser::parseTupleOrTupleStructPattern() {
@@ -249,7 +251,6 @@ Parser::parsePathPattern() {
       std::make_shared<PathPattern>(path));
 }
 
-
 StringResult<ast::patterns::TupleStructItems> Parser::parseTupleStructItems() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
@@ -305,7 +306,6 @@ StringResult<ast::patterns::TupleStructItems> Parser::parseTupleStructItems() {
   return StringResult<ast::patterns::TupleStructItems>(
       "failed to parse tuple struct items field");
 }
-
 
 StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseTupleStructPattern() {
@@ -370,7 +370,6 @@ Parser::parseTupleStructPattern() {
       std::make_shared<TupleStructPattern>(pat));
 }
 
-
 // llvm::Expected<ast::patterns::StructPatternElements>
 // Parser::parseStructPatternElements() {
 //   Location loc = getLocation();
@@ -406,13 +405,15 @@ Parser::parseTupleStructPattern() {
 //   xxx;
 // }
 
-
 StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseReferencePattern() {
   if (!check(lexer::TokenKind::And) && !check(lexer::TokenKind::AndAnd)) {
     return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
         "failed to parse reference pattern");
   }
+
+  llvm::errs() << "parseRefencePattern"
+               << "\n";
 
   Location loc = getLocation();
 
@@ -438,7 +439,13 @@ Parser::parseReferencePattern() {
                     "parse reference pattern: "
                  << woRange.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s = llvm::formatv("{0} {1}",
+                                  "failed to parse pattern without range in "
+                                  "parse reference pattern: ",
+                                  woRange.getError())
+                        .str();
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(s);
   }
   refer.setPattern(woRange.getValue());
 
@@ -568,6 +575,9 @@ Parser::parsePatternNoTopAlt() {
 
   llvm::errs() << "parsePatternNoTopAlt: " << Token2String(getToken().getKind())
                << "\n";
+  if (getToken().isIdentifier())
+    llvm::errs() << "parsePatternNoTopAlt: " << getToken().getIdentifier()
+                 << "\n";
 
   if (check(TokenKind::And) || check(TokenKind::AndAnd)) {
     return parseReferencePattern();
@@ -590,7 +600,7 @@ Parser::parsePatternNoTopAlt() {
   } else if (checkKeyWord(KeyWordKind::KW_FALSE)) {
     return parseLiteralPattern();
   } else if (check(TokenKind::Underscore)) {
-    return parseLiteralPattern();
+    return parseWildCardPattern();
   } else if (check(lexer::TokenKind::DotDot)) {
     return parseRestPattern();
   } else if (check(TokenKind::CHAR_LITERAL) && check(TokenKind::DotDot, 1)) {

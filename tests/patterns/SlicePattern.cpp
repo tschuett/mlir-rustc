@@ -9,12 +9,96 @@ using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
 using namespace rust_compiler::adt;
 
+TEST(SlicePatternTest, CheckSlicePattern7) {
+  std::string text = R"del(
+fn foo(a: &[u32]) {
+    match a {
+        [first, ..] => {}
+    }
+}
+)del";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts};
+
+  Result<std::shared_ptr<rust_compiler::ast::Crate>, std::string> crate = parser.
+      parseCrateModule("crateName", 5);
+
+  EXPECT_TRUE(crate.isOk());
+};
+
+TEST(SlicePatternTest, CheckSlicePattern6) {
+  std::string text = R"del(
+fn foo(a: &[u32]) {
+    match a {
+        [first, ..] => {}
+        [.., last] => {}
+    }
+}
+)del";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts};
+
+  Result<std::shared_ptr<rust_compiler::ast::Crate>, std::string> crate = parser.
+      parseCrateModule("crateName", 5);
+
+  EXPECT_TRUE(crate.isOk());
+};
+
+TEST(SlicePatternTest, CheckSlicePattern5) {
+  std::string text = R"del(
+fn foo(a: &[u32]) {
+    match a {
+        [first, ..] => {}
+        [.., last] => {}
+        _ => {}
+    }
+}
+)del";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts};
+
+  Result<std::shared_ptr<rust_compiler::ast::Crate>, std::string> crate = parser.
+      parseCrateModule("crateName", 5);
+
+  EXPECT_TRUE(crate.isOk());
+};
+
+TEST(SlicePatternTest, CheckSlicePattern4) {
+  std::string text = R"del(
+fn foo(a: &[u32]) {
+    match a {
+        [first, ..] => {}
+        [.., last] => {}
+        _ => {}
+    }
+}
+
+fn foo() {
+    let [] = [0; 0];
+})del";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts};
+
+  Result<std::shared_ptr<rust_compiler::ast::Crate>, std::string> crate = parser.
+      parseCrateModule("crateName", 5);
+
+  EXPECT_TRUE(crate.isOk());
+};
+
 TEST(SlicePatternTest, CheckSlicePattern3) {
   std::string text = "[]";
 
   TokenStream ts = lex(text, "lib.rs");
 
-  //ts.print(10);
+  // ts.print(10);
 
   Parser parser = {ts};
 
@@ -30,7 +114,7 @@ TEST(SlicePatternTest, CheckSlicePattern2) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  //ts.print(10);
+  // ts.print(10);
 
   Parser parser = {ts};
 
@@ -49,7 +133,7 @@ TEST(SlicePatternTest, CheckSlicePattern1) {
 
   TokenStream ts = lex(text, "lib.rs");
 
-  //ts.print(10);
+  // ts.print(10);
 
   Parser parser = {ts};
 

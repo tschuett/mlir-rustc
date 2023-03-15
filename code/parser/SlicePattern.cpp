@@ -81,6 +81,9 @@ Parser::parseSlicePattern() {
 
   SlicePattern slice = {loc};
 
+  llvm::errs() << "parseSlicePattern"
+               << "\n";
+
   if (!check(TokenKind::SquareOpen)) {
     return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
         "failed to parse [ token in slice pattern");
