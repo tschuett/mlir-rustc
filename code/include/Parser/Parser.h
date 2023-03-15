@@ -176,7 +176,7 @@ public:
   adt::Result<ast::FunctionReturnType, std::string> parseFunctionReturnType();
   adt::Result<ast::SelfParam, std::string> parseSelfParam();
 
-  adt::Result<ast::Statements, std::string> parseStatements();
+  //adt::Result<ast::Statements, std::string> parseStatements();
   adt::Result<std::shared_ptr<ast::Statement>, std::string>
   parseStatement(Restrictions restriction);
 

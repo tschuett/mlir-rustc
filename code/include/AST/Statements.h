@@ -33,8 +33,6 @@ public:
   void setOnlySemi() { onlySemi = true; };
 
   bool containsBreakExpression();
-
-  //std::shared_ptr<ast::types::Type> getType();
 };
 
 } // namespace rust_compiler::ast

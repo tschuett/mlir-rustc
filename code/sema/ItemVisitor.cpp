@@ -59,6 +59,9 @@ void visitStatement(std::shared_ptr<ast::Statement> stmt,
 
   // FIXME
   switch (stmt->getKind()) {
+  case StatementKind::EmptyStatement: {
+    break;
+  }
   case StatementKind::ItemDeclaration: {
     break;
   }

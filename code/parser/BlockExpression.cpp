@@ -1,6 +1,10 @@
+#include "AST/BlockExpression.h"
+
 #include "AST/EmptyStatement.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/OuterAttribute.h"
+#include "AST/Statement.h"
+#include "AST/Statements.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/ExpressionOrStatement.h"
@@ -400,30 +404,34 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
     }
   }
 
-  StringResult<ast::Statements> stmts = parseStatements();
-  if (!stmts) {
-    llvm::errs() << "failed to parse statements in block expression: "
-                 << stmts.getError() << "\n";
-    printFunctionStack();
-    std::string s =
-        llvm::formatv("{0} {1}",
-                      "failed to parse statements in block expression: ",
-                      stmts.getError())
-            .str();
-    return Result<std::shared_ptr<ast::Expression>, std::string>(s);
-  }
+  Statements stmts = {loc};
 
-  bloc.setStatements(stmts.getValue());
+  while (getToken().getKind() != TokenKind::BraceClose) {
+    adt::StringResult<ExpressionOrStatement> expr =
+        parseStatementOrExpressionWithoutBlock();
+    if (!expr) {
+      // report error
+    }
+
+    if (expr.getValue().getKind() == ExpressionOrStatementKind::Statement) {
+      stmts.addStmt(expr.getValue().getStatement());
+    } else {
+      stmts.setTrailing(expr.getValue().getExpression());
+      break;
+    }
+  }
 
   if (!check(TokenKind::BraceClose)) {
     return Result<std::shared_ptr<ast::Expression>, std::string>(
         "failed to parse } in block expression");
   }
-
   assert(eat(TokenKind::BraceClose));
 
+  BlockExpression block = {loc};
+  bloc.setStatements(stmts);
+
   return Result<std::shared_ptr<ast::Expression>, std::string>(
-      std::make_shared<BlockExpression>(bloc));
+      std::make_shared<BlockExpression>(block));
 }
 
 } // namespace rust_compiler::parser
