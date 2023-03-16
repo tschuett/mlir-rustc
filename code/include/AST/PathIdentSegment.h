@@ -39,5 +39,3 @@ public:
 };
 
 } // namespace rust_compiler::ast
-
-// FIXME

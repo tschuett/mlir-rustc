@@ -18,6 +18,8 @@ public:
   std::string_view getFileName() const { return fileName; }
   unsigned getLineNumber() const { return lineNumber; }
   unsigned getColumnNumber() const { return columnNumber; }
+
+  static Location getBuiltinLocation();
 };
 
 } // namespace rust_compiler

@@ -63,7 +63,7 @@ Parser::parseStatementOrExpressionWithoutBlock() {
   if (getToken().getKind() == TokenKind::Semi) {
     // empty statement; early exit
     assert(eat(TokenKind::Semi));
-    StringResult<ExpressionOrStatement>(
+    return StringResult<ExpressionOrStatement>(
         ExpressionOrStatement(std::make_shared<EmptyStatement>(loc)));
   }
 
@@ -407,10 +407,20 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
   Statements stmts = {loc};
 
   while (getToken().getKind() != TokenKind::BraceClose) {
+    llvm::errs() << Token2String(getToken().getKind()) << "\n";
     adt::StringResult<ExpressionOrStatement> expr =
         parseStatementOrExpressionWithoutBlock();
     if (!expr) {
       // report error
+      llvm::errs() << "failed to parse statement or expression without block "
+                      "in block expression: "
+                   << expr.getError() << "\n";
+      std::string s = llvm::formatv("{0}\n{1}",
+                                    "failed to parse statement or expression "
+                                    "without block in block expression : ",
+                                    expr.getError())
+                          .str();
+      return Result<std::shared_ptr<ast::Expression>, std::string>(s);
     }
 
     if (expr.getValue().getKind() == ExpressionOrStatementKind::Statement) {
@@ -422,6 +432,8 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
   }
 
   if (!check(TokenKind::BraceClose)) {
+    llvm::errs() << "real token: " << Token2String(getToken().getKind())
+                 << "\n";
     return Result<std::shared_ptr<ast::Expression>, std::string>(
         "failed to parse } in block expression");
   }

@@ -107,7 +107,7 @@
 
 * https://discourse.llvm.org/t/rfc-globalisel-replace-the-current-globalisel-matcher-with-a-bottom-up-matcher/67530
 
-
+* https://discourse.llvm.org/t/thinlto-import-functions-to-enable-function-specialization-in-thinlto/58627
 
 ```console
 > tokei

@@ -176,7 +176,7 @@ public:
   adt::Result<ast::FunctionReturnType, std::string> parseFunctionReturnType();
   adt::Result<ast::SelfParam, std::string> parseSelfParam();
 
-  //adt::Result<ast::Statements, std::string> parseStatements();
+  // adt::Result<ast::Statements, std::string> parseStatements();
   adt::Result<std::shared_ptr<ast::Statement>, std::string>
   parseStatement(Restrictions restriction);
 
@@ -607,9 +607,9 @@ public:
                                   std::span<ast::OuterAttribute>);
 
   adt::StringResult<ExpressionOrStatement>
-      parseStatementOrExpressionWithoutBlock();
+  parseStatementOrExpressionWithoutBlock();
   adt::StringResult<ExpressionOrStatement>
-  parseStatementOrExpressionWithBlock(std::span<ast::OuterAttribute>);
+      parseStatementOrExpressionWithBlock(std::span<ast::OuterAttribute>);
 
 private:
   bool check(lexer::TokenKind token);
@@ -688,6 +688,8 @@ private:
                        std::span<ast::OuterAttribute>, Restrictions);
 
   bool canTokenStartType(const lexer::Token &tok);
+
+  Precedence getLeftBindingPower();
 };
 
 } // namespace rust_compiler::parser

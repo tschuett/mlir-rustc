@@ -87,7 +87,14 @@ Parser::parseQualifiedPathInExpression() {
                         "path in expression: "
                      << segment.getError() << "\n";
         printFunctionStack();
-        exit(EXIT_FAILURE);
+        std::string s =
+            llvm::formatv(
+                "{0}\n{1}",
+                "failed to parse path expr segment  in parse qualified "
+                "path in expression: ",
+                segment.getError())
+                .str();
+        return StringResult<std::shared_ptr<ast::Expression>>(s);
       }
       expr.addSegment(segment.getValue());
     } else if (check(TokenKind::Eof)) {
@@ -515,7 +522,13 @@ StringResult<ast::types::QualifiedPathType> Parser::parseQualifiedPathType() {
     llvm::errs() << "failed to parse type in parse qualified path type: "
                  << type.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0}\n{1}",
+                      "failed to parse type in parse qualified path type: ",
+                      type.getError())
+            .str();
+    return StringResult<ast::types::QualifiedPathType>(s);
   }
   qual.setType(type.getValue());
 
@@ -527,13 +540,28 @@ StringResult<ast::types::QualifiedPathType> Parser::parseQualifiedPathType() {
       llvm::errs() << "failed to parse type path in parse qualified path type: "
                    << typePath.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      std::string s =
+          llvm::formatv(
+              "{0}\n{1}",
+              "failed to parse type path in parse qualified path type: ",
+              typePath.getError())
+              .str();
+      return StringResult<ast::types::QualifiedPathType>(s);
     }
     qual.setPath(typePath.getValue());
+
+    if (!check(TokenKind::Gt))
+      return StringResult<ast::types::QualifiedPathType>(
+          "failed to parse > token in QualifiedPathType");
     assert(eat(TokenKind::Gt));
 
     return StringResult<ast::types::QualifiedPathType>(qual);
   }
+
+  if (!check(TokenKind::Gt))
+    return StringResult<ast::types::QualifiedPathType>(
+        "failed to parse > token in QualifiedPathType");
+  assert(eat(TokenKind::Gt));
 
   return StringResult<ast::types::QualifiedPathType>(qual);
 }

@@ -516,6 +516,8 @@ Parser::parseMethodCallExpression(std::shared_ptr<ast::Expression> receiver,
   Location loc = getLocation();
   MethodCallExpression call = {loc};
 
+  llvm::errs() << "parseMethodCallExpression" << "\n";
+
   call.setReceiver(receiver);
 
   if (!check(TokenKind::Dot)) {
@@ -553,6 +555,7 @@ Parser::parseMethodCallExpression(std::shared_ptr<ast::Expression> receiver,
       exit(EXIT_FAILURE);
     }
     call.setCallParams(params.getValue());
+
     if (!check(TokenKind::ParenClose))
       return Result<std::shared_ptr<ast::Expression>, std::string>(
           "failed to parse ) token in method call expression");

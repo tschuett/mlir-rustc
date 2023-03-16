@@ -48,7 +48,7 @@ Parser::parseExpression(Precedence rightBindingPower,
                << Token2String(getToken().getKind()) << "\n";
 
   // stop parsing if find lower priority token - parse higher priority first
-  while (rightBindingPower < getLeftBindingPower(getToken())) {
+  while (rightBindingPower < getLeftBindingPower()) {
     CheckPoint cp = getCheckPoint();
     expr = parseInfixExpression(expr.getValue(), outer, restrictions);
     if (!expr) {
