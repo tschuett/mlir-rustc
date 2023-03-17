@@ -1,4 +1,7 @@
 #include "ADT/CanonicalPath.h"
+#include "AST/Expression.h"
+#include "AST/PathExpression.h"
+#include "AST/PathInExpression.h"
 #include "AST/Patterns/IdentifierPattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/PatternWithoutRange.h"
@@ -12,9 +15,7 @@ using namespace rust_compiler::adt;
 namespace rust_compiler::sema::resolver {
 
 void Resolver::resolvePatternDeclaration(
-    std::shared_ptr<ast::patterns::PatternNoTopAlt> noTopAlt,
-    Rib::RibKind ribKind) {
-  assert(false && "to be handled later");
+    std::shared_ptr<ast::patterns::PatternNoTopAlt> noTopAlt, RibKind ribKind) {
   switch (noTopAlt->getKind()) {
   case PatternNoTopAltKind::PatternWithoutRange: {
     resolvePatternDeclarationWithoutRange(
@@ -28,7 +29,7 @@ void Resolver::resolvePatternDeclaration(
 }
 
 void Resolver::resolvePatternDeclarationWithoutRange(
-    std::shared_ptr<ast::patterns::PatternWithoutRange> pat, Rib::RibKind rib) {
+    std::shared_ptr<ast::patterns::PatternWithoutRange> pat, RibKind rib) {
   switch (pat->getWithoutRangeKind()) {
   case PatternWithoutRangeKind::LiteralPattern: {
     assert(false && "to be handled later");
@@ -66,11 +67,34 @@ void Resolver::resolvePatternDeclarationWithoutRange(
     assert(false && "to be handled later");
   }
   case PatternWithoutRangeKind::PathPattern: {
-    assert(false && "to be handled later");
+    resolvePathPatternDeclaration(std::static_pointer_cast<PathPattern>(pat),
+                                  rib);
+    break;
   }
   case PatternWithoutRangeKind::MacroInvocation: {
     assert(false && "to be handled later");
   }
+  }
+}
+
+void Resolver::resolvePathPatternDeclaration(
+    std::shared_ptr<ast::patterns::PathPattern> pat, RibKind rib) {
+  std::shared_ptr<ast::Expression> path = pat->getPath();
+
+  if (path->getExpressionKind() ==
+      ast::ExpressionKind::ExpressionWithoutBlock) {
+    std::shared_ptr<ast::ExpressionWithoutBlock> pathWoBlock =
+        std::static_pointer_cast<ast::ExpressionWithoutBlock>(path);
+    if (pathWoBlock->getWithoutBlockKind() ==
+        ast::ExpressionWithoutBlockKind::PathExpression) {
+      std::shared_ptr<ast::PathExpression> pathExpr =
+          std::static_pointer_cast<ast::PathExpression>(pathWoBlock);
+      if (pathExpr->getPathExpressionKind() ==
+          ast::PathExpressionKind::PathInExpression) {
+        resolvePathExpression(
+            std::static_pointer_cast<ast::PathInExpression>(pathExpr));
+      }
+    }
   }
 }
 

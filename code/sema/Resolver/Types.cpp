@@ -1,8 +1,12 @@
+#include "ADT/CanonicalPath.h"
 #include "AST/PathIdentSegment.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
+#include "Basic/Ids.h"
 #include "Resolver.h"
+#include "llvm/Support/ErrorHandling.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 
 using namespace rust_compiler::ast;
@@ -20,7 +24,6 @@ void Resolver::resolveType(std::shared_ptr<ast::types::TypeExpression> type) {
     assert(false && "to be handled later");
   }
   case TypeExpressionKind::TypeNoBounds: {
-    assert(false && "to be handled later");
     resolveTypeNoBounds(std::static_pointer_cast<TypeNoBounds>(type));
     break;
   }
@@ -80,12 +83,12 @@ void Resolver::resolveTypeNoBounds(
 }
 
 /// Note that there is no leading ::
-void Resolver::resolveRelativeTypePath(
+std::optional<NodeId> Resolver::resolveRelativeTypePath(
     std::shared_ptr<ast::types::TypePath> typePath) {
-  assert(false && "to be handled later");
 
   NodeId moduleScopeId = peekCurrentModuleScope();
   NodeId previousResolveNodeId = moduleScopeId;
+  NodeId resolvedNodeId = UNKNOWN_NODEID;
 
   std::vector<TypePathSegment> segments = typePath->getSegments();
 
@@ -103,28 +106,92 @@ void Resolver::resolveRelativeTypePath(
     if (segment.hasTypeFunction())
       resolveTypePathFunction(segment.getTypePathFn());
 
-    switch (ident.getKind()) {
-    case PathIdentSegmentKind::Identifier: {
+    if (i > 0 && ident.getKind() == PathIdentSegmentKind::self) {
+      // report error
+      return std::nullopt;
+    }
 
-      assert(false && "to be handled later");
+    if (ident.getKind() == PathIdentSegmentKind::crate) {
+      moduleScopeId = crateScopeId;
+      previousResolveNodeId = moduleScopeId;
+      insertResolvedName(segment.getNodeId(), moduleScopeId);
+      continue;
     }
-    case PathIdentSegmentKind::super: {
-      assert(false && "to be handled later");
+
+    if (ident.getKind() == PathIdentSegmentKind::super) {
+      if (moduleScopeId == crateScopeId) {
+        // report error
+        llvm::errs() << "cannot use super at crate scope"
+                     << "\n";
+        return std::nullopt;
+      }
+      moduleScopeId = peekParentModuleScope();
+      previousResolveNodeId = moduleScopeId;
+      insertResolvedName(segment.getNodeId(), moduleScopeId);
+      continue;
     }
-    case PathIdentSegmentKind::self: {
-      assert(false && "to be handled later");
+
+    if (i == 0) {
+      NodeId resolvedNode = UNKNOWN_NODEID;
+      adt::CanonicalPath path =
+          adt::CanonicalPath::newSegment(segment.getNodeId(), ident.toString());
+      if (auto node = getTypeScope().lookup(path)) {
+        insertResolvedType(segment.getNodeId(), *node);
+        resolvedNodeId = *node;
+      } else if (auto node = getNameScope().lookup(path)) {
+        insertResolvedName(segment.getNodeId(), *node);
+        resolvedNodeId = *node;
+      } else if (ident.getKind() == PathIdentSegmentKind::self) {
+        moduleScopeId = crateScopeId;
+        previousResolveNodeId = moduleScopeId;
+        insertResolvedName(segment.getNodeId(), moduleScopeId);
+      }
     }
-    case PathIdentSegmentKind::Self: {
-      assert(false && "to be handled later");
+
+    if (resolvedNodeId == UNKNOWN_NODEID &&
+        previousResolveNodeId == moduleScopeId) {
+      std::optional<adt::CanonicalPath> resolvedChild =
+          mappings->lookupModuleChild(moduleScopeId, ident.toString());
+      if (resolvedChild) {
+        NodeId resolvedNode = resolvedChild->getNodeId();
+        if (getNameScope().wasDeclDeclaredInCurrentScope(resolvedNode)) {
+          resolvedNodeId = resolvedNode;
+          insertResolvedName(segment.getNodeId(), resolvedNode);
+        } else if (getTypeScope().wasDeclDeclaredInCurrentScope(resolvedNode)) {
+          resolvedNodeId = resolvedNode;
+          insertResolvedType(segment.getNodeId(), resolvedNode);
+        } else {
+          // report error
+          return std::nullopt;
+        }
+      }
     }
-    case PathIdentSegmentKind::crate: {
-      assert(false && "to be handled later");
-    }
-    case PathIdentSegmentKind::dollarCrate: {
-      assert(false && "to be handled later");
-    }
+
+    bool didResolveSegment = resolvedNodeId != UNKNOWN_NODEID;
+    if (didResolveSegment) {
+      if (mappings->isModule(resolvedNodeId) ||
+          mappings->isCrate(resolvedNodeId)) {
+        moduleScopeId = resolvedNodeId;
+      }
+      previousResolveNodeId = resolvedNodeId;
+    } else if (i == 0) {
+      // report error
+      return std::nullopt;
     }
   }
+
+  if (resolvedNodeId != UNKNOWN_NODEID) {
+    // first name
+    if (getNameScope().wasDeclDeclaredInCurrentScope(resolvedNodeId)) {
+      insertResolvedName(typePath->getNodeId(), resolvedNodeId);
+    } else if (getTypeScope().wasDeclDeclaredInCurrentScope(resolvedNodeId)) {
+      insertResolvedType(typePath->getNodeId(), resolvedNodeId);
+    } else {
+      llvm_unreachable("");
+    }
+  }
+
+  return resolvedNodeId;
 }
 
 void Resolver::resolveTypePathFunction(const ast::types::TypePathFn &) {

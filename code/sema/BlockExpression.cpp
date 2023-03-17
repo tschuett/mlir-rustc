@@ -6,27 +6,33 @@
 
 #include <memory>
 
+using namespace rust_compiler::ast;
+
 namespace rust_compiler::sema {
 
 void Sema::analyzeStatements(ast::Statements stmts) {
   for (auto &stmt : stmts.getStmts()) {
     switch (stmt->getKind()) {
-    case ast::StatementKind::ItemDeclaration: {
-      analyzeItemDeclaration(std::static_pointer_cast<ast::Node>(stmt));
+    case StatementKind::EmptyStatement: {
+      // empty;
       return;
     }
-    case ast::StatementKind::LetStatement: {
-      analyzeLetStatement(std::static_pointer_cast<ast::LetStatement>(stmt));
+    case StatementKind::ItemDeclaration: {
+      analyzeItemDeclaration(std::static_pointer_cast<Node>(stmt));
       return;
     }
-    case ast::StatementKind::ExpressionStatement: {
+    case StatementKind::LetStatement: {
+      analyzeLetStatement(std::static_pointer_cast<LetStatement>(stmt));
+      return;
+    }
+    case StatementKind::ExpressionStatement: {
       analyzeExpressionStatement(
-          std::static_pointer_cast<ast::ExpressionStatement>(stmt));
+          std::static_pointer_cast<ExpressionStatement>(stmt));
       return;
     }
-    case ast::StatementKind::MacroInvocationSemi: {
+    case StatementKind::MacroInvocationSemi: {
       analyzeMacroInvocationSemiStatement(
-          std::static_pointer_cast<ast::MacroInvocationSemiStatement>(stmt));
+          std::static_pointer_cast<MacroInvocationSemiStatement>(stmt));
       return;
     }
     }

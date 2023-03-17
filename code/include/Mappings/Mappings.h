@@ -9,6 +9,7 @@
 namespace rust_compiler::ast {
 class Module;
 class Item;
+class Crate;
 } // namespace rust_compiler::ast
 
 namespace rust_compiler::mappings {
@@ -22,6 +23,9 @@ public:
   void insertModule(ast::Module *);
 
   ast::Module *lookupModule(basic::NodeId);
+
+  std::optional<adt::CanonicalPath>
+  lookupModuleChild(basic::NodeId module, std::string_view item_name);
 
   void insertCanonicalPath(basic::NodeId id, const adt::CanonicalPath &path) {
     if (auto canPath = lookupCanonicalPath(id)) {
@@ -55,6 +59,15 @@ public:
   basic::CrateNum getCurrentCrate() const;
   void setCurrentCrate(basic::CrateNum);
 
+  bool isModule(basic::NodeId query);
+  bool isCrate(basic::NodeId query) const;
+  // void insertNodeToNode(basic::NodeId id, basic::NodeId ref);
+
+  std::optional<std::vector<adt::CanonicalPath>>
+  lookupModuleChildrenItems(basic::NodeId module);
+
+  void insertASTCrate(ast::Crate *crate, basic::CrateNum crateNum);
+
 private:
   basic::CrateNum crateNumIter = 7;
   basic::NodeId nodeIdIter = 7;
@@ -68,6 +81,8 @@ private:
   std::map<basic::NodeId, std::vector<basic::NodeId>> moduleChildMap;
   std::map<basic::NodeId, std::vector<adt::CanonicalPath>> moduleChildItems;
   std::map<basic::NodeId, basic::NodeId> childToParentModuleMap;
+
+  std::map<basic::CrateNum, ast::Crate *> astCrateMappings;
 };
 
-} // namespace rust_compiler::sema
+} // namespace rust_compiler::mappings

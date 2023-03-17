@@ -18,8 +18,8 @@ std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
                                       basic::CrateNum crateNum, LoadMode mode) {
   llvm::SmallVector<char, 128> libFile{path.begin(), path.end()};
 
-  llvm::outs() << "loadCrate" << "\n";
-  
+  llvm::outs() << "loadCrate: " << path << ":" << crateName << "\n";
+
   Mappings::get()->setCurrentCrate(crateNum);
 
   if (mode == LoadMode::File) {
@@ -46,6 +46,8 @@ std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
         loadRootModule(libFile, crateName, crateNum);
 
     // FIXME load and merge tree
+
+    Mappings::get()->insertASTCrate(crate.get(), crateNum);
 
     return crate;
   } else {

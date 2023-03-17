@@ -198,10 +198,13 @@ StringResult<ast::PathIdentSegment> Parser::parsePathIdentSegment() {
 
   PathIdentSegment seg = {loc};
 
+  llvm::errs() << "parsePathIdentSegment"
+               << "\n";
+
   if (check(TokenKind::Identifier)) {
     Token tok = getToken();
     seg.setIdentifier(tok.getIdentifier());
-
+    llvm::errs() << "parsePathIdentSegment: " << tok.getIdentifier() << "\n";
     assert(eat(TokenKind::Identifier));
   } else if (checkKeyWord(KeyWordKind::KW_SUPER)) {
     seg.setSuper();
@@ -329,8 +332,16 @@ StringResult<ast::types::TypePathSegment> Parser::parseTypePathSegment() {
         << "failed to parse path ident segment in parse type path segment: "
         << ident.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv(
+            "{0}\n{1}",
+            " failed to parse path ident segment in parse type path segment : ",
+            ident.getError())
+            .str();
+    return StringResult<ast::types::TypePathSegment>(s);
   }
+  seg.setSegment(ident.getValue());
 
   if (check(TokenKind::PathSep)) {
     seg.setDoubleColon();
@@ -357,13 +368,19 @@ StringResult<ast::types::TypePathSegment> Parser::parseTypePathSegment() {
           << "failed to parse type path fn in parse type path segment: "
           << fn.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      // exit(EXIT_FAILURE);
+      std::string s =
+          llvm::formatv(
+              "{0}\n{1}",
+              "failed to parse type path fn in parse type path segment: ",
+              fn.getError())
+              .str();
+      return StringResult<ast::types::TypePathSegment>(s);
     }
     seg.setTypePathFn(fn.getValue());
     return StringResult<ast::types::TypePathSegment>(seg);
-  } else {
-    return StringResult<ast::types::TypePathSegment>(seg);
   }
+  return StringResult<ast::types::TypePathSegment>(seg);
 }
 
 StringResult<std::shared_ptr<ast::types::TypeExpression>>

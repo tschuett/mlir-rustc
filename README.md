@@ -131,3 +131,9 @@ https://reviews.llvm.org/D142244
 https://reviews.llvm.org/D141820
 
 https://reviews.llvm.org/D142897
+
+* Distributed ThinLTO for MachO
+https://reviews.llvm.org/D138451
+
+* CycleInfo
+https://reviews.llvm.org/D112696

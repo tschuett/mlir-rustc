@@ -4,6 +4,7 @@
 
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 /// https://doc.rust-lang.org/reference/paths.html#canonical-paths
@@ -47,6 +48,11 @@ public:
     return CanonicalPath(copy, crateNum);
   }
 
+  basic::NodeId getNodeId() const {
+    assert(!segments.empty());
+    return segments.back().first;
+  }
+
   void setCrateNum(basic::CrateNum n) { crateNum = n; }
   bool isEmpty() const { return segments.size() == 0; }
 
@@ -61,7 +67,9 @@ public:
     return true;
   }
 
-  bool operator< (const CanonicalPath &b) const { return asString () < b.asString (); }
+  bool operator<(const CanonicalPath &b) const {
+    return asString() < b.asString();
+  }
 
 private:
   explicit CanonicalPath(

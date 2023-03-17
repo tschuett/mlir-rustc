@@ -18,10 +18,11 @@ class PathExprSegment : public Node {
 public:
   PathExprSegment(Location loc) : Node(loc), ident(loc) {}
 
-  void addIdentSegment(const PathIdentSegment& _ident) { ident = _ident; }
+  void addIdentSegment(const PathIdentSegment &_ident) { ident = _ident; }
   void addGenerics(GenericArgs generic) { generics = generic; }
 
-  bool hasGenerics() const { return not generics.has_value(); }
+  bool hasGenerics() const { return generics.has_value(); }
+  GenericArgs getGenerics() const { return *generics; }
 
   PathIdentSegment getIdent() const { return ident; }
 };

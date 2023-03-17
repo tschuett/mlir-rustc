@@ -36,6 +36,23 @@ public:
   void setDollarCrate() { kind = PathIdentSegmentKind::dollarCrate; }
 
   std::string getIdentifier() const { return identifier; }
+
+  std::string toString() const {
+    switch(kind) {
+    case PathIdentSegmentKind::Identifier:
+      return identifier;
+    case PathIdentSegmentKind::super:
+      return "super";
+    case PathIdentSegmentKind::self:
+      return "self";
+    case PathIdentSegmentKind::Self:
+      return "Self";
+    case PathIdentSegmentKind::crate:
+      return "crate";
+    case PathIdentSegmentKind::dollarCrate:
+      return "$crate";
+    }
+  }
 };
 
 } // namespace rust_compiler::ast

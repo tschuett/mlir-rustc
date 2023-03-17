@@ -9,6 +9,9 @@ add_library(Resolver
             Items.cpp
             Statements.cpp
             Builtins.cpp
+            Path.cpp
+            Closure.cpp
+            Match.cpp
            )
 
 target_include_directories(Resolver PRIVATE  ../../include)

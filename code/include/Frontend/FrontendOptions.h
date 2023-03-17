@@ -28,7 +28,8 @@ public:
   FrontendInput() = default;
   FrontendInput(std::string_view inputFile, std::string_view remarksOutput,
                 std::string_view crateName, InputKind inKind)
-      : inputFile(inputFile), remarksOutput(remarksOutput), kind(inKind){};
+      : inputFile(inputFile), remarksOutput(remarksOutput),
+        crateName(crateName), kind(inKind){};
 
   InputKind getKind() const { return kind; }
 

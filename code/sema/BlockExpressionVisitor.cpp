@@ -101,6 +101,10 @@ static void runOperatorExpression(std::shared_ptr<ast::OperatorExpression> op,
 static void runStatement(std::shared_ptr<ast::Statement> stmt,
                          BlockExpressionVisitor *visitor) {
   switch (stmt->getKind()) {
+  case StatementKind::EmptyStatement: {
+    // empty
+    break;
+  }
   case StatementKind::ItemDeclaration: {
     visitor->visitItemDeclaration(
         std::static_pointer_cast<ItemDeclaration>(stmt));

@@ -27,8 +27,8 @@ def edition_EQ : Joined<["--"], "edition=">,
 def path_EQ : Joined<["--"], "path=">,
   HelpText<"Path to Cargo.toml directory">;
 
-def crate_EQ : Joined<["--"], "crate-name">,
+def crate_EQ : Joined<["--"], "crate-name=">,
   HelpText<"The name of the crate to build">;
 
-def outdir_EQ : Joined<["--"], "out-dir">,
+def outdir_EQ : Joined<["--"], "out-dir=">,
   HelpText<"Directory to write the output in">;

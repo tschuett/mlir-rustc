@@ -31,7 +31,7 @@ void Resolver::resolveStatement(std::shared_ptr<ast::Statement> stmt,
     break;
   }
   case StatementKind::ExpressionStatement: {
-    resolveExpressoinStatement(
+    resolveExpressionStatement(
         std::static_pointer_cast<ExpressionStatement>(stmt), prefix,
         canonicalPrefix);
     break;
@@ -49,7 +49,7 @@ void Resolver::resolveLetStatement(std::shared_ptr<ast::LetStatement> let,
   if (let->hasInit())
     resolveExpression(let->getInit(), prefix, canonicalPrefix);
 
-  resolvePatternDeclaration(let->getPattern(), Rib::RibKind::Variable);
+  resolvePatternDeclaration(let->getPattern(), RibKind::Variable);
 
   if (let->hasType())
     resolveType(let->getType());
@@ -60,7 +60,7 @@ void Resolver::resolveLetStatement(std::shared_ptr<ast::LetStatement> let,
         canonicalPrefix);
 }
 
-void Resolver::resolveExpressoinStatement(
+void Resolver::resolveExpressionStatement(
     std::shared_ptr<ast::ExpressionStatement> estmt,
     const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {

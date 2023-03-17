@@ -139,3 +139,4 @@ code/include/Lir/LirTypes.h.inc
 html
 
 tests/items/ItemsTests
+tests/sema/SemaTests

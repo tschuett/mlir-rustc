@@ -4,10 +4,16 @@
 #include "CrateBuilder/CrateBuilder.h"
 #include <memory>
 
+using namespace rust_compiler::ast;
+
 namespace rust_compiler::crate_builder {
 
 void CrateBuilder::emitStatement(std::shared_ptr<ast::Statement> stmt) {
   switch (stmt->getKind()) {
+  case StatementKind::EmptyStatement: {
+    // empty
+    break;
+  }
   case ast::StatementKind::ItemDeclaration: {
     break;
   }

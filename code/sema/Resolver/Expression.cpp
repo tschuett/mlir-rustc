@@ -3,16 +3,20 @@
 #include "ADT/CanonicalPath.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/BlockExpression.h"
+#include "AST/ClosureExpression.h"
 #include "AST/LoopExpression.h"
 #include "AST/OperatorExpression.h"
+#include "AST/PathExprSegment.h"
 #include "AST/PathExpression.h"
+#include "AST/PathIdentSegment.h"
 #include "AST/PathInExpression.h"
-#include "AST/LoopExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Statements.h"
+#include "Basic/Ids.h"
 #include "Resolver.h"
 
 #include <memory>
+#include <optional>
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::adt;
@@ -53,8 +57,8 @@ void Resolver::resolveExpressionWithBlock(
     assert(false && "to be handled later");
   }
   case ExpressionWithBlockKind::LoopExpression: {
-    resolveLoopExpression(std::static_pointer_cast<LoopExpression>(withBlock), prefix,
-                          canonicalPrefix);
+    resolveLoopExpression(std::static_pointer_cast<LoopExpression>(withBlock),
+                          prefix, canonicalPrefix);
     assert(false && "to be handled later");
   }
   case ExpressionWithBlockKind::IfExpression: {
@@ -64,7 +68,8 @@ void Resolver::resolveExpressionWithBlock(
     assert(false && "to be handled later");
   }
   case ExpressionWithBlockKind::MatchExpression: {
-    assert(false && "to be handled later");
+    resolveMatchExpression(std::static_pointer_cast<MatchExpression>(withBlock),
+                           prefix, canonicalPrefix);
   }
   }
 }
@@ -119,6 +124,9 @@ void Resolver::resolveExpressionWithoutBlock(
   }
   case ExpressionWithoutBlockKind::ClosureExpression: {
     assert(false && "to be handled later");
+    resolveClosureExpression(
+        std::static_pointer_cast<ClosureExpression>(woBlock), prefix,
+        canonicalPrefix);
   }
   case ExpressionWithoutBlockKind::AsyncBlockExpression: {
     assert(false && "to be handled later");
@@ -212,8 +220,110 @@ void Resolver::resolvePathExpression(
   }
 }
 
-void Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression>) {
-  assert(false && "to be handled later");
+std::optional<NodeId>
+Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
+  NodeId resolvedNodeId = UNKNOWN_NODEID;
+  NodeId moduleScopeId = peekCurrentModuleScope();
+  NodeId previousResolvedNodeId = moduleScopeId;
+
+  std::vector<PathExprSegment> segments = path->getSegments();
+
+  for (size_t i = 0; i < segments.size(); ++i) {
+    PathExprSegment &seg = segments[i];
+    PathIdentSegment ident = seg.getIdent();
+
+    if (i > 0 && ident.getKind() == PathIdentSegmentKind::self) {
+      // report error
+      return std::nullopt;
+    }
+
+    NodeId crateScopeId = peekCrateModuleScope();
+    if (ident.getKind() == PathIdentSegmentKind::crate) {
+      moduleScopeId = crateScopeId;
+      previousResolvedNodeId = moduleScopeId;
+      insertResolvedName(seg.getNodeId(), moduleScopeId);
+      continue;
+    } else if (ident.getKind() == PathIdentSegmentKind::super) {
+      if (moduleScopeId == crateScopeId) {
+        // report error
+        return std::nullopt;
+      }
+      moduleScopeId = peekParentModuleScope();
+      previousResolvedNodeId = moduleScopeId;
+      insertResolvedName(seg.getNodeId(), moduleScopeId);
+      continue;
+    }
+
+    if (seg.hasGenerics())
+      resolveGenericArgs(seg.getGenerics());
+
+    if (i == 0) {
+      // name first
+      NodeId resolvedNode = UNKNOWN_NODEID;
+      CanonicalPath path =
+          CanonicalPath::newSegment(seg.getNodeId(), ident.toString());
+      if (auto node = getNameScope().lookup(path)) {
+        resolvedNode = *node;
+        resolvedNodeId = *node;
+      } else if (auto node = getTypeScope().lookup(path)) {
+        insertResolvedType(seg.getNodeId(), *node);
+        resolvedNodeId = *node;
+      } else if (ident.getKind() == PathIdentSegmentKind::self) {
+        moduleScopeId = crateScopeId;
+        previousResolvedNodeId = moduleScopeId;
+        insertResolvedName(seg.getNodeId(), moduleScopeId);
+        continue;
+      } else {
+        // ?
+      }
+    }
+
+    if (resolvedNodeId == UNKNOWN_NODEID &&
+        previousResolvedNodeId == moduleScopeId) {
+      std::optional<CanonicalPath> resolvedChild =
+          mappings->lookupModuleChild(moduleScopeId, ident.toString());
+      if (resolvedChild) {
+        NodeId resolvedNode = resolvedChild->getNodeId();
+        if (getNameScope().wasDeclDeclaredInCurrentScope(resolvedNode)) {
+          resolvedNodeId = resolvedNode;
+          insertResolvedName(seg.getNodeId(), resolvedNode);
+        } else if (getTypeScope().wasDeclDeclaredInCurrentScope(resolvedNode)) {
+          resolvedNodeId = resolvedNode;
+          insertResolvedType(seg.getNodeId(), resolvedNode);
+        } else {
+          // report error
+          return std::nullopt;
+        }
+      }
+    }
+
+    if (resolvedNodeId != UNKNOWN_NODEID) {
+      if (mappings->isModule(resolvedNodeId) ||
+          mappings->isCrate(resolvedNodeId)) {
+        moduleScopeId = resolvedNodeId;
+      }
+    } else if (i == 0) {
+      // report error
+      return std::nullopt;
+    }
+  }
+
+  // post for loop
+
+  NodeId resolvedNode = resolvedNodeId;
+  if (resolvedNodeId != UNKNOWN_NODEID) {
+    // name first
+    if (getNameScope().wasDeclDeclaredInCurrentScope(resolvedNodeId)) {
+      insertResolvedName(path->getNodeId(), resolvedNodeId);
+    } else if (getTypeScope().wasDeclDeclaredInCurrentScope(resolvedNodeId)) {
+      insertResolvedType(path->getNodeId(), resolvedNodeId);
+    } else {
+      // unreachable
+    }
+    return resolvedNode;
+  }
+
+  return std::nullopt;
 }
 
 void Resolver::resolveQualifiedPathInExpression(
@@ -236,8 +346,8 @@ void Resolver::resolveBlockExpression(
   const Statements &stmts = block->getExpressions();
 
   for (auto &stmt : stmts.getStmts())
-      resolveStatement(stmt, prefix, canonicalPrefix,
-                       CanonicalPath::createEmpty());
+    resolveStatement(stmt, prefix, canonicalPrefix,
+                     CanonicalPath::createEmpty());
 
   if (stmts.hasTrailing())
     resolveExpression(stmts.getTrailing(), prefix, canonicalPrefix);

@@ -4,8 +4,11 @@
 #include "AST/ConstantItem.h"
 #include "AST/Implementation.h"
 #include "AST/StaticItem.h"
+#include "AST/VisItem.h"
+#include "AST/Visiblity.h"
 #include "Basic/Ids.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
 
@@ -15,6 +18,13 @@ using namespace rust_compiler::ast;
 using namespace rust_compiler::sema::type_checking;
 
 namespace rust_compiler::sema::resolver {
+
+bool Rib::wasDeclDeclaredHere(basic::NodeId def) const {
+  for (auto &it : declsWithinRib)
+    if (it.first == def)
+      return true;
+  return false;
+}
 
 void Rib::insertName(const adt::CanonicalPath &path, basic::NodeId id,
                      Location loc, bool shadow, RibKind kind) {
@@ -48,7 +58,7 @@ Rib *Scope::pop() {
 }
 
 void Scope::insert(const adt::CanonicalPath &path, basic::NodeId id,
-                   Location loc, Rib::RibKind kind) {
+                   Location loc, RibKind kind) {
   peek()->insertName(path, id, loc, true /*shadow*/, kind);
 }
 
@@ -71,6 +81,7 @@ void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
   // FIXME
 
   // setup scopes
+  llvm::errs() << "crate name: " << crate->getCrateName() << "\n";
 
   NodeId scopeNodeId = crate->getNodeId();
   getNameScope().push(scopeNodeId);
@@ -230,8 +241,144 @@ void Resolver::resolveTraitImpl(std::shared_ptr<ast::TraitImpl>,
 }
 
 void Resolver::resolveVisibility(std::optional<ast::Visibility> vis) {
-  // FIXME
-  assert(false && "to be handled later");
+  if (vis) {
+    switch (vis->getKind()) {
+    case VisibilityKind::Private: {
+      break;
+    }
+    case VisibilityKind::Public: {
+      break;
+    }
+    case VisibilityKind::PublicCrate: {
+      break;
+    }
+    case VisibilityKind::PublicSelf: {
+      break;
+    }
+    case VisibilityKind::PublicSuper: {
+      break;
+    }
+    case VisibilityKind::PublicIn: {
+      resolveSimplePath(vis->getPath());
+      break;
+    }
+    }
+  }
+}
+
+void Resolver::insertResolvedName(NodeId ref, NodeId def) {
+  resolvedNames[ref] = def;
+  getNameScope().appendReferenceForDef(ref, def);
+  insertCapturedItem(def);
+}
+
+std::optional<basic::NodeId> Scope::lookup(const adt::CanonicalPath &p) {
+  for (auto r : stack) {
+    std::optional<NodeId> result = r->lookupName(p);
+    if (result)
+      return *result;
+  }
+  return std::nullopt;
+}
+
+void Rib::appendReferenceForDef(basic::NodeId ref, basic::NodeId def) {
+  references[def].insert(ref);
+}
+
+void Scope::appendReferenceForDef(basic::NodeId ref, basic::NodeId def) {
+  for (auto &rib : stack) {
+    if (rib->wasDeclDeclaredHere(def)) {
+      rib->appendReferenceForDef(ref, def);
+    }
+    return;
+  }
+  assert(false);
+}
+
+bool Resolver::declNeedsCapture(basic::NodeId declRibNodeId,
+                                basic::NodeId closureRibNodeId,
+                                const Scope &scope) {
+  for (const auto &rib : scope.getContext()) {
+    if (rib->getNodeId() == closureRibNodeId)
+      return false;
+    if (rib->getNodeId() == declRibNodeId)
+      return true;
+  }
+
+  return false;
+}
+
+// for closure expressions
+void Resolver::insertCapturedItem(basic::NodeId id) {
+  if (closureContext.empty())
+    return;
+
+  // we are in a closure
+
+  auto &nameScope = getNameScope();
+
+  std::optional<RibKind> type = getNameScope().lookupDeclType(id);
+  if (!type)
+    return;
+
+  std::optional<Rib *> rib = getNameScope().lookupRibForDecl(id);
+  assert(rib.has_value());
+
+  NodeId declRibNodeId = (*rib)->getNodeId();
+
+  for (auto &closureExprId : closureContext) {
+
+    if (!declNeedsCapture(declRibNodeId, closureExprId, nameScope))
+      continue;
+
+    if (*type != RibKind::Variable) {
+      // FIXME: it ought to be a variable?
+      return;
+    }
+
+    auto it = closureCaptureMappings.find(closureExprId);
+    if (it != closureCaptureMappings.end())
+      it->second.insert(id);
+  }
+}
+
+std::optional<RibKind> Scope::lookupDeclType(NodeId id) {
+  for (auto &rib : stack) {
+    if (rib->wasDeclDeclaredHere(id)) {
+      std::optional<RibKind> type = rib->lookupDeclType(id);
+      if (type)
+        return type;
+    }
+  }
+  return std::nullopt;
+}
+
+std::optional<RibKind> Rib::lookupDeclType(basic::NodeId def) {
+  auto it = declTypeMappings.find(def);
+  if (it == declTypeMappings.end())
+    return std::nullopt;
+  return it->second;
+}
+
+std::optional<Rib *> Scope::lookupRibForDecl(basic::NodeId id) {
+  for (auto &rib : stack) {
+    if (rib->wasDeclDeclaredHere(id))
+      return rib;
+  }
+  return std::nullopt;
+}
+
+void Resolver::insertResolvedType(basic::NodeId refId, basic::NodeId defId) {
+  resolvedTypes[refId] = defId;
+  getTypeScope().appendReferenceForDef(refId, defId);
+}
+
+bool Scope::wasDeclDeclaredInCurrentScope(NodeId def) const {
+  for (auto &rib : stack) {
+    if (rib->wasDeclDeclaredHere(def))
+      return true;
+  }
+  return false;
 }
 
 } // namespace rust_compiler::sema::resolver

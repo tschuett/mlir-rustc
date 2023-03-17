@@ -39,7 +39,7 @@ void Resolver::resolveFunction(std::shared_ptr<ast::Function> fun,
 
   for (auto &param : fun->getParams()) {
     resolveType(param.getType());
-    resolvePatternDeclaration(param.getPattern(), Rib::RibKind::Param);
+    resolvePatternDeclaration(param.getPattern(), RibKind::Parameter);
   }
 
   resolveExpression(fun->getBody(), prefix, canonicalPrefix);

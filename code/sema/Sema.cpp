@@ -56,10 +56,15 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
 
   { TimeTraceScope scope("closure captures"); }
 
-    { TimeTraceScope scope("constant evaluation"); }
+  { TimeTraceScope scope("constant evaluation"); }
 
   for (const auto &item : crate->getItems()) {
     const auto &visItem = item->getVisItem();
+    if (!(bool)visItem)
+      continue;
+
+    // FIXME: weird
+
     switch (visItem->getKind()) {
     case VisItemKind::Module: {
       break;

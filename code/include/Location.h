@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <string>
 
 namespace rust_compiler {
@@ -19,7 +20,10 @@ public:
   unsigned getLineNumber() const { return lineNumber; }
   unsigned getColumnNumber() const { return columnNumber; }
 
-  static Location getBuiltinLocation();
+  static Location getBuiltinLocation() {
+    return Location("builtins.cpp", std::numeric_limits<unsigned>::max(),
+                    std::numeric_limits<unsigned>::max());
+  }
 };
 
 } // namespace rust_compiler

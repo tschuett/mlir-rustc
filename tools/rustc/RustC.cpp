@@ -107,6 +107,8 @@ int main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
+  llvm::errs() << "crateName: " << crateName << "\n";
+
   std::string remarksOutput;
   llvm::SmallVector<char, 128> libFile{path.begin(), path.end()};
   llvm::sys::path::replace_extension(libFile, ".yaml");
