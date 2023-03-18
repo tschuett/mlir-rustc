@@ -51,7 +51,8 @@ std::optional<std::string> tryLexDecLiteral(std::string_view code) {
     }
 
     if (std::isdigit(view.front()) && std::isdigit(view[1]) &&
-        std::isdigit(view[2]) && std::isdigit(view[3]) && not std::isdigit(view[4])) {
+        std::isdigit(view[2]) && std::isdigit(view[3]) &&
+        not std::isdigit(view[4])) {
       ws.push_back(view.front());
       ws.push_back(view[1]);
       ws.push_back(view[2]);
@@ -70,6 +71,45 @@ std::optional<std::string> tryLexDecLiteral(std::string_view code) {
     return ws;
   }
   return std::nullopt;
+}
+
+std::string tryLexInlineComment(std::string_view code) {
+  std::string_view view = code;
+  std::string ws;
+
+  if (view.starts_with("//*")) {
+    view.remove_prefix(2);
+    ws.push_back(view[0]);
+    ws.push_back(view[1]);
+  } else {
+    return ws;
+  }
+
+  while (view.size() > 0) {
+    if (view.starts_with("*//")) {
+      view.remove_prefix(2);
+      ws.push_back(view[0]);
+      ws.push_back(view[1]);
+      return ws;
+    } else if (isdigit(view[0])) {
+      ws.push_back(view[0]);
+      view.remove_prefix(1);
+    } else if (isalpha(view[0])) {
+      ws.push_back(view[0]);
+      view.remove_prefix(1);
+    } else if (view.starts_with(" ")) {
+      ws.push_back(view[0]);
+      view.remove_prefix(1);
+    } else if (view.starts_with("'")) {
+      ws.push_back(view[0]);
+      view.remove_prefix(1);
+    } else if (view.starts_with("'")) {
+      ws.push_back(view[0]);
+      view.remove_prefix(1);
+    }
+  }
+
+  return ws;
 }
 
 std::string tryLexComment(std::string_view code) {
@@ -381,6 +421,13 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
 
     if (code.starts_with("//")) {
       std::string comment = tryLexComment(code);
+      code.remove_prefix(comment.size());
+      columnNumber += comment.size();
+      continue;
+    }
+
+    if (code.starts_with("//*")) {
+      std::string comment = tryLexInlineComment(code);
       code.remove_prefix(comment.size());
       columnNumber += comment.size();
       continue;

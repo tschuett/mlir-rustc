@@ -394,13 +394,22 @@ Parser::parseIndexExpression(std::shared_ptr<ast::Expression> left,
     llvm::errs() << "failed to parse expression in index expression: "
                  << expr.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv(
+            "{0}\n{1}",
+            "failed to parse expression in index expression: ", expr.getError())
+            .str();
+    return Result<std::shared_ptr<ast::Expression>, std::string>(expr);
   }
   idx.setRight(expr.getValue());
 
-  if (!check(TokenKind::SquareClose))
-    return Result<std::shared_ptr<ast::Expression>, std::string>(
-        "failed to parse ] token in index expression");
+  if (!check(TokenKind::SquareClose)) {
+    std::string s = llvm::formatv("{0}{1}{2}", "failed to parse ] found ",
+                                  Token2String(getToken().getKind()),
+                                  " token in index expression")
+                        .str();
+    return Result<std::shared_ptr<ast::Expression>, std::string>(s);
+  }
   assert(eat(TokenKind::SquareClose));
 
   return Result<std::shared_ptr<ast::Expression>, std::string>(
@@ -516,7 +525,8 @@ Parser::parseMethodCallExpression(std::shared_ptr<ast::Expression> receiver,
   Location loc = getLocation();
   MethodCallExpression call = {loc};
 
-  llvm::errs() << "parseMethodCallExpression" << "\n";
+  llvm::errs() << "parseMethodCallExpression"
+               << "\n";
 
   call.setReceiver(receiver);
 
@@ -1511,7 +1521,6 @@ Parser::parseExpressionWithBlock(std::span<OuterAttribute> outer) {
   return Result<std::shared_ptr<ast::Expression>, std::string>(
       "failed to parse expression with block");
 }
-
 
 // Result<std::shared_ptr<ast::Expression>, std::string>
 // Parser::parseExpressionWithoutBlock() {

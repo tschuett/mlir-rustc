@@ -100,6 +100,9 @@ Parser::parseInfixExpression(std::shared_ptr<Expression> left,
   case TokenKind::DotDotEq: {
     return parseRangeExpression(left, outer, restrictions);
   }
+  case TokenKind::SquareOpen: {
+    return parseIndexExpression(left, outer, restrictions);
+  }
   case TokenKind::Eof: {
     std::string s =
         llvm::formatv("{0} {1}", "found eof token in parse infix expression",

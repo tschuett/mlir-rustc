@@ -477,7 +477,6 @@ Parser::parseTypeAlias(std::optional<ast::Visibility> vis) {
   if (!checkKeyWord(KeyWordKind::KW_TYPE))
     return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse type keyword in type alias");
-
   assert(eatKeyWord(KeyWordKind::KW_TYPE));
 
   if (!check(TokenKind::Identifier))
@@ -556,7 +555,13 @@ Parser::parseTypeAlias(std::optional<ast::Visibility> vis) {
                     "type alias "
                  << type.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s = llvm::formatv("{0}\n{1}",
+                                  "failed to parse type in "
+                                  "type alias ",
+                                  type.getError())
+                        .str();
+    return StringResult<std::shared_ptr<ast::Item>>(s);
   }
   alias.setType(type.getValue());
 
@@ -572,6 +577,7 @@ Parser::parseTypeAlias(std::optional<ast::Visibility> vis) {
     alias.setTypeWhereClause(where.getValue());
   } else if (check(TokenKind::Semi)) {
     assert(eat(TokenKind::Semi));
+
     return StringResult<std::shared_ptr<ast::Item>>(
         std::make_shared<TypeAlias>(alias));
   } else {

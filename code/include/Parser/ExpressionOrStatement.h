@@ -43,6 +43,11 @@ public:
   std::shared_ptr<ast::Expression> getExpression() const {
     return std::get<std::shared_ptr<ast::Expression>>(data);
   }
+
+  std::shared_ptr<ast::Item> getItem() const {
+    return std::get<std::shared_ptr<ast::Item>>(data);
+  }
+
 };
 
 } // namespace rust_compiler::parser

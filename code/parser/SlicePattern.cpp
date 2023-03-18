@@ -103,7 +103,12 @@ Parser::parseSlicePattern() {
     llvm::errs() << "failed to parse slice pattern items in slice pattern: "
                  << items.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0}\n{1}",
+                      "failed to parse slice pattern items in slice pattern: ",
+                      items.getError())
+            .str();
+    return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(s);
   }
   slice.setPatternItems(items.getValue());
 

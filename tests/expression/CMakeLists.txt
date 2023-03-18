@@ -30,6 +30,7 @@ add_executable(ExpressionTests
         Match.cpp
         Range.cpp
         Path.cpp
+        Match2.cpp
 )
 
 llvm_map_components_to_libnames(llvm_libs Support)

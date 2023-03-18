@@ -63,7 +63,13 @@ Parser::parseMaybeNamedFunctionParameters() {
                     "function parameters: "
                  << namedParam.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0}\n{1}",
+                      "failed to parse mabe named param in parse maybe named "
+                      "function parameters: ",
+                      namedParam.getError())
+            .str();
+    return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(s);
   }
   maybe.addParameter(namedParam.getValue());
 
@@ -90,7 +96,15 @@ Parser::parseMaybeNamedFunctionParameters() {
                         "function parameters: "
                      << namedParam.getError() << "\n";
         printFunctionStack();
-        exit(EXIT_FAILURE);
+        std::string s =
+            llvm::formatv(
+                "{0}\n{1}",
+                "failed to parse mabe named param in parse maybe named "
+                "function parameters: ",
+                namedParam.getError())
+                .str();
+        return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+            s);
       }
       maybe.addParameter(namedParam.getValue());
     } else {
@@ -113,7 +127,14 @@ Parser::parseMaybeNamedFunctionParametersVariadic() {
                     "function parameters variadic: "
                  << namedParam.getError() << "\n";
     printFunctionStack();
-    exit(EXIT_FAILURE);
+    // exit(EXIT_FAILURE);
+    std::string s =
+        llvm::formatv("{0}\n{1}",
+                      "failed to parse mabe named param in parse maybe named "
+                      "function parameters variadic: ",
+                      namedParam.getError())
+            .str();
+    return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(s);
   }
   maybe.addParameter(namedParam.getValue());
 
@@ -136,7 +157,16 @@ Parser::parseMaybeNamedFunctionParametersVariadic() {
                "function parameters variadic: "
             << outer.getError() << "\n";
         printFunctionStack();
-        exit(EXIT_FAILURE);
+        // exit(EXIT_FAILURE);
+        std::string s =
+            llvm::formatv(
+                "{0}\n{1}",
+                "failed to parse outer paramaeters in parse maybe named "
+                "function parameters variadic: ",
+                outer.getError())
+                .str();
+        return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+            s);
       }
       std::vector<ast::OuterAttribute> out = outer.getValue();
       maybe.setOuterAttributes(out);
@@ -150,7 +180,15 @@ Parser::parseMaybeNamedFunctionParametersVariadic() {
                "function parameters variadic: "
             << namedParam.getError() << "\n";
         printFunctionStack();
-        exit(EXIT_FAILURE);
+        std::string s =
+            llvm::formatv(
+                "{0}\n{1}",
+                "failed to parse maybe named param in parse maybe named "
+                "function parameters variadic: ",
+                namedParam.getError())
+                .str();
+        return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+            s);
       }
       maybe.addParameter(namedParam.getValue());
     } else {

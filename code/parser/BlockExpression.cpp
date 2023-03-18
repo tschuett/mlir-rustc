@@ -2,6 +2,7 @@
 
 #include "AST/EmptyStatement.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/ItemDeclaration.h"
 #include "AST/OuterAttribute.h"
 #include "AST/Statement.h"
 #include "AST/Statements.h"
@@ -12,6 +13,7 @@
 
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
+#include <memory>
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::adt;
@@ -407,7 +409,8 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
   Statements stmts = {loc};
 
   while (getToken().getKind() != TokenKind::BraceClose) {
-    llvm::errs() << Token2String(getToken().getKind()) << "\n";
+    llvm::errs() << "block expr: " << Token2String(getToken().getKind())
+                 << "\n";
     adt::StringResult<ExpressionOrStatement> expr =
         parseStatementOrExpressionWithoutBlock();
     if (!expr) {
@@ -423,12 +426,24 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
       return Result<std::shared_ptr<ast::Expression>, std::string>(s);
     }
 
-    if (expr.getValue().getKind() == ExpressionOrStatementKind::Statement) {
-      stmts.addStmt(expr.getValue().getStatement());
+    llvm::errs() << "block expr: success" << expr.isOk() << "\n";
+
+    ExpressionOrStatement eos = expr.getValue();
+    llvm::errs() << "block expr: success" << expr.isOk() << "\n";
+
+    if (eos.getKind() == ExpressionOrStatementKind::Statement) {
+      stmts.addStmt(eos.getStatement());
+    } else if (eos.getKind() == ExpressionOrStatementKind::Item) {
+      std::shared_ptr<ast::Item> item = eos.getItem();
+      ItemDeclaration decl = {item->getLocation()};
+      decl.setVisItem(item);
+      stmts.addStmt(std::make_shared<ItemDeclaration>(decl));
     } else {
-      stmts.setTrailing(expr.getValue().getExpression());
+      stmts.setTrailing(eos.getExpression());
       break;
     }
+    llvm::errs() << "block expr: next iter"
+                 << "\n";
   }
 
   if (!check(TokenKind::BraceClose)) {
