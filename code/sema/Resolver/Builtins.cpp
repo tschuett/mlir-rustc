@@ -83,7 +83,7 @@ void Resolver::generateBuiltins() {
   emptyTupleType =
       new ast::types::TupleType(Location::getBuiltinLocation());
   builtins.push_back(emptyTupleType);
-  tyctx->insertBuiltin(unitType->getReference(), emptyTupleType->getNodeId(),
+  tyCtx->insertBuiltin(unitType->getReference(), emptyTupleType->getNodeId(),
                        unitType);
   setUnitTypeNodeId(emptyTupleType->getNodeId());
 }
@@ -98,7 +98,7 @@ void Resolver::setupBuiltin(std::string_view name, TyTy::BaseType *tyty) {
   builtinType->addSegment(typeSeg);
 
   builtins.push_back(builtinType);
-  tyctx->insertBuiltin(tyty->getReference(), builtinType->getNodeId(), tyty);
+  tyCtx->insertBuiltin(tyty->getReference(), builtinType->getNodeId(), tyty);
   // FIXME
   //tyCtx->insertNodeToHir(builtinType->getNodeId(), tyty->getReference());
   tyCtx->insertCanonicalPath(

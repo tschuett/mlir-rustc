@@ -41,6 +41,7 @@ void analyzeSemantics(std::shared_ptr<ast::Crate> &crate) {
 void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
   // FIXME: needs to be passed to CrateBuilder. Mappings knows everything
   Resolver resolver = {};
+  TypeResolver typeResolver = {};
 
   {
     TimeTraceScope scope("name resolution");
@@ -49,7 +50,7 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
 
   {
     TimeTraceScope scope("type inference");
-    type_checking::checkCrate(tyctx::TyCtx::get());
+    typeResolver.checkCrate(crate);
   }
 
   { TimeTraceScope scope("trait solving"); }

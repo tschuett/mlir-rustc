@@ -68,8 +68,7 @@ void Resolver::pushNewLabelRib(Rib *r) { labelRibs[r->getNodeId()] = r; }
 void Resolver::pushNewMaroRib(Rib *r) { macroRibs[r->getNodeId()] = r; }
 
 Resolver::Resolver() noexcept
-    : tyCtx(tyctx::TyCtx::get()), tyctx(TypeCheckContext::get()),
-      nameScope(Scope(tyCtx->getCurrentCrate())),
+    : tyCtx(tyctx::TyCtx::get()), nameScope(Scope(tyCtx->getCurrentCrate())),
       typeScope(Scope(tyCtx->getCurrentCrate())),
       labelScope(Scope(tyCtx->getCurrentCrate())),
       macroScope(Scope(tyCtx->getCurrentCrate())),

@@ -295,7 +295,6 @@ private:
   tyctx::TyCtx *tyCtx;
 
   // types
-  type_checking::TypeCheckContext *tyctx;
   void generateBuiltins();
   void setupBuiltin(std::string_view name, type_checking::TyTy::BaseType *tyty);
 
