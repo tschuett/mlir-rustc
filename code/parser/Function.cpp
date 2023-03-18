@@ -1,3 +1,4 @@
+#include "AST/BlockExpression.h"
 #include "AST/FunctionParam.h"
 #include "AST/FunctionQualifiers.h"
 #include "AST/FunctionReturnType.h"
@@ -10,6 +11,7 @@
 
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_os_ostream.h>
+#include <memory>
 #include <optional>
 
 using namespace llvm;
@@ -551,6 +553,12 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
     return StringResult<std::shared_ptr<ast::Item>>(s);
   }
   fun.setBody(body.getValue());
+
+  llvm::errs() << "function body: "
+               << std::static_pointer_cast<BlockExpression>(body.getValue())
+                      ->getExpressions()
+                      .getSize()
+               << "\n";
 
   return StringResult<std::shared_ptr<ast::Item>>(
       std::make_shared<Function>(fun));

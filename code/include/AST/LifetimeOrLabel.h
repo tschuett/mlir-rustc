@@ -13,6 +13,7 @@ public:
   LifetimeOrLabel(Location loc) : Node(loc) {}
 
   void setLifeTime(std::string_view l) { label = l; }
+  std::string getLabel() const { return label; }
 };
 
 } // namespace rust_compiler::ast

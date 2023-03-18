@@ -2,6 +2,7 @@
 
 #include "AST/EmptyStatement.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/InnerAttribute.h"
 #include "AST/ItemDeclaration.h"
 #include "AST/OuterAttribute.h"
 #include "AST/Statement.h"
@@ -404,6 +405,8 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
               .str();
       return Result<std::shared_ptr<ast::Expression>, std::string>(s);
     }
+    std::vector<InnerAttribute> inner = innerAttributes.getValue();
+    bloc.setInnerAttributes(inner);
   }
 
   Statements stmts = {loc};
@@ -442,8 +445,7 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
       stmts.setTrailing(eos.getExpression());
       break;
     }
-    llvm::errs() << "block expr: next iter"
-                 << "\n";
+    llvm::errs() << "block expr: next iter: " << stmts.getSize() << "\n";
   }
 
   if (!check(TokenKind::BraceClose)) {
@@ -454,11 +456,10 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
   }
   assert(eat(TokenKind::BraceClose));
 
-  BlockExpression block = {loc};
   bloc.setStatements(stmts);
 
   return Result<std::shared_ptr<ast::Expression>, std::string>(
-      std::make_shared<BlockExpression>(block));
+      std::make_shared<BlockExpression>(bloc));
 }
 
 } // namespace rust_compiler::parser

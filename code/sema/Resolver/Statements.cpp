@@ -15,7 +15,6 @@ void Resolver::resolveStatement(std::shared_ptr<ast::Statement> stmt,
                                 const adt::CanonicalPath &prefix,
                                 const adt::CanonicalPath &canonicalPrefix,
                                 const adt::CanonicalPath &enumPrefix) {
-  assert(false && "to be handled later");
   switch (stmt->getKind()) {
   case StatementKind::EmptyStatement: {
     assert(false && "to be handled later");

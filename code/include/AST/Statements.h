@@ -33,6 +33,9 @@ public:
   void setOnlySemi() { onlySemi = true; };
 
   bool containsBreakExpression();
+
+  size_t getNrOfStatements() const { return stmts.size(); }
+  size_t getSize() const { return stmts.size() + (bool)trailing; }
 };
 
 } // namespace rust_compiler::ast

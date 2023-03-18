@@ -15,6 +15,7 @@
 #include "Basic/Ids.h"
 #include "Resolver.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
 
@@ -166,7 +167,6 @@ void Resolver::resolveOperatorExpression(
     std::shared_ptr<ast::OperatorExpression> op,
     const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
-  assert(false && "to be handled later");
   switch (op->getKind()) {
   case OperatorExpressionKind::BorrowExpression: {
     assert(false && "to be handled later");
@@ -181,7 +181,6 @@ void Resolver::resolveOperatorExpression(
     assert(false && "to be handled later");
   }
   case OperatorExpressionKind::ArithmeticOrLogicalExpression: {
-    assert(false && "to be handled later");
     std::shared_ptr<ArithmeticOrLogicalExpression> arith =
         std::static_pointer_cast<ArithmeticOrLogicalExpression>(op);
     resolveExpression(arith->getLHS(), prefix, canonicalPrefix);
@@ -299,8 +298,7 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
     }
 
     if (resolvedNodeId != UNKNOWN_NODEID) {
-      if (tyCtx->isModule(resolvedNodeId) ||
-          tyCtx->isCrate(resolvedNodeId)) {
+      if (tyCtx->isModule(resolvedNodeId) || tyCtx->isCrate(resolvedNodeId)) {
         moduleScopeId = resolvedNodeId;
       }
     } else if (i == 0) {
@@ -344,11 +342,17 @@ void Resolver::resolveBlockExpression(
   pushNewTypeRib(getNameScope().peek());
   pushNewLabelRib(getLabelScope().peek());
 
+  llvm::errs() << "resolve block expression"
+               << "\n";
+
   const Statements &stmts = block->getExpressions();
 
-  for (auto &stmt : stmts.getStmts())
+  llvm::errs() << "resolve block expression " << stmts.getSize() << "\n";
+
+  for (auto &stmt : stmts.getStmts()) {
     resolveStatement(stmt, prefix, canonicalPrefix,
                      CanonicalPath::createEmpty());
+  }
 
   if (stmts.hasTrailing())
     resolveExpression(stmts.getTrailing(), prefix, canonicalPrefix);
@@ -356,12 +360,6 @@ void Resolver::resolveBlockExpression(
   getNameScope().pop();
   getTypeScope().pop();
   getLabelScope().pop();
-}
-
-void Resolver::resolveLoopExpression(
-    std::shared_ptr<ast::LoopExpression>, const adt::CanonicalPath &prefix,
-    const adt::CanonicalPath &canonicalPrefix) {
-  assert(false && "to be handled later");
 }
 
 } // namespace rust_compiler::sema::resolver

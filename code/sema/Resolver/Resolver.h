@@ -6,6 +6,7 @@
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/Implementation.h"
+#include "AST/InfiniteLoopExpression.h"
 #include "AST/InherentImpl.h"
 #include "AST/LetStatement.h"
 #include "AST/LoopExpression.h"
@@ -51,7 +52,7 @@ namespace rust_compiler::sema::resolver {
 ///  https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/struct.Resolver.html
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/struct.Rib.html
-enum class RibKind { Parameter, Type, Variable };
+enum class RibKind { Label, Parameter, Type, Variable };
 
 class Rib {
 public:
@@ -208,6 +209,10 @@ private:
   void resolveClosureExpression(std::shared_ptr<ast::ClosureExpression>,
                                 const adt::CanonicalPath &prefix,
                                 const adt::CanonicalPath &canonicalPrefix);
+  void
+  resolveInfiniteLoopExpression(std::shared_ptr<ast::InfiniteLoopExpression>,
+                                const adt::CanonicalPath &prefix,
+                                const adt::CanonicalPath &canonicalPrefix);
   void resolveQualifiedPathInExpression(
       std::shared_ptr<ast::QualifiedPathInExpression>);
 
@@ -236,7 +241,7 @@ private:
       std::shared_ptr<ast::patterns::PatternWithoutRange>, RibKind);
   void
       resolvePathPatternDeclaration(std::shared_ptr<ast::patterns::PathPattern>,
-                                RibKind);
+                                    RibKind);
 
   // statements
   void resolveStatement(std::shared_ptr<ast::Statement>,

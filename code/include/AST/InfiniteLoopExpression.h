@@ -2,6 +2,7 @@
 
 #include "AST/BlockExpression.h"
 #include "AST/LoopExpression.h"
+#include "AST/LoopLabel.h"
 
 #include <memory>
 #include <optional>
@@ -12,7 +13,7 @@ namespace rust_compiler::ast {
 
 class InfiniteLoopExpression final : public LoopExpression {
   std::shared_ptr<Expression> body;
-  std::optional<std::string> loopLabel;
+  std::optional<LoopLabel> loopLabel;
 
 public:
   InfiniteLoopExpression(Location loc)
@@ -21,7 +22,9 @@ public:
   std::shared_ptr<Expression> getBody() const { return body; }
 
   void setBody(std::shared_ptr<Expression> bod) { body = bod; }
-  void setLabel(std::string_view lab) { loopLabel = lab; }
+  void setLabel(LoopLabel ll) { loopLabel = ll; }
+  bool hasLabel() const { return loopLabel.has_value(); }
+  LoopLabel getLabel() const { return *loopLabel; }
 };
 
 } // namespace rust_compiler::ast
