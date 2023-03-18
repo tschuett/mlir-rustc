@@ -1,4 +1,4 @@
 fn foo(a: i32, b: i32) -> i32 {
-    loop {}
+    loop {};
     return a + b;
 }
