@@ -31,6 +31,7 @@
 #include "AST/Visiblity.h"
 #include "Basic/Ids.h"
 #include "Location.h"
+#include "TyCtx/TyCtx.h"
 
 #include "../TypeChecking/TyTy.h"
 #include "../TypeChecking/TypeChecking.h"
@@ -286,7 +287,7 @@ private:
   bool declNeedsCapture(basic::NodeId declRibNodeId,
                         basic::NodeId closureRibNodeId, const Scope &scope);
 
-  mappings::Mappings *mappings;
+  tyctx::TyCtx *tyCtx;
 
   // types
   type_checking::TypeCheckContext *tyctx;

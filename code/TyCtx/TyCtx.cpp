@@ -1,8 +1,8 @@
-#include "Mappings/Mappings.h"
+#include "TyCtx/TyCtx.h"
 
 #include "ADT/CanonicalPath.h"
-#include "Basic/Ids.h"
 #include "AST/Crate.h"
+#include "Basic/Ids.h"
 
 #include <memory>
 #include <optional>
@@ -10,43 +10,43 @@
 using namespace rust_compiler::basic;
 using namespace rust_compiler::ast;
 
-namespace rust_compiler::mappings {
+namespace rust_compiler::tyctx {
 
-Mappings *Mappings::get() {
-  static std::unique_ptr<Mappings> instance;
+TyCtx *TyCtx::get() {
+  static std::unique_ptr<TyCtx> instance;
   if (!instance)
-    instance = std::unique_ptr<Mappings>(new Mappings());
+    instance = std::unique_ptr<TyCtx>(new TyCtx());
 
   return instance.get();
 }
 
-NodeId Mappings::getNextNodeId() {
+NodeId TyCtx::getNextNodeId() {
   auto it = nodeIdIter;
   ++nodeIdIter;
   return it;
 }
 
-void Mappings::insertModule(ast::Module *mod) { assert(false); }
+void TyCtx::insertModule(ast::Module *mod) { assert(false); }
 
-ast::Module *Mappings::lookupModule(basic::NodeId id) {
+ast::Module *TyCtx::lookupModule(basic::NodeId id) {
   auto it = modules.find(id);
   if (it == modules.end())
     return nullptr;
   return it->second;
 }
 
-basic::CrateNum Mappings::getCurrentCrate() const { return currentCrateNum; }
+basic::CrateNum TyCtx::getCurrentCrate() const { return currentCrateNum; }
 
-void Mappings::setCurrentCrate(basic::CrateNum crateNum) {
+void TyCtx::setCurrentCrate(basic::CrateNum crateNum) {
   currentCrateNum = crateNum;
 }
 
-bool Mappings::isModule(NodeId id) {
+bool TyCtx::isModule(NodeId id) {
   return moduleChildItems.find(id) != moduleChildItems.end();
 }
 
 std::optional<adt::CanonicalPath>
-Mappings::lookupModuleChild(NodeId module, std::string_view itemName) {
+TyCtx::lookupModuleChild(NodeId module, std::string_view itemName) {
   std::optional<std::vector<adt::CanonicalPath>> children =
       lookupModuleChildrenItems(module);
   if (!children)
@@ -61,7 +61,7 @@ Mappings::lookupModuleChild(NodeId module, std::string_view itemName) {
 }
 
 std::optional<std::vector<adt::CanonicalPath>>
-Mappings::lookupModuleChildrenItems(basic::NodeId module) {
+TyCtx::lookupModuleChildrenItems(basic::NodeId module) {
   auto it = moduleChildItems.find(module);
   if (it == moduleChildItems.end())
     return std::nullopt;
@@ -69,7 +69,7 @@ Mappings::lookupModuleChildrenItems(basic::NodeId module) {
   return it->second;
 }
 
-bool Mappings::isCrate(NodeId nod) const {
+bool TyCtx::isCrate(NodeId nod) const {
   for (const auto &it : astCrateMappings) {
     NodeId crateNodeId = it.second->getNodeId();
     if (crateNodeId == nod)
@@ -78,8 +78,8 @@ bool Mappings::isCrate(NodeId nod) const {
   return false;
 }
 
-void Mappings::insertASTCrate(ast::Crate *crate, CrateNum crateNum) {
+void TyCtx::insertASTCrate(ast::Crate *crate, CrateNum crateNum) {
   astCrateMappings.insert({crateNum, crate});
 }
 
-} // namespace rust_compiler::mappings
+} // namespace rust_compiler::tyctx

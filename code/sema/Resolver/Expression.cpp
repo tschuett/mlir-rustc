@@ -282,7 +282,7 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
     if (resolvedNodeId == UNKNOWN_NODEID &&
         previousResolvedNodeId == moduleScopeId) {
       std::optional<CanonicalPath> resolvedChild =
-          mappings->lookupModuleChild(moduleScopeId, ident.toString());
+          tyCtx->lookupModuleChild(moduleScopeId, ident.toString());
       if (resolvedChild) {
         NodeId resolvedNode = resolvedChild->getNodeId();
         if (getNameScope().wasDeclDeclaredInCurrentScope(resolvedNode)) {
@@ -299,8 +299,8 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
     }
 
     if (resolvedNodeId != UNKNOWN_NODEID) {
-      if (mappings->isModule(resolvedNodeId) ||
-          mappings->isCrate(resolvedNodeId)) {
+      if (tyCtx->isModule(resolvedNodeId) ||
+          tyCtx->isCrate(resolvedNodeId)) {
         moduleScopeId = resolvedNodeId;
       }
     } else if (i == 0) {

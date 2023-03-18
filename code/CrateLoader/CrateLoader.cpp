@@ -1,7 +1,6 @@
 #include "CrateLoader/CrateLoader.h"
 
 #include "LoadModule.h"
-#include "Mappings/Mappings.h"
 
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/Support/FileSystem.h>
@@ -9,7 +8,6 @@
 
 using namespace llvm;
 using namespace rust_compiler::adt;
-using namespace rust_compiler::mappings;
 
 namespace rust_compiler::crate_loader {
 
@@ -20,7 +18,7 @@ std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
 
   llvm::outs() << "loadCrate: " << path << ":" << crateName << "\n";
 
-  Mappings::get()->setCurrentCrate(crateNum);
+  tyctx::TyCtx::get()->setCurrentCrate(crateNum);
 
   if (mode == LoadMode::File) {
     if (not llvm::sys::fs::exists(libFile)) {
@@ -47,7 +45,7 @@ std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
 
     // FIXME load and merge tree
 
-    Mappings::get()->insertASTCrate(crate.get(), crateNum);
+    tyctx::TyCtx::get()->insertASTCrate(crate.get(), crateNum);
 
     return crate;
   } else {

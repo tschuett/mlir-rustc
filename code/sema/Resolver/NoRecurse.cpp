@@ -1,12 +1,10 @@
 #include "ADT/CanonicalPath.h"
 #include "Resolver.h"
-#include "Mappings/Mappings.h"
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::adt;
 using namespace rust_compiler::basic;
 using namespace rust_compiler::sema;
-using namespace rust_compiler::mappings;
 
 namespace rust_compiler::sema::resolver {
 
@@ -15,7 +13,7 @@ void Resolver::resolveVisItemNoRecurse(
     const adt::CanonicalPath &canonicalPrefix) {
 
   NodeId currentModule = peekCurrentModuleScope();
-  Mappings::get()->insertChildItemToParentModuleMapping(visItem->getNodeId(),
+  tyCtx->insertChildItemToParentModuleMapping(visItem->getNodeId(),
                                                         currentModule);
   switch (visItem->getKind()) {
   case VisItemKind::Module: {
@@ -72,12 +70,14 @@ void Resolver::resolveFunctionNoRecurse(
   /// FIXME
 
   NodeId currentModule = peekCurrentModuleScope();
-  Mappings::get()->insertModuleChildItem(currentModule, segment);
-  Mappings::get()->insertCanonicalPath(fun->getNodeId(), path);
+  tyCtx->insertModuleChildItem(currentModule, segment);
+  tyCtx->insertCanonicalPath(fun->getNodeId(), path);
 }
 
 void Resolver::resolveMacroItemNoRecurse(
     std::shared_ptr<ast::MacroItem>, const adt::CanonicalPath &prefix,
-    const adt::CanonicalPath &canonicalPrefix) {}
+    const adt::CanonicalPath &canonicalPrefix) {
+  assert(false && "to be implemented");
+}
 
 } // namespace rust_compiler::sema::resolver

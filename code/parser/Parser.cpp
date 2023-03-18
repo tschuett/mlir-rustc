@@ -11,6 +11,7 @@
 #include "Lexer/Token.h"
 
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/FormatVariadic.h>
 #include <string>
 #include <vector>
 
@@ -468,8 +469,12 @@ Parser::parseCrateModule(std::string_view crateName, basic::CrateNum crateNum) {
       llvm::errs() << "failed to parse inner attributes in crate : "
                    << innerAttributes.getError() << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
-      xxx
+      std::string s =
+          llvm::formatv("{0}\n{1}",
+                        "failed to parse inner attributes in crate : ",
+                        innerAttributes.getError())
+              .str();
+      return Result<std::shared_ptr<ast::Crate>, std::string>(s);
     }
     std::vector<InnerAttribute> inner = innerAttributes.getValue();
     crate.setInnerAttributes(inner);
@@ -486,8 +491,12 @@ Parser::parseCrateModule(std::string_view crateName, basic::CrateNum crateNum) {
       llvm::errs() << "failed to parse item in crate: " << item.getError()
                    << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
-      xxx
+      std::string s =
+          llvm::formatv("{0}\n{1}",
+                        "failed to parse item in crate : ",
+                        item.getError())
+              .str();
+      return Result<std::shared_ptr<ast::Crate>, std::string>(s);
     }
     crate.addItem(item.getValue());
   }

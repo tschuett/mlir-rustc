@@ -61,4 +61,4 @@ add_library(ast
 target_include_directories(ast PRIVATE  ../include)
 
 
-target_link_libraries(ast Mappings)
+target_link_libraries(ast TyCtx)

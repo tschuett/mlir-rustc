@@ -6,4 +6,4 @@ add_library(CrateLoader
 target_include_directories(CrateLoader PRIVATE  ../include)
 
 
-target_link_libraries(CrateLoader ast Serialization lexer parser Mappings)
+target_link_libraries(CrateLoader ast Serialization lexer parser TyCtx)

@@ -12,11 +12,11 @@ class Item;
 class Crate;
 } // namespace rust_compiler::ast
 
-namespace rust_compiler::mappings {
+namespace rust_compiler::tyctx {
 
-class Mappings {
+class TyCtx {
 public:
-  static Mappings *get();
+  static TyCtx *get();
 
   basic::NodeId getNextNodeId();
 
@@ -85,4 +85,4 @@ private:
   std::map<basic::CrateNum, ast::Crate *> astCrateMappings;
 };
 
-} // namespace rust_compiler::mappings
+} // namespace rust_compiler::tyctx

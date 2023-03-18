@@ -18,6 +18,6 @@ add_subdirectory(CrateLoader)
 add_subdirectory(Serialization)
 add_subdirectory(Lir)
 add_subdirectory(Frontend)
-add_subdirectory(Mappings)
+add_subdirectory(TyCtx)
 
 

@@ -68,11 +68,11 @@ void Resolver::pushNewLabelRib(Rib *r) { labelRibs[r->getNodeId()] = r; }
 void Resolver::pushNewMaroRib(Rib *r) { macroRibs[r->getNodeId()] = r; }
 
 Resolver::Resolver() noexcept
-    : mappings(mappings::Mappings::get()), tyctx(TypeCheckContext::get()),
-      nameScope(Scope(mappings->getCurrentCrate())),
-      typeScope(Scope(mappings->getCurrentCrate())),
-      labelScope(Scope(mappings->getCurrentCrate())),
-      macroScope(Scope(mappings->getCurrentCrate())),
+    : tyCtx(tyctx::TyCtx::get()), tyctx(TypeCheckContext::get()),
+      nameScope(Scope(tyCtx->getCurrentCrate())),
+      typeScope(Scope(tyCtx->getCurrentCrate())),
+      labelScope(Scope(tyCtx->getCurrentCrate())),
+      macroScope(Scope(tyCtx->getCurrentCrate())),
       globalTypeNodeId(UNKNOWN_NODEID), unitTyNodeId(UNKNOWN_NODEID) {
   generateBuiltins();
 }
@@ -143,7 +143,7 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
     std::shared_ptr<ast::Module> mod =
         std::static_pointer_cast<Module>(visItem);
     basic::NodeId modNodeId = mod->getNodeId();
-    mappings::Mappings::get()->insertModule(mod.get());
+    tyCtx->insertModule(mod.get());
     pushNewModuleScope(modNodeId);
     resolveModule(mod, prefix, canonicalPrefix);
     popModuleScope();

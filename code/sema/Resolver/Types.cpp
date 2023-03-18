@@ -151,7 +151,7 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
     if (resolvedNodeId == UNKNOWN_NODEID &&
         previousResolveNodeId == moduleScopeId) {
       std::optional<adt::CanonicalPath> resolvedChild =
-          mappings->lookupModuleChild(moduleScopeId, ident.toString());
+          tyCtx->lookupModuleChild(moduleScopeId, ident.toString());
       if (resolvedChild) {
         NodeId resolvedNode = resolvedChild->getNodeId();
         if (getNameScope().wasDeclDeclaredInCurrentScope(resolvedNode)) {
@@ -169,8 +169,8 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
 
     bool didResolveSegment = resolvedNodeId != UNKNOWN_NODEID;
     if (didResolveSegment) {
-      if (mappings->isModule(resolvedNodeId) ||
-          mappings->isCrate(resolvedNodeId)) {
+      if (tyCtx->isModule(resolvedNodeId) ||
+          tyCtx->isCrate(resolvedNodeId)) {
         moduleScopeId = resolvedNodeId;
       }
       previousResolveNodeId = resolvedNodeId;

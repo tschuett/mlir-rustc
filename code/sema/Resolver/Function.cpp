@@ -1,11 +1,9 @@
 #include "Resolver.h"
-#include "Mappings/Mappings.h"
 #include "llvm/Support/raw_ostream.h"
 
 using namespace rust_compiler::adt;
 using namespace rust_compiler::ast;
 using namespace rust_compiler::basic;
-using namespace rust_compiler::mappings;
 
 namespace rust_compiler::sema::resolver {
 
@@ -20,7 +18,7 @@ void Resolver::resolveFunction(std::shared_ptr<ast::Function> fun,
   CanonicalPath path = prefix.append(segment);
   CanonicalPath cpath = canonicalPrefix.append(segment);
 
-  Mappings::get()->insertCanonicalPath(fun->getNodeId(), cpath);
+  tyCtx->insertCanonicalPath(fun->getNodeId(), cpath);
 
   resolveVisibility(fun->getVisibility());
 

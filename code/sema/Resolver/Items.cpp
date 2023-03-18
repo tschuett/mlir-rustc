@@ -1,10 +1,8 @@
 #include "ADT/CanonicalPath.h"
 #include "Resolver.h"
-#include "Mappings/Mappings.h"
 
 using namespace rust_compiler::adt;
 using namespace rust_compiler::ast;
-using namespace rust_compiler::mappings;
 
 namespace rust_compiler::sema::resolver {
 
@@ -23,7 +21,7 @@ void Resolver::resolveStaticItem(std::shared_ptr<ast::StaticItem> stat,
   CanonicalPath path = prefix.append(decl);
   CanonicalPath cpath = canonicalPrefix.append(decl);
 
-  Mappings::get()->insertCanonicalPath(stat->getNodeId(), cpath);
+  tyCtx->insertCanonicalPath(stat->getNodeId(), cpath);
 
   resolveType(stat->getType());
   if (stat->hasInit())
@@ -39,7 +37,7 @@ void Resolver::resolveConstantItem(std::shared_ptr<ast::ConstantItem> cons,
   CanonicalPath path = prefix.append(decl);
   CanonicalPath cpath = canonicalPrefix.append(decl);
 
-  Mappings::get()->insertCanonicalPath(cons->getNodeId(), cpath);
+  tyCtx->insertCanonicalPath(cons->getNodeId(), cpath);
 
   resolveVisibility(cons->getVisibility());
 

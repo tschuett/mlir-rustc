@@ -2,7 +2,7 @@
 
 #include "Basic/Ids.h"
 #include "Location.h"
-#include "Mappings/Mappings.h"
+#include "TyCtx/TyCtx.h"
 
 #include <cstddef>
 #include <vector>
@@ -18,7 +18,7 @@ class Node {
 
 public:
   explicit Node(Location location) : location(location) {
-    nodeId = mappings::Mappings::get()->getNextNodeId();
+    nodeId = tyctx::TyCtx::get()->getNextNodeId();
   }
 
   virtual ~Node() = default;

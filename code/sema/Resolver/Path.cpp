@@ -50,7 +50,7 @@ std::optional<NodeId> Resolver::resolveSimplePath(const ast::SimplePath &path) {
     }
 
     std::optional<adt::CanonicalPath> resolvedChild =
-        mappings->lookupModuleChild(moduleScopeId, segment.getName());
+        tyCtx->lookupModuleChild(moduleScopeId, segment.getName());
     if (resolvedChild) {
       NodeId resolvedNode = resolvedChild->getNodeId();
 
@@ -91,7 +91,7 @@ std::optional<NodeId> Resolver::resolveSimplePath(const ast::SimplePath &path) {
       return std::nullopt;
     }
 
-    if (mappings->isModule(resolvedNodeId))
+    if (tyCtx->isModule(resolvedNodeId))
       moduleScopeId = resolvedNodeId;
   }
 
