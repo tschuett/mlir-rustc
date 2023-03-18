@@ -429,10 +429,7 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
       return Result<std::shared_ptr<ast::Expression>, std::string>(s);
     }
 
-    llvm::errs() << "block expr: success" << expr.isOk() << "\n";
-
     ExpressionOrStatement eos = expr.getValue();
-    llvm::errs() << "block expr: success" << expr.isOk() << "\n";
 
     if (eos.getKind() == ExpressionOrStatementKind::Statement) {
       stmts.addStmt(eos.getStatement());
@@ -445,7 +442,6 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
       stmts.setTrailing(eos.getExpression());
       break;
     }
-    llvm::errs() << "block expr: next iter: " << stmts.getSize() << "\n";
   }
 
   if (!check(TokenKind::BraceClose)) {

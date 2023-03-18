@@ -342,12 +342,7 @@ void Resolver::resolveBlockExpression(
   pushNewTypeRib(getNameScope().peek());
   pushNewLabelRib(getLabelScope().peek());
 
-  llvm::errs() << "resolve block expression"
-               << "\n";
-
   const Statements &stmts = block->getExpressions();
-
-  llvm::errs() << "resolve block expression " << stmts.getSize() << "\n";
 
   for (auto &stmt : stmts.getStmts()) {
     resolveStatement(stmt, prefix, canonicalPrefix,

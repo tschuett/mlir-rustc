@@ -538,8 +538,8 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
         std::make_shared<ast::VisItem>(fun));
   }
 
-  llvm::outs() << "parseFunction: parse body"
-               << "\n";
+//  llvm::outs() << "parseFunction: parse body"
+//               << "\n";
 
   Result<std::shared_ptr<ast::Expression>, std::string> body =
       parseBlockExpression({});
@@ -554,11 +554,11 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   }
   fun.setBody(body.getValue());
 
-  llvm::errs() << "function body: "
-               << std::static_pointer_cast<BlockExpression>(body.getValue())
-                      ->getExpressions()
-                      .getSize()
-               << "\n";
+//  llvm::errs() << "function body: "
+//               << std::static_pointer_cast<BlockExpression>(body.getValue())
+//                      ->getExpressions()
+//                      .getSize()
+//               << "\n";
 
   return StringResult<std::shared_ptr<ast::Item>>(
       std::make_shared<Function>(fun));

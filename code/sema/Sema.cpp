@@ -2,10 +2,12 @@
 
 #include "AST/Crate.h"
 #include "AST/Function.h"
+#include "AST/Item.h"
 #include "AST/Module.h"
 #include "AST/VisItem.h"
 #include "Resolver/Resolver.h"
 #include "TypeChecking/TypeChecking.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include <llvm/Support/TimeProfiler.h>
 #include <memory>
@@ -41,7 +43,7 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
 
   {
     TimeTraceScope scope("name resolution");
-    resolver.resolveCrate(crate);
+    //    resolver.resolveCrate(crate);
   }
 
   { TimeTraceScope scope("type inference"); }
@@ -58,55 +60,65 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
 
   { TimeTraceScope scope("constant evaluation"); }
 
-  for (const auto &item : crate->getItems()) {
-    const auto &visItem = item->getVisItem();
-//    if (!(bool)visItem)
-//      continue;
-//
-    // FIXME: weird
+  {
+    TimeTraceScope scope("Sema");
 
-    switch (visItem->getKind()) {
-    case VisItemKind::Module: {
-      break;
+    for (auto &item : crate->getItems()) {
+      switch (item->getItemKind()) {
+      case ItemKind::VisItem: {
+        analyzeVisItem(std::static_pointer_cast<VisItem>(item));
+        break;
+      case ItemKind::MacroItem: {
+        break;
+      }
+      }
+      }
     }
-    case VisItemKind::ExternCrate: {
-      break;
-    }
-    case VisItemKind::UseDeclaration: {
-      break;
-    }
-    case VisItemKind::Function: {
-      analyzeFunction(std::static_pointer_cast<Function>(visItem));
-      break;
-    }
-    case VisItemKind::TypeAlias: {
-      break;
-    }
-    case VisItemKind::Struct: {
-      break;
-    }
-    case VisItemKind::Enumeration: {
-      break;
-    }
-    case VisItemKind::Union: {
-      break;
-    }
-    case VisItemKind::ConstantItem: {
-      break;
-    }
-    case VisItemKind::StaticItem: {
-      break;
-    }
-    case VisItemKind::Trait: {
-      break;
-    }
-    case VisItemKind::Implementation: {
-      break;
-    }
-    case VisItemKind::ExternBlock: {
-      break;
-    }
-    }
+  }
+}
+
+void Sema::analyzeVisItem(std::shared_ptr<ast::VisItem> vis) {
+  switch (vis->getKind()) {
+  case VisItemKind::Module: {
+    break;
+  }
+  case VisItemKind::ExternCrate: {
+    break;
+  }
+  case VisItemKind::UseDeclaration: {
+    break;
+  }
+  case VisItemKind::Function: {
+    analyzeFunction(std::static_pointer_cast<Function>(vis));
+    break;
+  }
+  case VisItemKind::TypeAlias: {
+    break;
+  }
+  case VisItemKind::Struct: {
+    break;
+  }
+  case VisItemKind::Enumeration: {
+    break;
+  }
+  case VisItemKind::Union: {
+    break;
+  }
+  case VisItemKind::ConstantItem: {
+    break;
+  }
+  case VisItemKind::StaticItem: {
+    break;
+  }
+  case VisItemKind::Trait: {
+    break;
+  }
+  case VisItemKind::Implementation: {
+    break;
+  }
+  case VisItemKind::ExternBlock: {
+    break;
+  }
   }
 }
 

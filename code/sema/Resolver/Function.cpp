@@ -11,8 +11,6 @@ void Resolver::resolveFunction(std::shared_ptr<ast::Function> fun,
                                const adt::CanonicalPath &prefix,
                                const adt::CanonicalPath &canonicalPrefix) {
 
-  llvm::errs() << "name resolution in function" << "\n";
-  
   CanonicalPath segment =
       CanonicalPath::newSegment(fun->getNodeId(), fun->getName());
   CanonicalPath path = prefix.append(segment);

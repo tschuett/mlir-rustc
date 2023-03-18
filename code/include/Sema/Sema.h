@@ -32,6 +32,7 @@ private:
   void walkVisItem(std::shared_ptr<ast::VisItem> item);
   void walkOuterAttributes(std::span<ast::OuterAttribute>);
 
+  void analyzeVisItem(std::shared_ptr<ast::VisItem> vis);
   void analyzeFunction(std::shared_ptr<ast::Function> fun);
   void analyzeBlockExpression(std::shared_ptr<ast::BlockExpression> block);
   void analyzeStatements(ast::Statements stmts);
