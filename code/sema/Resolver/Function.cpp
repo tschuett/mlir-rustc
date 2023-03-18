@@ -1,5 +1,6 @@
 #include "Resolver.h"
 #include "Mappings/Mappings.h"
+#include "llvm/Support/raw_ostream.h"
 
 using namespace rust_compiler::adt;
 using namespace rust_compiler::ast;
@@ -11,6 +12,9 @@ namespace rust_compiler::sema::resolver {
 void Resolver::resolveFunction(std::shared_ptr<ast::Function> fun,
                                const adt::CanonicalPath &prefix,
                                const adt::CanonicalPath &canonicalPrefix) {
+
+  llvm::errs() << "name resolution in function" << "\n";
+  
   CanonicalPath segment =
       CanonicalPath::newSegment(fun->getNodeId(), fun->getName());
   CanonicalPath path = prefix.append(segment);

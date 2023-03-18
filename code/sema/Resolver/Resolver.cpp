@@ -81,7 +81,7 @@ void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
   // FIXME
 
   // setup scopes
-  llvm::errs() << "crate name: " << crate->getCrateName() << "\n";
+  llvm::errs() << "resolve: crate name: " << crate->getCrateName() << "\n";
 
   NodeId scopeNodeId = crate->getNodeId();
   getNameScope().push(scopeNodeId);

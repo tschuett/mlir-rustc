@@ -59,7 +59,7 @@ void Resolver::resolveExpressionWithBlock(
   case ExpressionWithBlockKind::LoopExpression: {
     resolveLoopExpression(std::static_pointer_cast<LoopExpression>(withBlock),
                           prefix, canonicalPrefix);
-    assert(false && "to be handled later");
+    break;
   }
   case ExpressionWithBlockKind::IfExpression: {
     assert(false && "to be handled later");
@@ -123,10 +123,10 @@ void Resolver::resolveExpressionWithoutBlock(
     assert(false && "to be handled later");
   }
   case ExpressionWithoutBlockKind::ClosureExpression: {
-    assert(false && "to be handled later");
     resolveClosureExpression(
         std::static_pointer_cast<ClosureExpression>(woBlock), prefix,
         canonicalPrefix);
+    break;
   }
   case ExpressionWithoutBlockKind::AsyncBlockExpression: {
     assert(false && "to be handled later");
@@ -186,6 +186,7 @@ void Resolver::resolveOperatorExpression(
         std::static_pointer_cast<ArithmeticOrLogicalExpression>(op);
     resolveExpression(arith->getLHS(), prefix, canonicalPrefix);
     resolveExpression(arith->getRHS(), prefix, canonicalPrefix);
+    break;
   }
   case OperatorExpressionKind::ComparisonExpression: {
     assert(false && "to be handled later");

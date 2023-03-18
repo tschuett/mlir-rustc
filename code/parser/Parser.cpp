@@ -469,6 +469,7 @@ Parser::parseCrateModule(std::string_view crateName, basic::CrateNum crateNum) {
                    << innerAttributes.getError() << "\n";
       printFunctionStack();
       exit(EXIT_FAILURE);
+      xxx
     }
     std::vector<InnerAttribute> inner = innerAttributes.getValue();
     crate.setInnerAttributes(inner);
@@ -486,6 +487,7 @@ Parser::parseCrateModule(std::string_view crateName, basic::CrateNum crateNum) {
                    << "\n";
       printFunctionStack();
       exit(EXIT_FAILURE);
+      xxx
     }
     crate.addItem(item.getValue());
   }

@@ -11,6 +11,32 @@ using namespace rust_compiler::ast;
 using namespace rust_compiler::adt;
 using namespace rust_compiler::sema;
 
+TEST(SemaTest, CheckSema2) {
+  std::string text = R"del(
+fn foo(a: i32, b: i32) -> i32 {
+    loop {}
+    return a + b;
+}
+)del";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts};
+
+  Result<std::shared_ptr<rust_compiler::ast::Crate>, std::string> result =
+    parser.parseCrateModule("crate", 5);
+
+  if (!result)
+    llvm::errs() << "error: " << result.getError() << "/n";
+
+  EXPECT_TRUE(result.isOk());
+
+  std::shared_ptr<rust_compiler::ast::Crate> crate = result.getValue();
+
+  Sema sema;
+  sema.analyze(crate);
+};
+
 TEST(SemaTest, CheckSema1) {
   std::string text = R"del(
 fn foo(a: i32, b: i32) -> i32 {
@@ -35,3 +61,6 @@ fn foo(a: i32, b: i32) -> i32 {
   Sema sema;
   sema.analyze(crate);
 };
+
+
+

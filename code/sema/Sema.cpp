@@ -60,9 +60,9 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
 
   for (const auto &item : crate->getItems()) {
     const auto &visItem = item->getVisItem();
-    if (!(bool)visItem)
-      continue;
-
+//    if (!(bool)visItem)
+//      continue;
+//
     // FIXME: weird
 
     switch (visItem->getKind()) {
