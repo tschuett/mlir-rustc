@@ -22,8 +22,8 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
   CheckPoint cp = getCheckPoint();
 
-  llvm::errs() << "parseTraitObjectTypeOrTypePathOrMacroInvocation"
-               << "\n";
+//  llvm::errs() << "parseTraitObjectTypeOrTypePathOrMacroInvocation"
+//               << "\n";
 
   while (true) {
     llvm::errs() << lexer::Token2String(getToken().getKind()) << "\n";
@@ -104,9 +104,9 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>> Parser::
   Location loc = getLocation();
   CheckPoint cp = getCheckPoint();
 
-  llvm::outs() << "parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObje"
-                  "ctTypeOrBareFunctionType"
-               << "\n";
+//  llvm::outs() << "parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObje"
+//                  "ctTypeOrBareFunctionType"
+//               << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_DYN)) {
     return parseTraitObjectType();

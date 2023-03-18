@@ -198,8 +198,8 @@ StringResult<ast::PathIdentSegment> Parser::parsePathIdentSegment() {
 
   PathIdentSegment seg = {loc};
 
-  llvm::errs() << "parsePathIdentSegment"
-               << "\n";
+//  llvm::errs() << "parsePathIdentSegment"
+//               << "\n";
 
   if (check(TokenKind::Identifier)) {
     Token tok = getToken();
@@ -387,10 +387,10 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTypePath() {
   Location loc = getLocation();
 
-  llvm::errs() << "parseTypePath"
-               << "\n";
-  llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind())
-               << "\n";
+//  llvm::errs() << "parseTypePath"
+//               << "\n";
+//  llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind())
+//               << "\n";
 
   class TypePath path = {loc};
 

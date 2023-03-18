@@ -6,6 +6,7 @@
 #include "AST/Module.h"
 #include "AST/VisItem.h"
 #include "Resolver/Resolver.h"
+#include "TyCtx/TyCtx.h"
 #include "TypeChecking/TypeChecking.h"
 #include "llvm/Support/raw_ostream.h"
 
@@ -43,10 +44,13 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
 
   {
     TimeTraceScope scope("name resolution");
-    //    resolver.resolveCrate(crate);
+    resolver.resolveCrate(crate);
   }
 
-  { TimeTraceScope scope("type inference"); }
+  {
+    TimeTraceScope scope("type inference");
+    type_checking::checkCrate(tyctx::TyCtx::get());
+  }
 
   { TimeTraceScope scope("trait solving"); }
 

@@ -1,5 +1,7 @@
 #include "TypeChecking.h"
 
+#include <cassert>
+
 namespace rust_compiler::sema::type_checking {
 
 TypeCheckContext *TypeCheckContext::get() {
@@ -20,5 +22,7 @@ void TypeCheckContext::insertBuiltin(basic::NodeId nodeId,
   resolvedTypes[nodeId] = type;
   builtinTypes.push_back(std::unique_ptr<TyTy::BaseType>(type));
 }
+
+void checkCrate(tyctx::TyCtx *tcx) { assert(false && "to be implemented"); }
 
 } // namespace rust_compiler::sema::type_checking
