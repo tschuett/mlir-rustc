@@ -43,7 +43,6 @@ void createDefaultOptimizerPassPipeline(mlir::PassManager &pm,
   pm.addPass(mlir::createCSEPass());
   // pm.addPass(optimizer::createCombinerPass());
   pm.addPass(mlir::createSCCPPass());
-
   pm.addPass(mlir::createInlinerPass());
 
   //  pm.addPass(mlir::createLoopInvariantCodeMotionPass());
