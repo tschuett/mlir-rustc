@@ -16,7 +16,9 @@ class FunctionParameters {
   std::optional<SelfParam> selfParam;
 
 public:
-  FunctionParameters(Location loc) : loc(loc), selfParam(loc) {}
+  FunctionParameters(Location loc) : loc(loc), selfParam(loc) {
+    selfParam = std::nullopt;
+  }
 
   std::vector<FunctionParam> getParams() { return params; }
 

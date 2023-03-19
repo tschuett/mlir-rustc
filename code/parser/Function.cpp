@@ -87,6 +87,8 @@ StringResult<ast::SelfParam> Parser::parseSelfParam() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
+  llvm::errs() << "parseSelfParam" << "\n";
+
   SelfParam self = {loc};
 
   if (checkOuterAttribute()) {
@@ -162,13 +164,37 @@ StringResult<ast::SelfParam> Parser::parseSelfParam() {
 }
 
 bool Parser::checkSelfParam() {
+  CheckPoint cp = getCheckPoint();
+
+  if (checkOuterAttribute()) {
+    StringResult<std::vector<ast::OuterAttribute>> parsedOuterAttributes =
+        parseOuterAttributes();
+    if (!parsedOuterAttributes) {
+      llvm::errs() << "failed to parse outer attributes in check self param: "
+                   << parsedOuterAttributes.getError() << "\n";
+      printFunctionStack();
+      std::string s =
+          llvm::formatv(
+              "{0} {1}",
+              "failed to parse outer attributes in check self param: ",
+              parsedOuterAttributes.getError())
+              .str();
+      return StringResult<ast::FunctionParam>(s);
+    }
+  }
+
   if (check(TokenKind::And)) {
+    recover(cp);
     return true;
   } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
+    recover(cp);
     return true;
   } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
+    recover(cp);
     return true;
   }
+
+  recover(cp);
   return false;
 }
 
@@ -178,13 +204,18 @@ StringResult<ast::FunctionParameters> Parser::parseFunctionParameters() {
 
   ast::FunctionParameters parameters = {loc};
 
-  if (checkSelfParam()) { // FIXME OuterAttributes
+  if (checkSelfParam()) {
     StringResult<ast::SelfParam> selfParam = parseSelfParam();
     if (!selfParam) {
       llvm::errs() << "failed to parse self param: " << selfParam.getError()
                    << "\n";
       printFunctionStack();
-      exit(EXIT_FAILURE);
+      // exit(EXIT_FAILURE);
+      std::string s =
+          llvm::formatv("{0}\n{1}",
+                        "failed to parse self param: ", selfParam.getError())
+              .str();
+      return StringResult<ast::FunctionParameters>(s);
     }
     parameters.addSelfParam(selfParam.getValue());
     if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
@@ -193,8 +224,29 @@ StringResult<ast::FunctionParameters> Parser::parseFunctionParameters() {
     } else if (check(TokenKind::ParenClose)) {
       return StringResult<ast::FunctionParameters>(parameters);
     } else {
-      // continue
       while (true) {
+        // copy and paste
+        if (check(TokenKind::Eof)) {
+          llvm::errs() << "unexpected EOF"
+                       << "\n";
+          exit(EXIT_FAILURE);
+        } else if (check(TokenKind::ParenClose)) {
+          return StringResult<ast::FunctionParameters>(parameters);
+        } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
+          assert(eat(TokenKind::Comma));
+          return StringResult<ast::FunctionParameters>(parameters);
+        } else if (check(TokenKind::Comma)) {
+          assert(eat(TokenKind::Comma));
+        } else {
+          StringResult<ast::FunctionParam> param = parseFunctionParam();
+          if (!param) {
+            llvm::errs() << "failed to parse function param: "
+                         << param.getError() << "\n";
+            printFunctionStack();
+            exit(EXIT_FAILURE);
+          }
+          parameters.addFunctionParam(param.getValue());
+        }
       }
     }
   } else {
@@ -230,11 +282,11 @@ StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
-//  llvm::errs() << "parseFunctionParamPattern"
-//               << "\n";
-//
-//  llvm::errs() << "parseFunctionParamPattern: pattern"
-//               << "\n";
+  //  llvm::errs() << "parseFunctionParamPattern"
+  //               << "\n";
+  //
+  //  llvm::errs() << "parseFunctionParamPattern: pattern"
+  //               << "\n";
 
   StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>> pattern =
       parsePatternNoTopAlt();
@@ -269,8 +321,8 @@ StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
     return StringResult<ast::FunctionParamPattern>(pat);
   }
 
-//  llvm::errs() << "parseFunctionParamPattern: type"
-//               << "\n";
+  //  llvm::errs() << "parseFunctionParamPattern: type"
+  //               << "\n";
 
   Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
       parseType();
@@ -287,8 +339,8 @@ StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
     return StringResult<ast::FunctionParamPattern>(s);
   }
 
-//  llvm::errs() << "parseFunctionParamPattern: done: "
-//               << Token2String(getToken().getKind()) << "\n";
+  //  llvm::errs() << "parseFunctionParamPattern: done: "
+  //               << Token2String(getToken().getKind()) << "\n";
 
   FunctionParamPattern pat = (loc);
   pat.setName(pattern.getValue());
@@ -434,8 +486,8 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
 
   Function fun = {loc, vis};
 
-//  llvm::outs() << "parseFunction"
-//               << "\n";
+  //  llvm::outs() << "parseFunction"
+  //               << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_CONST) ||
       checkKeyWord(KeyWordKind::KW_ASYNC) ||
@@ -538,8 +590,8 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
         std::make_shared<ast::VisItem>(fun));
   }
 
-//  llvm::outs() << "parseFunction: parse body"
-//               << "\n";
+  //  llvm::outs() << "parseFunction: parse body"
+  //               << "\n";
 
   Result<std::shared_ptr<ast::Expression>, std::string> body =
       parseBlockExpression({});
@@ -554,11 +606,11 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   }
   fun.setBody(body.getValue());
 
-//  llvm::errs() << "function body: "
-//               << std::static_pointer_cast<BlockExpression>(body.getValue())
-//                      ->getExpressions()
-//                      .getSize()
-//               << "\n";
+  //  llvm::errs() << "function body: "
+  //               << std::static_pointer_cast<BlockExpression>(body.getValue())
+  //                      ->getExpressions()
+  //                      .getSize()
+  //               << "\n";
 
   return StringResult<std::shared_ptr<ast::Item>>(
       std::make_shared<Function>(fun));
