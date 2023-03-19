@@ -20,6 +20,8 @@ basic::NodeId BaseType::getReference() const { return reference; }
 
 basic::NodeId BaseType::getTypeReference() const { return typeReference; }
 
+void BaseType::setReference(basic::NodeId ref) { reference = ref; }
+
 BoolType::BoolType(basic::NodeId reference)
     : BaseType(reference, reference, TypeKind::Bool, TypeIdentity::empty()) {}
 

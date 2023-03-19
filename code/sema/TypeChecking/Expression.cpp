@@ -270,8 +270,10 @@ bool TypeResolver::validateArithmeticType(
     case TyTy::TypeKind::ISize:
       return true;
     case TyTy::TypeKind::Inferred:
-      return (t->getInferredKind() == TyTy::InferKind::Integral) or
-             (t->getInferredKind() == TyTy::InferKind::Float);
+      return (static_cast<TyTy::InferType *>(t)->getInferredKind() ==
+              TyTy::InferKind::Integral) or
+             (static_cast<TyTy::InferType *>(t)->getInferredKind() ==
+              TyTy::InferKind::Float);
     default:
       return false;
     }
@@ -288,7 +290,8 @@ bool TypeResolver::validateArithmeticType(
     case TyTy::TypeKind::Bool:
       return true;
     case TyTy::TypeKind::Inferred:
-      return t->getInferredKind() == TyTy::InferKind::Integral;
+      return static_cast<TyTy::InferType *>(t)->getInferredKind() ==
+             TyTy::InferKind::Integral;
     default:
       return false;
     }
@@ -303,7 +306,8 @@ bool TypeResolver::validateArithmeticType(
     case TyTy::TypeKind::ISize:
       return true;
     case TyTy::TypeKind::Inferred:
-      return t->getInferredKind() == TyTy::InferKind::Integral;
+      return static_cast<TyTy::InferType *>(t)->getInferredKind() ==
+             TyTy::InferKind::Integral;
     default:
       return false;
     }

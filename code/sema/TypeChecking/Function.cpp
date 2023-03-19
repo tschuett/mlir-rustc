@@ -16,8 +16,6 @@ using namespace rust_compiler::ast;
 namespace rust_compiler::sema::type_checking {
 
 void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
-  assert(false && "to be implemented");
-
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
 
   // generics
@@ -71,6 +69,9 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
   }
 
   TyTy::BaseType *bodyType = checkExpression(f->getBody());
+
+    assert(false && "to be implemented");
+
 }
 
 } // namespace rust_compiler::sema::type_checking

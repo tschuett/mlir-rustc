@@ -10,11 +10,7 @@ namespace rust_compiler::sema::type_checking::TyTy {
 // https://rustc-dev-guide.rust-lang.org/type-inference.html#inference-variables
 // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_type_ir/sty/enum.TyKind.html
 
-enum class InferKind {
-  Integral,
-  Float,
-  General
-};
+enum class InferKind { Integral, Float, General };
 
 enum class TypeKind {
   Bool,
@@ -50,7 +46,6 @@ public:
   void setReference(basic::NodeId);
 
   TypeKind getKind() const { return kind; }
-  InferKind getInferredKind() const;
 
 protected:
   BaseType(basic::NodeId ref, basic::NodeId ty_ref, TypeKind kind,
@@ -131,14 +126,22 @@ class FunctionType : public BaseType {
 public:
   FunctionType(basic::NodeId, Location loc);
 
-  static TupleType *getUnitType(basic::NodeId);
 };
 
 class ClosureType : public BaseType {
 public:
   ClosureType(basic::NodeId, Location loc);
 
-  static TupleType *getUnitType(basic::NodeId);
+};
+
+class InferType : public BaseType {
+public:
+  InferType(basic::NodeId, Location loc);
+
+  InferKind getInferredKind() const { return inferKind; }
+
+private:
+  InferKind inferKind;
 };
 
 class WithLocation {

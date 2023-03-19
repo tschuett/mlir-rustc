@@ -89,4 +89,8 @@ void TyCtx::insertBuiltin(NodeId id, NodeId ref, TyTy::BaseType *type) {
   builtins.push_back(std::unique_ptr<TyTy::BaseType>(type));
 }
 
+void TyCtx::insertType(const NodeIdentity &id, TyTy::BaseType *type) {
+  resolved[id.getNodeId()] = type;
+}
+
 } // namespace rust_compiler::tyctx
