@@ -9,6 +9,8 @@
 #include "AST/LiteralExpression.h"
 #include "AST/MacroItem.h"
 #include "AST/OperatorExpression.h"
+#include "AST/PathExpression.h"
+#include "AST/PathInExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/WhereClause.h"
@@ -53,6 +55,8 @@ private:
   TyTy::BaseType *
       checkClosureExpression(std::shared_ptr<ast::ClosureExpression>);
   TyTy::BaseType *checkStatement(std::shared_ptr<ast::Statement>);
+  TyTy::BaseType *checkPathExpression(std::shared_ptr<ast::PathExpression>);
+  TyTy::BaseType *checkPathInExpression(std::shared_ptr<ast::PathInExpression>);
 
   bool validateArithmeticType(ast::ArithmeticOrLogicalExpressionKind,
                               TyTy::BaseType *t);

@@ -76,6 +76,7 @@ public:
   void insertASTCrate(ast::Crate *crate, basic::CrateNum crateNum);
 
   void insertBuiltin(basic::NodeId id, basic::NodeId ref, TyTy::BaseType *type);
+  TyTy::BaseType *lookupBuiltin(std::string_view name);
 
   void insertType(const NodeIdentity& id, TyTy::BaseType *type);
 

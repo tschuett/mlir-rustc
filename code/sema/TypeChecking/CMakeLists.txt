@@ -9,6 +9,8 @@ add_library(TypeChecking
             Closure.cpp
             Statement.cpp
             Pattern.cpp
+            Literal.cpp
+            Path.cpp
            )
 
 target_include_directories(TypeChecking PRIVATE  ../../include)

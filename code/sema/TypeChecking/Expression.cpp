@@ -5,6 +5,7 @@
 #include "AST/ClosureExpression.h"
 #include "AST/LiteralExpression.h"
 #include "AST/OperatorExpression.h"
+#include "AST/PathExpression.h"
 #include "AST/Statement.h"
 #include "TyTy.h"
 #include "TypeChecking.h"
@@ -70,7 +71,8 @@ TyTy::BaseType *TypeResolver::checkExpressionWithoutBlock(
     return checkLiteral(std::static_pointer_cast<LiteralExpression>(woBlock));
   }
   case ExpressionWithoutBlockKind::PathExpression: {
-    assert(false && "to be implemented");
+    return checkPathExpression(
+        std::static_pointer_cast<PathExpression>(woBlock));
   }
   case ExpressionWithoutBlockKind::OperatorExpression: {
     return checkOperatorExpression(
@@ -159,11 +161,6 @@ TyTy::BaseType *TypeResolver::checkBlockExpression(
 
   if (stmts.hasTrailing())
     return checkExpression(stmts.getTrailing());
-}
-
-TyTy::BaseType *
-TypeResolver::checkLiteral(std::shared_ptr<ast::LiteralExpression>) {
-  assert(false && "to be implemented");
 }
 
 TyTy::BaseType *TypeResolver::checkOperatorExpression(
