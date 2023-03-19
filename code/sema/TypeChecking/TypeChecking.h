@@ -13,6 +13,7 @@
 #include "AST/PathInExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Types/TypeExpression.h"
+#include "AST/Types/TypePath.h"
 #include "AST/WhereClause.h"
 #include "Basic/Ids.h"
 #include "Substitutions.h"
@@ -63,6 +64,9 @@ private:
 
   void checkPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
                     TyTy::BaseType *);
+  TyTy::BaseType* checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>);
+  TyTy::BaseType* checkTypePath(std::shared_ptr<ast::types::TypePath>);
+
   tyctx::TyCtx *tcx;
 };
 
