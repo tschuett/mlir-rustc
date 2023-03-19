@@ -230,11 +230,11 @@ StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
-  llvm::errs() << "parseFunctionParamPattern"
-               << "\n";
-
-  llvm::errs() << "parseFunctionParamPattern: pattern"
-               << "\n";
+//  llvm::errs() << "parseFunctionParamPattern"
+//               << "\n";
+//
+//  llvm::errs() << "parseFunctionParamPattern: pattern"
+//               << "\n";
 
   StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>> pattern =
       parsePatternNoTopAlt();
@@ -269,8 +269,8 @@ StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
     return StringResult<ast::FunctionParamPattern>(pat);
   }
 
-  llvm::errs() << "parseFunctionParamPattern: type"
-               << "\n";
+//  llvm::errs() << "parseFunctionParamPattern: type"
+//               << "\n";
 
   Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
       parseType();
@@ -287,8 +287,8 @@ StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
     return StringResult<ast::FunctionParamPattern>(s);
   }
 
-  llvm::errs() << "parseFunctionParamPattern: done: "
-               << Token2String(getToken().getKind()) << "\n";
+//  llvm::errs() << "parseFunctionParamPattern: done: "
+//               << Token2String(getToken().getKind()) << "\n";
 
   FunctionParamPattern pat = (loc);
   pat.setName(pattern.getValue());
@@ -434,8 +434,8 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
 
   Function fun = {loc, vis};
 
-  llvm::outs() << "parseFunction"
-               << "\n";
+//  llvm::outs() << "parseFunction"
+//               << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_CONST) ||
       checkKeyWord(KeyWordKind::KW_ASYNC) ||

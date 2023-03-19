@@ -1,5 +1,7 @@
 * Name Resolution
 
+[rustc](https://rustc-dev-guide.rust-lang.org/name-resolution.html)
+
 Is `a` in the return expression, the function parameter, the variable introduced by the let statement, or the global constant?
 ```c
 const a: i32 = 3;

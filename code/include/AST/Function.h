@@ -65,16 +65,8 @@ public:
 
   WhereClause getWhereClause() const { return whereClause; }
 
-  std::vector<FunctionParamPattern> getParams() {
-    std::vector<FunctionParam> params = functionParameters.getParams();
-    std::vector<FunctionParamPattern> patterns;
-
-    for (auto &p : params) {
-      if (p.getKind() == FunctionParamKind::Pattern && p.getPattern().hasType())
-        patterns.push_back(p.getPattern());
-    }
-
-    return patterns;
+  FunctionParameters getParams() {
+    return functionParameters;
   }
 };
 

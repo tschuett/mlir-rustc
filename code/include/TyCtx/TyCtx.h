@@ -2,9 +2,14 @@
 
 #include "ADT/CanonicalPath.h"
 #include "Basic/Ids.h"
+#include "TyCtx/NodeIdentity.h"
+#include "TyCtx/TyCtx.h"
+
+#include "../../code/sema/TypeChecking/TyTy.h"
 
 #include <map>
 #include <optional>
+#include <vector>
 
 namespace rust_compiler::ast {
 class Module;
@@ -13,6 +18,8 @@ class Crate;
 } // namespace rust_compiler::ast
 
 namespace rust_compiler::tyctx {
+
+using namespace rust_compiler::sema::type_checking;
 
 class TyCtx {
 public:
@@ -68,6 +75,11 @@ public:
 
   void insertASTCrate(ast::Crate *crate, basic::CrateNum crateNum);
 
+  void insertBuiltin(basic::NodeId id, basic::NodeId ref, TyTy::BaseType *type);
+
+  void insertType(const NodeIdentity& id, TyTy::BaseType *type);
+
+  TyTy::BaseType *peekReturnType();
 private:
   basic::CrateNum crateNumIter = 7;
   basic::NodeId nodeIdIter = 7;
@@ -83,6 +95,10 @@ private:
   std::map<basic::NodeId, basic::NodeId> childToParentModuleMap;
 
   std::map<basic::CrateNum, ast::Crate *> astCrateMappings;
+
+  std::map<basic::NodeId, basic::NodeId> nodeIdRefs;
+  std::map<basic::NodeId, TyTy::BaseType *> resolved;
+  std::vector<std::unique_ptr<TyTy::BaseType>> builtins;
 };
 
 } // namespace rust_compiler::tyctx

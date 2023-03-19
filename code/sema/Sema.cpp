@@ -17,6 +17,7 @@ using namespace llvm;
 using namespace rust_compiler::ast;
 using namespace rust_compiler::basic;
 using namespace rust_compiler::sema::resolver;
+using namespace rust_compiler::sema::type_checking;
 
 namespace rust_compiler::sema {
 

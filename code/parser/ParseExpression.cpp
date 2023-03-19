@@ -27,8 +27,8 @@ Parser::parseExpression(Precedence rightBindingPower,
                         Restrictions restrictions) {
   CheckPoint cp = getCheckPoint();
 
-  llvm::errs() << "parseExpression"
-               << "\n";
+//  llvm::errs() << "parseExpression"
+//               << "\n";
 
   adt::StringResult<std::shared_ptr<ast::Expression>> expr =
       parseUnaryExpression({}, restrictions);

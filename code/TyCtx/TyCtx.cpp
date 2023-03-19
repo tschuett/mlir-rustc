@@ -9,6 +9,7 @@
 
 using namespace rust_compiler::basic;
 using namespace rust_compiler::ast;
+using namespace rust_compiler::sema::type_checking;
 
 namespace rust_compiler::tyctx {
 
@@ -80,6 +81,12 @@ bool TyCtx::isCrate(NodeId nod) const {
 
 void TyCtx::insertASTCrate(ast::Crate *crate, CrateNum crateNum) {
   astCrateMappings.insert({crateNum, crate});
+}
+
+void TyCtx::insertBuiltin(NodeId id, NodeId ref, TyTy::BaseType *type) {
+  nodeIdRefs[ref] = id;
+  resolved[id] = type;
+  builtins.push_back(std::unique_ptr<TyTy::BaseType>(type));
 }
 
 } // namespace rust_compiler::tyctx

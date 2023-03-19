@@ -5,7 +5,6 @@
 #include "AST/OuterAttribute.h"
 #include "AST/Patterns/IdentifierPattern.h"
 #include "AST/Types/TypeExpression.h"
-#include "AST/VariableDeclaration.h"
 
 #include <memory>
 #include <optional>

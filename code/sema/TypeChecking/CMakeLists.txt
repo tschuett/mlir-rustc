@@ -5,6 +5,10 @@ add_library(TypeChecking
             Function.cpp
             Types.cpp
             Expression.cpp
+            Unification.cpp
+            Closure.cpp
+            Statement.cpp
+            Pattern.cpp
            )
 
 target_include_directories(TypeChecking PRIVATE  ../../include)

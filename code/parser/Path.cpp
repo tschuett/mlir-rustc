@@ -113,8 +113,8 @@ StringResult<ast::PathExprSegment> Parser::parsePathExprSegment() {
   Location loc = getLocation();
   PathExprSegment seg = {loc};
 
-  llvm::errs() << "parsePathExprSegment: " << Token2String(getToken().getKind())
-               << "\n";
+//  llvm::errs() << "parsePathExprSegment: " << Token2String(getToken().getKind())
+//               << "\n";
 
   StringResult<ast::PathIdentSegment> first = parsePathIdentSegment();
   if (!first) {
@@ -204,7 +204,7 @@ StringResult<ast::PathIdentSegment> Parser::parsePathIdentSegment() {
   if (check(TokenKind::Identifier)) {
     Token tok = getToken();
     seg.setIdentifier(tok.getIdentifier());
-    llvm::errs() << "parsePathIdentSegment: " << tok.getIdentifier() << "\n";
+    //llvm::errs() << "parsePathIdentSegment: " << tok.getIdentifier() << "\n";
     assert(eat(TokenKind::Identifier));
   } else if (checkKeyWord(KeyWordKind::KW_SUPER)) {
     seg.setSuper();

@@ -1,3 +1,4 @@
+#include "AST/FunctionParameters.h"
 #include "Resolver.h"
 #include "llvm/Support/raw_ostream.h"
 
@@ -37,9 +38,28 @@ void Resolver::resolveFunction(std::shared_ptr<ast::Function> fun,
   if (fun->hasReturnType())
     resolveType(fun->getReturnType());
 
-  for (auto &param : fun->getParams()) {
-    resolveType(param.getType());
-    resolvePatternDeclaration(param.getPattern(), RibKind::Parameter);
+  FunctionParameters params = fun->getParams();
+  assert(!params.hasSelfParam() && "to be implemented");
+
+  for (auto &parm : params.getParams()) {
+    switch (parm.getKind()) {
+    case FunctionParamKind::Pattern: {
+      FunctionParamPattern pattern = parm.getPattern();
+      if (pattern.hasType()) {
+        resolveType(pattern.getType());
+        resolvePatternDeclaration(pattern.getPattern(), RibKind::Parameter);
+      } else {
+        assert(false && "to be implemented");
+      }
+      break;
+    }
+    case FunctionParamKind::DotDotDot: {
+      assert(false && "to be implemented");
+    }
+    case FunctionParamKind::Type: {
+      assert(false && "to be implemented");
+    }
+    }
   }
 
   resolveExpression(fun->getBody(), prefix, canonicalPrefix);

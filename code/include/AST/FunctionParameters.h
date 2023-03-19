@@ -4,6 +4,7 @@
 #include "AST/SelfParam.h"
 
 #include <memory>
+#include <optional>
 #include <span>
 #include <vector>
 
@@ -12,7 +13,7 @@ namespace rust_compiler::ast {
 class FunctionParameters {
   std::vector<FunctionParam> params;
   Location loc;
-  ast::SelfParam selfParam;
+  std::optional<SelfParam> selfParam;
 
 public:
   FunctionParameters(Location loc) : loc(loc), selfParam(loc) {}
@@ -23,7 +24,7 @@ public:
 
   void addFunctionParam(ast::FunctionParam param);
 
-  size_t getTokens();
+  bool hasSelfParam() const { return selfParam.has_value(); }
 };
 
 } // namespace rust_compiler::ast

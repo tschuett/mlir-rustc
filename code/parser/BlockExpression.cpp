@@ -381,8 +381,8 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
 
   BlockExpression bloc = {loc};
 
-  llvm::errs() << "parseBlockExpression"
-               << "\n";
+//  llvm::errs() << "parseBlockExpression"
+//               << "\n";
 
   if (!check(TokenKind::BraceOpen)) {
     return Result<std::shared_ptr<ast::Expression>, std::string>(

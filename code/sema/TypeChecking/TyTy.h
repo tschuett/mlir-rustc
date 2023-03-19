@@ -1,6 +1,5 @@
 #pragma once
 
-#include "AST/Types/TypeNoBounds.h"
 #include "Basic/Ids.h"
 #include "Location.h"
 #include "TypeIdentity.h"
@@ -11,7 +10,29 @@ namespace rust_compiler::sema::type_checking::TyTy {
 // https://rustc-dev-guide.rust-lang.org/type-inference.html#inference-variables
 // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_type_ir/sty/enum.TyKind.html
 
-enum class TypeKind { Bool, Char, Int, Uint, Float, Never, Str, Tuple };
+enum class InferKind {
+  Integral,
+  Float,
+  General
+};
+
+enum class TypeKind {
+  Bool,
+  Char,
+  Int,
+  Uint,
+  USize,
+  ISize,
+  Float,
+  Closure,
+  Function,
+  Inferred,
+  Never,
+  Str,
+  Tuple,
+
+  Error
+};
 
 enum class IntKind { I8, I16, I32, I64, I128 };
 
@@ -19,12 +40,17 @@ enum class UintKind { U8, U16, U32, U64, U128 };
 
 enum class FloatKind { F32, F64 };
 
-  class BaseType  { // : public TypeBoundsMapping
+class BaseType { // : public TypeBoundsMapping
 public:
   virtual ~BaseType();
 
   basic::NodeId getReference() const;
   basic::NodeId getTypeReference() const;
+
+  void setReference(basic::NodeId);
+
+  TypeKind getKind() const { return kind; }
+  InferKind getInferredKind() const;
 
 protected:
   BaseType(basic::NodeId ref, basic::NodeId ty_ref, TypeKind kind,
@@ -51,7 +77,7 @@ public:
 
 private:
   UintKind kind;
-  };
+};
 
 class USizeType : public BaseType {
 public:
@@ -66,6 +92,7 @@ public:
 class FloatType : public BaseType {
 public:
   FloatType(basic::NodeId, FloatKind);
+
 private:
   FloatKind kind;
 };
@@ -98,6 +125,26 @@ public:
   TupleType(basic::NodeId, Location loc);
 
   static TupleType *getUnitType(basic::NodeId);
+};
+
+class FunctionType : public BaseType {
+public:
+  FunctionType(basic::NodeId, Location loc);
+
+  static TupleType *getUnitType(basic::NodeId);
+};
+
+class ClosureType : public BaseType {
+public:
+  ClosureType(basic::NodeId, Location loc);
+
+  static TupleType *getUnitType(basic::NodeId);
+};
+
+class WithLocation {
+public:
+  WithLocation(BaseType *type, Location loc);
+  WithLocation(BaseType *type);
 };
 
 } // namespace rust_compiler::sema::type_checking::TyTy

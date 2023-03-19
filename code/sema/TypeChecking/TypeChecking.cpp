@@ -31,8 +31,6 @@ namespace rust_compiler::sema::type_checking {
 TypeResolver::TypeResolver() { tcx = tyctx::TyCtx::get(); }
 
 void TypeResolver::checkCrate(std::shared_ptr<ast::Crate> crate) {
-  assert(false && "to be implemented");
-
   for (auto &item : crate->getItems()) {
     switch (item->getItemKind()) {
     case ItemKind::VisItem: {
@@ -45,6 +43,8 @@ void TypeResolver::checkCrate(std::shared_ptr<ast::Crate> crate) {
     }
     }
   }
+
+  // FIXME
 }
 
 } // namespace rust_compiler::sema::type_checking
