@@ -60,6 +60,9 @@ private:
   void setBackEdges(llvm::SmallPtrSetImpl<Block *> &edges) {
     backEdges = {edges.begin(), edges.end()};
   }
+  bool containsBlock(Block *b) { return loop.count(b) != 0; }
+
+  llvm::SmallPtrSet<mlir::Block *, 8> getBlocks() const { return loop; }
 };
 
 class Function {
@@ -76,6 +79,14 @@ private:
   void detectLoopCandidates();
   void createLoop(llvm::SmallPtrSetImpl<mlir::Block *> &scc,
                   mlir::Block *header);
+  void analyzeRelationShips();
+  void analyzeInductionVariable(Loop *l);
+
+  bool doSetsOverlap(llvm::SmallPtrSetImpl<Block *> &first,
+                     llvm::SmallPtrSetImpl<Block *> &second);
+
+  bool doesSetContains(llvm::SmallPtrSetImpl<Block *> &first,
+                       llvm::SmallPtrSetImpl<Block *> &second);
 
   // dominator tree
   mlir::DominanceInfo domInfo;
