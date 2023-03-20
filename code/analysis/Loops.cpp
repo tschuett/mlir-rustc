@@ -1,10 +1,12 @@
 #include "Analysis/Loops.h"
 
+#include "mlir/Dialect/MemRef/IR/MemRef.h"
+#include "mlir/Support/LLVM.h"
+
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/SmallPtrSet.h>
 // #include <mlir/Dialect/ControlFlow/IR/ControlFlow.h>
 #include <mlir/IR/Block.h>
-#include <mlir/IR/Dominance.h>
 #include <stack>
 
 using namespace mlir;
@@ -85,23 +87,65 @@ private:
   }
 };
 
-std::optional<Loop> createLoop(llvm::SmallPtrSet<Block *, 8> &scc,
-                               Block *header) {}
+bool LoopDetector::doSetsOverlap(llvm::SmallPtrSetImpl<Block *> &first,
+                                 llvm::SmallPtrSetImpl<Block *> &second) {
+  for (auto f : first)
+    if (second.count(f))
+      return true;
 
-llvm::Expected<std::vector<Loop>> detectLoop(mlir::func::FuncOp *f) {
-  mlir::DominanceInfo domInfo;
+  for (auto s : second)
+    if (first.count(s))
+      return true;
 
-  std::vector<Loop> loops;
+  return false;
+}
 
-  //  for (auto &block : f->getBody())
-  //    allBlocks.insert(&block);
+bool LoopDetector::doesSetContains(llvm::SmallPtrSetImpl<Block *> &first,
+                                   llvm::SmallPtrSetImpl<Block *> &second) {
+  for (auto s : second)
+    if (first.count(s) == 0)
+      return false;
+  return true;
+}
 
+void LoopDetector::createLoop(llvm::SmallPtrSetImpl<Block *> &scc,
+                              Block *header) {
+  Loop l;
+  l.setHeader(header);
+  l.setBlocks(scc);
+
+  llvm::SmallPtrSet<Block *, 8> backEdges;
+
+  for (Block *b : scc)
+    if (b != header)
+      if (domInfo.dominates(b, header))
+        backEdges.insert(b);
+
+  // back edge?
+  if (backEdges.size() > 0)
+    l.setBackEdges(backEdges);
+  else
+    return;
+
+  if (backEdges.size() == 1)
+    l.setLatch(*(backEdges.begin()));
+
+  if (header->getSinglePredecessor() != nullptr)
+    l.setPreHeader(header->getSinglePredecessor());
+
+  loops.push_back(l);
+}
+
+/// based on dominance and scc
+void LoopDetector::detectLoopCandidates() {
+  // for each block in the function
   for (auto &block : f->getBody()) {
     SmallPtrSet<Block *, 8> dominatedBlocks;
     for (auto &innerBlock : f->getBody())
       if (domInfo.dominates(&block, &innerBlock))
         dominatedBlocks.insert(&innerBlock);
 
+    // check scc
     if (dominatedBlocks.size() > 1) {
       // reachability check
       dominatedBlocks.insert(&block);
@@ -109,15 +153,75 @@ llvm::Expected<std::vector<Loop>> detectLoop(mlir::func::FuncOp *f) {
       scc.run();
       // xxx;
       std::vector<llvm::SmallPtrSet<Block *, 8>> sccs = scc.getSccs();
-      for (unsigned i = 0; i < sccs.size(); ++i) {
-        std::optional<Loop> l = createLoop(sccs[i], &block);
-        if (l)
-          loops.push_back(*l);
+      for (unsigned i = 0; i < sccs.size(); ++i)
+        createLoop(sccs[i], &block);
+    }
+  }
+}
+
+void LoopDetector::analyzeInductionVariable(Loop *l) {
+  f->walk([&](mlir::memref::AllocOp allocaOp) {
+    if (not l->containsBlock(allocaOp->getBlock())) {
+      f->walk([&](mlir::memref::LoadOp loadOp) {
+        if (l->containsBlock(loadOp->getBlock())) {
+          f->walk([&](mlir::memref::StoreOp storeOp) {
+            if (l->containsBlock(storeOp->getBlock())) {
+              if (auto load = mlir::dyn_cast<mlir::memref::LoadOp>(&loadOp)) {
+                if (auto store =
+                        mlir::dyn_cast<mlir::memref::StoreOp>(&storeOp)) {
+                  if (auto alloca =
+                          mlir::dyn_cast<mlir::memref::AllocOp>(&allocaOp)) {
+                    // now what
+                    mlir::Value al = alloca->getResult();
+                    load->getMemref() == al;
+                    store->getMemref() == al;
+                  }
+                }
+              }
+            }
+          });
+        }
+      });
+    }
+  });
+}
+
+void LoopDetector::analyzeRelationShips() {
+  // xxx
+
+  llvm::SmallPtrSet<Block *, 8> blocksWithCalls;
+  f->walk([&](mlir::func::CallOp c) { blocksWithCalls.insert(c->getBlock()); });
+
+  for (unsigned i = 0; i < loops.size(); ++i)
+    for (unsigned j = i + 1; j < loops.size(); ++j) {
+      if (loops[i].getHeader() == loops[j].getHeader()) {
+        // now what
+      }
+    }
+
+  for (unsigned i = 0; i < loops.size(); ++i) {
+    for (unsigned j = i + 1; j < loops.size(); ++j) {
+      llvm::SmallPtrSet<mlir::Block *, 8> first = loops[i].getBlocks();
+      llvm::SmallPtrSet<mlir::Block *, 8> second = loops[j].getBlocks();
+      if (doSetsOverlap(first, second)) {
+        // now what
+      }
+      if (doesSetContains(first, second)) {
+        // now what; different headers?
+      }
+      if (doesSetContains(second, first)) {
+        // now what; different headers?
       }
     }
   }
+}
 
-  return loops;
+std::optional<Function> LoopDetector::analyze(mlir::func::FuncOp *f) {
+  this->f = f;
+
+  detectLoopCandidates();
+
+  analyzeRelationShips();
 }
 
 } // namespace rust_compiler::analysis
