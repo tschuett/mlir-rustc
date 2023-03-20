@@ -64,8 +64,16 @@ private:
 
   void checkPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
                     TyTy::BaseType *);
-  TyTy::BaseType* checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>);
-  TyTy::BaseType* checkTypePath(std::shared_ptr<ast::types::TypePath>);
+  TyTy::BaseType *checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>);
+  TyTy::BaseType *checkTypePath(std::shared_ptr<ast::types::TypePath>);
+
+  TyTy::BaseType *resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
+                                  size_t *offset,
+                                  basic::NodeId *resolvedNodeId);
+  TyTy::BaseType *resolveSegments(basic::NodeId resolvedNodeId,
+                                  basic::NodeId pathNodeId,
+                                  std::shared_ptr<ast::types::TypePath> tp,
+                                  size_t offset, TyTy::BaseType *pathType);
 
   tyctx::TyCtx *tcx;
 };

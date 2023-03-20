@@ -19,6 +19,7 @@ public:
 
   void setLeadingPathSep() { leadingDoubleColon = true; }
 
+  bool hasLeadingPathSep() const { return leadingDoubleColon; }
   void addSegment(const TypePathSegment &seg) {
     typePathSegments.push_back(seg);
   }
