@@ -1,7 +1,6 @@
 #pragma once
 
 #include <llvm/ADT/SmallPtrSet.h>
-#include <llvm/Support/Error.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/Block.h>
 #include <mlir/IR/Dominance.h>
@@ -12,8 +11,16 @@ namespace rust_compiler::analysis {
 using namespace mlir;
 
 /// https://arxiv.org/pdf/1811.00632.pdf
+/// https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/Analysis/LoopInfoImpl.h
+/// https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/Analysis/LoopInfo.h
 
 class LoopDetector;
+  class Loop;
+
+class LoopNest {
+  Loop *topLoop;
+  //std::vector<>
+};
 
 class Loop {
   llvm::SmallPtrSet<mlir::Block *, 8> loop;
@@ -63,6 +70,8 @@ private:
   bool containsBlock(Block *b) { return loop.count(b) != 0; }
 
   llvm::SmallPtrSet<mlir::Block *, 8> getBlocks() const { return loop; }
+
+  uint32_t level;
 };
 
 class Function {
@@ -80,6 +89,8 @@ private:
   void createLoop(llvm::SmallPtrSetImpl<mlir::Block *> &scc,
                   mlir::Block *header);
   void analyzeRelationShips();
+  /// canonical 5 nested loops: how to detect? and precise nesting
+  void analyzeLoopNests();
   void analyzeInductionVariable(Loop *l);
 
   bool doSetsOverlap(llvm::SmallPtrSetImpl<Block *> &first,

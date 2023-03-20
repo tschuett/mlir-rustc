@@ -1,10 +1,12 @@
 #include "Analysis/Loops.h"
 
+#include "llvm/ADT/MapVector.h"
 #include "mlir/Dialect/MemRef/IR/MemRef.h"
 #include "mlir/Support/LLVM.h"
 
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/SmallPtrSet.h>
+#include <llvm/ADT/SmallSet.h>
 // #include <mlir/Dialect/ControlFlow/IR/ControlFlow.h>
 #include <mlir/IR/Block.h>
 #include <stack>
@@ -133,6 +135,8 @@ void LoopDetector::createLoop(llvm::SmallPtrSetImpl<Block *> &scc,
   if (header->getSinglePredecessor() != nullptr)
     l.setPreHeader(header->getSinglePredecessor());
 
+  // exiting block(s)
+
   loops.push_back(l);
 }
 
@@ -159,35 +163,112 @@ void LoopDetector::detectLoopCandidates() {
   }
 }
 
+/// https://github.com/llvm/llvm-project/blob/82ac02e4a86070cf9924c245ff340aba1f62b45b/llvm/lib/Analysis/LoopInfo.cpp#L150
 void LoopDetector::analyzeInductionVariable(Loop *l) {
-  f->walk([&](mlir::memref::AllocOp allocaOp) {
-    if (not l->containsBlock(allocaOp->getBlock())) {
-      f->walk([&](mlir::memref::LoadOp loadOp) {
-        if (l->containsBlock(loadOp->getBlock())) {
-          f->walk([&](mlir::memref::StoreOp storeOp) {
-            if (l->containsBlock(storeOp->getBlock())) {
-              if (auto load = mlir::dyn_cast<mlir::memref::LoadOp>(&loadOp)) {
-                if (auto store =
-                        mlir::dyn_cast<mlir::memref::StoreOp>(&storeOp)) {
-                  if (auto alloca =
-                          mlir::dyn_cast<mlir::memref::AllocOp>(&allocaOp)) {
-                    // now what
-                    mlir::Value al = alloca->getResult();
-                    load->getMemref() == al;
-                    store->getMemref() == al;
-                  }
-                }
-              }
-            }
-          });
-        }
-      });
-    }
-  });
+//  f->walk([&](mlir::memref::AllocOp allocaOp) {
+//    if (not l->containsBlock(allocaOp->getBlock())) {
+//      f->walk([&](mlir::memref::LoadOp loadOp) {
+//        if (l->containsBlock(loadOp->getBlock())) {
+//          f->walk([&](mlir::memref::StoreOp storeOp) {
+//            if (l->containsBlock(storeOp->getBlock())) {
+//              if (auto load = mlir::dyn_cast<mlir::memref::LoadOp>(&loadOp)) {
+//                if (auto store =
+//                        mlir::dyn_cast<mlir::memref::StoreOp>(&storeOp)) {
+//                  if (auto alloca =
+//                          mlir::dyn_cast<mlir::memref::AllocOp>(&allocaOp)) {
+//                    // now what
+//                    mlir::Value al = alloca->getResult();
+//                    load->getMemref() == al;
+//                    store->getMemref() == al;
+//                  }
+//                }
+//              }
+//            }
+//          });
+//        }
+//      });
+//    }
+//  });
 }
+
+/// canonical 5 nested loops: how to detect? and precise nesting
+void LoopDetector::analyzeLoopNests() {
+  std::vector<std::pair<unsigned, unsigned>> nestingCandidates;
+  // llvm::SmallSet<unsigned, 8> topLevelCandidates;
+
+  llvm::SmallMapVector<unsigned, uint32_t, 8> levels;
+
+  // analyze nested loops (expansive)
+  for (unsigned i = 0; i < loops.size(); ++i) {
+    for (unsigned j = i + 1; j < loops.size(); ++j) {
+      llvm::SmallPtrSet<mlir::Block *, 8> first = loops[i].getBlocks();
+      llvm::SmallPtrSet<mlir::Block *, 8> second = loops[j].getBlocks();
+      if (loops[i].getHeader() != loops[j].getHeader()) {
+        if (first.size() > second.size()) {
+          if (doesSetContains(first, second)) {
+            nestingCandidates.push_back({i, j});
+            // topLevelCandidates.insert(i);
+            levels.insert({i, 1});
+            levels.insert({j, 0});
+          }
+        } else if (second.size() > first.size()) {
+          if (doesSetContains(second, first)) {
+            nestingCandidates.push_back({j, i});
+            // topLevelCandidates.insert(j);
+            levels.insert({j, 1});
+            levels.insert({i, 0});
+          }
+        }
+      }
+    }
+  }
+
+  /// ??? LoopNest LoopLevel?
+  bool changed = false;
+  do {
+    for (auto &par : nestingCandidates) {
+      auto [l, r] = par;
+      uint32_t rightLevel = levels.lookup(r);
+      uint32_t leftLevel = levels.lookup(l);
+      if (rightLevel > leftLevel) {
+        levels[l] = rightLevel + 1;
+        changed = true;
+      }
+    }
+  } while (changed);
+  // terminates?
+
+  for (auto kv: levels) {
+    loops[kv.first].level = kv.second;
+  }
+
+  // If loop has no parents, then it is head of loop nest
+
+  for (auto par: nestingCandidates) {
+  }
+}
+
+// Todo: getLevel() and getParent()
 
 void LoopDetector::analyzeRelationShips() {
   // xxx
+
+  //
+  //      if (not doSetsOverlap(first, second) &&
+  //          loops[i].getHeader() != loops[j].getHeader()) {
+  //        // now what; -> they are disjoint
+  //      }
+  //      //      if (doSetsOverlap(first, second)) {
+  //      //        // now what
+  //      //      }
+  //      if (doesSetContains(first, second) &&
+  //          loops[i].getHeader() != loops[j].getHeader()) {
+  //        // now what; second inner loop of first
+  //      }
+  //      if (doesSetContains(second, first) &&
+  //          loops[i].getHeader() != loops[j].getHeader()) {
+  //        // now what; first inner loop of second
+  //      }
 
   llvm::SmallPtrSet<Block *, 8> blocksWithCalls;
   f->walk([&](mlir::func::CallOp c) { blocksWithCalls.insert(c->getBlock()); });
@@ -198,22 +279,6 @@ void LoopDetector::analyzeRelationShips() {
         // now what
       }
     }
-
-  for (unsigned i = 0; i < loops.size(); ++i) {
-    for (unsigned j = i + 1; j < loops.size(); ++j) {
-      llvm::SmallPtrSet<mlir::Block *, 8> first = loops[i].getBlocks();
-      llvm::SmallPtrSet<mlir::Block *, 8> second = loops[j].getBlocks();
-      if (doSetsOverlap(first, second)) {
-        // now what
-      }
-      if (doesSetContains(first, second)) {
-        // now what; different headers?
-      }
-      if (doesSetContains(second, first)) {
-        // now what; different headers?
-      }
-    }
-  }
 }
 
 std::optional<Function> LoopDetector::analyze(mlir::func::FuncOp *f) {
@@ -225,3 +290,9 @@ std::optional<Function> LoopDetector::analyze(mlir::func::FuncOp *f) {
 }
 
 } // namespace rust_compiler::analysis
+
+/*
+
+  There are several *LoopNest* s
+
+ */
