@@ -20,6 +20,7 @@ class Crate;
 namespace rust_compiler::tyctx {
 
 using namespace rust_compiler::sema::type_checking;
+using namespace rust_compiler::basic;
 
 class TyCtx {
 public:
@@ -78,9 +79,14 @@ public:
   void insertBuiltin(basic::NodeId id, basic::NodeId ref, TyTy::BaseType *type);
   TyTy::BaseType *lookupBuiltin(std::string_view name);
 
-  void insertType(const NodeIdentity& id, TyTy::BaseType *type);
+  void insertType(const NodeIdentity &id, TyTy::BaseType *type);
+
+  void insertImplicitType(const basic::NodeId &id, TyTy::BaseType *type) {
+    resolved[id] = type;
+  }
 
   TyTy::BaseType *peekReturnType();
+
 private:
   basic::CrateNum crateNumIter = 7;
   basic::NodeId nodeIdIter = 7;

@@ -5,6 +5,8 @@
 #include "TyTy.h"
 #include "TypeChecking.h"
 
+#include "../Resolver/Resolver.h"
+
 #include <memory>
 
 using namespace rust_compiler::ast;
@@ -91,7 +93,6 @@ TypeResolver::checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds> no) {
 
 TyTy::BaseType *
 TypeResolver::checkTypePath(std::shared_ptr<ast::types::TypePath> tp) {
-  assert(false && "to be implemented");
   assert(!tp->hasLeadingPathSep() && "to be implemented");
 
   size_t offset = 0;
@@ -106,13 +107,65 @@ TypeResolver::checkTypePath(std::shared_ptr<ast::types::TypePath> tp) {
   if (offset >= tp->getSegments().size())
     return root;
 
-  resolveSegments(resolvedNodeId, tp->getNodeId(), tp, offset, root);
+  return resolveSegments(resolvedNodeId, tp->getNodeId(), tp, offset, root);
 }
 
 TyTy::BaseType *
 TypeResolver::resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
                               size_t *offset, basic::NodeId *resolvedNodeId) {
   assert(false && "to be implemented");
+
+  TyTy::BaseType *rootType = nullptr;
+  *offset = 0;
+
+  std::vector<TypePathSegment> segs = path->getSegments();
+  NodeId refNodeId = UNKNOWN_NODEID;
+  for (unsigned i = 0; i < segs.size(); ++i) {
+    bool haveMoreSegments = i != (segs.size() - 1);
+    NodeId astNodeId = segs[i]->getNodeId();
+    if (auto name = resolver->lookupResolvedName(segs[i].getNodeId())) {
+      refNodeId = *name;
+    } else if (auto type = resolver->lookupResolvedType(segs[i].getNodeId())) {
+      refNodeId = *type;
+    }
+    if (refNodeId == UNKNOWN_NODEID) {
+      if (*offset == 0) { // root
+        // report error
+      }
+      return rootType;
+    }
+
+    // There is no hir
+
+    bool segIsModule = (nullptr != tcx->lookupModule(refNodeId));
+    bool segIsCrate = tcx->isCrate(refNodeId);
+    if (segIsModule || segIsCrate) {
+      if (haveMoreSegments) {
+        ++(*offset);
+        continue;
+      }
+
+      // report error
+    }
+
+    TyTy::BaseType *lookup = nullptr;
+    std::optional<TyTy::BaseType *> result = queryType(astNodeId);
+    if (!result) {
+      if (*offset == 0) { // root
+        // report error
+      }
+      return rootType;
+    }
+
+
+    // FIXME
+
+
+    if (segs[i].hasGenerics()) {
+    }
+
+    xxx;
+  }
 }
 
 TyTy::BaseType *

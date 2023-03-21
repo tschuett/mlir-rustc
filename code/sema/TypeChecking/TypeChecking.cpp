@@ -28,7 +28,10 @@ namespace rust_compiler::sema::type_checking {
 //   builtinTypes.push_back(std::unique_ptr<TyTy::BaseType>(type));
 // }
 
-TypeResolver::TypeResolver() { tcx = tyctx::TyCtx::get(); }
+TypeResolver::TypeResolver(resolver::Resolver *r) {
+  tcx = tyctx::TyCtx::get();
+  resolver = r;
+}
 
 void TypeResolver::checkCrate(std::shared_ptr<ast::Crate> crate) {
   for (auto &item : crate->getItems()) {

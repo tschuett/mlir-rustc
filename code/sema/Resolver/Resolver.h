@@ -135,6 +135,9 @@ public:
 
   void resolveCrate(std::shared_ptr<ast::Crate>);
 
+  std::optional<basic::NodeId> lookupResolvedName(basic::NodeId nodeId);
+  std::optional<basic::NodeId> lookupResolvedType(basic::NodeId nodeId);
+
 private:
   // items no recurse
   void resolveVisItemNoRecurse(std::shared_ptr<ast::VisItem>,

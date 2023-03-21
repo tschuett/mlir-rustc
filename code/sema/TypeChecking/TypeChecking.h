@@ -20,16 +20,24 @@
 #include "TyCtx/TyCtx.h"
 #include "TyTy.h"
 
+//#include "../Resolver/Resolver.h"
+
 #include <map>
 #include <memory>
 #include <vector>
 
+namespace rust_compiler::sema::resolver {
+  class Resolver;
+}
+
 namespace rust_compiler::sema::type_checking {
+
+  //using namespace rust_compiler::sema::resolver;
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_hir_analysis/index.html
 class TypeResolver {
 public:
-  TypeResolver();
+  TypeResolver(resolver::Resolver *);
 
   void checkCrate(std::shared_ptr<ast::Crate> crate);
 
@@ -75,7 +83,13 @@ private:
                                   std::shared_ptr<ast::types::TypePath> tp,
                                   size_t offset, TyTy::BaseType *pathType);
 
+
+
+  std::optional<TyTy::BaseType *> queryType(basic::NodeId);
+
+  // data
   tyctx::TyCtx *tcx;
+  resolver::Resolver *resolver;
 };
 
 } // namespace rust_compiler::sema::type_checking
