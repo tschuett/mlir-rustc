@@ -15,22 +15,35 @@ using namespace mlir;
 /// https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/Analysis/LoopInfo.h
 
 class LoopDetector;
-  class Loop;
+class Loop;
 
 class LoopNest {
   Loop *topLoop;
-  //std::vector<>
+  // std::vector<>
 };
 
 class Loop {
   llvm::SmallPtrSet<mlir::Block *, 8> loop;
-  llvm::SmallPtrSet<mlir::Block *, 8> exitNodes;
+
+  /// Blocks inside the loop that have successors outside of the
+  /// loop. These are blocks inside the current loop, which branch
+  /// out.
+  llvm::SmallPtrSet<mlir::Block *, 8> exitingBlocks;
+
+  /// Successor blocks of this loop. These are blocks outside of the
+  /// current loop, which are branched to.
+  llvm::SmallPtrSet<mlir::Block *, 8> exitBlocks;
+
   llvm::SmallPtrSet<mlir::Block *, 8> backEdges;
 
-  mlir::Block *preheader = nullptr;
+  mlir::Block *preHeader = nullptr;
   mlir::Block *header = nullptr;
   mlir::Block *latch = nullptr;
 
+  /// Iff the loop's header has one unique predecessor outside of the
+  /// loop. Note that this requierement is weaker than the preheader
+  /// concept.
+  mlir::Block *loopPredecessor = nullptr;
 public:
   /// A single edge to the header of the loop from outside of the loop.
   mlir::Block getPreHeader();
@@ -55,12 +68,13 @@ public:
   bool hasMemoryWrites() const;
   size_t getNrOfBlocks() const;
 
+  bool contains(mlir::Block *) const;
+
   friend LoopDetector;
 
 private:
   void setHeader(Block *h) { header = h; }
   void setLatch(Block *l) { latch = l; }
-  void setPreHeader(Block *p) { preheader = p; }
   void setBlocks(llvm::SmallPtrSetImpl<Block *> &blocks) {
     loop = {blocks.begin(), blocks.end()};
   }
@@ -70,6 +84,11 @@ private:
   bool containsBlock(Block *b) { return loop.count(b) != 0; }
 
   llvm::SmallPtrSet<mlir::Block *, 8> getBlocks() const { return loop; }
+
+  void findExitingBlocks();
+  void findExitBlocks();
+  void findLoopPredecessor();
+  void findPreheader();
 
   uint32_t level;
 };

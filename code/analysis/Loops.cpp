@@ -1,12 +1,13 @@
 #include "Analysis/Loops.h"
 
-#include "llvm/ADT/MapVector.h"
-#include "mlir/Dialect/MemRef/IR/MemRef.h"
-#include "mlir/Support/LLVM.h"
-
 #include <llvm/ADT/DenseMap.h>
+#include <llvm/ADT/MapVector.h>
 #include <llvm/ADT/SmallPtrSet.h>
 #include <llvm/ADT/SmallSet.h>
+#include <llvm/ADT/SmallVector.h>
+#include <mlir/Dialect/MemRef/IR/MemRef.h>
+#include <mlir/IR/Dominance.h>
+#include <mlir/Support/LLVM.h>
 // #include <mlir/Dialect/ControlFlow/IR/ControlFlow.h>
 #include <mlir/IR/Block.h>
 #include <stack>
@@ -89,6 +90,50 @@ private:
   }
 };
 
+bool Loop::contains(mlir::Block *b) const { return loop.count(b) == 1; }
+
+void Loop::findLoopPredecessor() {
+  Block *out;
+  for (auto pred : header->getPredecessors()) {
+    if (!contains(pred)) { // the block is not in the loop
+      if (out && out != pred)
+        return;
+      out = pred;
+    }
+  }
+
+  loopPredecessor = out;
+}
+
+void Loop::findPreheader() {
+  Block *out = loopPredecessor;
+  if (!out)
+    return;
+
+  unsigned cnt = 0;
+  for (auto succ : out->getSuccessors())
+    ++cnt;
+  if (cnt != 1)
+    return;
+  preHeader = out;
+}
+
+void Loop::findExitingBlocks() {
+  for (auto BB : loop)
+    for (auto *succ : BB->getSuccessors())
+      if (!containsBlock(succ)) {
+        exitingBlocks.insert(BB);
+        break;
+      }
+}
+
+void Loop::findExitBlocks() {
+  for (auto BB : loop)
+    for (auto *succ : BB->getSuccessors())
+      if (!containsBlock(succ))
+        exitBlocks.insert(succ);
+}
+
 bool LoopDetector::doSetsOverlap(llvm::SmallPtrSetImpl<Block *> &first,
                                  llvm::SmallPtrSetImpl<Block *> &second) {
   for (auto f : first)
@@ -132,10 +177,10 @@ void LoopDetector::createLoop(llvm::SmallPtrSetImpl<Block *> &scc,
   if (backEdges.size() == 1)
     l.setLatch(*(backEdges.begin()));
 
-  if (header->getSinglePredecessor() != nullptr)
-    l.setPreHeader(header->getSinglePredecessor());
-
-  // exiting block(s)
+  l.findExitBlocks();
+  l.findExitingBlocks();
+  l.findLoopPredecessor();
+  l.findPreheader();
 
   loops.push_back(l);
 }
@@ -165,30 +210,32 @@ void LoopDetector::detectLoopCandidates() {
 
 /// https://github.com/llvm/llvm-project/blob/82ac02e4a86070cf9924c245ff340aba1f62b45b/llvm/lib/Analysis/LoopInfo.cpp#L150
 void LoopDetector::analyzeInductionVariable(Loop *l) {
-//  f->walk([&](mlir::memref::AllocOp allocaOp) {
-//    if (not l->containsBlock(allocaOp->getBlock())) {
-//      f->walk([&](mlir::memref::LoadOp loadOp) {
-//        if (l->containsBlock(loadOp->getBlock())) {
-//          f->walk([&](mlir::memref::StoreOp storeOp) {
-//            if (l->containsBlock(storeOp->getBlock())) {
-//              if (auto load = mlir::dyn_cast<mlir::memref::LoadOp>(&loadOp)) {
-//                if (auto store =
-//                        mlir::dyn_cast<mlir::memref::StoreOp>(&storeOp)) {
-//                  if (auto alloca =
-//                          mlir::dyn_cast<mlir::memref::AllocOp>(&allocaOp)) {
-//                    // now what
-//                    mlir::Value al = alloca->getResult();
-//                    load->getMemref() == al;
-//                    store->getMemref() == al;
-//                  }
-//                }
-//              }
-//            }
-//          });
-//        }
-//      });
-//    }
-//  });
+  //  f->walk([&](mlir::memref::AllocOp allocaOp) {
+  //    if (not l->containsBlock(allocaOp->getBlock())) {
+  //      f->walk([&](mlir::memref::LoadOp loadOp) {
+  //        if (l->containsBlock(loadOp->getBlock())) {
+  //          f->walk([&](mlir::memref::StoreOp storeOp) {
+  //            if (l->containsBlock(storeOp->getBlock())) {
+  //              if (auto load = mlir::dyn_cast<mlir::memref::LoadOp>(&loadOp))
+  //              {
+  //                if (auto store =
+  //                        mlir::dyn_cast<mlir::memref::StoreOp>(&storeOp)) {
+  //                  if (auto alloca =
+  //                          mlir::dyn_cast<mlir::memref::AllocOp>(&allocaOp))
+  //                          {
+  //                    // now what
+  //                    mlir::Value al = alloca->getResult();
+  //                    load->getMemref() == al;
+  //                    store->getMemref() == al;
+  //                  }
+  //                }
+  //              }
+  //            }
+  //          });
+  //        }
+  //      });
+  //    }
+  //  });
 }
 
 /// canonical 5 nested loops: how to detect? and precise nesting
@@ -238,13 +285,19 @@ void LoopDetector::analyzeLoopNests() {
   } while (changed);
   // terminates?
 
-  for (auto kv: levels) {
+  for (auto kv : levels) {
     loops[kv.first].level = kv.second;
   }
 
   // If loop has no parents, then it is head of loop nest
 
-  for (auto par: nestingCandidates) {
+  // Everybody is head of loop nest until proven otherwise
+
+  llvm::SmallVector<unsigned> head;
+  for (auto par : nestingCandidates) {
+    auto [l, r] = par;
+    uint32_t rightLevel = levels.lookup(r);
+    uint32_t leftLevel = levels.lookup(l);
   }
 }
 
@@ -296,3 +349,10 @@ std::optional<Function> LoopDetector::analyze(mlir::func::FuncOp *f) {
   There are several *LoopNest* s
 
  */
+
+void collectLops(mlir::func::FuncOp *f) {
+  mlir::DominanceInfo dom;
+  auto &DomTree = dom.getDomTree(&f->getRegion());
+  // for (auto DomNode : post_order(DomTree)) {
+  // }
+}

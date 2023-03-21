@@ -137,3 +137,6 @@ https://reviews.llvm.org/D138451
 
 * CycleInfo
 https://reviews.llvm.org/D112696
+
+* ThinLTO for MachO
+https://reviews.llvm.org/D90663
