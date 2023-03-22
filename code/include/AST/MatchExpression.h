@@ -29,6 +29,10 @@ public:
   }
 
   void setMatchArms(const MatchArms &ma) { matchArms = ma; }
+
+  Scrutinee getScrutinee() const { return scrutinee; }
+
+  MatchArms getMatchArms() const { return matchArms; }
 };
 
 } // namespace rust_compiler::ast

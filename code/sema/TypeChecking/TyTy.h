@@ -47,6 +47,8 @@ public:
 
   TypeKind getKind() const { return kind; }
 
+  virtual bool needsGenericSubstitutions() const = 0;
+
 protected:
   BaseType(basic::NodeId ref, basic::NodeId ty_ref, TypeKind kind,
            TypeIdentity ident);
@@ -62,6 +64,8 @@ class IntType : public BaseType {
 public:
   IntType(basic::NodeId, IntKind);
 
+  bool needsGenericSubstitutions() const override;
+
 private:
   IntKind kind;
 };
@@ -70,6 +74,8 @@ class UintType : public BaseType {
 public:
   UintType(basic::NodeId, UintKind);
 
+  bool needsGenericSubstitutions() const override;
+
 private:
   UintKind kind;
 };
@@ -77,16 +83,22 @@ private:
 class USizeType : public BaseType {
 public:
   USizeType(basic::NodeId);
+
+  bool needsGenericSubstitutions() const override;
 };
 
 class ISizeType : public BaseType {
 public:
   ISizeType(basic::NodeId);
+
+  bool needsGenericSubstitutions() const override;
 };
 
 class FloatType : public BaseType {
 public:
   FloatType(basic::NodeId, FloatKind);
+
+  bool needsGenericSubstitutions() const override;
 
 private:
   FloatKind kind;
@@ -96,22 +108,30 @@ private:
 class BoolType : public BaseType {
 public:
   BoolType(basic::NodeId);
+
+  bool needsGenericSubstitutions() const override;
 };
 
 class CharType : public BaseType {
 public:
   CharType(basic::NodeId);
+
+  bool needsGenericSubstitutions() const override;
 };
 
 class StrType : public BaseType {
 public:
   StrType(basic::NodeId);
+
+  bool needsGenericSubstitutions() const override;
 };
 
 /// !
 class NeverType : public BaseType {
 public:
   NeverType(basic::NodeId);
+
+  bool needsGenericSubstitutions() const override;
 };
 
 /// (.., .., ..)
@@ -119,19 +139,19 @@ class TupleType : public BaseType {
 public:
   TupleType(basic::NodeId, Location loc);
 
+  bool needsGenericSubstitutions() const override;
+
   static TupleType *getUnitType(basic::NodeId);
 };
 
 class FunctionType : public BaseType {
 public:
   FunctionType(basic::NodeId, Location loc);
-
 };
 
 class ClosureType : public BaseType {
 public:
   ClosureType(basic::NodeId, Location loc);
-
 };
 
 class InferType : public BaseType {
@@ -140,8 +160,17 @@ public:
 
   InferKind getInferredKind() const { return inferKind; }
 
+  bool needsGenericSubstitutions() const override;
+
 private:
   InferKind inferKind;
+};
+
+class ErrorType : public BaseType {
+public:
+  ErrorType(basic::NodeId);
+
+  bool needsGenericSubstitutions() const override;
 };
 
 class WithLocation {

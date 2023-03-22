@@ -4,6 +4,7 @@
 #include "AST/ClosureExpression.h"
 #include "AST/Crate.h"
 #include "AST/Expression.h"
+#include "AST/MatchExpression.h"
 #include "AST/GenericParams.h"
 #include "AST/Item.h"
 #include "AST/LetStatement.h"
@@ -63,6 +64,7 @@ private:
   TyTy::BaseType *checkArithmeticOrLogicalExpression(
       std::shared_ptr<ast::ArithmeticOrLogicalExpression>);
   TyTy::BaseType *checkReturnExpression(std::shared_ptr<ast::ReturnExpression>);
+  TyTy::BaseType *checkMatchExpression(std::shared_ptr<ast::MatchExpression>);
   void checkGenericParams(const ast::GenericParams &,
                           std::vector<TyTy::SubstitutionParamMapping> &);
   TyTy::BaseType *

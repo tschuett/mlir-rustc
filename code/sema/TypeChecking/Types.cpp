@@ -1,7 +1,9 @@
+#include "AST/Enumeration.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
 #include "AST/Types/TypePath.h"
 #include "Basic/Ids.h"
+#include "Substitutions.h"
 #include "TyTy.h"
 #include "TypeChecking.h"
 
@@ -123,16 +125,20 @@ TypeResolver::resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
   for (unsigned i = 0; i < segs.size(); ++i) {
     bool haveMoreSegments = i != (segs.size() - 1);
     NodeId astNodeId = segs[i].getNodeId();
+
     if (auto name = resolver->lookupResolvedName(segs[i].getNodeId())) {
       refNodeId = *name;
     } else if (auto type = resolver->lookupResolvedType(segs[i].getNodeId())) {
       refNodeId = *type;
     }
+
     if (refNodeId == UNKNOWN_NODEID) {
-      if (*offset == 0) { // root
-        // report error
+      if (rootType != nullptr and *offset > 0) { // root
+        return rootType;
       }
-      return rootType;
+      // report error
+
+      return new TyTy::ErrorType(path->getNodeId());
     }
 
     // There is no hir
@@ -146,6 +152,7 @@ TypeResolver::resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
       }
 
       // report error
+      return new TyTy::ErrorType(path->getNodeId());
     }
 
     TyTy::BaseType *lookup = nullptr;
@@ -153,19 +160,50 @@ TypeResolver::resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
     if (!result) {
       if (*offset == 0) { // root
         // report error
+        return new TyTy::ErrorType(path->getNodeId());
       }
       return rootType;
     }
 
-
-    // FIXME
-
-
-    if (segs[i].hasGenerics()) {
+    // enum item?
+    if (auto enumItem = tcx->lookupEnumItem(refNodeId)) {
+      tcx->insertVariantDefinition(path->getNodeId(),
+                                   enumItem->second->getNodeId());
     }
 
-    xxx;
+    //if (rootType != nullptr) {
+    //  if (lookup->needsGenericSubstitutions()) {
+    //    if (!rootType->needsGenericSubstitutions()) {
+    //      TyTy::SubstitutionArgumentMappings usedArgs =
+    //          TyTy::getUsedSubstitutionArguments(rootType);
+    //      lookup = (lookup, usedArgs);
+    //      xxx;
+    //    }
+    //  }
+    //}
+    //
+    //// FIXME
+    //
+    //if (segs[i].hasGenerics()) {
+    //  if (!lookup->hasSubstitutionsDefined()) {
+    //    // report error
+    //    return new TyTy::ErrorType(path->getNodeId());
+    //  }
+    //
+    //  lookup = xxFn(lookup, segs[i].getGenericArgs());
+    //
+    //  if (lookup->getKind() == TyTy::TypeKind::Error)
+    //    return new TyTy::ErrorType(path->getNodeId());
+    //} else if (lookup->needsGenericSubstitutions()) {
+    //  lookup = InferStubs(lookup);
+    //}
+
+    *resolvedNodeId = refNodeId;
+    *offset = *offset + 1;
+    rootType = lookup;
   }
+
+  return rootType;
 }
 
 TyTy::BaseType *

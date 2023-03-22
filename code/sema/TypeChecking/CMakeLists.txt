@@ -11,6 +11,9 @@ add_library(TypeChecking
             Pattern.cpp
             Literal.cpp
             Path.cpp
+            Match.cpp
+            Substitutions.cpp
+            Coercion.cpp
            )
 
 target_include_directories(TypeChecking PRIVATE  ../../include)

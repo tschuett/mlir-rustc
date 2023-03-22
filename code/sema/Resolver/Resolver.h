@@ -52,7 +52,7 @@ namespace rust_compiler::sema::resolver {
 ///  https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/struct.Resolver.html
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/struct.Rib.html
-enum class RibKind { Label, Parameter, Type, Variable };
+enum class RibKind { Function, Label, Parameter, Type, Variable };
 
 class Rib {
 public:

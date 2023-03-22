@@ -68,6 +68,7 @@ void Resolver::resolveFunctionNoRecurse(
   CanonicalPath path = canonicalPrefix.append(segment);
 
   /// FIXME
+  getNameScope().insert(path, fun->getNodeId(), fun->getLocation(), RibKind::Function);
 
   NodeId currentModule = peekCurrentModuleScope();
   tyCtx->insertModuleChildItem(currentModule, segment);

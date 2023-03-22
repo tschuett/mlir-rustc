@@ -1,9 +1,12 @@
 #include "AST/Statement.h"
 
+#include "Coercion.h"
 #include "TyTy.h"
 #include "TypeChecking.h"
 
 #include <memory>
+
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::sema::type_checking {
 
@@ -35,21 +38,35 @@ TypeResolver::checkLetStatement(std::shared_ptr<ast::LetStatement> let) {
   std::shared_ptr<ast::patterns::PatternNoTopAlt> pattern = let->getPattern();
 
   TyTy::BaseType *initExprType = nullptr;
+  Location initExprTypeLocation = {let->getLocation()};
+  ;
 
   if (let->hasInit()) {
     initExprType = checkExpression(let->getInit());
+    initExprTypeLocation = let->getInit()->getLocation();
     if (initExprType->getKind() == TyTy::TypeKind::Error)
       return nullptr;
   }
 
   TyTy::BaseType *specifiedType = nullptr;
+  Location specifiedTypeLocation = {let->getLocation()};
 
   if (let->hasType()) {
     specifiedType = checkType(let->getType());
+    specifiedTypeLocation = let->getType()->getLocation();
+  }
+
+  TyTy::BaseType *elseExprType = nullptr;
+  if (let->hasElse()) {
+    elseExprType = checkExpression(let->getElse());
+    elseExprType->getKind() == TyTy::TypeKind::Never;
   }
 
   if (specifiedType != nullptr && initExprType != nullptr) {
-    coercion();
+    coercion(let->getNodeId(),
+             TyTy::WithLocation(specifiedType, specifiedTypeLocation),
+             TyTy::WithLocation(initExprType, initExprTypeLocation),
+             let->getLocation());
 
     checkPattern(pattern, specifiedType);
   } else {
@@ -59,7 +76,8 @@ TypeResolver::checkLetStatement(std::shared_ptr<ast::LetStatement> let) {
       checkPattern(pattern, initExprType);
     } else {
       // infer
-      TyTy::BaseType *inferType = new TyTy::InferType();
+      TyTy::BaseType *inferType =
+          new TyTy::InferType(let->getNodeId(), let->getLocation());
       checkPattern(pattern, inferType);
     }
   }

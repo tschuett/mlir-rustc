@@ -17,6 +17,11 @@ public:
   void addArm(const MatchArm &arm, std::shared_ptr<Expression> e) {
     arms.push_back({arm, e});
   }
+
+  std::vector<std::pair<MatchArm, std::shared_ptr<Expression>>>
+  getArms() const {
+    return arms;
+  }
 };
 
 } // namespace rust_compiler::ast

@@ -14,6 +14,8 @@ public:
   Scrutinee(Location loc) : Node(loc){};
 
   void setExpression(std::shared_ptr<ast::Expression> _expr) { expr = _expr; }
+
+  std::shared_ptr<ast::Expression> getExpression() const { return expr; }
 };
 
 } // namespace rust_compiler::ast

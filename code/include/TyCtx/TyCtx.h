@@ -15,6 +15,8 @@ namespace rust_compiler::ast {
 class Module;
 class Item;
 class Crate;
+class Enumeration;
+class EnumItem;
 } // namespace rust_compiler::ast
 
 namespace rust_compiler::tyctx {
@@ -34,6 +36,9 @@ public:
 
   std::optional<adt::CanonicalPath>
   lookupModuleChild(basic::NodeId module, std::string_view item_name);
+  std::optional<std::pair<ast::Enumeration *, ast::EnumItem *>>
+  lookupEnumItem(NodeId id);
+  void insertVariantDefinition(NodeId id, NodeId variant);
 
   void insertCanonicalPath(basic::NodeId id, const adt::CanonicalPath &path) {
     if (auto canPath = lookupCanonicalPath(id)) {
