@@ -122,7 +122,7 @@ TypeResolver::resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
   NodeId refNodeId = UNKNOWN_NODEID;
   for (unsigned i = 0; i < segs.size(); ++i) {
     bool haveMoreSegments = i != (segs.size() - 1);
-    NodeId astNodeId = segs[i]->getNodeId();
+    NodeId astNodeId = segs[i].getNodeId();
     if (auto name = resolver->lookupResolvedName(segs[i].getNodeId())) {
       refNodeId = *name;
     } else if (auto type = resolver->lookupResolvedType(segs[i].getNodeId())) {

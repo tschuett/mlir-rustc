@@ -119,6 +119,7 @@ private:
   mlir::Value
   emitMethodCallExpression(std::shared_ptr<ast::MethodCallExpression> expr);
 
+
   /// Helper conversion for a Rust AST location to an MLIR location.
   mlir::Location getLocation(const Location &loc) {
     return mlir::FileLineColLoc::get(builder.getStringAttr(loc.getFileName()),

@@ -25,6 +25,7 @@ public:
   void setKind(RangePatternKind k) { kind = k; }
   void setLower(const RangePatternBound &l) { lower = l; }
   void setUpper(const RangePatternBound &u) { upper = u; }
+  RangePatternKind getRangeKind() const { return kind; }
 };
 
 } // namespace rust_compiler::ast::patterns
