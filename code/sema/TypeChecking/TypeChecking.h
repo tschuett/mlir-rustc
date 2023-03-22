@@ -4,12 +4,12 @@
 #include "AST/ClosureExpression.h"
 #include "AST/Crate.h"
 #include "AST/Expression.h"
-#include "AST/MatchExpression.h"
 #include "AST/GenericParams.h"
 #include "AST/Item.h"
 #include "AST/LetStatement.h"
 #include "AST/LiteralExpression.h"
 #include "AST/MacroItem.h"
+#include "AST/MatchExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/PathExpression.h"
 #include "AST/PathInExpression.h"
@@ -17,6 +17,7 @@
 #include "AST/Patterns/PatternWithoutRange.h"
 #include "AST/Patterns/RangePattern.h"
 #include "AST/ReturnExpression.h"
+#include "AST/Types/NeverType.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypePath.h"
 #include "AST/WhereClause.h"
@@ -37,7 +38,7 @@ class Resolver;
 
 namespace rust_compiler::sema::type_checking {
 
-// using namespace rust_compiler::sema::resolver;
+using namespace rust_compiler::ast;
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_hir_analysis/index.html
 class TypeResolver {
@@ -46,6 +47,7 @@ public:
 
   void checkCrate(std::shared_ptr<ast::Crate> crate);
 
+  TyTy::BaseType * checkEnumerationPointer(ast::Enumeration* e);
 private:
   void checkVisItem(std::shared_ptr<ast::VisItem> v);
   void checkMacroItem(std::shared_ptr<ast::MacroItem> v);
@@ -73,6 +75,7 @@ private:
   TyTy::BaseType *checkPathExpression(std::shared_ptr<ast::PathExpression>);
   TyTy::BaseType *checkPathInExpression(std::shared_ptr<ast::PathInExpression>);
   TyTy::BaseType *checkLetStatement(std::shared_ptr<ast::LetStatement>);
+  TyTy::BaseType *checkNeverType(std::shared_ptr<ast::types::NeverType>);
 
   bool validateArithmeticType(ast::ArithmeticOrLogicalExpressionKind,
                               TyTy::BaseType *t);
@@ -85,9 +88,8 @@ private:
   TyTy::BaseType *
   checkRangePattern(std::shared_ptr<ast::patterns::RangePattern>,
                     TyTy::BaseType *);
-  TyTy::BaseType *
-  checkPathPattern(std::shared_ptr<ast::patterns::PathPattern>,
-                    TyTy::BaseType *);
+  TyTy::BaseType *checkPathPattern(std::shared_ptr<ast::patterns::PathPattern>,
+                                   TyTy::BaseType *);
 
   TyTy::BaseType *checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>);
   TyTy::BaseType *checkTypePath(std::shared_ptr<ast::types::TypePath>);
@@ -99,8 +101,6 @@ private:
                                   basic::NodeId pathNodeId,
                                   std::shared_ptr<ast::types::TypePath> tp,
                                   size_t offset, TyTy::BaseType *pathType);
-
-  std::optional<TyTy::BaseType *> queryType(basic::NodeId);
 
   // data
   tyctx::TyCtx *tcx;

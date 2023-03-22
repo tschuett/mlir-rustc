@@ -19,6 +19,10 @@ class Enumeration;
 class EnumItem;
 } // namespace rust_compiler::ast
 
+namespace rust_compiler::sema::type_checking {
+class TypeResolver;
+};
+
 namespace rust_compiler::tyctx {
 
 using namespace rust_compiler::sema::type_checking;
@@ -92,6 +96,14 @@ public:
 
   TyTy::BaseType *peekReturnType();
 
+  std::optional<TyTy::BaseType *> queryType(basic::NodeId,
+                                            TypeResolver *typeResolver);
+
+  std::optional<TyTy::BaseType *> lookupType(basic::NodeId);
+
+  bool queryInProgress(basic::NodeId);
+  void insertQuery(basic::NodeId);
+  void queryCompleted(basic::NodeId);
 private:
   basic::CrateNum crateNumIter = 7;
   basic::NodeId nodeIdIter = 7;

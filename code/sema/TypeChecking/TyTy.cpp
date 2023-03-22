@@ -1,4 +1,5 @@
 #include "TyTy.h"
+#include "TyCtx/TyCtx.h"
 
 #include "ADT/CanonicalPath.h"
 #include "Basic/Ids.h"
@@ -6,8 +7,22 @@
 #include "TypeIdentity.h"
 
 using namespace rust_compiler::adt;
+using namespace rust_compiler::tyctx;
 
 namespace rust_compiler::sema::type_checking::TyTy {
+
+TypeVariable::TypeVariable(basic::NodeId id) : id(id) {
+  TyCtx *context = TyCtx::get();
+  if (!context->lookupType(id))
+    assert(false);
+}
+
+TyTy::BaseType *TypeVariable::getType() const {
+  TyCtx *context = TyCtx::get();
+  if (auto type = context->lookupType(id))
+    return *type;
+  assert(false);
+}
 
 BaseType::BaseType(basic::NodeId ref, basic::NodeId typeReference,
                    TypeKind kind, TypeIdentity ident)
@@ -27,13 +42,26 @@ BoolType::BoolType(basic::NodeId reference)
 
 bool BoolType::needsGenericSubstitutions() const { return false; }
 
+std::string BoolType::toString() const { return "bool"; }
+
 CharType::CharType(basic::NodeId reference)
     : BaseType(reference, reference, TypeKind::Char, TypeIdentity::empty()) {}
 
 bool CharType::needsGenericSubstitutions() const { return false; }
 
+std::string CharType::toString() const { return "char"; }
+
 FloatType::FloatType(basic::NodeId id, FloatKind kind)
     : BaseType(id, id, TypeKind::Float, TypeIdentity::empty()), kind(kind) {}
+
+std::string FloatType::toString() const {
+  switch (kind) {
+  case FloatKind::F32:
+    return "f32";
+  case FloatKind::F64:
+    return "f64";
+  }
+}
 
 bool FloatType::needsGenericSubstitutions() const { return false; }
 
@@ -42,30 +70,68 @@ IntType::IntType(basic::NodeId id, IntKind kind)
 
 bool IntType::needsGenericSubstitutions() const { return false; }
 
+std::string IntType::toString() const {
+  switch (kind) {
+  case IntKind::I8:
+    return "I8";
+  case IntKind::I16:
+    return "I16";
+  case IntKind::I32:
+    return "I32";
+  case IntKind::I64:
+    return "I64";
+  case IntKind::I128:
+    return "I28";
+  }
+}
+
 ISizeType::ISizeType(basic::NodeId id)
     : BaseType(id, id, TypeKind::Int, TypeIdentity::empty()) {}
 
 bool ISizeType::needsGenericSubstitutions() const { return false; }
+
+std::string ISizeType::toString() const { return "isize"; }
 
 NeverType::NeverType(basic::NodeId id)
     : BaseType(id, id, TypeKind::Never, TypeIdentity::empty()) {}
 
 bool NeverType::needsGenericSubstitutions() const { return false; }
 
+std::string NeverType::toString() const { return "!"; }
+
 UintType::UintType(basic::NodeId id, UintKind kind)
     : BaseType(id, id, TypeKind::Uint, TypeIdentity::empty()), kind(kind) {}
 
 bool UintType::needsGenericSubstitutions() const { return false; }
+
+std::string UintType::toString() const {
+  switch (kind) {
+  case UintKind::U8:
+    return "U8";
+  case UintKind::U16:
+    return "U16";
+  case UintKind::U32:
+    return "U32";
+  case UintKind::U64:
+    return "U64";
+  case UintKind::U128:
+    return "U128";
+  }
+}
 
 USizeType::USizeType(basic::NodeId id)
     : BaseType(id, id, TypeKind::Uint, TypeIdentity::empty()) {}
 
 bool USizeType::needsGenericSubstitutions() const { return false; }
 
+std::string USizeType::toString() const { return "usize"; }
+
 StrType::StrType(basic::NodeId reference)
     : BaseType(reference, reference, TypeKind::Str, TypeIdentity::empty()) {}
 
 bool StrType::needsGenericSubstitutions() const { return false; }
+
+std::string StrType::toString() const { return "str"; }
 
 TupleType::TupleType(basic::NodeId id, Location loc)
     : BaseType(id, id, TypeKind::Tuple, TypeIdentity::from(loc)) {}
@@ -75,5 +141,12 @@ bool TupleType::needsGenericSubstitutions() const { return false; }
 TupleType *TupleType::getUnitType(basic::NodeId id) {
   return new TupleType(id, Location::getBuiltinLocation());
 }
+
+ErrorType::ErrorType(basic::NodeId id)
+    : BaseType(id, id, TypeKind::Error, TypeIdentity::empty()) {}
+
+bool ErrorType::needsGenericSubstitutions() const { return false; }
+
+std::string ErrorType::toString() const { return "error"; }
 
 } // namespace rust_compiler::sema::type_checking::TyTy

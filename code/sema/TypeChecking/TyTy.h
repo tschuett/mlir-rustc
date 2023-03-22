@@ -26,6 +26,7 @@ enum class TypeKind {
   Never,
   Str,
   Tuple,
+  Parameter,
 
   Error
 };
@@ -35,6 +36,17 @@ enum class IntKind { I8, I16, I32, I64, I128 };
 enum class UintKind { U8, U16, U32, U64, U128 };
 
 enum class FloatKind { F32, F64 };
+
+class BaseType;
+
+class TypeVariable {
+public:
+  TypeVariable(basic::NodeId id);
+  TyTy::BaseType *getType() const;
+
+private:
+  basic::NodeId id;
+};
 
 class BaseType { // : public TypeBoundsMapping
 public:
@@ -48,6 +60,7 @@ public:
   TypeKind getKind() const { return kind; }
 
   virtual bool needsGenericSubstitutions() const = 0;
+  virtual std::string toString() const = 0;
 
 protected:
   BaseType(basic::NodeId ref, basic::NodeId ty_ref, TypeKind kind,
@@ -65,6 +78,7 @@ public:
   IntType(basic::NodeId, IntKind);
 
   bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
 
 private:
   IntKind kind;
@@ -75,6 +89,7 @@ public:
   UintType(basic::NodeId, UintKind);
 
   bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
 
 private:
   UintKind kind;
@@ -85,6 +100,7 @@ public:
   USizeType(basic::NodeId);
 
   bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
 };
 
 class ISizeType : public BaseType {
@@ -92,6 +108,7 @@ public:
   ISizeType(basic::NodeId);
 
   bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
 };
 
 class FloatType : public BaseType {
@@ -99,17 +116,19 @@ public:
   FloatType(basic::NodeId, FloatKind);
 
   bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
 
 private:
   FloatKind kind;
 };
 
-/// false or trur
+/// false or true
 class BoolType : public BaseType {
 public:
   BoolType(basic::NodeId);
 
   bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
 };
 
 class CharType : public BaseType {
@@ -117,6 +136,7 @@ public:
   CharType(basic::NodeId);
 
   bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
 };
 
 class StrType : public BaseType {
@@ -124,6 +144,7 @@ public:
   StrType(basic::NodeId);
 
   bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
 };
 
 /// !
@@ -132,6 +153,7 @@ public:
   NeverType(basic::NodeId);
 
   bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
 };
 
 /// (.., .., ..)
@@ -140,13 +162,18 @@ public:
   TupleType(basic::NodeId, Location loc);
 
   bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
 
   static TupleType *getUnitType(basic::NodeId);
+
+private:
+  std::vector<TypeVariable> fields;
 };
 
 class FunctionType : public BaseType {
 public:
   FunctionType(basic::NodeId, Location loc);
+  std::string toString() const override;
 };
 
 class ClosureType : public BaseType {
@@ -161,6 +188,7 @@ public:
   InferKind getInferredKind() const { return inferKind; }
 
   bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
 
 private:
   InferKind inferKind;
@@ -171,6 +199,7 @@ public:
   ErrorType(basic::NodeId);
 
   bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
 };
 
 class WithLocation {

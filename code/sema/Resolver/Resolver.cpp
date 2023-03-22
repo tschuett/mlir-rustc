@@ -380,6 +380,22 @@ bool Scope::wasDeclDeclaredInCurrentScope(NodeId def) const {
   return false;
 }
 
+std::optional<basic::NodeId>
+Resolver::lookupResolvedName(basic::NodeId nodeId) {
+  auto it = resolvedNames.find(nodeId);
+  if (it == resolvedNames.end())
+    return std::nullopt;
+  return it->second;
+}
+
+std::optional<basic::NodeId>
+Resolver::lookupResolvedType(basic::NodeId nodeId) {
+  auto it = resolvedTypes.find(nodeId);
+  if (it == resolvedTypes.end())
+    return std::nullopt;
+  return it->second;
+}
+
 } // namespace rust_compiler::sema::resolver
 
 // items: canoncialPath
