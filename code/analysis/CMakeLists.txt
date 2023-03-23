@@ -14,5 +14,10 @@ add_library(analysis
 
 target_include_directories(analysis PRIVATE  ../include)
 
+llvm_map_components_to_libnames(llvm_libs ADT)
 
-target_link_libraries(analysis )
+
+target_link_libraries(analysis
+        PRIVATE
+        ${llvm_libs}
+        )

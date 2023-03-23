@@ -1,23 +1,112 @@
 #include "Analysis/Cycles.h"
 
+#include <llvm/ADT/STLExtras.h>
+#include <llvm/ADT/SmallVector.h>
+#include <memory>
+#include <mlir/IR/Block.h>
+
 namespace rust_compiler::analysis {
 
-void Cycles::depthFirstSearch(mlir::Block *block, uint32_t currentDepth) {
-  // visit current node
-  depths.insert({block, currentDepth});
-  // left sutree
-  // right tree
-  for (auto *b : block->getSuccessors())
-    depthFirstSearch(b, currentDepth + 1);
+void CycleInfo::depthFirstSearch(mlir::Block *entryBlock) {
+  llvm::SmallVector<uint32_t, 8> dfsTreeStack;
+  llvm::SmallVector<mlir::Block *, 8> traverseStack;
+  unsigned counter = 0;
+
+  traverseStack.emplace_back(entryBlock);
+
+  do {
+    mlir::Block *block = traverseStack.back();
+
+    if (!blockDFSInfo.contains(block)) {
+      dfsTreeStack.emplace_back(traverseStack.size());
+      llvm::append_range(traverseStack, block->getSuccessors());
+
+      blockDFSInfo.try_emplace(block, ++counter);
+      blockPreorder.push_back(block);
+    } else {
+      if (dfsTreeStack.back() == traverseStack.size()) {
+        blockDFSInfo.find(block)->second.setEnd(counter);
+        dfsTreeStack.pop_back();
+      } else {
+        // already done
+      }
+      traverseStack.pop_back();
+    }
+  } while (!traverseStack.empty());
 }
 
-void Cycles::analyze(mlir::func::FuncOp *f) {
+void CycleInfo::analyze(mlir::func::FuncOp *f) {
   fun = f;
 
   // first step: depth first search
-  depthFirstSearch(&f->getRegion().front(), 0);
+  depthFirstSearch(&f->getRegion().front());
 
-  for (unsigned i = 0; i < depths.size(); ++i) {
+  llvm::SmallVector<mlir::Block *, 8> workList;
+
+  for (mlir::Block *headerCandidate : llvm::reverse(blockPreorder)) {
+    const DFSInfo candidateInfo = blockDFSInfo.lookup(headerCandidate);
+
+    for (mlir::Block *pred : headerCandidate->getPredecessors()) {
+      const DFSInfo predDFSInfo = blockDFSInfo.lookup(headerCandidate);
+      if (candidateInfo.isAncestorOf(predDFSInfo))
+        workList.push_back(pred);
+    }
+
+    if (workList.empty())
+      continue;
+
+    // Found a cycle with the candidate at its header.
+    std::unique_ptr<Cycle> newCycle = std::make_unique<Cycle>();
+    newCycle->appendEntry(headerCandidate);
+    newCycle->appendBlock(headerCandidate);
+    blockMap.try_emplace(headerCandidate, newCycle.get());
+
+    auto processPredecessors = [&](mlir::Block *block) {
+      bool isEntry = false;
+      for (mlir::Block *pred : block->getPredecessors()) {
+        const DFSInfo predDFSInfo = blockDFSInfo.lookup(pred);
+        if (candidateInfo.isAncestorOf(predDFSInfo)) {
+          workList.push_back(pred);
+        } else {
+          isEntry = true;
+        }
+
+        if (isEntry) {
+          newCycle->appendEntry(block);
+        } else {
+          // append as child
+        }
+      }
+    };
+
+    do {
+      mlir::Block *block = workList.pop_back_val();
+      if (block == headerCandidate)
+        continue;
+
+      if (auto *blockParent = getTopLevelParentCycle(block)) {
+        if (blockParent != newCycle.get()) {
+          // make blockParent the child of newCycle
+          moveToNewParent(newCycle.get(), blockParent);
+          newCycle->appendBlock(blockParent);
+          for (mlir::Block *childEntry : blockParent->entries())
+            processPredecessors(childEntry);
+        } else {
+          // known child cycle
+        }
+      } else {
+        blockMap.try_emplace(block, newCycle.get());
+        newCycle->appendBlock(block);
+        processPredecessors(block);
+      }
+    } while (!workList.empty());
+    topLevelCycles.push_back(std::move(newCycle));
+  }
+
+  // fix top-level cycl links and compute cycle depths.
+  for (auto *tlc: topLevelCycles()) {
+    tlc->parentCycle = nullptr;
+    upateDepth(tlc);
   }
 }
 
