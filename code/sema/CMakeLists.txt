@@ -30,5 +30,9 @@ target_include_directories(sema PRIVATE  ../include)
 add_subdirectory(Resolver)
 add_subdirectory(TypeChecking)
 
-target_link_libraries(sema Resolver TypeChecking)
+target_link_libraries(sema
+                PRIVATE
+                Resolver
+                TypeChecking
+)
 

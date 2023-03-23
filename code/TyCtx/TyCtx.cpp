@@ -2,7 +2,10 @@
 
 #include "ADT/CanonicalPath.h"
 #include "AST/Crate.h"
+#include "AST/ExternalItem.h"
 #include "Basic/Ids.h"
+
+#include "../sema/TypeChecking/TypeChecking.h"
 
 #include <memory>
 #include <optional>
@@ -91,6 +94,99 @@ void TyCtx::insertBuiltin(NodeId id, NodeId ref, TyTy::BaseType *type) {
 
 void TyCtx::insertType(const NodeIdentity &id, TyTy::BaseType *type) {
   resolved[id.getNodeId()] = type;
+}
+
+TyTy::BaseType *TyCtx::lookupBuiltin(std::string_view name) {
+  for (auto &built : builtins) {
+    if (built->toString() == name)
+      return built.get();
+  }
+  return nullptr;
+}
+
+std::optional<TyTy::BaseType *> TyCtx::lookupType(basic::NodeId id) {
+  auto it = resolved.find(id);
+  if (it != resolved.end())
+    return it->second;
+  return std::nullopt;
+}
+
+std::optional<TyTy::BaseType *> TyCtx::queryType(basic::NodeId id,
+                                                 TypeResolver *typeResolver) {
+  if (queryInProgress(id))
+    return std::nullopt;
+
+  if (auto t = lookupType(id))
+    return t;
+
+  insertQuery(id);
+
+  // enum item
+  std::optional<std::pair<ast::Enumeration *, ast::EnumItem *>> enumItem =
+      lookupEnumItem(id);
+  if (enumItem) {
+    Enumeration *enuM = enumItem->first;
+    // EnumItem *item = enumItem->second;
+
+    TyTy::BaseType *type = typeResolver->checkEnumerationPointer(enuM);
+
+    queryCompleted(id);
+
+    return type;
+  }
+
+  // plain item
+  std::optional<Item *> item = lookupItem(id);
+  if (item) {
+    TyTy::BaseType *result = typeResolver->checkItemPointer(*item);
+    queryCompleted(id);
+    return result;
+  }
+
+  // implementation
+  std::optional<Implementation *> impl = lookupImplementation(id);
+  if (impl) {
+    TyTy::BaseType *result = typeResolver->checkImplementationPointer(*impl);
+    queryCompleted(id);
+    return result;
+  }
+
+  // extern item
+  std::optional<ExternalItem *> external = lookupExternalItem(id);
+  if (external) {
+    TyTy::BaseType *result = typeResolver->checkExternalItemPointer(*external);
+    queryCompleted(id);
+    return result;
+  }
+
+  // more?
+  queryCompleted(id);
+  return std::nullopt;
+}
+
+bool TyCtx::queryInProgress(basic::NodeId id) {
+  return queriesInProgress.find(id) != queriesInProgress.end();
+}
+
+void TyCtx::insertQuery(basic::NodeId id) { queriesInProgress.insert(id); }
+
+void TyCtx::queryCompleted(basic::NodeId id) { queriesInProgress.erase(id); }
+
+std::optional<ast::Item *> TyCtx::lookupItem(basic::NodeId id) {
+  assert(false);
+}
+std::optional<ast::ExternalItem *> TyCtx::lookupExternalItem(basic::NodeId id) {
+  assert(false);
+}
+
+std::optional<ast::Implementation *>
+TyCtx::lookupImplementation(basic::NodeId id) {
+  assert(false);
+}
+
+std::optional<std::pair<ast::Enumeration *, ast::EnumItem *>>
+TyCtx::lookupEnumItem(NodeId id) {
+  assert(false);
 }
 
 } // namespace rust_compiler::tyctx

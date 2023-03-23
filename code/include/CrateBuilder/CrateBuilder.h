@@ -128,6 +128,4 @@ private:
   }
 };
 
-// void build(std::shared_ptr<rust_compiler::ast::Crate> crate);
-
 } // namespace rust_compiler::crate_builder

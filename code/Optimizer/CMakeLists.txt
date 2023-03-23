@@ -27,6 +27,7 @@ add_dependencies(optimizer OptimizerPassIncGen MirOpsIncGen CombineIncGen)
 
 
 target_link_libraries(optimizer
+                PRIVATE
                 analysis
                 hir
                 MirDialect

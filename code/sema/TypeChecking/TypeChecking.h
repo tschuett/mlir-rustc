@@ -4,7 +4,9 @@
 #include "AST/ClosureExpression.h"
 #include "AST/Crate.h"
 #include "AST/Expression.h"
+#include "AST/ExternalItem.h"
 #include "AST/GenericParams.h"
+#include "AST/Implementation.h"
 #include "AST/Item.h"
 #include "AST/LetStatement.h"
 #include "AST/LiteralExpression.h"
@@ -47,7 +49,11 @@ public:
 
   void checkCrate(std::shared_ptr<ast::Crate> crate);
 
-  TyTy::BaseType * checkEnumerationPointer(ast::Enumeration* e);
+  TyTy::BaseType *checkEnumerationPointer(ast::Enumeration *e);
+  TyTy::BaseType *checkImplementationPointer(ast::Implementation *i);
+  TyTy::BaseType *checkExternalItemPointer(ast::ExternalItem *e);
+  TyTy::BaseType *checkItemPointer(ast::Item *e);
+
 private:
   void checkVisItem(std::shared_ptr<ast::VisItem> v);
   void checkMacroItem(std::shared_ptr<ast::MacroItem> v);

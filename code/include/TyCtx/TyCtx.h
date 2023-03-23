@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ADT/CanonicalPath.h"
+#include "ADT/ScopedHashTable.h"
 #include "Basic/Ids.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyCtx.h"
@@ -10,6 +11,7 @@
 #include <map>
 #include <optional>
 #include <vector>
+#include <set>
 
 namespace rust_compiler::ast {
 class Module;
@@ -17,6 +19,8 @@ class Item;
 class Crate;
 class Enumeration;
 class EnumItem;
+class ExternalItem;
+class Implementation;
 } // namespace rust_compiler::ast
 
 namespace rust_compiler::sema::type_checking {
@@ -100,10 +104,14 @@ public:
                                             TypeResolver *typeResolver);
 
   std::optional<TyTy::BaseType *> lookupType(basic::NodeId);
+  std::optional<ast::Item *> lookupItem(basic::NodeId);
+  std::optional<ast::ExternalItem *> lookupExternalItem(basic::NodeId);
+  std::optional<ast::Implementation *> lookupImplementation(basic::NodeId);
 
   bool queryInProgress(basic::NodeId);
   void insertQuery(basic::NodeId);
   void queryCompleted(basic::NodeId);
+
 private:
   basic::CrateNum crateNumIter = 7;
   basic::NodeId nodeIdIter = 7;
@@ -123,6 +131,8 @@ private:
   std::map<basic::NodeId, basic::NodeId> nodeIdRefs;
   std::map<basic::NodeId, TyTy::BaseType *> resolved;
   std::vector<std::unique_ptr<TyTy::BaseType>> builtins;
+
+  std::set<NodeId> queriesInProgress;
 };
 
 } // namespace rust_compiler::tyctx

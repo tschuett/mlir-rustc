@@ -18,4 +18,8 @@ add_library(Resolver
 target_include_directories(Resolver PRIVATE  ../../include)
 
 
-target_link_libraries(Resolver adt TyCtx)
+target_link_libraries(Resolver
+                PRIVATE
+                adt
+                TyCtx
+)

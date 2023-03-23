@@ -9,6 +9,7 @@ add_library(analysis
            Abstractelement.cpp
            Loops.cpp
            PointsTo.cpp
+           Cycles.cpp
            )
 
 target_include_directories(analysis PRIVATE  ../include)
