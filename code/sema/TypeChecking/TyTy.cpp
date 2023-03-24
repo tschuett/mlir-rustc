@@ -1,10 +1,12 @@
 #include "TyTy.h"
-#include "TyCtx/TyCtx.h"
 
 #include "ADT/CanonicalPath.h"
 #include "Basic/Ids.h"
 #include "Location.h"
+#include "TyCtx/TyCtx.h"
 #include "TypeIdentity.h"
+
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::adt;
 using namespace rust_compiler::tyctx;
@@ -140,6 +142,23 @@ bool TupleType::needsGenericSubstitutions() const { return false; }
 
 TupleType *TupleType::getUnitType(basic::NodeId id) {
   return new TupleType(id, Location::getBuiltinLocation());
+}
+
+std::string TupleType::toString() const {
+  std::string str;
+  llvm::raw_string_ostream stream(str);
+
+  stream << "(";
+
+  for (unsigned i = 0; i < fields.size(); ++i) {
+    stream << fields[i].getType()->toString();
+    if (i + 1 < fields.size())
+      stream << ", ";
+  }
+
+  stream << ")";
+
+  return stream.str();
 }
 
 ErrorType::ErrorType(basic::NodeId id)
