@@ -3,6 +3,8 @@
 #include "AST/AST.h"
 #include "AST/Lifetime.h"
 
+#include <vector>
+
 namespace rust_compiler::ast {
 
 class LifetimeBounds : public Node {

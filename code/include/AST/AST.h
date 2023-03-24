@@ -3,10 +3,6 @@
 #include "Basic/Ids.h"
 #include "Location.h"
 #include "TyCtx/NodeIdentity.h"
-#include "TyCtx/TyCtx.h"
-
-#include <cstddef>
-#include <vector>
 
 // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_ast/ast/index.html
 
@@ -20,10 +16,7 @@ class Node {
   basic::CrateNum crateNum;
 
 public:
-  explicit Node(Location location) : location(location) {
-    nodeId = rust_compiler::tyctx::TyCtx::get()->getNextNodeId();
-    crateNum = rust_compiler::tyctx::TyCtx::get()->getCurrentCrate();
-  }
+  explicit Node(Location location);
 
   virtual ~Node() = default;
 

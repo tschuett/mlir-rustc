@@ -1,4 +1,5 @@
 add_library(ast
+           AST.cpp
            Module.cpp
            UseDeclaration.cpp
            Function.cpp

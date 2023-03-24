@@ -5,10 +5,8 @@
 #include "AST/Item.h"
 #include "AST/Module.h"
 #include "Basic/Ids.h"
-#include "TyCtx/TyCtx.h"
 
 #include <memory>
-#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -28,10 +26,7 @@ class Crate {
   basic::NodeId nodeId;
 
 public:
-  Crate(std::string_view crateName, basic::CrateNum crateNum)
-      : crateName(crateName), crateNum(crateNum) {
-    nodeId = tyctx::TyCtx::get()->getNextNodeId();
-  };
+  Crate(std::string_view crateName, basic::CrateNum crateNum);
 
   /// how?
   void merge(std::shared_ptr<ast::Module> module, adt::CanonicalPath path);

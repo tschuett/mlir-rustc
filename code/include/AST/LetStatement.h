@@ -8,6 +8,7 @@
 #include "AST/Types/TypeExpression.h"
 
 #include <span>
+#include <vector>
 
 namespace rust_compiler::ast {
 
