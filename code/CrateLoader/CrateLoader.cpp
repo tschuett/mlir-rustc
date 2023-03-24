@@ -1,5 +1,7 @@
 #include "CrateLoader/CrateLoader.h"
 
+#include "TyCtx/TyCtx.h"
+
 #include "LoadModule.h"
 
 #include <llvm/ADT/SmallVector.h>

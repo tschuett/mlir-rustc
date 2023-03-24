@@ -4,6 +4,7 @@
 #include <llvm/ADT/SmallVector.h>
 #include <memory>
 #include <mlir/IR/Block.h>
+#include <llvm/ADT/DenseMap.h>
 
 namespace rust_compiler::analysis {
 
@@ -17,7 +18,7 @@ void CycleInfo::depthFirstSearch(mlir::Block *entryBlock) {
   do {
     mlir::Block *block = traverseStack.back();
 
-    if (!blockDFSInfo.contains(block)) {
+    if (!(blockDFSInfo.count(block) == 1)) {
       dfsTreeStack.emplace_back(traverseStack.size());
       llvm::append_range(traverseStack, block->getSuccessors());
 
@@ -88,8 +89,8 @@ void CycleInfo::analyze(mlir::func::FuncOp *f) {
         if (blockParent != newCycle.get()) {
           // make blockParent the child of newCycle
           moveToNewParent(newCycle.get(), blockParent);
-          newCycle->appendBlock(blockParent);
-          for (mlir::Block *childEntry : blockParent->entries())
+          newCycle->appendCyclesBlocks(blockParent);
+          for (mlir::Block *childEntry : blockParent->getEntries())
             processPredecessors(childEntry);
         } else {
           // known child cycle
@@ -103,10 +104,10 @@ void CycleInfo::analyze(mlir::func::FuncOp *f) {
     topLevelCycles.push_back(std::move(newCycle));
   }
 
-  // fix top-level cycl links and compute cycle depths.
-  for (auto *tlc: topLevelCycles()) {
-    tlc->parentCycle = nullptr;
-    upateDepth(tlc);
+  // fix top-level cycle links and compute cycle depths.
+  for (auto *tlc: getTopLevelCycles()) {
+    tlc->setParentCycle(nullptr);
+    updateDepth(tlc);
   }
 }
 

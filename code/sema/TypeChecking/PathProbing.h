@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/PathIdentSegment.h"
+#include "TyTy.h"
 
 #include <set>
 
