@@ -28,6 +28,9 @@ public:
   void setVisibility(const Visibility &vis) { visibility = vis; }
   void setIdentifier(std::string_view id) { identifier = id; }
   void setType(std::shared_ptr<ast::types::TypeExpression> t) { type = t; }
+
+  std::optional<Visibility> getVisibility() const { return visibility; }
+  std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
 };
 
 } // namespace rust_compiler::ast

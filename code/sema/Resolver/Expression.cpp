@@ -2,6 +2,7 @@
 
 #include "ADT/CanonicalPath.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/AssignmentExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/ClosureExpression.h"
 #include "AST/LoopExpression.h"
@@ -198,6 +199,11 @@ void Resolver::resolveOperatorExpression(
   }
   case OperatorExpressionKind::AssignmentExpression: {
     assert(false && "to be handled later");
+    std::shared_ptr<AssignmentExpression> assign =
+        std::static_pointer_cast<AssignmentExpression>(op);
+    resolveExpression(assign->getLHS(), prefix, canonicalPrefix);
+    resolveExpression(assign->getRHS(), prefix, canonicalPrefix);
+    verifyAssignee(assign->getLHS());
   }
   case OperatorExpressionKind::CompoundAssignmentExpression: {
     assert(false && "to be handled later");
@@ -355,6 +361,10 @@ void Resolver::resolveBlockExpression(
   getNameScope().pop();
   getTypeScope().pop();
   getLabelScope().pop();
+}
+
+void Resolver::verifyAssignee(std::shared_ptr<ast::Expression> assignee) {
+  assert(false && "to be handled later");
 }
 
 } // namespace rust_compiler::sema::resolver

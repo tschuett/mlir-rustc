@@ -7,8 +7,8 @@
 
 #include <memory>
 #include <optional>
-#include <vector>
 #include <span>
+#include <vector>
 
 namespace rust_compiler::ast {
 
@@ -27,6 +27,9 @@ public:
   void setVisibility(const Visibility &vis) { visibility = vis; }
 
   void setType(std::shared_ptr<ast::types::TypeExpression> t) { type = t; }
+
+  std::optional<Visibility> getVisibility() const { return visibility; }
+  std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
 };
 
 } // namespace rust_compiler::ast

@@ -17,6 +17,8 @@ public:
   bool hasTrailingComma() const { return trailingComma; }
 
   void addField(const TupleField &t) { fields.push_back(t); }
+
+  std::vector<TupleField> getFields() const { return fields; }
 };
 
 } // namespace rust_compiler::ast

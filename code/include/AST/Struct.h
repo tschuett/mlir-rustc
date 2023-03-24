@@ -4,7 +4,7 @@
 
 namespace rust_compiler::ast {
 
-enum StructKind { StructStruct, TupleStruct };
+enum StructKind { StructStruct2, TupleStruct2 };
 
 class Struct : public VisItem {
   StructKind kind;

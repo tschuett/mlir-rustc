@@ -23,7 +23,10 @@
 #include "AST/SimplePath.h"
 #include "AST/Statement.h"
 #include "AST/StaticItem.h"
+#include "AST/Struct.h"
+#include "AST/StructStruct.h"
 #include "AST/TraitImpl.h"
+#include "AST/TupleStruct.h"
 #include "AST/Types/TupleType.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypePathFn.h"
@@ -35,7 +38,7 @@
 #include "TyCtx/TyCtx.h"
 
 #include "../TypeChecking/TyTy.h"
-#include "../TypeChecking/TypeChecking.h"
+// #include "../TypeChecking/TypeChecking.h"
 
 #include <cassert>
 #include <map>
@@ -181,6 +184,15 @@ private:
   void resolveModule(std::shared_ptr<ast::Module>,
                      const adt::CanonicalPath &prefix,
                      const adt::CanonicalPath &canonicalPrefix);
+  void resolveStructItem(std::shared_ptr<ast::Struct>,
+                         const adt::CanonicalPath &prefix,
+                         const adt::CanonicalPath &canonicalPrefix);
+  void resolveStructStructItem(std::shared_ptr<ast::StructStruct>,
+                               const adt::CanonicalPath &prefix,
+                               const adt::CanonicalPath &canonicalPrefix);
+  void resolveTupleStructItem(std::shared_ptr<ast::TupleStruct>,
+                              const adt::CanonicalPath &prefix,
+                              const adt::CanonicalPath &canonicalPrefix);
 
   // expressions
   void resolveExpression(std::shared_ptr<ast::Expression>,
@@ -257,11 +269,18 @@ private:
   void resolveExpressionStatement(std::shared_ptr<ast::ExpressionStatement>,
                                   const adt::CanonicalPath &prefix,
                                   const adt::CanonicalPath &canonicalPrefix);
+  void resolveStructStructStatement(std::shared_ptr<ast::StructStruct>,
+                                    const adt::CanonicalPath &prefix,
+                                    const adt::CanonicalPath &canonicalPrefix);
+  void resolveTupleStructStatement(std::shared_ptr<ast::TupleStruct>,
+                                   const adt::CanonicalPath &prefix,
+                                   const adt::CanonicalPath &canonicalPrefix);
 
   std::optional<basic::NodeId> resolveSimplePath(const ast::SimplePath &path);
   std::optional<basic::NodeId>
       resolvePathInExpression(std::shared_ptr<ast::PathInExpression>);
 
+  void verifyAssignee(std::shared_ptr<ast::Expression>);
   std::map<basic::NodeId, std::shared_ptr<ast::UseDeclaration>> useDeclarations;
   std::map<basic::NodeId, std::shared_ptr<ast::Module>> modules;
 

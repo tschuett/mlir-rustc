@@ -166,7 +166,8 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
     break;
   }
   case VisItemKind::Struct: {
-    assert(false && "to be handled later");
+    resolveStructItem(std::static_pointer_cast<Struct>(visItem), prefix,
+                      canonicalPrefix);
     break;
   }
   case VisItemKind::Enumeration: {

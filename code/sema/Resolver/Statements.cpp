@@ -1,5 +1,5 @@
-#include "AST/ExpressionStatement.h"
 #include "AST/BlockExpression.h"
+#include "AST/ExpressionStatement.h"
 #include "AST/LetStatement.h"
 #include "AST/Statement.h"
 #include "Resolver.h"
@@ -73,6 +73,18 @@ void Resolver::resolveExpressionStatement(
     break;
   }
   }
+}
+
+void Resolver::resolveStructStructStatement(
+    std::shared_ptr<ast::StructStruct>, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  assert(false && "to be handled later");
+}
+
+void Resolver::resolveTupleStructStatement(
+    std::shared_ptr<ast::TupleStruct>, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  assert(false && "to be handled later");
 }
 
 } // namespace rust_compiler::sema::resolver

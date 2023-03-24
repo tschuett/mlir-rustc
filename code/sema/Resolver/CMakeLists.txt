@@ -13,6 +13,7 @@ add_library(Resolver
             Closure.cpp
             Match.cpp
             Loops.cpp
+            Struct.cpp
            )
 
 target_include_directories(Resolver PRIVATE  ../../include)

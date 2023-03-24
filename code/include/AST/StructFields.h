@@ -16,6 +16,8 @@ public:
 
   void addStructField(const StructField &sf) { fields.push_back(sf); }
   void setTrailingComma() { trailingComma = true; }
+
+  std::vector<StructField> getFields() const { return fields; }
 };
 
 } // namespace rust_compiler::ast
