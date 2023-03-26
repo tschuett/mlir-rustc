@@ -1,114 +1,123 @@
 #include "Analysis/Cycles.h"
 
+#include <llvm/ADT/DenseMap.h>
+#include <llvm/ADT/MapVector.h>
 #include <llvm/ADT/STLExtras.h>
 #include <llvm/ADT/SmallVector.h>
 #include <memory>
+#include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/IR/Block.h>
-#include <llvm/ADT/DenseMap.h>
+#include <mlir/IR/BuiltinAttributes.h>
+#include <mlir/Support/LLVM.h>
+
+using namespace llvm;
 
 namespace rust_compiler::analysis {
 
-void CycleInfo::depthFirstSearch(mlir::Block *entryBlock) {
-  llvm::SmallVector<uint32_t, 8> dfsTreeStack;
-  llvm::SmallVector<mlir::Block *, 8> traverseStack;
-  unsigned counter = 0;
-
-  traverseStack.emplace_back(entryBlock);
-
-  do {
-    mlir::Block *block = traverseStack.back();
-
-    if (!(blockDFSInfo.count(block) == 1)) {
-      dfsTreeStack.emplace_back(traverseStack.size());
-      llvm::append_range(traverseStack, block->getSuccessors());
-
-      blockDFSInfo.try_emplace(block, ++counter);
-      blockPreorder.push_back(block);
-    } else {
-      if (dfsTreeStack.back() == traverseStack.size()) {
-        blockDFSInfo.find(block)->second.setEnd(counter);
-        dfsTreeStack.pop_back();
-      } else {
-        // already done
-      }
-      traverseStack.pop_back();
-    }
-  } while (!traverseStack.empty());
+static bool isZero(mlir::Attribute integer) {
+  if (auto intAttr = mlir::dyn_cast<mlir::IntegerAttr>(integer))
+    if (intAttr.getValue() == 0)
+      return true;
+  return false;
 }
 
-void CycleInfo::analyze(mlir::func::FuncOp *f) {
-  fun = f;
+static bool isOne(mlir::Attribute integer) {
+  if (auto intAttr = mlir::dyn_cast<mlir::IntegerAttr>(integer))
+    if (intAttr.getValue() == 1)
+      return true;
+  return false;
+}
 
-  // first step: depth first search
-  depthFirstSearch(&f->getRegion().front());
+void LoopInfo::analyze(mlir::func::FuncOp *f) { fun = f; }
 
-  llvm::SmallVector<mlir::Block *, 8> workList;
+mlir::Block *Loop::getLatch() const {
+  mlir::Block *header = getHeader();
+  llvm::SmallPtrSet<mlir::Block *, 8> latches;
 
-  for (mlir::Block *headerCandidate : llvm::reverse(blockPreorder)) {
-    const DFSInfo candidateInfo = blockDFSInfo.lookup(headerCandidate);
+  for (auto *block : blocks)
+    if (dominanceInfo.dominates(block, header))
+      latches.insert(block);
 
-    for (mlir::Block *pred : headerCandidate->getPredecessors()) {
-      const DFSInfo predDFSInfo = blockDFSInfo.lookup(headerCandidate);
-      if (candidateInfo.isAncestorOf(predDFSInfo))
-        workList.push_back(pred);
+  if (latches.size() > 2)
+    return nullptr;
+
+  if (latches.size() == 0)
+    return nullptr;
+
+  return *latches.begin();
+}
+
+mlir::arith::CmpIOp *Loop::getLatchCmpInst() const {
+  if (mlir::Block *latch = getLatch()) {
+    if (auto branch =
+            mlir::dyn_cast<mlir::cf::CondBranchOp>(latch->getTerminator())) {
+      if (auto cmp = mlir::dyn_cast<mlir::arith::CmpIOp>(
+              branch.getCondition().getDefiningOp())) {
+        return branch.getCondition().getDefiningOp();
+      }
     }
+    return nullptr;
+  }
+}
 
-    if (workList.empty())
-      continue;
+std::optional<mlir::BlockArgument> Loop::getCanonicalInductionVariable() const {
+  mlir::Block *header = getHeader();
 
-    // Found a cycle with the candidate at its header.
-    std::unique_ptr<Cycle> newCycle = std::make_unique<Cycle>();
-    newCycle->appendEntry(headerCandidate);
-    newCycle->appendBlock(headerCandidate);
-    blockMap.try_emplace(headerCandidate, newCycle.get());
+  mlir::Block *incoming = getLoopPredecessor();
+  mlir::Block *backEdge = getLatch();
 
-    auto processPredecessors = [&](mlir::Block *block) {
-      bool isEntry = false;
-      for (mlir::Block *pred : block->getPredecessors()) {
-        const DFSInfo predDFSInfo = blockDFSInfo.lookup(pred);
-        if (candidateInfo.isAncestorOf(predDFSInfo)) {
-          workList.push_back(pred);
-        } else {
-          isEntry = true;
-        }
+  if (incoming == nullptr || backEdge == nullptr)
+    return std::nullopt;
 
-        if (isEntry) {
-          newCycle->appendEntry(block);
-        } else {
-          // append as child
-        }
+  if (auto constant =
+          mlir::dyn_cast<mlir::arith::ConstantOp>(incoming->getTerminator())) {
+    if (isZero(constant.getValue()))
+      if (auto add =
+              mlir::dyn_cast<mlir::arith::AddIOp>(backEdge->getTerminator())) {
+        if (incoming->getTerminator() == add.getOperand(0).getDefiningOp())
+          if (auto one = mlir::dyn_cast<mlir::arith::ConstantOp>(
+                  add.getOperand(1).getDefiningOp()))
+            if (isOne(one.getValue()))
+              return header->getArgument(0);
       }
-    };
-
-    do {
-      mlir::Block *block = workList.pop_back_val();
-      if (block == headerCandidate)
-        continue;
-
-      if (auto *blockParent = getTopLevelParentCycle(block)) {
-        if (blockParent != newCycle.get()) {
-          // make blockParent the child of newCycle
-          moveToNewParent(newCycle.get(), blockParent);
-          newCycle->appendCyclesBlocks(blockParent);
-          for (mlir::Block *childEntry : blockParent->getEntries())
-            processPredecessors(childEntry);
-        } else {
-          // known child cycle
-        }
-      } else {
-        blockMap.try_emplace(block, newCycle.get());
-        newCycle->appendBlock(block);
-        processPredecessors(block);
-      }
-    } while (!workList.empty());
-    topLevelCycles.push_back(std::move(newCycle));
   }
 
-  // fix top-level cycle links and compute cycle depths.
-  for (auto *tlc: getTopLevelCycles()) {
-    tlc->setParentCycle(nullptr);
-    updateDepth(tlc);
-  }
+  return std::nullopt;
+}
+
+std::vector<mlir::Block *> Loop::getExitBlocks() const {
+  std::vector<mlir::Block *> exitBlocks;
+
+  for (mlir::Block *BB : blocks)
+    for (mlir::Block *succ : BB->getSuccessors())
+      if (!contains(succ))
+        exitBlocks.push_back(succ);
+
+  return exitBlocks;
+}
+
+mlir::Block *Loop::getLoopPreHeader() const {
+  mlir::Block *header = getHeader();
+
+  mlir::Block *pred = header->getUniquePredecessor();
+  if (pred == nullptr)
+    return nullptr;
+  if (contains(pred))
+    return nullptr;
+
+  return pred;
+}
+
+mlir::Block *Loop::getLoopPredecessor() const {
+  mlir::Block *header = getHeader();
+
+  mlir::Block *pred = header->getSinglePredecessor();
+  if (pred == nullptr)
+    return nullptr;
+  if (contains(pred))
+    return nullptr;
+
+  return pred;
 }
 
 } // namespace rust_compiler::analysis

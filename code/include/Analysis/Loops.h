@@ -20,6 +20,8 @@ class Loop;
 class LoopNest {
   Loop *topLoop;
   // std::vector<>
+
+public:
 };
 
 class Loop {

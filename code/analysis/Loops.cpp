@@ -5,11 +5,11 @@
 #include <llvm/ADT/SmallPtrSet.h>
 #include <llvm/ADT/SmallSet.h>
 #include <llvm/ADT/SmallVector.h>
+#include <mlir/Dialect/ControlFlow/IR/ControlFlow.h>
 #include <mlir/Dialect/MemRef/IR/MemRef.h>
+#include <mlir/IR/Block.h>
 #include <mlir/IR/Dominance.h>
 #include <mlir/Support/LLVM.h>
-// #include <mlir/Dialect/ControlFlow/IR/ControlFlow.h>
-#include <mlir/IR/Block.h>
 #include <stack>
 
 using namespace mlir;
@@ -191,8 +191,9 @@ void LoopDetector::detectLoopCandidates() {
   for (auto &block : f->getBody()) {
     SmallPtrSet<Block *, 8> dominatedBlocks;
     for (auto &innerBlock : f->getBody())
-      if (domInfo.dominates(&block, &innerBlock))
-        dominatedBlocks.insert(&innerBlock);
+      if (innerBlock != block)
+        if (domInfo.dominates(&block, &innerBlock))
+          dominatedBlocks.insert(&innerBlock);
 
     // check scc
     if (dominatedBlocks.size() > 1) {
@@ -210,13 +211,24 @@ void LoopDetector::detectLoopCandidates() {
 
 /// https://github.com/llvm/llvm-project/blob/82ac02e4a86070cf9924c245ff340aba1f62b45b/llvm/lib/Analysis/LoopInfo.cpp#L150
 void LoopDetector::analyzeInductionVariable(Loop *l) {
+
+  mlir::Block *latch = l->getLatch();
+
+  if (auto condBranch =
+          mlir::dyn_cast < mlir::cf::CondBranchOplatch->getTerminator()) {
+    if (auto cmp = mlir::dyn_cast<mlir::arith::CmpIOp>(
+            condBranch.getCondition().getDefiningOp())) {
+    }
+  }
+
   //  f->walk([&](mlir::memref::AllocOp allocaOp) {
   //    if (not l->containsBlock(allocaOp->getBlock())) {
   //      f->walk([&](mlir::memref::LoadOp loadOp) {
   //        if (l->containsBlock(loadOp->getBlock())) {
   //          f->walk([&](mlir::memref::StoreOp storeOp) {
   //            if (l->containsBlock(storeOp->getBlock())) {
-  //              if (auto load = mlir::dyn_cast<mlir::memref::LoadOp>(&loadOp))
+  //              if (auto load =
+  //              mlir::dyn_cast<mlir::memref::LoadOp>(&loadOp))
   //              {
   //                if (auto store =
   //                        mlir::dyn_cast<mlir::memref::StoreOp>(&storeOp)) {
@@ -350,9 +362,3 @@ std::optional<Function> LoopDetector::analyze(mlir::func::FuncOp *f) {
 
  */
 
-void collectLops(mlir::func::FuncOp *f) {
-  mlir::DominanceInfo dom;
-  auto &DomTree = dom.getDomTree(&f->getRegion());
-  // for (auto DomNode : post_order(DomTree)) {
-  // }
-}

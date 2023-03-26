@@ -7,18 +7,21 @@
 #include <llvm/ADT/SmallSet.h>
 #include <llvm/ADT/SmallVector.h>
 #include <memory>
+#include <mlir/Dialect/Arith/IR/Arith.h>
+#include <mlir/Dialect/ControlFlow/IR/ControlFlowOps.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/Block.h>
+#include <mlir/IR/Dominance.h>
 #include <vector>
 
 namespace rust_compiler::analysis {
 
 using namespace mlir;
 
-/// A possibly irreducible generalization of a \ref Loop.
-class Cycle {
+/// A natural loop.
+class Loop {
 
-  /// the entry block(s) of the cycle. The header is the only entry if
+  /// the entry block(s) of the loop. The header is the only entry if
   /// this is a loop. Is empty for the root "cycle", to avoid
   /// unnecessary memory use.
   llvm::SmallVector<mlir::Block *, 4> entries;
@@ -27,19 +30,7 @@ class Cycle {
   /// and including blocks that are part of a child cycle.
   llvm::SmallVector<mlir::Block *, 4> blocks;
 
-  /// The parent cycle. Is null for the root "cycle". Top-level cycles point
-  /// at the root.
-  Cycle *parentCycle = nullptr;
-
-  /// Child cycles, if any.
-  std::vector<std::unique_ptr<Cycle>> children;
-
-  /// Depth of the cycle in the tree. The root "cycle" is at depth 0.
-  ///
-  /// \note Depths are not necessarily contiguous. However, child loops always
-  ///       have strictly greater depth than their parents, and sibling loops
-  ///       always have the same depth.
-  unsigned Depth = 0;
+  mlir::Block *header = nullptr;
 
 public:
   void appendEntry(mlir::Block *block) { entries.push_back(block); }
@@ -48,94 +39,63 @@ public:
     entries.insert(blocks.end(), cycle->blocks.begin(), cycle->blocks.end());
   }
 
-  bool contains(const Cycle *c) const;
   bool contains(const mlir::Block *b) const;
 
-  mlir::Block getHeader() const;
+  mlir::Block *getHeader() const { return header; }
 
   /// All the successor blocks of this cycle. These are blocks are outside
   /// of the current cycle which are branched to
   std::vector<mlir::Block *> getExitBlocks() const;
 
-  void setParentCycle(Cycle *c) { parentCycle = c; }
-  Cycle *getParentCycle() const;
-  unsigned getDepth() const;
+  /// All blocks inside the loop that have successors outside of the
+  /// loop.
+  std::vector<mlir::Block *> getExitingBlocks() const;
 
   using const_entry_iterator =
       typename llvm::SmallVectorImpl<mlir::Block *>::const_iterator;
 
-  llvm::iterator_range<const_entry_iterator> getEntries() const {
-    return llvm::make_range(entries.begin(), entries.end());
+  llvm::iterator_range<const_entry_iterator> getBlocks() const {
+    return llvm::make_range(blocks.begin(), blocks.end());
   }
+
+  /// A latch block contains the branch back to the header
+  mlir::Block *getLatch() const;
+
+  /// All latch blocks
+  std::vector<mlir::Block *> getLatches() const;
+
+  /// get the latch condition instruction
+  mlir::arith::CmpIOp *getLatchCmpInst() const;
+
+  /// Check if the loop has a canonical induction variable
+  std::optional<BlockArgument> getCanonicalInductionVariable() const;
+
+  /// A loop has a preheader if there is only one edge to the header
+  /// from outside of the loop.
+  mlir::Block *getLoopPreHeader() const;
+
+  /// If the loop's header has exactly one unique predecessor outside
+  /// of the loop. This is less strict than preheader.
+  mlir::Block *getLoopPredecessor() const;
+
+private:
+  mlir::DominanceInfo dominanceInfo;
 };
 
-/// Nesting of Reducible and Irreducible Loops
-/// Paul Havlak, 1997
-class CycleInfo {
-
-  class DFSInfo {
-    unsigned start = 0;
-    unsigned end = 0;
-
-  public:
-    DFSInfo() = default;
-    explicit DFSInfo(unsigned start) : start(start) {}
-
-    /// Whether this node is an ancestor (or equal to) the node other
-    /// in the DFS tree.
-    bool isAncestorOf(const DFSInfo &other) const {
-      return start <= other.start and other.end <= end;
-    }
-
-    void setEnd(unsigned e) { end = e; }
-  };
+class LoopInfo {
 
 public:
   void analyze(mlir::func::FuncOp *f);
 
-  Cycle *getTopLevelParentCycle(const mlir::Block *block);
-
 private:
-  /// DFS in preorder
-  void depthFirstSearch(mlir::Block *entryBlock);
-
-  void moveToNewParent(Cycle *newParent, Cycle *child);
-
-  void updateDepth(Cycle *subTree);
-
-  using const_toplevel_iterator_base =
-      typename std::vector<std::unique_ptr<Cycle>>::const_iterator;
-
-  struct const_toplevel_iterator
-      : llvm::iterator_adaptor_base<const_toplevel_iterator,
-                                    const_toplevel_iterator_base> {
-    using Base = llvm::iterator_adaptor_base<const_toplevel_iterator,
-                                             const_toplevel_iterator_base>;
-
-    const_toplevel_iterator() = default;
-    explicit const_toplevel_iterator(const_toplevel_iterator_base I)
-        : Base(I) {}
-
-    const const_toplevel_iterator_base &wrapped() { return Base::wrapped(); }
-    Cycle *operator*() const { return Base::I->get(); }
-  };
-
-  llvm::iterator_range<const_toplevel_iterator> getTopLevelCycles() const {
-    return llvm::make_range(const_toplevel_iterator{topLevelCycles.begin()},
-                            const_toplevel_iterator{topLevelCycles.end()});
-  }
-
   /// current function
   mlir::func::FuncOp *fun;
 
-  llvm::DenseMap<mlir::Block *, DFSInfo> blockDFSInfo;
-  llvm::SmallVector<mlir::Block *, 8> blockPreorder;
-
   /// map blocks to the inner-most containing loop.
-  llvm::DenseMap<mlir::Block *, Cycle *> blockMap;
+  llvm::DenseMap<mlir::Block *, Loop *> blockMap;
 
-  /// outermost cycles discover by any DFS
-  std::vector<std::unique_ptr<Cycle>> topLevelCycles;
+  /// loops discovered
+  std::vector<std::unique_ptr<Loop>> loops;
 };
 
 } // namespace rust_compiler::analysis
