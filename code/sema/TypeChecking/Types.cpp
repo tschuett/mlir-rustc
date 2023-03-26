@@ -22,9 +22,15 @@ namespace rust_compiler::sema::type_checking {
 
 TyTy::BaseType *
 TypeResolver::checkType(std::shared_ptr<ast::types::TypeExpression> te) {
+  std::optional<TyTy::BaseType *> type = tcx->lookupType(te->getNodeId());
+  if (type)
+    return *type;
+
+  TyTy::BaseType *result = nullptr;
   switch (te->getKind()) {
   case TypeExpressionKind::TypeNoBounds: {
-    return checkTypeNoBounds(std::static_pointer_cast<TypeNoBounds>(te));
+    result = checkTypeNoBounds(std::static_pointer_cast<TypeNoBounds>(te));
+    break;
   }
   case TypeExpressionKind::ImplTraitType: {
     assert(false && "to be implemented");
@@ -33,6 +39,10 @@ TypeResolver::checkType(std::shared_ptr<ast::types::TypeExpression> te) {
     assert(false && "to be implemented");
   }
   }
+  assert(result);
+  assert(result->getKind() != TyTy::TypeKind::Error);
+  tcx->insertType(te->getIdentity(), result);
+  return result;
 }
 
 void TypeResolver::checkWhereClause(const ast::WhereClause &) {
@@ -67,7 +77,6 @@ TypeResolver::checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds> no) {
   }
   case TypeNoBoundsKind::NeverType: {
     return checkNeverType(std::static_pointer_cast<ast::types::NeverType>(no));
-    assert(false && "to be implemented");
   }
   case TypeNoBoundsKind::RawPointerType: {
     assert(false && "to be implemented");
@@ -94,6 +103,7 @@ TypeResolver::checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds> no) {
     assert(false && "to be implemented");
   }
   }
+  assert(false && "to be implemented");
 }
 
 TyTy::BaseType *
@@ -103,8 +113,10 @@ TypeResolver::checkTypePath(std::shared_ptr<ast::types::TypePath> tp) {
   size_t offset = 0;
   NodeId resolvedNodeId = UNKNOWN_NODEID;
   TyTy::BaseType *root = resolveRootPath(tp, &offset, &resolvedNodeId);
-  if (root->getKind() == TyTy::TypeKind::Error)
-    return nullptr;
+  if (root->getKind() == TyTy::TypeKind::Error) {
+    assert(false);
+    return new TyTy::ErrorType(tp->getNodeId());
+  }
 
   root->setReference(tp->getNodeId());
   tcx->insertImplicitType(tp->getNodeId(), root);
@@ -112,7 +124,10 @@ TypeResolver::checkTypePath(std::shared_ptr<ast::types::TypePath> tp) {
   if (offset >= tp->getSegments().size())
     return root;
 
-  return resolveSegments(resolvedNodeId, tp->getNodeId(), tp, offset, root);
+  TyTy::BaseType *segments = resolveSegments(resolvedNodeId, tp->getNodeId(), tp, offset, root);
+  assert(segments);
+  assert(segments->getKind() != TyTy::TypeKind::Error);
+  return segments;
 }
 
 TyTy::BaseType *

@@ -14,6 +14,7 @@ add_library(Resolver
             Match.cpp
             Loops.cpp
             Struct.cpp
+            PatternDeclaration.cpp
            )
 
 target_include_directories(Resolver PRIVATE  ../../include)

@@ -26,6 +26,8 @@ public:
   }
 
   std::string getIdentifier() const { return identifier; }
+  bool hasMut() const { return mut; }
+  bool hasRef() const { return ref; }
 };
 
 } // namespace rust_compiler::ast::patterns

@@ -50,6 +50,23 @@
 
 namespace rust_compiler::sema::resolver {
 
+// Specifies whether the set of already bound patterns are related by 'Or' or
+// 'Product'. Used to check for multiple bindings to the same identifier.
+enum class PatternBoundCtx {
+  // A product pattern context (e.g. struct and tuple patterns)
+  Product,
+  // An or-pattern context (e.g. p_0 | p_1 | ...)
+  Or,
+};
+
+struct PatternBinding {
+  PatternBoundCtx ctx;
+  std::set<std::string> idents;
+
+  PatternBinding(PatternBoundCtx ctx, std::set<std::string> idents)
+      : ctx(ctx), idents(idents) {}
+};
+
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/index.html
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/index.html
 ///  https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/struct.Resolver.html
@@ -140,6 +157,8 @@ public:
 
   std::optional<basic::NodeId> lookupResolvedName(basic::NodeId nodeId);
   std::optional<basic::NodeId> lookupResolvedType(basic::NodeId nodeId);
+
+    Scope &getNameScope() { return nameScope; }
 
 private:
   // items no recurse
@@ -250,10 +269,14 @@ private:
 
   // patterns
   void
-      resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
-                                RibKind);
+  resolvePatternDeclarationWithBindings(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
+                            RibKind, std::vector<PatternBinding> &bindings);
+  void
+  resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
+                            RibKind);
   void resolvePatternDeclarationWithoutRange(
-      std::shared_ptr<ast::patterns::PatternWithoutRange>, RibKind);
+      std::shared_ptr<ast::patterns::PatternWithoutRange>, RibKind,
+      std::vector<PatternBinding> &bindings);
   void
       resolvePathPatternDeclaration(std::shared_ptr<ast::patterns::PathPattern>,
                                     RibKind);
@@ -327,7 +350,6 @@ private:
   }
 
   // Scopes
-  Scope &getNameScope() { return nameScope; }
   Scope &getTypeScope() { return typeScope; }
   Scope &getLabelScope() { return labelScope; }
   Scope &getMacroScope() { return macroScope; }

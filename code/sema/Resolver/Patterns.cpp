@@ -15,11 +15,21 @@ using namespace rust_compiler::adt;
 namespace rust_compiler::sema::resolver {
 
 void Resolver::resolvePatternDeclaration(
-    std::shared_ptr<ast::patterns::PatternNoTopAlt> noTopAlt, RibKind ribKind) {
+    std::shared_ptr<ast::patterns::PatternNoTopAlt> pattern, RibKind kind) {
+  std::vector<PatternBinding> bindings = {
+      PatternBinding(PatternBoundCtx::Product, std::set<std::string>())};
+
+  resolvePatternDeclarationWithBindings(pattern, kind, bindings);
+}
+
+void Resolver::resolvePatternDeclarationWithBindings(
+    std::shared_ptr<ast::patterns::PatternNoTopAlt> noTopAlt, RibKind ribKind,
+    std::vector<PatternBinding> &bindings) {
   switch (noTopAlt->getKind()) {
   case PatternNoTopAltKind::PatternWithoutRange: {
     resolvePatternDeclarationWithoutRange(
-        std::static_pointer_cast<PatternWithoutRange>(noTopAlt), ribKind);
+        std::static_pointer_cast<PatternWithoutRange>(noTopAlt), ribKind,
+        bindings);
     break;
   }
   case PatternNoTopAltKind::RangePattern: {
@@ -29,7 +39,8 @@ void Resolver::resolvePatternDeclaration(
 }
 
 void Resolver::resolvePatternDeclarationWithoutRange(
-    std::shared_ptr<ast::patterns::PatternWithoutRange> pat, RibKind rib) {
+    std::shared_ptr<ast::patterns::PatternWithoutRange> pat, RibKind rib,
+    std::vector<PatternBinding> &bindings) {
   switch (pat->getWithoutRangeKind()) {
   case PatternWithoutRangeKind::LiteralPattern: {
     assert(false && "to be handled later");
@@ -80,6 +91,8 @@ void Resolver::resolvePatternDeclarationWithoutRange(
 void Resolver::resolvePathPatternDeclaration(
     std::shared_ptr<ast::patterns::PathPattern> pat, RibKind rib) {
   std::shared_ptr<ast::Expression> path = pat->getPath();
+
+  assert(false && "to be handled later");
 
   if (path->getExpressionKind() ==
       ast::ExpressionKind::ExpressionWithoutBlock) {

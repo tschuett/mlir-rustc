@@ -41,13 +41,17 @@ void Resolver::resolveFunction(std::shared_ptr<ast::Function> fun,
   FunctionParameters params = fun->getParams();
   assert(!params.hasSelfParam() && "to be implemented");
 
+  std::vector<PatternBinding> bindings = {
+      PatternBinding(PatternBoundCtx::Product, std::set<std::string>())};
+
   for (auto &parm : params.getParams()) {
     switch (parm.getKind()) {
     case FunctionParamKind::Pattern: {
       FunctionParamPattern pattern = parm.getPattern();
       if (pattern.hasType()) {
         resolveType(pattern.getType());
-        resolvePatternDeclaration(pattern.getPattern(), RibKind::Parameter);
+        resolvePatternDeclarationWithBindings(pattern.getPattern(),
+                                              RibKind::Parameter, bindings);
       } else {
         assert(false && "to be implemented");
       }

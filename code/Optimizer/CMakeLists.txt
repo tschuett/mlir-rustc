@@ -19,6 +19,7 @@ add_library(optimizer
            PassPipeline.cpp
            DeadArgumentElimination.cpp
            FuncSpecialization.cpp
+           LoopPlan.cpp
            )
 
 target_include_directories(optimizer PRIVATE  ../include)

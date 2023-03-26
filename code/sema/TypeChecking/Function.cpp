@@ -28,6 +28,7 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
   TyTy::BaseType *retType = nullptr;
   if (f->hasReturnType()) {
     TyTy::BaseType *retType = checkType(f->getReturnType());
+    assert(retType);
     if (retType->getKind() == TyTy::TypeKind::Error) {
       // report error
     }
