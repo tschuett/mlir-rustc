@@ -6,8 +6,8 @@
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/raw_ostream.h>
-//#include <mlir/IR/Location.h>
-//#include <mlir/Support/LogicalResult.h>
+// #include <mlir/IR/Location.h>
+// #include <mlir/Support/LogicalResult.h>
 
 using namespace rust_compiler::parser;
 using namespace rust_compiler::adt;
@@ -16,6 +16,7 @@ using namespace llvm;
 namespace rust_compiler::crate_loader {
 
 std::shared_ptr<ast::Crate> loadRootModule(llvm::SmallVectorImpl<char> &libPath,
+                                           std::string_view fileName,
                                            std::string_view crateName,
                                            basic::CrateNum crateNum) {
 
@@ -35,7 +36,7 @@ std::shared_ptr<ast::Crate> loadRootModule(llvm::SmallVectorImpl<char> &libPath,
   std::string str((*outputBuffer)->getBufferStart(),
                   (*outputBuffer)->getBufferEnd());
 
-  lexer::TokenStream ts = lexer::lex(str, "lib.rs");
+  lexer::TokenStream ts = lexer::lex(str, fileName);
 
   Parser parser = {ts};
 
@@ -44,7 +45,7 @@ std::shared_ptr<ast::Crate> loadRootModule(llvm::SmallVectorImpl<char> &libPath,
   if (!crate) {
     llvm::errs() << "failed to parse crate module in load root module: "
                  << crate.getError() << "\n";
-    //printFunctionStack();
+    // printFunctionStack();
     exit(EXIT_FAILURE);
   }
 

@@ -457,9 +457,9 @@ StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
   Location loc = getLocation();
 
-  llvm::errs()
-      << "parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern"
-      << "\n";
+//  llvm::errs()
+//      << "parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern"
+//      << "\n";
 
   CheckPoint point = getCheckPoint();
 
@@ -573,11 +573,11 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
 StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parsePatternNoTopAlt() {
 
-  llvm::errs() << "parsePatternNoTopAlt: " << Token2String(getToken().getKind())
-               << "\n";
-  if (getToken().isIdentifier())
-    llvm::errs() << "parsePatternNoTopAlt: " << getToken().getIdentifier()
-                 << "\n";
+//  llvm::errs() << "parsePatternNoTopAlt: " << Token2String(getToken().getKind())
+//               << "\n";
+//  if (getToken().isIdentifier())
+//    llvm::errs() << "parsePatternNoTopAlt: " << getToken().getIdentifier()
+//                 << "\n";
 
   if (check(TokenKind::And) || check(TokenKind::AndAnd)) {
     return parseReferencePattern();

@@ -72,7 +72,7 @@ struct PatternBinding {
 ///  https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/struct.Resolver.html
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/struct.Rib.html
-enum class RibKind { Function, Label, Parameter, Type, Variable };
+  enum class RibKind { Dummy, Function, Label, Parameter, Type, Variable };
 
 class Rib {
 public:
@@ -158,7 +158,7 @@ public:
   std::optional<basic::NodeId> lookupResolvedName(basic::NodeId nodeId);
   std::optional<basic::NodeId> lookupResolvedType(basic::NodeId nodeId);
 
-    Scope &getNameScope() { return nameScope; }
+  Scope &getNameScope() { return nameScope; }
 
 private:
   // items no recurse
@@ -251,8 +251,10 @@ private:
       std::shared_ptr<ast::QualifiedPathInExpression>);
 
   // types
-  void resolveType(std::shared_ptr<ast::types::TypeExpression>);
-  void resolveTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>);
+  std::optional<basic::NodeId>
+      resolveType(std::shared_ptr<ast::types::TypeExpression>);
+  std::optional<basic::NodeId>
+      resolveTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>);
   std::optional<basic::NodeId>
       resolveRelativeTypePath(std::shared_ptr<ast::types::TypePath>);
   void resolveTypePathFunction(const ast::types::TypePathFn &);
@@ -268,12 +270,12 @@ private:
   void resolveGenericArgs(const ast::GenericArgs &);
 
   // patterns
+  void resolvePatternDeclarationWithBindings(
+      std::shared_ptr<ast::patterns::PatternNoTopAlt>, RibKind,
+      std::vector<PatternBinding> &bindings);
   void
-  resolvePatternDeclarationWithBindings(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
-                            RibKind, std::vector<PatternBinding> &bindings);
-  void
-  resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
-                            RibKind);
+      resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
+                                RibKind);
   void resolvePatternDeclarationWithoutRange(
       std::shared_ptr<ast::patterns::PatternWithoutRange>, RibKind,
       std::vector<PatternBinding> &bindings);
@@ -343,6 +345,10 @@ private:
   void generateBuiltins();
   void setupBuiltin(std::string_view name, type_checking::TyTy::BaseType *tyty);
 
+  void insertBuiltinTypes(Rib *r);
+  std::vector<std::pair<std::string, ast::types::TypeExpression *>> &
+  getBuiltinTypes();
+
   // modules
   basic::NodeId peekCrateModuleScope() {
     assert(not currentModuleStack.empty());
@@ -404,7 +410,7 @@ private:
   std::unique_ptr<type_checking::TyTy::StrType> strType;
   std::unique_ptr<type_checking::TyTy::NeverType> never;
 
-  std::vector<ast::types::TypeExpression *> builtins;
+  std::vector<std::pair<std::string, ast::types::TypeExpression *>> builtins;
 
   ast::types::TupleType *emptyTupleType;
 

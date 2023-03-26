@@ -19,8 +19,8 @@ Parser::parseArithmeticOrLogicalExpression(std::shared_ptr<ast::Expression> lhs,
   ArithmeticOrLogicalExpression arith = {loc};
   arith.setLhs(lhs);
 
-  llvm::outs() << "parseArithmeticOrLogicalExpression"
-               << "\n";
+  //  llvm::outs() << "parseArithmeticOrLogicalExpression"
+  //               << "\n";
 
   if (check(TokenKind::Plus)) {
     arith.setKind(ArithmeticOrLogicalExpressionKind::Addition);
@@ -49,9 +49,9 @@ Parser::parseArithmeticOrLogicalExpression(std::shared_ptr<ast::Expression> lhs,
 
   // the operator
   assert(eat(getToken().getKind()));
-  
+
   StringResult<std::shared_ptr<ast::Expression>> expr =
-    parseExpression({}, restrictions);
+      parseExpression({}, restrictions);
   if (!expr) {
     llvm::errs()
         << "failed to parse expression in arithmetic or logical expression: "

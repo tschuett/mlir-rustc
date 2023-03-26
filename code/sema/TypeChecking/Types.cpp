@@ -7,6 +7,7 @@
 #include "Substitutions.h"
 #include "TyTy.h"
 #include "TypeChecking.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include "../Resolver/Resolver.h"
 
@@ -124,7 +125,8 @@ TypeResolver::checkTypePath(std::shared_ptr<ast::types::TypePath> tp) {
   if (offset >= tp->getSegments().size())
     return root;
 
-  TyTy::BaseType *segments = resolveSegments(resolvedNodeId, tp->getNodeId(), tp, offset, root);
+  TyTy::BaseType *segments =
+      resolveSegments(resolvedNodeId, tp->getNodeId(), tp, offset, root);
   assert(segments);
   assert(segments->getKind() != TyTy::TypeKind::Error);
   return segments;
@@ -153,6 +155,9 @@ TypeResolver::resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
     if (refNodeId == UNKNOWN_NODEID) {
       if (*offset == 0) { // root
         // report error
+        llvm::errs() << "unknown reference for resolved name: "
+                     << segs[i].getSegment().toString() << " @ "
+                     << segs[i].getLocation().toString() << "\n";
         return new TyTy::ErrorType(path->getNodeId());
       }
       return rootType;

@@ -397,9 +397,9 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
 ///  there is ::. */
 StringResult<std::shared_ptr<Expression>> Parser::parsePathInExpressionPratt() {
 
-  llvm::outs() << "parse pathin expression pratt"
-               << "\n";
-
+//  llvm::outs() << "parse pathin expression pratt"
+//               << "\n";
+//
   PathInExpression pathIn = PathInExpression(getLocation());
 
   PathIdentSegment ident = PathIdentSegment(getLocation());

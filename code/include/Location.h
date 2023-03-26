@@ -1,9 +1,42 @@
 #pragma once
 
 #include <limits>
+#include <llvm/Support/FormatVariadic.h>
 #include <string>
 
 namespace rust_compiler {
+
+class Span {
+  std::string fileName;
+  unsigned lowLineNumber;
+  unsigned highLineNumber;
+  unsigned lowColumnNumber;
+  unsigned highColumnNumber;
+
+public:
+  Span(std::string_view fileName, unsigned lowLineNumber,
+       unsigned highLineNumber, unsigned lowColumnNumber,
+       unsigned highColumnNumber)
+      : fileName(fileName), lowLineNumber(lowLineNumber),
+        highLineNumber(highLineNumber), lowColumnNumber(lowColumnNumber),
+        highColumnNumber(highColumnNumber) {}
+
+  static Span getBuiltinSpan() {
+    return Span("builtins.cpp", std::numeric_limits<unsigned>::min(),
+                std::numeric_limits<unsigned>::max(),
+                std::numeric_limits<unsigned>::min(),
+                std::numeric_limits<unsigned>::max());
+  }
+
+  static Span getEmptySpan() {
+    return Span("empty.cpp", std::numeric_limits<unsigned>::min(),
+                std::numeric_limits<unsigned>::max(),
+                std::numeric_limits<unsigned>::min(),
+                std::numeric_limits<unsigned>::max());
+  }
+
+  std::string toString() const;
+};
 
 class Location {
   std::string fileName;
@@ -24,6 +57,16 @@ public:
     return Location("builtins.cpp", std::numeric_limits<unsigned>::max(),
                     std::numeric_limits<unsigned>::max());
   }
+
+  static Location getEmptyLocation() {
+    return Location("empty.cpp", std::numeric_limits<unsigned>::max(),
+                    std::numeric_limits<unsigned>::max());
+  }
+
+  std::string toString() const {
+    return llvm::formatv("{2} {0}:{1}", lineNumber, columnNumber, fileName)
+        .str();
+  };
 };
 
 } // namespace rust_compiler

@@ -10,8 +10,8 @@
 
 #include <map>
 #include <optional>
-#include <vector>
 #include <set>
+#include <vector>
 
 namespace rust_compiler::ast {
 class Module;
@@ -79,6 +79,8 @@ public:
 
   basic::CrateNum getCurrentCrate() const;
   void setCurrentCrate(basic::CrateNum);
+
+  std::optional<std::string> getCrateName(CrateNum cnum);
 
   bool isModule(basic::NodeId query);
   bool isCrate(basic::NodeId query) const;

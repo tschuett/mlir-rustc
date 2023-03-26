@@ -22,13 +22,13 @@ bool Parser::checkVisItem() {
     }
   }
 
-  llvm::errs() << "checkVisItem: "
-               << KeyWord2String(getToken().getKeyWordKind()) << "\n";
-  llvm::errs() << "checkVisItem: " << Token2String(getToken().getKind())
-               << "\n";
-  if (getToken().isIdentifier())
-    llvm::errs() << "checkVisItem: "
-                 << getToken().getIdentifier() << "\n";
+//  llvm::errs() << "checkVisItem: "
+//               << KeyWord2String(getToken().getKeyWordKind()) << "\n";
+//  llvm::errs() << "checkVisItem: " << Token2String(getToken().getKind())
+//               << "\n";
+//  if (getToken().isIdentifier())
+//    llvm::errs() << "checkVisItem: "
+//                 << getToken().getIdentifier() << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_MOD)) {
     return true;

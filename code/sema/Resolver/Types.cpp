@@ -15,7 +15,8 @@ using namespace rust_compiler::basic;
 
 namespace rust_compiler::sema::resolver {
 
-void Resolver::resolveType(std::shared_ptr<ast::types::TypeExpression> type) {
+std::optional<NodeId>
+Resolver::resolveType(std::shared_ptr<ast::types::TypeExpression> type) {
   switch (type->getKind()) {
   case TypeExpressionKind::ImplTraitType: {
     assert(false && "to be handled later");
@@ -24,13 +25,12 @@ void Resolver::resolveType(std::shared_ptr<ast::types::TypeExpression> type) {
     assert(false && "to be handled later");
   }
   case TypeExpressionKind::TypeNoBounds: {
-    resolveTypeNoBounds(std::static_pointer_cast<TypeNoBounds>(type));
-    break;
+    return resolveTypeNoBounds(std::static_pointer_cast<TypeNoBounds>(type));
   }
   }
 }
 
-void Resolver::resolveTypeNoBounds(
+std::optional<NodeId> Resolver::resolveTypeNoBounds(
     std::shared_ptr<ast::types::TypeNoBounds> noBounds) {
   switch (noBounds->getKind()) {
   case TypeNoBoundsKind::ParenthesizedType: {
@@ -46,8 +46,8 @@ void Resolver::resolveTypeNoBounds(
     assert(false && "to be handled later");
   }
   case TypeNoBoundsKind::TypePath: {
-    resolveRelativeTypePath(std::static_pointer_cast<TypePath>(noBounds));
-    break;
+    return resolveRelativeTypePath(
+        std::static_pointer_cast<TypePath>(noBounds));
   }
   case TypeNoBoundsKind::TupleType: {
     assert(false && "to be handled later");
@@ -108,6 +108,11 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
 
     if (i > 0 && ident.getKind() == PathIdentSegmentKind::self) {
       // report error
+      llvm::errs() << llvm::formatv("failed to resolve: {0} in path can only "
+                                    "used in start position",
+                                    segment.getSegment().toString())
+                          .str()
+                   << "\n";
       return std::nullopt;
     }
 
@@ -145,6 +150,7 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
         moduleScopeId = crateScopeId;
         previousResolveNodeId = moduleScopeId;
         insertResolvedName(segment.getNodeId(), moduleScopeId);
+        continue;
       }
     }
 
@@ -162,6 +168,10 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
           insertResolvedType(segment.getNodeId(), resolvedNode);
         } else {
           // report error
+          llvm::errs() << llvm::formatv("cannot file path {0} in this scope",
+                                        segment.getSegment().toString())
+                              .str()
+                       << "\n";
           return std::nullopt;
         }
       }
@@ -169,18 +179,27 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
 
     bool didResolveSegment = resolvedNodeId != UNKNOWN_NODEID;
     if (didResolveSegment) {
-      if (tyCtx->isModule(resolvedNodeId) ||
-          tyCtx->isCrate(resolvedNodeId)) {
+      if (tyCtx->isModule(resolvedNodeId) || tyCtx->isCrate(resolvedNodeId)) {
         moduleScopeId = resolvedNodeId;
       }
       previousResolveNodeId = resolvedNodeId;
     } else if (i == 0) {
       // report error
+      llvm::errs() << llvm::formatv(
+                          "failed to resolve type path {0} in this scope",
+                          segment.getSegment().toString())
+                          .str()
+                   << "\n";
       return std::nullopt;
     }
   }
 
+  llvm::errs() << "resolve path type: resolved node?"
+               << "\n";
+
   if (resolvedNodeId != UNKNOWN_NODEID) {
+    llvm::errs() << "resolve path type: resolved node"
+                 << "\n";
     // first name
     if (getNameScope().wasDeclDeclaredInCurrentScope(resolvedNodeId)) {
       insertResolvedName(typePath->getNodeId(), resolvedNodeId);

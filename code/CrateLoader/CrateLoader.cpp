@@ -1,8 +1,7 @@
 #include "CrateLoader/CrateLoader.h"
 
-#include "TyCtx/TyCtx.h"
-
 #include "LoadModule.h"
+#include "TyCtx/TyCtx.h"
 
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/Support/FileSystem.h>
@@ -28,8 +27,10 @@ std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
       exit(EXIT_FAILURE);
     }
 
-    std::shared_ptr<ast::Crate> crate =
-        loadRootModule(libFile, crateName, crateNum);
+    std::shared_ptr<ast::Crate> crate = loadRootModule(
+        libFile, llvm::sys::path::filename(path), crateName, crateNum);
+
+    tyctx::TyCtx::get()->insertASTCrate(crate.get(), crateNum);
 
     return crate;
 
@@ -43,7 +44,7 @@ std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
     }
 
     std::shared_ptr<ast::Crate> crate =
-        loadRootModule(libFile, crateName, crateNum);
+        loadRootModule(libFile, "lib.rs", crateName, crateNum);
 
     // FIXME load and merge tree
 

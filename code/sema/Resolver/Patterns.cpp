@@ -11,6 +11,7 @@
 
 using namespace rust_compiler::ast::patterns;
 using namespace rust_compiler::adt;
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::sema::resolver {
 
@@ -90,25 +91,35 @@ void Resolver::resolvePatternDeclarationWithoutRange(
 
 void Resolver::resolvePathPatternDeclaration(
     std::shared_ptr<ast::patterns::PathPattern> pat, RibKind rib) {
-  std::shared_ptr<ast::Expression> path = pat->getPath();
+  std::shared_ptr<ast::PathExpression> path =
+      std::static_pointer_cast<PathExpression>(pat->getPath());
 
-  assert(false && "to be handled later");
-
-  if (path->getExpressionKind() ==
-      ast::ExpressionKind::ExpressionWithoutBlock) {
-    std::shared_ptr<ast::ExpressionWithoutBlock> pathWoBlock =
-        std::static_pointer_cast<ast::ExpressionWithoutBlock>(path);
-    if (pathWoBlock->getWithoutBlockKind() ==
-        ast::ExpressionWithoutBlockKind::PathExpression) {
-      std::shared_ptr<ast::PathExpression> pathExpr =
-          std::static_pointer_cast<ast::PathExpression>(pathWoBlock);
-      if (pathExpr->getPathExpressionKind() ==
-          ast::PathExpressionKind::PathInExpression) {
-        resolvePathExpression(
-            std::static_pointer_cast<ast::PathInExpression>(pathExpr));
-      }
-    }
+  switch (path->getPathExpressionKind()) {
+  case PathExpressionKind::PathInExpression: {
+    resolvePathInExpression(
+        std::static_pointer_cast<ast::PathInExpression>(path));
+    break;
   }
+  case PathExpressionKind::QualifiedPathInExpression: {
+    assert(false && "to be handled later");
+  }
+  }
+
+  //  if (path->getExpressionKind() ==
+  //      ast::ExpressionKind::ExpressionWithoutBlock) {
+  //    std::shared_ptr<ast::ExpressionWithoutBlock> pathWoBlock =
+  //        std::static_pointer_cast<ast::ExpressionWithoutBlock>(path);
+  //    if (pathWoBlock->getWithoutBlockKind() ==
+  //        ast::ExpressionWithoutBlockKind::PathExpression) {
+  //      std::shared_ptr<ast::PathExpression> pathExpr =
+  //          std::static_pointer_cast<ast::PathExpression>(pathWoBlock);
+  //      if (pathExpr->getPathExpressionKind() ==
+  //          ast::PathExpressionKind::PathInExpression) {
+  //        resolvePathExpression(
+  //            std::static_pointer_cast<ast::PathInExpression>(pathExpr));
+  //      }
+  //    }
+  //  }
 }
 
 } // namespace rust_compiler::sema::resolver

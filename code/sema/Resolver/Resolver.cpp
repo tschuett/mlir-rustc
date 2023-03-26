@@ -7,6 +7,7 @@
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
 #include "Basic/Ids.h"
+#include "mlir/Transforms/Passes.h"
 
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
@@ -77,11 +78,14 @@ Resolver::Resolver() noexcept
 }
 
 void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
-  // FIXME
+  // lookup current crate name
+  CrateNum cnum = tyCtx->getCurrentCrate();
+  std::optional<std::string> crateName = tyCtx->getCrateName(cnum);
+  assert(crateName.has_value());
 
-  // setup scopes
   llvm::errs() << "resolve: crate name: " << crate->getCrateName() << "\n";
 
+  // setup the ribs
   NodeId scopeNodeId = crate->getNodeId();
   getNameScope().push(scopeNodeId);
   getTypeScope().push(scopeNodeId);
@@ -96,7 +100,13 @@ void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
       CanonicalPath::newSegment(crateId, crate->getCrateName());
   cratePrefix.setCrateNum(crate->getCrateNum());
 
-  pushNewModuleScope(crateId);
+  // setup a dummy crate node
+  getNameScope().insert(
+      CanonicalPath::newSegment(crate->getNodeId(), "__$$crate__"),
+      crate->getNodeId(), Location::getEmptyLocation(), RibKind::Dummy);
+
+  // setup the root scope
+  pushNewModuleScope(scopeNodeId);
 
   // only gather top-level
   for (auto &item : crate->getItems()) {
@@ -395,6 +405,22 @@ Resolver::lookupResolvedType(basic::NodeId nodeId) {
   if (it == resolvedTypes.end())
     return std::nullopt;
   return it->second;
+}
+
+void Resolver::insertBuiltinTypes(Rib *r) {
+  assert(false);
+  auto builtins = getBuiltinTypes();
+  for (auto &builtin : builtins) {
+    CanonicalPath builtinPath =
+        CanonicalPath::newSegment(builtin.second->getNodeId(), builtin.first);
+    r->insertName(builtinPath, builtin.second->getNodeId(),
+                  Location::getBuiltinLocation(), false, RibKind::Type);
+  }
+}
+
+std::vector<std::pair<std::string, ast::types::TypeExpression *>> &
+Resolver::getBuiltinTypes() {
+  return builtins;
 }
 
 } // namespace rust_compiler::sema::resolver
