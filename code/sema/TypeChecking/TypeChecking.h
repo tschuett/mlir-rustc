@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/AssociatedItem.h"
 #include "AST/ClosureExpression.h"
 #include "AST/Crate.h"
 #include "AST/Expression.h"
@@ -53,6 +54,8 @@ public:
   TyTy::BaseType *checkImplementationPointer(ast::Implementation *i);
   TyTy::BaseType *checkExternalItemPointer(ast::ExternalItem *e);
   TyTy::BaseType *checkItemPointer(ast::Item *e);
+  TyTy::BaseType *checkAssociatedItemPointer(ast::AssociatedItem *,
+                                             ast::Implementation *);
 
 private:
   void checkVisItem(std::shared_ptr<ast::VisItem> v);

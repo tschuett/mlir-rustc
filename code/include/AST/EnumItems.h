@@ -9,18 +9,18 @@ namespace rust_compiler::ast {
 
 class EnumItems : public Node {
   bool trailingComma;
-  std::vector<EnumItem> items;
+  std::vector<std::shared_ptr<EnumItem>> items;
 
 public:
   EnumItems(Location loc) : Node(loc) {}
 
   bool hasTrailingComma() const { return trailingComma; }
 
-  void addItem(const EnumItem &it) { items.push_back(it); }
+  void addItem(std::shared_ptr<EnumItem> it) { items.push_back(it); }
 
   void setTrailingComma() { trailingComma = true; }
 
-  std::vector<EnumItem> getItems() const { return items; }
+  std::vector<std::shared_ptr<EnumItem>> getItems() const { return items; }
 };
 
 } // namespace rust_compiler::ast

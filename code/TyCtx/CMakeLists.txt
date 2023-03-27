@@ -4,4 +4,7 @@ add_library(TyCtx
 
 target_include_directories(TyCtx PRIVATE  ../include)
 
-target_link_libraries(TyCtx )
+target_link_libraries(TyCtx
+        PRIVATE
+        TypeChecking
+        )

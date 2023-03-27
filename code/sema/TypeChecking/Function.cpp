@@ -71,8 +71,7 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
 
   TyTy::BaseType *bodyType = checkExpression(f->getBody());
 
-    assert(false && "to be implemented");
-
+  assert(false && "to be implemented");
 }
 
 } // namespace rust_compiler::sema::type_checking

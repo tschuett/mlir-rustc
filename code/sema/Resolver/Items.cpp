@@ -12,10 +12,11 @@ using namespace rust_compiler::basic;
 
 namespace rust_compiler::sema::resolver {
 
-void Resolver::resolveModule(std::shared_ptr<ast::Module>,
+void Resolver::resolveModule(std::shared_ptr<ast::Module> mod,
                              const adt::CanonicalPath &prefix,
                              const adt::CanonicalPath &canonicalPrefix) {
   assert(false && "to be handled later");
+  tyCtx->insertModule(mod.get());
 }
 
 void Resolver::resolveStaticItem(std::shared_ptr<ast::StaticItem> stat,
@@ -63,6 +64,7 @@ void Resolver::resolveEnumerationItem(
   CanonicalPath cpath = canonicalPrefix.append(decl);
 
   tyCtx->insertCanonicalPath(enu->getNodeId(), cpath);
+  tyCtx->insertEnumeration(enu->getNodeId(), enu.get());
 
   resolveVisibility(enu->getVisibility());
 
@@ -76,31 +78,34 @@ void Resolver::resolveEnumerationItem(
     resolveWhereClause(enu->getWhereClause());
 
   if (enu->hasEnumItems()) {
-    std::vector<EnumItem> it = enu->getEnumItems().getItems();
-    for (const EnumItem &i : it)
+    std::vector<std::shared_ptr<EnumItem>> it = enu->getEnumItems().getItems();
+    for (const auto &i : it) {
       resolveEnumItem(i, path, cpath);
+      tyCtx->insertEnumItem(enu.get(), i.get());
+    }
   }
 
   getTypeScope().pop();
 }
 
-void Resolver::resolveEnumItem(const ast::EnumItem &enuIt,
+void Resolver::resolveEnumItem(std::shared_ptr<ast::EnumItem> enuIt,
                                const adt::CanonicalPath &prefix,
                                const adt::CanonicalPath &canonicalPrefix) {
-  switch (enuIt.getKind()) {
+
+  switch (enuIt->getKind()) {
   case EnumItemKind::Discriminant: {
-    EnumItemDiscriminant dis = enuIt.getDiscriminant();
+    EnumItemDiscriminant dis = enuIt->getDiscriminant();
     CanonicalPath decl =
-        CanonicalPath::newSegment(dis.getNodeId(), enuIt.getName());
+        CanonicalPath::newSegment(dis.getNodeId(), enuIt->getName());
     CanonicalPath path = prefix.append(decl);
     CanonicalPath cpath = canonicalPrefix.append(decl);
     tyCtx->insertCanonicalPath(dis.getNodeId(), cpath);
     break;
   }
   case EnumItemKind::Struct: {
-    EnumItemStruct str = enuIt.getStruct();
+    EnumItemStruct str = enuIt->getStruct();
     CanonicalPath decl =
-        CanonicalPath::newSegment(str.getNodeId(), enuIt.getName());
+        CanonicalPath::newSegment(str.getNodeId(), enuIt->getName());
     CanonicalPath path = prefix.append(decl);
     CanonicalPath cpath = canonicalPrefix.append(decl);
     tyCtx->insertCanonicalPath(str.getNodeId(), cpath);
@@ -113,20 +118,26 @@ void Resolver::resolveEnumItem(const ast::EnumItem &enuIt,
     break;
   }
   case EnumItemKind::Tuple: {
-    EnumItemTuple tup = enuIt.getTuple();
+    EnumItemTuple tup = enuIt->getTuple();
     CanonicalPath decl =
-        CanonicalPath::newSegment(tup.getNodeId(), enuIt.getName());
+        CanonicalPath::newSegment(tup.getNodeId(), enuIt->getName());
     CanonicalPath path = prefix.append(decl);
     CanonicalPath cpath = canonicalPrefix.append(decl);
     tyCtx->insertCanonicalPath(tup.getNodeId(), cpath);
     if (tup.hasTupleFiels()) {
       std::vector<TupleField> fields = tup.getTupleFields().getFields();
-      for (const TupleField& tup: fields)
+      for (const TupleField &tup : fields)
         resolveType(tup.getType());
     }
     break;
   }
   }
+}
+
+void Resolver::resolveTraitItem(std::shared_ptr<ast::Trait> trait,
+                                const adt::CanonicalPath &prefix,
+                                const adt::CanonicalPath &canonicalPrefix) {
+  assert(false && "to be handled later");
 }
 
 } // namespace rust_compiler::sema::resolver

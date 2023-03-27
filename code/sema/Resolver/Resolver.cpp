@@ -130,6 +130,7 @@ void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
 
   // recursive
   for (auto &item : crate->getItems()) {
+    tyCtx->insertItem(item.get());
     switch (item->getItemKind()) {
     case ItemKind::VisItem: {
       resolveVisItem(std::static_pointer_cast<VisItem>(item),
@@ -185,7 +186,6 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
     break;
   }
   case VisItemKind::Enumeration: {
-    assert(false && "to be handled later");
     resolveEnumerationItem(std::static_pointer_cast<Enumeration>(visItem), prefix,
                         canonicalPrefix);
     break;
@@ -205,7 +205,8 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
     break;
   }
   case VisItemKind::Trait: {
-    assert(false && "to be handled later");
+    resolveTraitItem(std::static_pointer_cast<Trait>(visItem), prefix,
+                      canonicalPrefix);
     break;
   }
   case VisItemKind::Implementation: {

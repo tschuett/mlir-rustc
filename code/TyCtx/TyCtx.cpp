@@ -1,7 +1,9 @@
 #include "TyCtx/TyCtx.h"
 
 #include "ADT/CanonicalPath.h"
+#include "AST/AssociatedItem.h"
 #include "AST/Crate.h"
+#include "AST/EnumItem.h"
 #include "AST/ExternalItem.h"
 #include "Basic/Ids.h"
 
@@ -151,13 +153,20 @@ std::optional<TyTy::BaseType *> TyCtx::queryType(basic::NodeId id,
     return result;
   }
 
-  // implementation
+  // associated item
   std::optional<Implementation *> impl = lookupImplementation(id);
   if (impl) {
-    TyTy::BaseType *result = typeResolver->checkImplementationPointer(*impl);
+    std::optional<AssociatedItem *> asso =
+        lookupAssociatedItem((*impl)->getNodeId());
+    assert(asso.has_value());
+
+    TyTy::BaseType *result =
+        typeResolver->checkAssociatedItemPointer(*asso, *impl);
     queryCompleted(id);
     return result;
   }
+
+  // implblock
 
   // extern item
   std::optional<ExternalItem *> external = lookupExternalItem(id);
@@ -180,21 +189,44 @@ void TyCtx::insertQuery(basic::NodeId id) { queriesInProgress.insert(id); }
 
 void TyCtx::queryCompleted(basic::NodeId id) { queriesInProgress.erase(id); }
 
+void TyCtx::insertItem(ast::Item *it) { itemMappings[it->getNodeId()] = it; }
+
 std::optional<ast::Item *> TyCtx::lookupItem(basic::NodeId id) {
-  assert(false);
+  auto it = itemMappings.find(id);
+  if (it == itemMappings.end())
+    return std::nullopt;
+
+  return it->second;
 }
+
 std::optional<ast::ExternalItem *> TyCtx::lookupExternalItem(basic::NodeId id) {
   assert(false);
 }
 
-std::optional<ast::Implementation *>
-TyCtx::lookupImplementation(basic::NodeId id) {
-  assert(false);
-}
+// void Resolver::insertImplementation(NodeId id, ast::Implementation *impl) {
+//
+// }
+//
+// std::optional<ast::Implementation *>
+// TyCtx::lookupImplementation(basic::NodeId id) {
+//   assert(false);
+// }
 
 std::optional<std::pair<ast::Enumeration *, ast::EnumItem *>>
 TyCtx::lookupEnumItem(NodeId id) {
-  assert(false);
+  auto it = enumItemsMappings.find(id);
+  if (it == enumItemsMappings.end())
+    return std::nullopt;
+
+  return it->second;
+}
+
+void TyCtx::insertEnumItem(ast::Enumeration *parent, ast::EnumItem *item) {
+  item->getNodeId();
+  auto enumItem = lookupEnumItem(item->getNodeId());
+  assert(not enumItem.has_value());
+  NodeId id = item->getNodeId();
+  enumItemsMappings[id] = {parent, item};
 }
 
 } // namespace rust_compiler::tyctx

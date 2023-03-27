@@ -2,6 +2,7 @@
 
 #include "ADT/CanonicalPath.h"
 #include "ADT/ScopedHashTable.h"
+#include "AST/AssociatedItem.h"
 #include "Basic/Ids.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyCtx.h"
@@ -39,6 +40,10 @@ public:
   basic::NodeId getNextNodeId();
 
   void insertModule(ast::Module *);
+  void insertItem(ast::Item *);
+  void insertEnumeration(NodeId, ast::Enumeration *);
+  void insertEnumItem(ast::Enumeration *, ast::EnumItem *);
+  void insertImplementation(NodeId, ast::Implementation *);
 
   ast::Module *lookupModule(basic::NodeId);
 
@@ -109,6 +114,7 @@ public:
   std::optional<ast::Item *> lookupItem(basic::NodeId);
   std::optional<ast::ExternalItem *> lookupExternalItem(basic::NodeId);
   std::optional<ast::Implementation *> lookupImplementation(basic::NodeId);
+  std::optional<ast::AssociatedItem *> lookupAssociatedItem(basic::NodeId);
 
   bool queryInProgress(basic::NodeId);
   void insertQuery(basic::NodeId);
@@ -135,6 +141,12 @@ private:
   std::vector<std::unique_ptr<TyTy::BaseType>> builtins;
 
   std::set<NodeId> queriesInProgress;
+
+  std::map<NodeId, std::pair<ast::Enumeration *, ast::EnumItem *>>
+      enumItemsMappings;
+
+  std::map<NodeId, ast::Item *> itemMappings;
+  std::map<NodeId, std::pair<NodeId, ast::Implementation *>> implItemMapping;
 };
 
 } // namespace rust_compiler::tyctx

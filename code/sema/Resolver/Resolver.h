@@ -33,6 +33,7 @@
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
+#include "AST/Trait.h"
 #include "Basic/Ids.h"
 #include "Location.h"
 #include "TyCtx/TyCtx.h"
@@ -215,7 +216,9 @@ private:
   void resolveEnumerationItem(std::shared_ptr<ast::Enumeration>,
                               const adt::CanonicalPath &prefix,
                               const adt::CanonicalPath &canonicalPrefix);
-  void resolveEnumItem(const ast::EnumItem&, const adt::CanonicalPath &prefix,
+  void resolveEnumItem(std::shared_ptr<ast::EnumItem>, const adt::CanonicalPath &prefix,
+                       const adt::CanonicalPath &canonicalPrefix);
+  void resolveTraitItem(std::shared_ptr<ast::Trait>, const adt::CanonicalPath &prefix,
                        const adt::CanonicalPath &canonicalPrefix);
 
   // expressions

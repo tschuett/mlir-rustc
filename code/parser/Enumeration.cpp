@@ -51,7 +51,7 @@ StringResult<ast::EnumItem> Parser::parseEnumItem() {
 
   if (!check(TokenKind::Identifier)) {
     return StringResult<ast::EnumItem>(
-                             "failed to parse identifier token in enum item");
+        "failed to parse identifier token in enum item");
   }
   Token tok = getToken();
   item.setIdentifier(tok.getIdentifier());
@@ -253,7 +253,8 @@ StringResult<ast::EnumItemDiscriminant> Parser::parseEnumItemDiscriminant() {
   assert(eat(TokenKind::Eq));
 
   Restrictions restrictions;
-  StringResult<std::shared_ptr<ast::Expression>> expr = parseExpression({}, restrictions);
+  StringResult<std::shared_ptr<ast::Expression>> expr =
+      parseExpression({}, restrictions);
   if (!expr) {
     llvm::errs() << "failed to parse expression in enum item discriminant: "
                  << expr.getError() << "\n";
@@ -278,7 +279,7 @@ StringResult<ast::EnumItems> Parser::parseEnumItems() {
     printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  items.addItem(first.getValue());
+  items.addItem(std::make_shared<EnumItem>(first.getValue()));
 
   while (true) {
     if (check(TokenKind::Eof)) {
@@ -301,7 +302,7 @@ StringResult<ast::EnumItems> Parser::parseEnumItems() {
         printFunctionStack();
         exit(EXIT_FAILURE);
       }
-      items.addItem(item.getValue());
+      items.addItem(std::make_shared<EnumItem>(item.getValue()));
     }
   }
   return StringResult<ast::EnumItems>("failed to parse enum items");
