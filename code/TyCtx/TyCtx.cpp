@@ -229,4 +229,14 @@ void TyCtx::insertEnumItem(ast::Enumeration *parent, ast::EnumItem *item) {
   enumItemsMappings[id] = {parent, item};
 }
 
+std::optional<ast::Implementation *>
+TyCtx::lookupImplementation(basic::NodeId) {
+  assert(false);
+}
+
+std::optional<ast::AssociatedItem *>
+TyCtx::lookupAssociatedItem(basic::NodeId) {
+  assert(false);
+}
+
 } // namespace rust_compiler::tyctx

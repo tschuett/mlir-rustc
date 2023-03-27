@@ -19,4 +19,10 @@ TyTy::BaseType *TypeResolver::checkItemPointer(ast::Item *e) {
   assert(false && "to be implemented");
 }
 
+TyTy::BaseType *
+TypeResolver::checkAssociatedItemPointer(ast::AssociatedItem *,
+                                         ast::Implementation *) {
+  assert(false && "to be implemented");
+}
+
 } // namespace rust_compiler::sema::type_checking
