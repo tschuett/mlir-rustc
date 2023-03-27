@@ -19,6 +19,8 @@ public:
   void addItem(const EnumItem &it) { items.push_back(it); }
 
   void setTrailingComma() { trailingComma = true; }
+
+  std::vector<EnumItem> getItems() const { return items; }
 };
 
 } // namespace rust_compiler::ast

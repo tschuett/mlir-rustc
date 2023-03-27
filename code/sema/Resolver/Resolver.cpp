@@ -2,6 +2,7 @@
 
 #include "ADT/CanonicalPath.h"
 #include "AST/ConstantItem.h"
+#include "AST/Enumeration.h"
 #include "AST/Implementation.h"
 #include "AST/StaticItem.h"
 #include "AST/VisItem.h"
@@ -94,6 +95,9 @@ void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
   pushNewTypeRib(getTypeScope().peek());
   pushNewLabelRib(getLabelScope().peek());
 
+  // builtins: FIXME
+  insertBuiltinTypes(getTypeScope().peek());
+
   // get the root segment
   NodeId crateId = crate->getNodeId();
   CanonicalPath cratePrefix =
@@ -182,6 +186,8 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
   }
   case VisItemKind::Enumeration: {
     assert(false && "to be handled later");
+    resolveEnumerationItem(std::static_pointer_cast<Enumeration>(visItem), prefix,
+                        canonicalPrefix);
     break;
   }
   case VisItemKind::Union: {
@@ -408,7 +414,6 @@ Resolver::lookupResolvedType(basic::NodeId nodeId) {
 }
 
 void Resolver::insertBuiltinTypes(Rib *r) {
-  assert(false);
   auto builtins = getBuiltinTypes();
   for (auto &builtin : builtins) {
     CanonicalPath builtinPath =

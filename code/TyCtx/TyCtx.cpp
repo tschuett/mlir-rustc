@@ -16,6 +16,14 @@ using namespace rust_compiler::sema::type_checking;
 
 namespace rust_compiler::tyctx {
 
+std::optional<std::string> TyCtx::getCrateName(CrateNum cnum) {
+  auto it = astCrateMappings.find(cnum);
+  if (it == astCrateMappings.end())
+    return std::nullopt;
+
+  return it->second->getCrateName();
+}
+
 TyCtx *TyCtx::get() {
   static std::unique_ptr<TyCtx> instance;
   if (!instance)

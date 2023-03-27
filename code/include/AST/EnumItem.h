@@ -13,6 +13,8 @@
 
 namespace rust_compiler::ast {
 
+enum class EnumItemKind { Tuple, Struct, Discriminant };
+
 class EnumItem : public Node {
   std::vector<OuterAttribute> outerAttributes;
   std::optional<Visibility> visibility;
@@ -20,6 +22,8 @@ class EnumItem : public Node {
   std::optional<
       std::variant<EnumItemTuple, EnumItemStruct, EnumItemDiscriminant>>
       item;
+
+  EnumItemKind kind;
 
 public:
   EnumItem(Location loc) : Node(loc) {}
@@ -32,10 +36,28 @@ public:
 
   void setIdentifier(std::string_view i) { identifier = i; }
 
-  void setEnumItemTuple(const EnumItemTuple &tu) { item = tu; }
-  void setEnumItemStruct(const EnumItemStruct &st) { item = st; }
-  void setEnumItemDiscriminant(const EnumItemDiscriminant &dis) { item = dis; }
+  void setEnumItemTuple(const EnumItemTuple &tu) {
+    item = tu;
+    kind = EnumItemKind::Tuple;
+  }
+  void setEnumItemStruct(const EnumItemStruct &st) {
+    item = st;
+    kind = EnumItemKind::Struct;
+  }
+  void setEnumItemDiscriminant(const EnumItemDiscriminant &dis) {
+    item = dis;
+    kind = EnumItemKind::Discriminant;
+  }
 
+  EnumItemKind getKind() const { return kind; }
+
+  EnumItemDiscriminant getDiscriminant() const {
+    return std::get<EnumItemDiscriminant>(*item);
+  }
+  EnumItemStruct getStruct() const { return std::get<EnumItemStruct>(*item); }
+  EnumItemTuple getTuple() const { return std::get<EnumItemTuple>(*item); }
+
+  std::string getName() const { return identifier; }
 };
 
 } // namespace rust_compiler::ast

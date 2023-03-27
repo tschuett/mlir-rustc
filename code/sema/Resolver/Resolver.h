@@ -72,7 +72,7 @@ struct PatternBinding {
 ///  https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/struct.Resolver.html
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/struct.Rib.html
-  enum class RibKind { Dummy, Function, Label, Parameter, Type, Variable };
+enum class RibKind { Dummy, Function, Label, Parameter, Type, Variable };
 
 class Rib {
 public:
@@ -212,6 +212,11 @@ private:
   void resolveTupleStructItem(std::shared_ptr<ast::TupleStruct>,
                               const adt::CanonicalPath &prefix,
                               const adt::CanonicalPath &canonicalPrefix);
+  void resolveEnumerationItem(std::shared_ptr<ast::Enumeration>,
+                              const adt::CanonicalPath &prefix,
+                              const adt::CanonicalPath &canonicalPrefix);
+  void resolveEnumItem(const ast::EnumItem&, const adt::CanonicalPath &prefix,
+                       const adt::CanonicalPath &canonicalPrefix);
 
   // expressions
   void resolveExpression(std::shared_ptr<ast::Expression>,

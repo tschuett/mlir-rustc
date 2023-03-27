@@ -15,6 +15,9 @@ public:
   EnumItemStruct(Location loc) : Node(loc) {}
 
   void setStructFields(const StructFields &sf) { fields = sf; }
+
+  bool hasFields() const { return fields.has_value(); }
+  StructFields getFields() const { return *fields; }
 };
 
 } // namespace rust_compiler::ast

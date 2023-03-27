@@ -33,7 +33,7 @@ public:
 
   std::vector<std::shared_ptr<Item>> getItems() { return items; }
 
-  std::string_view getCrateName() const;
+  std::string getCrateName() const;
 
   basic::CrateNum getCrateNum() const { return crateNum; }
 

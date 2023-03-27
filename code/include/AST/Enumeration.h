@@ -28,6 +28,19 @@ public:
   void setIdentifier(std::string_view id) { identifier = id; }
 
   void setItems(const EnumItems &ei) { enumItems = ei; }
+
+  bool hasGenericParams() const { return genericParams.has_value(); }
+
+  GenericParams getGenericParams() const { return *genericParams; }
+
+  bool hasWhereClause() const { return whereClause.has_value(); }
+
+  WhereClause getWhereClause() const { return *whereClause; }
+
+  bool hasEnumItems() const { return enumItems.has_value(); }
+  EnumItems getEnumItems() const { return *enumItems; }
+
+  std::string getName() const { return identifier; }
 };
 
 } // namespace rust_compiler::ast
