@@ -105,7 +105,7 @@ public:
     resolved[id] = type;
   }
 
-  TyTy::BaseType *peekReturnType();
+  //TyTy::BaseType *peekReturnType();
 
   std::optional<TyTy::BaseType *> lookupType(basic::NodeId);
   std::optional<ast::Item *> lookupItem(basic::NodeId);

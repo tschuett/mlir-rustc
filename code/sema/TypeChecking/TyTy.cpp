@@ -168,4 +168,20 @@ bool ErrorType::needsGenericSubstitutions() const { return false; }
 
 std::string ErrorType::toString() const { return "error"; }
 
+FunctionType::FunctionType(
+    basic::NodeId id, std::string_view name, tyctx::ItemIdentity ident,
+    std::vector<std::pair<
+        std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
+        TyTy::BaseType *>>
+        parameters,
+    TyTy::BaseType *returnType,
+    std::vector<TyTy::SubstitutionParamMapping> substitutions)
+    : BaseType(id, id, TypeKind::Function,
+               TypeIdentity(ident.getPath(), ident.getLocation())),
+      id(id), name(name), ident(ident), parameters(parameters),
+      returnType(returnType), substitutions(substitutions) {}
+
+TyTy::BaseType *FunctionType::getReturnType() const { return returnType; }
+bool FunctionType::needsGenericSubstitutions() const { return true; }
+
 } // namespace rust_compiler::sema::type_checking::TyTy

@@ -1,12 +1,12 @@
 #pragma once
 
+#include "AST/Patterns/PatternNoTopAlt.h"
 #include "Basic/Ids.h"
 #include "Location.h"
 #include "Substitutions.h"
+#include "TyCtx/ItemIdentity.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TypeIdentity.h"
-#include "AST/Patterns/PatternNoTopAlt.h"
-#include "TyCtx/ItemIdentity.h"
 
 namespace rust_compiler::sema::type_checking::TyTy {
 
@@ -192,7 +192,16 @@ public:
   bool needsGenericSubstitutions() const override;
 
 private:
+
+  basic::NodeId id;
+  std::string name;
+  tyctx::ItemIdentity ident;
+  std::vector<
+      std::pair<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
+                TyTy::BaseType *>>
+      parameters;
   TyTy::BaseType *returnType = nullptr;
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
 };
 
 class ClosureType : public BaseType {

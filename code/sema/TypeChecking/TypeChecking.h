@@ -46,7 +46,10 @@ using namespace rust_compiler::ast;
 
 class TypeCheckContextItem {
 public:
-  TypeCheckContextItem(ast::Function *);
+  TypeCheckContextItem(ast::Function *f) : fun(f) {}
+
+private:
+  ast::Function *fun;
 };
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_hir_analysis/index.html
