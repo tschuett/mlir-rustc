@@ -2,8 +2,9 @@
 
 #include "Analysis/MemorySSA/MemorySSANodes.h"
 #include "Analysis/MemorySSA/MemorySSAWalker.h"
-#include "llvm/ADT/SmallVector.h"
 
+#include <llvm/ADT/SmallVector.h>
+#include <memory>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/Dialect/MemRef/IR/MemRef.h>
 #include <mlir/IR/Dominance.h>
@@ -17,35 +18,50 @@
 
 namespace rust_compiler::analysis {
 
-//std::shared_ptr<MemoryDef> MemorySSA::createDef(mlir::Operation *op) {
-//  //  return std::make_shared<Node>(op, NodeType::Def, arg);
-//}
-//
-//std::shared_ptr<MemoryUse> MemorySSA::createUse(mlir::Operation *op) {
-//  // return std::make_shared<Node>(op, NodeType::Use, arg);
-//}
-//
-//std::shared_ptr<MemoryPhi>
-//MemorySSA::createPhi(mlir::Operation *op,
-//                     llvm::ArrayRef<std::shared_ptr<Node>> args) {
-//  //  return std::make_shared<Node>(op, NodeType::Phi, args);
-//}
+MemorySSAWalker::MemorySSAWalker(MemorySSA *ssa) { MSSA = ssa; }
 
-//std::shared_ptr<Node> MemorySSA::getRoot() {
-//  //  if (root)
-//  //    return root;
-//  // root = std::make_shared<Node>(nullptr, NodeType::Root, std::nullopt);
-//  // nodes.push_back(root);
-//  return root;
-//}
+std::shared_ptr<Node> MemorySSA::getTerm() { return term; }
+
+std::shared_ptr<Node> MemorySSA::getRoot() { return root; }
+
+std::shared_ptr<MemoryDef> MemorySSA::createDef(mlir::Operation *op) {
+  // FIXME
+  return std::make_shared<MemoryDef>(nullptr, op, op->getBlock());
+}
+
+std::shared_ptr<MemoryUse> MemorySSA::createUse(mlir::Operation *op) {
+  return std::make_shared<MemoryUse>(nullptr, op, op->getBlock());
+}
+
+// std::shared_ptr<MemoryDef> MemorySSA::createDef(mlir::Operation *op) {
+//   //  return std::make_shared<Node>(op, NodeType::Def, arg);
+// }
 //
-//std::shared_ptr<Node> MemorySSA::getTerm() {
-//  // if (term)
-//  //   return term;
-//  // term = std::make_shared<Node>(nullptr, NodeType::Term, std::nullopt);
-//  // nodes.push_back(term);
-//  return term;
-//}
+// std::shared_ptr<MemoryUse> MemorySSA::createUse(mlir::Operation *op) {
+//   // return std::make_shared<Node>(op, NodeType::Use, arg);
+// }
+//
+// std::shared_ptr<MemoryPhi>
+// MemorySSA::createPhi(mlir::Operation *op,
+//                      llvm::ArrayRef<std::shared_ptr<Node>> args) {
+//   //  return std::make_shared<Node>(op, NodeType::Phi, args);
+// }
+
+// std::shared_ptr<Node> MemorySSA::getRoot() {
+//   //  if (root)
+//   //    return root;
+//   // root = std::make_shared<Node>(nullptr, NodeType::Root, std::nullopt);
+//   // nodes.push_back(root);
+//   return root;
+// }
+//
+// std::shared_ptr<Node> MemorySSA::getTerm() {
+//   // if (term)
+//   //   return term;
+//   // term = std::make_shared<Node>(nullptr, NodeType::Term, std::nullopt);
+//   // nodes.push_back(term);
+//   return term;
+// }
 
 /// a and b must be memrefs
 std::optional<mlir::AliasResult> MemorySSA::mayAlias(mlir::Operation *a,
@@ -160,7 +176,7 @@ MemorySSAWalker *MemorySSA::buildMemorySSA() {
   if (Walker)
     return Walker;
 
-  module.walk([&](mlir::func::FuncOp op) { analyzeFunction(&op); });
+  analyzeFunction(&fun);
 
   Walker = new MemorySSAWalker(this);
 

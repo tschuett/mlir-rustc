@@ -1,5 +1,9 @@
 #include "Analysis/Loops.h"
 
+#include "mlir/Dialect/Arith/IR/Arith.h"
+#include "mlir/Dialect/ControlFlow/IR/ControlFlowOps.h"
+#include "mlir/Dialect/Func/IR/FuncOps.h"
+
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/MapVector.h>
 #include <llvm/ADT/SmallPtrSet.h>
@@ -89,6 +93,10 @@ private:
     }
   }
 };
+
+mlir::Block *Loop::getHeader() const { return header; }
+
+mlir::Block *Loop::getLatch() const { return latch; }
 
 bool Loop::contains(mlir::Block *b) const { return loop.count(b) == 1; }
 
@@ -183,6 +191,25 @@ void LoopDetector::createLoop(llvm::SmallPtrSetImpl<Block *> &scc,
   l.findPreheader();
 
   loops.push_back(l);
+
+  for (auto block: scc) {
+    for (auto& op: block->getOperations()) {
+      if (auto _op = mlir::dyn_cast<mlir::func::CallOp>(op))
+        l.setCallOp();
+      if (auto _op = mlir::dyn_cast<mlir::func::CallIndirectOp>(op))
+        l.setIndirectCallOp();
+      if (auto _op = mlir::dyn_cast<mlir::func::ReturnOp>(op))
+        l.setReturnOp();
+      if (auto _op = mlir::dyn_cast<mlir::memref::AllocOp>(op))
+        l.setAllocOp();
+      if (auto _op = mlir::dyn_cast<mlir::memref::AllocaOp>(op))
+        l.setAllocaOp();
+      if (auto _op = mlir::dyn_cast<mlir::memref::LoadOp>(op))
+        l.setLoadOp();
+      if (auto _op = mlir::dyn_cast<mlir::memref::StoreOp>(op))
+        l.setStoreOp();
+    }
+  }
 }
 
 /// based on dominance and scc
@@ -191,9 +218,8 @@ void LoopDetector::detectLoopCandidates() {
   for (auto &block : f->getBody()) {
     SmallPtrSet<Block *, 8> dominatedBlocks;
     for (auto &innerBlock : f->getBody())
-      if (innerBlock != block)
-        if (domInfo.dominates(&block, &innerBlock))
-          dominatedBlocks.insert(&innerBlock);
+      if (domInfo.dominates(&block, &innerBlock))
+        dominatedBlocks.insert(&innerBlock);
 
     // check scc
     if (dominatedBlocks.size() > 1) {
@@ -215,7 +241,7 @@ void LoopDetector::analyzeInductionVariable(Loop *l) {
   mlir::Block *latch = l->getLatch();
 
   if (auto condBranch =
-          mlir::dyn_cast < mlir::cf::CondBranchOplatch->getTerminator()) {
+          mlir::dyn_cast<mlir::cf::CondBranchOp>(latch->getTerminator())) {
     if (auto cmp = mlir::dyn_cast<mlir::arith::CmpIOp>(
             condBranch.getCondition().getDefiningOp())) {
     }
@@ -346,6 +372,8 @@ void LoopDetector::analyzeRelationShips() {
     }
 }
 
+std::vector<LoopNest> Function::getLoopNests() { return nests; }
+
 std::optional<Function> LoopDetector::analyze(mlir::func::FuncOp *f) {
   this->f = f;
 
@@ -361,4 +389,3 @@ std::optional<Function> LoopDetector::analyze(mlir::func::FuncOp *f) {
   There are several *LoopNest* s
 
  */
-

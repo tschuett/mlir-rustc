@@ -1,7 +1,14 @@
 #include "LoopPlan.h"
 
+using namespace rust_compiler::analysis;
+
 namespace rust_compiler::optimizer {
 
-LoopPlanner::LoopPlanner(analysis::LoopNest *nest) { this->nest = nest; }
+void LoopPlanner::run() {
+  for (auto nst : nest)
+    plan(nst);
+}
+
+void LoopPlanner::plan(LoopNest &) {}
 
 } // namespace rust_compiler::optimizer
