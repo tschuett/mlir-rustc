@@ -178,7 +178,7 @@ TypeResolver::resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
     }
 
     TyTy::BaseType *lookup = nullptr;
-    std::optional<TyTy::BaseType *> result = tcx->queryType(astNodeId, this);
+    std::optional<TyTy::BaseType *> result = queryType(astNodeId);
     if (!result) {
       if (*offset == 0) { // root
         // report error

@@ -121,6 +121,8 @@ std::optional<TyTy::BaseType *> TyCtx::lookupType(basic::NodeId id) {
   return std::nullopt;
 }
 
+void TyCtx::insertItem(ast::Item *it) { itemMappings[it->getNodeId()] = it; }
+
 std::optional<ast::Item *> TyCtx::lookupItem(basic::NodeId id) {
   auto it = itemMappings.find(id);
   if (it == itemMappings.end())
@@ -130,7 +132,11 @@ std::optional<ast::Item *> TyCtx::lookupItem(basic::NodeId id) {
 }
 
 std::optional<ast::ExternalItem *> TyCtx::lookupExternalItem(basic::NodeId id) {
-  assert(false);
+  auto it = externItemMappings.find(id);
+  if (it == externItemMappings.end())
+    return std::nullopt;
+
+  return it->second.first;
 }
 
 // void Resolver::insertImplementation(NodeId id, ast::Implementation *impl) {

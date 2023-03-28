@@ -107,9 +107,6 @@ public:
 
   TyTy::BaseType *peekReturnType();
 
-  std::optional<TyTy::BaseType *> queryType(basic::NodeId,
-                                            TypeResolver *typeResolver);
-
   std::optional<TyTy::BaseType *> lookupType(basic::NodeId);
   std::optional<ast::Item *> lookupItem(basic::NodeId);
   std::optional<ast::ExternalItem *> lookupExternalItem(basic::NodeId);
@@ -141,6 +138,7 @@ private:
 
   std::map<NodeId, ast::Item *> itemMappings;
   std::map<NodeId, ast::Implementation *> implItemMapping;
+  std::map<NodeId, std::pair<ast::ExternalItem*, NodeId>> externItemMappings;
 };
 
 } // namespace rust_compiler::tyctx
