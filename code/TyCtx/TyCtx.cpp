@@ -121,76 +121,6 @@ std::optional<TyTy::BaseType *> TyCtx::lookupType(basic::NodeId id) {
   return std::nullopt;
 }
 
-std::optional<TyTy::BaseType *> TyCtx::queryType(basic::NodeId id,
-                                                 TypeResolver *typeResolver) {
-  if (queryInProgress(id))
-    return std::nullopt;
-
-  if (auto t = lookupType(id))
-    return t;
-
-  insertQuery(id);
-
-  // enum item
-  std::optional<std::pair<ast::Enumeration *, ast::EnumItem *>> enumItem =
-      lookupEnumItem(id);
-  if (enumItem) {
-    Enumeration *enuM = enumItem->first;
-    // EnumItem *item = enumItem->second;
-
-    TyTy::BaseType *type = typeResolver->checkEnumerationPointer(enuM);
-
-    queryCompleted(id);
-
-    return type;
-  }
-
-  // plain item
-  std::optional<Item *> item = lookupItem(id);
-  if (item) {
-    TyTy::BaseType *result = typeResolver->checkItemPointer(*item);
-    queryCompleted(id);
-    return result;
-  }
-
-  // associated item
-  std::optional<Implementation *> impl = lookupImplementation(id);
-  if (impl) {
-    std::optional<AssociatedItem *> asso =
-        lookupAssociatedItem((*impl)->getNodeId());
-    assert(asso.has_value());
-
-    TyTy::BaseType *result =
-        typeResolver->checkAssociatedItemPointer(*asso, *impl);
-    queryCompleted(id);
-    return result;
-  }
-
-  // implblock
-
-  // extern item
-  std::optional<ExternalItem *> external = lookupExternalItem(id);
-  if (external) {
-    TyTy::BaseType *result = typeResolver->checkExternalItemPointer(*external);
-    queryCompleted(id);
-    return result;
-  }
-
-  // more?
-  queryCompleted(id);
-  return std::nullopt;
-}
-
-bool TyCtx::queryInProgress(basic::NodeId id) {
-  return queriesInProgress.find(id) != queriesInProgress.end();
-}
-
-void TyCtx::insertQuery(basic::NodeId id) { queriesInProgress.insert(id); }
-
-void TyCtx::queryCompleted(basic::NodeId id) { queriesInProgress.erase(id); }
-
-void TyCtx::insertItem(ast::Item *it) { itemMappings[it->getNodeId()] = it; }
-
 std::optional<ast::Item *> TyCtx::lookupItem(basic::NodeId id) {
   auto it = itemMappings.find(id);
   if (it == itemMappings.end())
@@ -230,12 +160,16 @@ void TyCtx::insertEnumItem(ast::Enumeration *parent, ast::EnumItem *item) {
 }
 
 std::optional<ast::Implementation *>
-TyCtx::lookupImplementation(basic::NodeId) {
-  assert(false);
+TyCtx::lookupImplementation(basic::NodeId id) {
+  auto it = implItemMapping.find(id);
+  if (it == implItemMapping.end())
+    return std::nullopt;
+
+  return it->second;
 }
 
 std::optional<ast::AssociatedItem *>
-TyCtx::lookupAssociatedItem(basic::NodeId) {
+TyCtx::lookupAssociatedItem(basic::NodeId implId) {
   assert(false);
 }
 

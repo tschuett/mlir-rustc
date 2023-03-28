@@ -111,6 +111,14 @@ private:
                                   std::shared_ptr<ast::types::TypePath> tp,
                                   size_t offset, TyTy::BaseType *pathType);
 
+  std::optional<TyTy::BaseType *> queryType(basic::NodeId id);
+
+  bool queryInProgress(basic::NodeId);
+  void insertQuery(basic::NodeId);
+  void queryCompleted(basic::NodeId);
+
+  std::set<basic::NodeId> queriesInProgress;
+
   // data
   tyctx::TyCtx *tcx;
   resolver::Resolver *resolver;

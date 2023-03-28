@@ -116,10 +116,6 @@ public:
   std::optional<ast::Implementation *> lookupImplementation(basic::NodeId);
   std::optional<ast::AssociatedItem *> lookupAssociatedItem(basic::NodeId);
 
-  bool queryInProgress(basic::NodeId);
-  void insertQuery(basic::NodeId);
-  void queryCompleted(basic::NodeId);
-
 private:
   basic::CrateNum crateNumIter = 7;
   basic::NodeId nodeIdIter = 7;
@@ -140,13 +136,11 @@ private:
   std::map<basic::NodeId, TyTy::BaseType *> resolved;
   std::vector<std::unique_ptr<TyTy::BaseType>> builtins;
 
-  std::set<NodeId> queriesInProgress;
-
   std::map<NodeId, std::pair<ast::Enumeration *, ast::EnumItem *>>
       enumItemsMappings;
 
   std::map<NodeId, ast::Item *> itemMappings;
-  std::map<NodeId, std::pair<NodeId, ast::Implementation *>> implItemMapping;
+  std::map<NodeId, ast::Implementation *> implItemMapping;
 };
 
 } // namespace rust_compiler::tyctx
