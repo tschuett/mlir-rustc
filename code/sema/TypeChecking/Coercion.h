@@ -21,6 +21,9 @@ private:
 };
 
 TyTy::BaseType *coercion(basic::NodeId, TyTy::WithLocation lhs,
-                        TyTy::WithLocation rhs, Location unify);
+                         TyTy::WithLocation rhs, Location unify);
+
+TyTy::BaseType *coercionWithSite(basic::NodeId, TyTy::WithLocation lhs,
+                                 TyTy::WithLocation rhs, Location unify);
 
 } // namespace rust_compiler::sema::type_checking

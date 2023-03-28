@@ -1,7 +1,9 @@
 #include "TypeChecking.h"
 
 #include "AST/MacroItem.h"
+#include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyCtx.h"
+#include "TyTy.h"
 
 #include <cassert>
 
@@ -40,8 +42,7 @@ void TypeResolver::queryCompleted(basic::NodeId id) {
   queriesInProgress.erase(id);
 }
 
-std::optional<TyTy::BaseType *>
-TypeResolver::queryType(basic::NodeId id) {
+std::optional<TyTy::BaseType *> TypeResolver::queryType(basic::NodeId id) {
   if (queryInProgress(id))
     return std::nullopt;
 
@@ -79,8 +80,7 @@ TypeResolver::queryType(basic::NodeId id) {
         tcx->lookupAssociatedItem((*impl)->getNodeId());
     assert(asso.has_value());
 
-    TyTy::BaseType *result =
-        checkAssociatedItemPointer(*asso, *impl);
+    TyTy::BaseType *result = checkAssociatedItemPointer(*asso, *impl);
     queryCompleted(id);
     return result;
   }
@@ -120,6 +120,20 @@ void TypeResolver::checkCrate(std::shared_ptr<ast::Crate> crate) {
   }
 
   // FIXME
+}
+
+TyTy::BaseType *TypeResolver::peekReturnType() {
+  assert(!returnTypeStack.empty());
+  return returnTypeStack.back().second;
+}
+
+void TypeResolver::pushReturnType(TypeCheckContextItem item,
+                                  TyTy::BaseType *returnType) {
+  returnTypeStack.push_back({std::move(item), returnType});
+}
+void TypeResolver::popReturnType() {
+  assert(!returnTypeStack.empty());
+  returnTypeStack.pop_back();
 }
 
 } // namespace rust_compiler::sema::type_checking

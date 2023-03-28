@@ -174,6 +174,7 @@ TypeResolver::resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
       }
 
       // report error
+      llvm::errs() << "expected value, but found crate or module " << "\n";
       return new TyTy::ErrorType(path->getNodeId());
     }
 
@@ -182,6 +183,7 @@ TypeResolver::resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
     if (!result) {
       if (*offset == 0) { // root
         // report error
+        llvm::errs() << "queryType failed: failed to resolve root segment" << "\n";
         return new TyTy::ErrorType(path->getNodeId());
       }
       return rootType;

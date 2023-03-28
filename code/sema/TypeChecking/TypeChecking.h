@@ -26,6 +26,7 @@
 #include "AST/WhereClause.h"
 #include "Basic/Ids.h"
 #include "Substitutions.h"
+#include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyCtx.h"
 #include "TyTy.h"
 
@@ -42,6 +43,11 @@ class Resolver;
 namespace rust_compiler::sema::type_checking {
 
 using namespace rust_compiler::ast;
+
+class TypeCheckContextItem {
+public:
+  TypeCheckContextItem(ast::Function *);
+};
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_hir_analysis/index.html
 class TypeResolver {
@@ -116,6 +122,13 @@ private:
   bool queryInProgress(basic::NodeId);
   void insertQuery(basic::NodeId);
   void queryCompleted(basic::NodeId);
+
+  TyTy::BaseType *peekReturnType();
+  void pushReturnType(TypeCheckContextItem item, TyTy::BaseType *returnRype);
+  void popReturnType();
+
+  std::vector<std::pair<TypeCheckContextItem, TyTy::BaseType *>>
+      returnTypeStack;
 
   std::set<basic::NodeId> queriesInProgress;
 

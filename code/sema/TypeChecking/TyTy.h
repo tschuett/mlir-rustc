@@ -2,7 +2,11 @@
 
 #include "Basic/Ids.h"
 #include "Location.h"
+#include "Substitutions.h"
+#include "TyCtx/NodeIdentity.h"
 #include "TypeIdentity.h"
+#include "AST/Patterns/PatternNoTopAlt.h"
+#include "TyCtx/ItemIdentity.h"
 
 namespace rust_compiler::sema::type_checking::TyTy {
 
@@ -172,8 +176,23 @@ private:
 
 class FunctionType : public BaseType {
 public:
-  FunctionType(basic::NodeId, Location loc);
+  FunctionType(
+      basic::NodeId, std::string_view name, tyctx::ItemIdentity,
+      std::vector<std::pair<
+          std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
+          TyTy::BaseType *>>
+          parameters,
+      TyTy::BaseType *returnType,
+      std::vector<TyTy::SubstitutionParamMapping> substitutions);
+
   std::string toString() const override;
+
+  TyTy::BaseType *getReturnType() const;
+
+  bool needsGenericSubstitutions() const override;
+
+private:
+  TyTy::BaseType *returnType = nullptr;
 };
 
 class ClosureType : public BaseType {

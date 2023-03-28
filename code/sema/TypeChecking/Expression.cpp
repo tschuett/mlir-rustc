@@ -155,12 +155,16 @@ TyTy::BaseType *TypeResolver::checkBlockExpression(
 
     TyTy::BaseType *stmtType = checkStatement(s);
     if (!stmtType) {
+      llvm::errs() << "failed to resolve type"
+                   << "\n";
       // report error
     }
   }
 
   if (stmts.hasTrailing())
     return checkExpression(stmts.getTrailing());
+  else
+    return TyTy::TupleType::getUnitType(block->getNodeId());
 }
 
 TyTy::BaseType *TypeResolver::checkOperatorExpression(
@@ -228,11 +232,10 @@ TyTy::BaseType *TypeResolver::checkArithmeticOrLogicalExpression(
 TyTy::BaseType *TypeResolver::checkReturnExpression(
     std::shared_ptr<ast::ReturnExpression> ret) {
   assert(false && "to be implemented");
-
   Location loc = ret->hasTailExpression() ? ret->getExpression()->getLocation()
                                           : ret->getLocation();
 
-  TyTy::BaseType *functionReturnTye = tcx->peekReturnType();
+  TyTy::BaseType *functionReturnTye = peekReturnType();
 
   TyTy::BaseType *ty = nullptr;
   if (ret->hasTailExpression()) {

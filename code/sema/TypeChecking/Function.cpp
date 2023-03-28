@@ -3,9 +3,13 @@
 #include "AST/FunctionParamPattern.h"
 #include "AST/FunctionParameters.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
+#include "Coercion.h"
+#include "Location.h"
 #include "Substitutions.h"
+#include "TyCtx/NodeIdentity.h"
 #include "TyTy.h"
 #include "TypeChecking.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include <optional>
 #include <utility>
@@ -26,16 +30,21 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
     checkWhereClause(f->getWhereClause());
 
   TyTy::BaseType *retType = nullptr;
+  Location returnTypeLoc = Location::getEmptyLocation();
   if (f->hasReturnType()) {
     TyTy::BaseType *retType = checkType(f->getReturnType());
     assert(retType);
     if (retType->getKind() == TyTy::TypeKind::Error) {
       // report error
+      llvm::errs() << "failed to resolve return type"
+                   << "\n";
     }
 
     retType->setReference(f->getReturnType()->getNodeId());
+    returnTypeLoc = f->getReturnType()->getLocation();
   } else {
     retType = TyTy::TupleType::getUnitType(f->getNodeId());
+    returnTypeLoc = f->getLocation();
   }
 
   FunctionParameters parameters = f->getParams();
@@ -63,15 +72,30 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
       assert(false && "to be implemented");
     }
     }
-
-    std::optional<adt::CanonicalPath> path =
-        tcx->lookupCanonicalPath(f->getNodeId());
-    assert(path.has_value());
   }
 
+  std::optional<adt::CanonicalPath> path =
+      tcx->lookupCanonicalPath(f->getNodeId());
+  assert(path.has_value());
+
+  tyctx::ItemIdentity identity = {*path, f->getLocation()};
+
+  TyTy::FunctionType *funType = new TyTy::FunctionType(
+      f->getNodeId(), f->getName(), identity, params, retType, substitutions);
+
+  tcx->insertType(f->getIdentity(), funType);
+
+  pushReturnType(TypeCheckContextItem(f.get()), funType->getReturnType());
+
   TyTy::BaseType *bodyType = checkExpression(f->getBody());
+  assert(bodyType);
 
   assert(false && "to be implemented");
+
+  coercionWithSite(f->getNodeId(), TyTy::WithLocation(retType, returnTypeLoc),
+                   TyTy::WithLocation(bodyType), f->getLocation());
+
+  popReturnType();
 }
 
 } // namespace rust_compiler::sema::type_checking
