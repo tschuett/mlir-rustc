@@ -112,13 +112,21 @@ private:
   TyTy::BaseType *checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>);
   TyTy::BaseType *checkTypePath(std::shared_ptr<ast::types::TypePath>);
 
-  TyTy::BaseType *resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
-                                  size_t *offset,
-                                  basic::NodeId *resolvedNodeId);
-  TyTy::BaseType *resolveSegments(basic::NodeId resolvedNodeId,
-                                  basic::NodeId pathNodeId,
-                                  std::shared_ptr<ast::types::TypePath> tp,
-                                  size_t offset, TyTy::BaseType *pathType);
+  TyTy::BaseType *
+  resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
+                      size_t *offset, basic::NodeId *resolvedNodeId);
+  TyTy::BaseType *resolveSegmentsType(basic::NodeId resolvedNodeId,
+                                      basic::NodeId pathNodeId,
+                                      std::shared_ptr<ast::types::TypePath> tp,
+                                      size_t offset, TyTy::BaseType *pathType);
+  TyTy::BaseType *
+  resolveRootPathExpression(std::shared_ptr<ast::PathInExpression> path,
+                            size_t *offset, basic::NodeId *resolvedNodeId);
+  TyTy::BaseType *resolveSegmentsExpression(basic::NodeId rootResolvedIt,
+                                            std::span<PathExprSegment> segment,
+                                            size_t offset,
+                                            TyTy::BaseType *typeSegment, tyctx::NodeIdentity,
+                                            Location);
 
   std::optional<TyTy::BaseType *> queryType(basic::NodeId id);
 

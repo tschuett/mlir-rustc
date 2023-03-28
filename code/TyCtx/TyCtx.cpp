@@ -108,9 +108,11 @@ void TyCtx::insertType(const NodeIdentity &id, TyTy::BaseType *type) {
 
 TyTy::BaseType *TyCtx::lookupBuiltin(std::string_view name) {
   for (auto &built : builtins) {
-    if (built->toString() == name)
+    if (built->toString() == name) {
       return built.get();
+    }
   }
+
   return nullptr;
 }
 

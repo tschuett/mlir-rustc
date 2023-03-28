@@ -3,6 +3,7 @@
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/ClosureExpression.h"
+#include "AST/ExpressionStatement.h"
 #include "AST/LiteralExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/PathExpression.h"
@@ -65,7 +66,6 @@ TyTy::BaseType *TypeResolver::checkExpressionWithBlock(
 
 TyTy::BaseType *TypeResolver::checkExpressionWithoutBlock(
     std::shared_ptr<ast::ExpressionWithoutBlock> woBlock) {
-  assert(false && "to be implemented");
   switch (woBlock->getWithoutBlockKind()) {
   case ExpressionWithoutBlockKind::LiteralExpression: {
     return checkLiteral(std::static_pointer_cast<LiteralExpression>(woBlock));
@@ -158,6 +158,14 @@ TyTy::BaseType *TypeResolver::checkBlockExpression(
       llvm::errs() << "failed to resolve type"
                    << "\n";
       // report error
+    }
+
+    if (s->getKind() == StatementKind::ExpressionStatement) {
+      std::shared_ptr<ExpressionStatement> es =
+          std::static_pointer_cast<ExpressionStatement>(s);
+      if (es->getKind() == ExpressionStatementKind::ExpressionWithBlock) {
+        // FIXME
+      }
     }
   }
 

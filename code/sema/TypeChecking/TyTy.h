@@ -192,7 +192,6 @@ public:
   bool needsGenericSubstitutions() const override;
 
 private:
-
   basic::NodeId id;
   std::string name;
   tyctx::ItemIdentity ident;
@@ -232,8 +231,13 @@ public:
 
 class WithLocation {
 public:
-  WithLocation(BaseType *type, Location loc);
-  WithLocation(BaseType *type);
+  WithLocation(BaseType *type, Location loc) : type(type), loc(loc) {}
+  WithLocation(BaseType *type)
+      : type(type), loc(Location::getEmptyLocation()) {}
+
+private:
+  BaseType *type;
+  Location loc;
 };
 
 } // namespace rust_compiler::sema::type_checking::TyTy

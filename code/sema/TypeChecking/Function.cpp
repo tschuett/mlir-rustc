@@ -90,8 +90,6 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
   TyTy::BaseType *bodyType = checkExpression(f->getBody());
   assert(bodyType);
 
-  assert(false && "to be implemented");
-
   coercionWithSite(f->getNodeId(), TyTy::WithLocation(retType, returnTypeLoc),
                    TyTy::WithLocation(bodyType), f->getLocation());
 

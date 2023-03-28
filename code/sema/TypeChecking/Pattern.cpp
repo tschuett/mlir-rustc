@@ -14,8 +14,6 @@ namespace rust_compiler::sema::type_checking {
 TyTy::BaseType *
 TypeResolver::checkPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat,
                            TyTy::BaseType *t) {
-  assert(false && "to be implemented");
-
   TyTy::BaseType *infered = nullptr;
 
   switch (pat->getKind()) {
@@ -30,8 +28,10 @@ TypeResolver::checkPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat,
   }
   }
 
-  if (infered == nullptr)
+  if (infered == nullptr) {
+    llvm::errs() << "failed to check pattern declaration" << "\n";
     return new TyTy::ErrorType(pat->getNodeId());
+  }
 
   tcx->insertType(pat->getIdentity(), infered);
 
@@ -41,7 +41,6 @@ TypeResolver::checkPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat,
 TyTy::BaseType *TypeResolver::checkPatternWithoutRange(
     std::shared_ptr<ast::patterns::PatternWithoutRange> pat,
     TyTy::BaseType *ty) {
-  assert(false && "to be implemented");
   switch (pat->getWithoutRangeKind()) {
   case PatternWithoutRangeKind::LiteralPattern: {
     assert(false && "to be implemented");
@@ -102,7 +101,6 @@ TypeResolver::checkRangePattern(std::shared_ptr<ast::patterns::RangePattern> pt,
 TyTy::BaseType *
 TypeResolver::checkPathPattern(std::shared_ptr<ast::patterns::PathPattern> pat,
                                TyTy::BaseType *) {
-  assert(false && "to be implemented");
   std::shared_ptr<ast::PathExpression> path =
       std::static_pointer_cast<ast::PathExpression>(pat->getPath());
   switch (path->getPathExpressionKind()) {

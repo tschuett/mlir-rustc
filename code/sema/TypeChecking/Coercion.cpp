@@ -3,7 +3,12 @@
 namespace rust_compiler::sema::type_checking {
 
 TyTy::BaseType *coercion(basic::NodeId, TyTy::WithLocation lhs,
-                        TyTy::WithLocation rhs, Location unify) {
+                         TyTy::WithLocation rhs, Location unify) {
+  assert(false && "to be implemented");
+}
+
+TyTy::BaseType *coercionWithSite(basic::NodeId, TyTy::WithLocation lhs,
+                                 TyTy::WithLocation rhs, Location unify) {
   assert(false && "to be implemented");
 }
 

@@ -113,7 +113,7 @@ TypeResolver::checkTypePath(std::shared_ptr<ast::types::TypePath> tp) {
 
   size_t offset = 0;
   NodeId resolvedNodeId = UNKNOWN_NODEID;
-  TyTy::BaseType *root = resolveRootPath(tp, &offset, &resolvedNodeId);
+  TyTy::BaseType *root = resolveRootPathType(tp, &offset, &resolvedNodeId);
   if (root->getKind() == TyTy::TypeKind::Error) {
     assert(false);
     return new TyTy::ErrorType(tp->getNodeId());
@@ -126,14 +126,14 @@ TypeResolver::checkTypePath(std::shared_ptr<ast::types::TypePath> tp) {
     return root;
 
   TyTy::BaseType *segments =
-      resolveSegments(resolvedNodeId, tp->getNodeId(), tp, offset, root);
+      resolveSegmentsType(resolvedNodeId, tp->getNodeId(), tp, offset, root);
   assert(segments);
   assert(segments->getKind() != TyTy::TypeKind::Error);
   return segments;
 }
 
 TyTy::BaseType *
-TypeResolver::resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
+TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
                               size_t *offset, basic::NodeId *resolvedNodeId) {
   // assert(false && "to be implemented");
 
@@ -141,6 +141,16 @@ TypeResolver::resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
   *offset = 0;
 
   std::vector<TypePathSegment> segs = path->getSegments();
+
+  llvm::errs() << "resolveRootPath: " << segs[0].getSegment().toString()
+               << "\n";
+
+  if (segs.size() == 1)
+    if (auto t = tcx->lookupBuiltin(segs[0].getSegment().toString())) {
+      *offset = 1;
+      return t;
+    }
+
   NodeId refNodeId = UNKNOWN_NODEID;
   for (unsigned i = 0; i < segs.size(); ++i) {
     bool haveMoreSegments = i != (segs.size() - 1);
@@ -174,7 +184,8 @@ TypeResolver::resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
       }
 
       // report error
-      llvm::errs() << "expected value, but found crate or module " << "\n";
+      llvm::errs() << "expected value, but found crate or module "
+                   << "\n";
       return new TyTy::ErrorType(path->getNodeId());
     }
 
@@ -183,7 +194,8 @@ TypeResolver::resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
     if (!result) {
       if (*offset == 0) { // root
         // report error
-        llvm::errs() << "queryType failed: failed to resolve root segment" << "\n";
+        llvm::errs() << "queryType failed: failed to resolve root segment"
+                     << "\n";
         return new TyTy::ErrorType(path->getNodeId());
       }
       return rootType;
@@ -231,7 +243,7 @@ TypeResolver::resolveRootPath(std::shared_ptr<ast::types::TypePath> path,
 }
 
 TyTy::BaseType *
-TypeResolver::resolveSegments(basic::NodeId rootResolvedNodeId,
+TypeResolver::resolveSegmentsType(basic::NodeId rootResolvedNodeId,
                               basic::NodeId pathNodeId,
                               std::shared_ptr<ast::types::TypePath> tp,
                               size_t offset, TyTy::BaseType *pathType) {

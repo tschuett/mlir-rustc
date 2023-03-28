@@ -5,6 +5,8 @@
 #include "AST/Patterns/PatternWithoutRange.h"
 #include "Resolver.h"
 
+#include <llvm/Support/FormatVariadic.h>
+
 #include <memory>
 
 using namespace rust_compiler::ast::patterns;
@@ -93,8 +95,18 @@ void PatternDeclaration::addNewBinding(std::string_view name, basic::NodeId id,
   if (identifierProductBound) {
     if (rib == RibKind::Parameter) {
       // report error
+      llvm::errs() << llvm::formatv("identifier {0} is bound more than once in "
+                                    "the same parameter list",
+                                    name)
+                          .str()
+                   << "\n";
     } else {
       // report error
+      llvm::errs() << llvm::formatv("identifier {0} is bound more than once in "
+                                    "the same pattern",
+                                    name)
+                          .str()
+                   << "\n";
     }
   }
 

@@ -205,6 +205,7 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
       insertResolvedName(typePath->getNodeId(), resolvedNodeId);
     } else if (getTypeScope().wasDeclDeclaredInCurrentScope(resolvedNodeId)) {
       insertResolvedType(typePath->getNodeId(), resolvedNodeId);
+      llvm::errs() << "it is a type" << "\n";
     } else {
       llvm_unreachable("");
     }

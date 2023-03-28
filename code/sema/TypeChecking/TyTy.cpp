@@ -75,15 +75,15 @@ bool IntType::needsGenericSubstitutions() const { return false; }
 std::string IntType::toString() const {
   switch (kind) {
   case IntKind::I8:
-    return "I8";
+    return "i8";
   case IntKind::I16:
-    return "I16";
+    return "i16";
   case IntKind::I32:
-    return "I32";
+    return "i32";
   case IntKind::I64:
-    return "I64";
+    return "i64";
   case IntKind::I128:
-    return "I28";
+    return "i28";
   }
 }
 
@@ -109,15 +109,15 @@ bool UintType::needsGenericSubstitutions() const { return false; }
 std::string UintType::toString() const {
   switch (kind) {
   case UintKind::U8:
-    return "U8";
+    return "u8";
   case UintKind::U16:
-    return "U16";
+    return "u16";
   case UintKind::U32:
-    return "U32";
+    return "u32";
   case UintKind::U64:
-    return "U64";
+    return "u64";
   case UintKind::U128:
-    return "U128";
+    return "u128";
   }
 }
 
@@ -183,5 +183,7 @@ FunctionType::FunctionType(
 
 TyTy::BaseType *FunctionType::getReturnType() const { return returnType; }
 bool FunctionType::needsGenericSubstitutions() const { return true; }
+
+std::string FunctionType::toString() const { assert(false); }
 
 } // namespace rust_compiler::sema::type_checking::TyTy
