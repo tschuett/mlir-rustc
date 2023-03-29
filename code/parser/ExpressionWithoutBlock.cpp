@@ -47,9 +47,9 @@ Parser::parseExpressionWithoutBlock(std::span<ast::OuterAttribute> outer,
   case TokenKind::Lt: {
     return parseQualifiedPathInExpression();
   }
-  case TokenKind::SquareOpen: {
-    return parseArrayExpression(outer);
-  }
+//  case TokenKind::SquareOpen: {
+//    return parseArrayExpression(outer);
+//  }
   default:
     adt::StringResult<std::shared_ptr<ast::Expression>> expr =
         parseExpression(outer, restrictions);

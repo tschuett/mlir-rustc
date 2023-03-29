@@ -10,6 +10,57 @@ using namespace rust_compiler::parser;
 using namespace rust_compiler::ast;
 using namespace rust_compiler::adt;
 
+TEST(FunctionTest, CheckFun10) {
+  std::string text = R"del(
+fn main() {
+    [0, 1, 2][1];
+}
+)del";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts};
+
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
+
+  EXPECT_TRUE(result.isOk());
+};
+
+TEST(FunctionTest, CheckFun9) {
+  std::string text = R"del(
+fn main() {
+    [55, 66, 77][1] - 66
+}
+)del";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts};
+
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
+
+  EXPECT_TRUE(result.isOk());
+};
+
+TEST(FunctionTest, CheckFun8) {
+  std::string text = R"del(
+fn main() {
+    [0][0];
+}
+)del";
+
+  TokenStream ts = lex(text, "lib.rs");
+
+  Parser parser = {ts};
+
+  Result<std::shared_ptr<rust_compiler::ast::Item>, std::string> result =
+      parser.parseFunction(std::nullopt);
+
+  EXPECT_TRUE(result.isOk());
+};
+
 TEST(FunctionTest, CheckFun7) {
   std::string text = R"del(
 fn main() {

@@ -7,7 +7,14 @@ add_executable(SemaTests
 
 llvm_map_components_to_libnames(llvm_libs Support)
 
-target_link_libraries(SemaTests lexer parser sema adt ${llvm_libs} ${GTest_LDFLAGS})
+target_link_libraries(SemaTests
+        PRIVATE
+        lexer
+        parser
+        sema
+        adt
+        ${llvm_libs}
+        ${GTest_LDFLAGS})
 
 target_include_directories(SemaTests PUBLIC ../../code/include ${GTest_INCLUDE_DIRS})
 
