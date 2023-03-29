@@ -25,4 +25,9 @@ TyTy::BaseType *unify(basic::NodeId, TyTy::WithLocation lhs,
                    commits, infers);
 }
 
+TyTy::BaseType *unifyWithSite(basic::NodeId, TyTy::WithLocation lhs,
+                              TyTy::WithLocation rhs, Location unify) {
+  assert(false && "to be implemented");
+}
+
 } // namespace rust_compiler::sema::type_checking

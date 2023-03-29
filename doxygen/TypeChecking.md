@@ -24,3 +24,18 @@ The rust compiler performs type checking in the [rustc_hir_analysis](https://doc
 # Unification
 
 # Coercion
+
+For example, &mut 42 is coerced to have type &i8 in the following:
+```c
+fn bar(_: &i8) { }
+
+fn main() {
+    bar(&mut 42);
+}
+```
+
+# Cast
+
+```c
+f as f64
+```

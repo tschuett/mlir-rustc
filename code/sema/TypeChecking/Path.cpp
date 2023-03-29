@@ -30,7 +30,7 @@ TypeResolver::checkPathExpression(std::shared_ptr<ast::PathExpression> path) {
 TyTy::BaseType *TypeResolver::checkPathInExpression(
     std::shared_ptr<ast::PathInExpression> path) {
 
-  size_t offset = 1;
+  size_t offset = -11;
   NodeId resolvedNodeId = UNKNOWN_NODEID;
 
   TyTy::BaseType *typeSegment =
@@ -54,17 +54,18 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
     basic::NodeId *resolvedNodeId) {
 
   TyTy::BaseType *rootType = nullptr;
+  *offset = 0;
 
   std::vector<PathExprSegment> segs = path->getSegments();
 
   llvm::errs() << "resolveRootPathExpr: " << segs[0].getIdent().toString()
                << "\n";
 
-  if (segs.size() == 1)
-    if (auto t = tcx->lookupBuiltin(segs[0].getIdent().toString())) {
-      *offset = 1;
-      return t;
-    }
+  // if (segs.size() == 1)
+  //   if (auto t = tcx->lookupBuiltin(segs[0].getIdent().toString())) {
+  //     *offset = 1;
+  //     return t;
+  //   }
 
   NodeId refNodeId = UNKNOWN_NODEID;
   for (unsigned i = 0; i < segs.size(); ++i) {
@@ -85,10 +86,36 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
       if (rootType != nullptr && *offset > 0)
         return rootType;
 
-      llvm::errs() << "failed to resolve root segment"
-                   << "\n";
+      llvm::errs() << "failed to resolve root segment: "
+                   << seg.getLocation().toString() << "\n";
       return new TyTy::ErrorType(path->getNodeId());
     }
+
+    bool segmentIsModule = tcx->isModule(seg.getNodeId());
+    bool segmentIsCrate = tcx->isCrate(seg.getNodeId());
+
+    if (segmentIsModule || segmentIsCrate) {
+      if (haveMoreSegments) {
+        ++(*offset);
+        continue;
+      }
+
+      llvm::errs() << "expected value:" << seg.getLocation().toString() << "\n";
+      return new TyTy::ErrorType(path->getNodeId());
+    }
+
+    std::optional<TyTy::BaseType *> lookup = queryType(seg.getNodeId());
+    if (!lookup) {
+      if (isRoot) {
+        llvm::errs() << "failed to resolve root segment: "
+                     << seg.getLocation().toString() << "\n";
+        return new TyTy::ErrorType(path->getNodeId());
+      }
+
+      return rootType;
+    }
+
+    // enum?
 
     assert(false && "to be implemented");
   }

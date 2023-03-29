@@ -5,6 +5,7 @@
 #include "AST/ClosureExpression.h"
 #include "AST/Crate.h"
 #include "AST/Expression.h"
+#include "AST/ExpressionStatement.h"
 #include "AST/ExternalItem.h"
 #include "AST/GenericParams.h"
 #include "AST/Implementation.h"
@@ -94,6 +95,8 @@ private:
   TyTy::BaseType *checkPathInExpression(std::shared_ptr<ast::PathInExpression>);
   TyTy::BaseType *checkLetStatement(std::shared_ptr<ast::LetStatement>);
   TyTy::BaseType *checkNeverType(std::shared_ptr<ast::types::NeverType>);
+  TyTy::BaseType *
+      checkExpressionStatement(std::shared_ptr<ast::ExpressionStatement>);
 
   bool validateArithmeticType(ast::ArithmeticOrLogicalExpressionKind,
                               TyTy::BaseType *t);
@@ -125,8 +128,8 @@ private:
   TyTy::BaseType *resolveSegmentsExpression(basic::NodeId rootResolvedIt,
                                             std::span<PathExprSegment> segment,
                                             size_t offset,
-                                            TyTy::BaseType *typeSegment, tyctx::NodeIdentity,
-                                            Location);
+                                            TyTy::BaseType *typeSegment,
+                                            tyctx::NodeIdentity, Location);
 
   std::optional<TyTy::BaseType *> queryType(basic::NodeId id);
 

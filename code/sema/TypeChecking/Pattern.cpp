@@ -29,7 +29,8 @@ TypeResolver::checkPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat,
   }
 
   if (infered == nullptr) {
-    llvm::errs() << "failed to check pattern declaration" << "\n";
+    llvm::errs() << "failed to check pattern declaration"
+                 << "\n";
     return new TyTy::ErrorType(pat->getNodeId());
   }
 

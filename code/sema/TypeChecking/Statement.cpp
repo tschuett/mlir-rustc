@@ -1,5 +1,7 @@
 #include "AST/Statement.h"
 
+#include "AST/Expression.h"
+#include "AST/ExpressionStatement.h"
 #include "Coercion.h"
 #include "TyTy.h"
 #include "TypeChecking.h"
@@ -23,10 +25,28 @@ TypeResolver::checkStatement(std::shared_ptr<ast::Statement> stmt) {
     return checkLetStatement(std::static_pointer_cast<LetStatement>(stmt));
   }
   case ast::StatementKind::ExpressionStatement: {
+    return checkExpressionStatement(
+        std::static_pointer_cast<ExpressionStatement>(stmt));
     assert(false && "to be implemented");
   }
   case ast::StatementKind::MacroInvocationSemi: {
     assert(false && "to be implemented");
+  }
+  }
+}
+
+TyTy::BaseType *TypeResolver::checkExpressionStatement(
+    std::shared_ptr<ast::ExpressionStatement> exprStmt) {
+  switch (exprStmt->getKind()) {
+  case ExpressionStatementKind::ExpressionWithoutBlock: {
+    return checkExpressionWithoutBlock(
+        std::static_pointer_cast<ExpressionWithoutBlock>(
+            exprStmt->getWithoutBlock()));
+  }
+  case ExpressionStatementKind::ExpressionWithBlock: {
+    return checkExpressionWithBlock(
+        std::static_pointer_cast<ExpressionWithBlock>(
+            exprStmt->getWithBlock()));
   }
   }
 }

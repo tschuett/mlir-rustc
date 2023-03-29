@@ -60,6 +60,7 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
       FunctionParamPattern pattern = param.getPattern();
       assert(pattern.hasType() && "to be implemented");
       TyTy::BaseType *paramType = checkType(pattern.getType());
+      assert(paramType->getKind() != TyTy::TypeKind::Error);
       params.push_back({pattern.getPattern(), paramType});
       tcx->insertType(param.getIdentity(), paramType);
       checkPattern(pattern.getPattern(), paramType);

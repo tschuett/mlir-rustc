@@ -139,7 +139,7 @@ TyTy::BaseType *TypeResolver::checkExpressionWithoutBlock(
 
 TyTy::BaseType *TypeResolver::checkBlockExpression(
     std::shared_ptr<ast::BlockExpression> block) {
-  assert(false && "to be implemented");
+  // assert(false && "to be implemented");
   Statements stmts = block->getExpressions();
 
   for (auto &s : stmts.getStmts()) {
@@ -155,9 +155,10 @@ TyTy::BaseType *TypeResolver::checkBlockExpression(
 
     TyTy::BaseType *stmtType = checkStatement(s);
     if (!stmtType) {
-      llvm::errs() << "failed to resolve type"
+      llvm::errs() << "failed to resolve type: " << s->getLocation().toString()
                    << "\n";
       // report error
+      return new TyTy::ErrorType(block->getNodeId());
     }
 
     if (s->getKind() == StatementKind::ExpressionStatement) {
@@ -214,13 +215,22 @@ TyTy::BaseType *TypeResolver::checkOperatorExpression(
 
 TyTy::BaseType *TypeResolver::checkArithmeticOrLogicalExpression(
     std::shared_ptr<ast::ArithmeticOrLogicalExpression> arith) {
-  assert(false && "to be implemented");
   TyTy::BaseType *lhs = checkExpression(arith->getLHS());
   TyTy::BaseType *rhs = checkExpression(arith->getRHS());
+
+  assert(lhs->getKind() != TyTy::TypeKind::Error);
+  assert(rhs->getKind() != TyTy::TypeKind::Error);
+  assert(false && "to be implemented");
+
+  // FIXME resolveIOperatorOverload
 
   if (!(validateArithmeticType(arith->getKind(), lhs) and
         validateArithmeticType(arith->getKind(), rhs))) {
     // report error
+    llvm::errs() << arith->getLocation().toString()
+                 << "cannot apply this operator to the given types"
+                 << "\n";
+    return new TyTy::ErrorType(arith->getNodeId());
   }
 
   switch (arith->getKind()) {
@@ -229,17 +239,17 @@ TyTy::BaseType *TypeResolver::checkArithmeticOrLogicalExpression(
     assert(false && "to be implemented");
   }
   default: {
-    return unify(arith->getNodeId(),
-                 TyTy::WithLocation(lhs, arith->getLHS()->getLocation()),
-                 TyTy::WithLocation(lhs, arith->getLHS()->getLocation()),
-                 arith->getLocation());
+    return unifyWithSite(
+        arith->getNodeId(),
+        TyTy::WithLocation(lhs, arith->getLHS()->getLocation()),
+        TyTy::WithLocation(lhs, arith->getLHS()->getLocation()),
+        arith->getLocation());
   }
   }
 }
 
 TyTy::BaseType *TypeResolver::checkReturnExpression(
     std::shared_ptr<ast::ReturnExpression> ret) {
-  assert(false && "to be implemented");
   Location loc = ret->hasTailExpression() ? ret->getExpression()->getLocation()
                                           : ret->getLocation();
 
