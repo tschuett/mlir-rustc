@@ -469,6 +469,18 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
     return parseIdentifierPattern();
   } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
     return parseIdentifierPattern();
+  } else if (check(TokenKind::Identifier) && check(TokenKind::Comma, 1)) {
+    return parseIdentifierPattern();
+  } else if (check(TokenKind::Identifier) && check(TokenKind::Semi, 1)) {
+    return parseIdentifierPattern();
+  } else if (check(TokenKind::Identifier) && check(TokenKind::PathSep, 1)) {
+    return parseIdentifierPattern();
+  } else if (check(TokenKind::Identifier) && check(TokenKind::Colon, 1)) {
+    return parseIdentifierPattern();
+  } else if (check(TokenKind::Identifier) && check(TokenKind::Eq, 1)) {
+    return parseIdentifierPattern();
+  } else if (check(TokenKind::Identifier) && check(TokenKind::ParenClose, 1)) {
+    return parseIdentifierPattern();
   }
 
   /*
