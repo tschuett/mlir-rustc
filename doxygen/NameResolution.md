@@ -22,6 +22,8 @@ fn foo(a: i32) {
 
 # Rib
 
+Variables, types, and labels are in different namespaces.
+
 [Rib](https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/struct.Rib.html)
 
 [RibKind](https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/enum.RibKind.html)

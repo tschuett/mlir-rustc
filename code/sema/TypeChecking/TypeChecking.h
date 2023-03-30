@@ -7,6 +7,7 @@
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/ExternalItem.h"
+#include "AST/Function.h"
 #include "AST/GenericParams.h"
 #include "AST/Implementation.h"
 #include "AST/Item.h"
@@ -48,6 +49,8 @@ using namespace rust_compiler::ast;
 class TypeCheckContextItem {
 public:
   TypeCheckContextItem(ast::Function *f) : fun(f) {}
+
+  ast::Function *getFunction() const { return fun; }
 
 private:
   ast::Function *fun;

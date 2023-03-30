@@ -61,6 +61,7 @@ add_library(ast
            OuterAttribute.cpp
            AttrInput.cpp
            InnerAttribute.cpp
+           DelimTokenTree.cpp
            )
 
 

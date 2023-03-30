@@ -6,7 +6,6 @@
 #include <memory>
 #include <vector>
 
-
 namespace rust_compiler::ast {
 
 class AttrInputMetaItemContainer;
@@ -26,6 +25,14 @@ public:
 
   AttrInputKind getKind() const;
 
+  AttrInput(const AttrInput &other);
+
+  AttrInput &operator=(const AttrInput &other);
+
+  // default move semantics
+  AttrInput(AttrInput &&other) = default;
+  AttrInput &operator=(AttrInput &&other) = default;
+
   void setTokenTree(std::shared_ptr<DelimTokenTree> _tree) {
     tree = _tree;
     kind = AttrInputKind::DelimTokenTree;
@@ -42,6 +49,8 @@ public:
   }
 
   void parseToMetaItem();
+
+  std::unique_ptr<AttrInput> clone();
 };
 
 } // namespace rust_compiler::ast

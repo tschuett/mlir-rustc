@@ -235,6 +235,8 @@ public:
   WithLocation(BaseType *type)
       : type(type), loc(Location::getEmptyLocation()) {}
 
+  BaseType *getType() const { return type; }
+
 private:
   BaseType *type;
   Location loc;

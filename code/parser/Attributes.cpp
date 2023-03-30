@@ -1,3 +1,4 @@
+#include "AST/AttrInput.h"
 #include "Parser/Parser.h"
 
 #include <llvm/Support/raw_ostream.h>
@@ -51,18 +52,15 @@ StringResult<ast::InnerAttribute> Parser::parseInnerAttribute() {
   InnerAttribute inner = {loc};
 
   if (!check(TokenKind::Hash))
-    return StringResult<ast::InnerAttribute>(
-                             "failed to parse inner attribute");
+    return StringResult<ast::InnerAttribute>("failed to parse inner attribute");
   assert(eat(TokenKind::Hash));
 
   if (!check(TokenKind::Not))
-    return StringResult<ast::InnerAttribute>(
-                             "failed to parse inner attribute");
+    return StringResult<ast::InnerAttribute>("failed to parse inner attribute");
   assert(eat(TokenKind::Not));
 
   if (!check(TokenKind::SquareOpen))
-    return StringResult<ast::InnerAttribute>(
-                             "failed to parse inner attribute");
+    return StringResult<ast::InnerAttribute>("failed to parse inner attribute");
   assert(eat(TokenKind::SquareOpen));
 
   StringResult<Attr> attr = parseAttr();
@@ -75,8 +73,7 @@ StringResult<ast::InnerAttribute> Parser::parseInnerAttribute() {
   inner.setAttr(attr.getValue());
 
   if (!check(TokenKind::SquareClose))
-    return StringResult<ast::InnerAttribute>(
-                             "failed to parse inner attribute");
+    return StringResult<ast::InnerAttribute>("failed to parse inner attribute");
   assert(eat(TokenKind::SquareClose));
 
   return StringResult<ast::InnerAttribute>(inner);
@@ -90,8 +87,8 @@ StringResult<ast::Attr> Parser::parseAttr() {
 
   StringResult<ast::SimplePath> path = parseSimplePath();
   if (!path) {
-    llvm::errs() << "failed to parse simple path  in attr: "
-                 << path.getError() << "\n";
+    llvm::errs() << "failed to parse simple path  in attr: " << path.getError()
+                 << "\n";
     printFunctionStack();
     exit(EXIT_FAILURE);
   }
@@ -106,7 +103,8 @@ StringResult<ast::Attr> Parser::parseAttr() {
       printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    attr.setAttrInput(attrInput.getValue());
+    AttrInput input = attrInput.moveValue();
+    attr.setAttrInput(std::make_unique<AttrInput>(std::move(input)));
   }
   return StringResult<ast::Attr>(attr);
 }

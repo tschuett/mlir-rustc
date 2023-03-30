@@ -16,6 +16,7 @@
 #include "Basic/Ids.h"
 #include "Resolver.h"
 
+#include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
@@ -182,9 +183,11 @@ void Resolver::resolveOperatorExpression(
     assert(false && "to be handled later");
   }
   case OperatorExpressionKind::ArithmeticOrLogicalExpression: {
+    llvm::errs() << "resolve ArithmeticOrLogicalExpression a" << "\n";
     std::shared_ptr<ArithmeticOrLogicalExpression> arith =
         std::static_pointer_cast<ArithmeticOrLogicalExpression>(op);
     resolveExpression(arith->getLHS(), prefix, canonicalPrefix);
+    llvm::errs() << "resolve ArithmeticOrLogicalExpression b" << "\n";
     resolveExpression(arith->getRHS(), prefix, canonicalPrefix);
     break;
   }
@@ -232,6 +235,8 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
   NodeId moduleScopeId = peekCurrentModuleScope();
   NodeId previousResolvedNodeId = moduleScopeId;
 
+  llvm::errs() << "resolve PathInExpression" << "\n";
+
   std::vector<PathExprSegment> segments = path->getSegments();
 
   for (size_t i = 0; i < segments.size(); ++i) {
@@ -240,6 +245,11 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
 
     if (i > 0 && ident.getKind() == PathIdentSegmentKind::self) {
       // report error
+      llvm::errs() << path->getLocation().toString()
+                   << llvm::formatv("failed to resolve {0} in paths can only "
+                                    "be used in start position",
+                                    ident.getIdentifier())
+                   << "\n";
       return std::nullopt;
     }
 
@@ -298,6 +308,10 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
           insertResolvedType(seg.getNodeId(), resolvedNode);
         } else {
           // report error
+          llvm::errs() << seg.getLocation().toString()
+                       << llvm::formatv("cannot find path {0} in this scope",
+                                        ident.getIdentifier())
+                       << "\n";
           return std::nullopt;
         }
       }
@@ -309,6 +323,10 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
       }
     } else if (i == 0) {
       // report error
+      llvm::errs() << seg.getLocation().toString()
+                   << llvm::formatv("cannot find path {0} in this scope",
+                                    ident.getIdentifier())
+                   << "\n";
       return std::nullopt;
     }
   }

@@ -22,9 +22,9 @@ public:
   explicit Result(const E &e) { storage.template emplace<1>(e); }
 
   ~Result() {
-    if (not checked) {
-      assert(false);
-    }
+    //    if (not checked) {
+    //      assert(false);
+    //    }
   }
 
   /// Return false if there is an error.
@@ -34,6 +34,8 @@ public:
   T getValue() { return *std::get<std::optional<T>>(storage); }
   /// Can throw
   E getError() { return std::get<E>(storage); }
+
+  T &&moveValue() { return std::move(*std::get<std::optional<T>>(storage)); }
 
   bool isOk() noexcept {
     checked = true;

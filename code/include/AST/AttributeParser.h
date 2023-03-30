@@ -52,6 +52,8 @@ public:
   MetaItemSequence(SimplePath path,
                    std::vector<std::unique_ptr<MetaItemInner>> sequence)
       : path(std::move(path)), sequence(std::move(sequence)) {}
+
+  MetaItemInner *clone() override;
 };
 
 class MetaItemLiteralExpression : public MetaItem {};
@@ -63,6 +65,8 @@ class MetaItemPath : public MetaItem {
 
 public:
   MetaItemPath(SimplePath path) : path(std::move(path)) {}
+
+  MetaItemInner *clone() override;
 };
 
 class AttributeParser {

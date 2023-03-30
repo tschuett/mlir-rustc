@@ -30,6 +30,7 @@ bool Rib::wasDeclDeclaredHere(basic::NodeId def) const {
 
 void Rib::insertName(const adt::CanonicalPath &path, basic::NodeId id,
                      Location loc, bool shadow, RibKind kind) {
+  llvm::errs() << "insertName: " << path.asString() << "\n";
   auto it = pathMappings.find(path);
   if (it != pathMappings.end() && !shadow)
     return;
@@ -43,6 +44,7 @@ void Rib::insertName(const adt::CanonicalPath &path, basic::NodeId id,
 
 std::optional<basic::NodeId> Rib::lookupName(const adt::CanonicalPath &ident) {
   auto it = pathMappings.find(ident);
+  llvm::errs() << "lookupName: " << ident.asString() << " " << (it == pathMappings.end()) << "\n";
   if (it == pathMappings.end())
     return std::nullopt;
 
@@ -290,11 +292,14 @@ void Resolver::insertResolvedName(NodeId ref, NodeId def) {
 }
 
 std::optional<basic::NodeId> Scope::lookup(const adt::CanonicalPath &p) {
+    llvm::errs() << "Scope::lookup: " << p.asString() << "\n";
+
   for (auto r : stack) {
     std::optional<NodeId> result = r->lookupName(p);
     if (result)
       return *result;
   }
+  llvm::errs() << "Scope::lookup: " << p.asString() << ": failed" << "\n";
   return std::nullopt;
 }
 

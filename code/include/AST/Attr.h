@@ -23,15 +23,15 @@ public:
 
   void parseMetaItem();
 
-  // no point in being defined inline as requires virtual call anyway
   Attr(const Attr &other);
 
-  // no point in being defined inline as requires virtual call anyway
   Attr &operator=(const Attr &other);
 
   // default move semantics
   Attr(Attr &&other) = default;
   Attr &operator=(Attr &&other) = default;
+
+  AttrInput *getInput() const;
 
 private:
   bool isParsedToMetaItem();

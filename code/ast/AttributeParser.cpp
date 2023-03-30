@@ -1,5 +1,6 @@
 #include "AST/AttributeParser.h"
 
+#include "AST/SimplePath.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 
@@ -9,6 +10,18 @@ using namespace rust_compiler::lexer;
 using namespace rust_compiler::adt;
 
 namespace rust_compiler::ast {
+
+MetaItemInner *MetaItemPath::clone() { return new MetaItemPath(path); }
+
+MetaItemInner *MetaItemSequence::clone() {
+  SimplePath newPath = path;
+  std::vector<std::unique_ptr<MetaItemInner>> newSequence;
+
+  for (unsigned i = 0; i < sequence.size(); ++i)
+    newSequence[i] = std::unique_ptr<MetaItemInner>(sequence[i]->clone());
+
+  return new MetaItemSequence(newPath, std::move(newSequence));
+}
 
 std::vector<std::unique_ptr<MetaItemInner>>
 AttributeParser::parseMetaItemSequence() {
@@ -117,5 +130,12 @@ Literal AttributeParser::parseLiteral() {}
 SimplePath AttributeParser::parseSimplePath() {}
 
 SimplePathSegment AttributeParser::parseSimplePathSegment() {}
+
+std::unique_ptr<MetaItemLiteralExpression>
+AttributeParser::parseMetaItemLiteralExpression() {}
+
+lexer::Token AttributeParser::peekToken(int i) { return ts.getAt(offset + i); }
+
+void AttributeParser::skipToken(int i) { offset += 1 + i; }
 
 } // namespace rust_compiler::ast
