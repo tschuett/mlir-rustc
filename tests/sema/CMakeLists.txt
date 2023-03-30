@@ -14,8 +14,10 @@ target_link_libraries(SemaTests
         sema
         adt
         ${llvm_libs}
-        ${GTest_LDFLAGS})
+        GTest::gtest
+        GTest::gtest_main
+        )
 
-target_include_directories(SemaTests PUBLIC ../../code/include ${GTest_INCLUDE_DIRS})
+target_include_directories(SemaTests PUBLIC ../../code/include ${GTEST_INCLUDE_DIRS})
 
 gtest_discover_tests(SemaTests)

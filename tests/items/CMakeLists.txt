@@ -17,9 +17,10 @@ target_link_libraries(ItemsTests
         parser
         adt
         ${llvm_libs}
-        ${GTest_LDFLAGS}
+        GTest::gtest
+        GTest::gtest_main
         )
 
-target_include_directories(ItemsTests PUBLIC ../../code/parser ../../code/include ${GTest_INCLUDE_DIRS})
+target_include_directories(ItemsTests PUBLIC ../../code/parser ../../code/include ${GTEST_INCLUDE_DIRS})
 
 gtest_discover_tests(ItemsTests)
