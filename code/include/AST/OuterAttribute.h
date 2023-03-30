@@ -14,6 +14,8 @@ public:
   OuterAttribute(Location loc) : Node(loc), attr(loc) {}
 
   void setAttr(const Attr &at) { attr = at; }
+
+  void parseToMetaItem();
 };
 
 } // namespace rust_compiler::ast

@@ -19,6 +19,7 @@ public:
 
   size_t getNrOfSegments() const { return segments.size(); }
   SimplePathSegment getSegment(size_t i) const { return segments[i]; }
+  bool isEmpty() const { return 0; }
 };
 
 } // namespace rust_compiler::ast

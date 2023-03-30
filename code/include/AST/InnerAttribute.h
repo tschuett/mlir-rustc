@@ -16,6 +16,8 @@ public:
       : Node(location), attr(location) {}
 
   void setAttr(const Attr &at) { attr = at; }
+
+  void parseToMetaItem();
 };
 
 } // namespace rust_compiler::ast

@@ -2,6 +2,7 @@
 
 #include "AST/AST.h"
 #include "AST/TokenTree.h"
+#include "Lexer/TokenStream.h"
 
 #include <memory>
 #include <vector>
@@ -16,6 +17,10 @@ public:
   DelimTokenTree(Location loc) : Node(loc){};
 
   void addTree(const TokenTree &t) { trees.push_back(t); }
+
+  bool isEmpty() const;
+
+  lexer::TokenStream toTokenStream();
 };
 
 } // namespace rust_compiler::ast

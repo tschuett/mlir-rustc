@@ -56,6 +56,10 @@ add_library(ast
            AsyncBlockExpression.cpp
            FunctionParamPattern.cpp
            Expression.cpp
+           AttributeParser.cpp
+           Attr.cpp
+           OuterAttribute.cpp
+           AttrInput.cpp
            )
 
 
