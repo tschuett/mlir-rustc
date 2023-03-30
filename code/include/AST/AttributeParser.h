@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 /// https://doc.rust-lang.org/reference/attributes.html
 
@@ -43,13 +44,26 @@ class MetaWord : public MetaItem {
 public:
 };
 
-class MetaItemSequence : public MetaItem {};
+class MetaItemSequence : public MetaItem {
+  SimplePath path;
+  std::vector<std::unique_ptr<MetaItemInner>> sequence;
+
+public:
+  MetaItemSequence(SimplePath path,
+                   std::vector<std::unique_ptr<MetaItemInner>> sequence)
+      : path(std::move(path)), sequence(std::move(sequence)) {}
+};
 
 class MetaItemLiteralExpression : public MetaItem {};
 
 class MetaItemPathLit : public MetaItem {};
 
-class MetaItemPath : public MetaItem {};
+class MetaItemPath : public MetaItem {
+  SimplePath path;
+
+public:
+  MetaItemPath(SimplePath path) : path(std::move(path)) {}
+};
 
 class AttributeParser {
   lexer::TokenStream ts;

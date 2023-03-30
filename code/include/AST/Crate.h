@@ -44,6 +44,8 @@ public:
   }
 
   void addItem(std::shared_ptr<Item> it) { items.push_back(it); }
+
+  std::vector<InnerAttribute> getInnerAttributes() const;
 };
 
 } // namespace rust_compiler::ast

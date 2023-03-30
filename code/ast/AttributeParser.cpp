@@ -97,9 +97,18 @@ std::unique_ptr<MetaItem> AttributeParser::parsePathMetaItem() {
   }
 
   if (peekToken().getKind() == TokenKind::ParenOpen) {
+    std::vector<std::unique_ptr<MetaItemInner>> metaItems =
+        parseMetaItemSequence();
+
+    return std::unique_ptr<MetaItemSequence>(
+        new MetaItemSequence(std::move(path), std::move(metaItems)));
   } else if (peekToken().getKind() == TokenKind::Eq) {
+    skipToken();
+
   } else if (peekToken().getKind() == TokenKind::Comma) {
+    return std::unique_ptr<MetaItemPath>(new MetaItemPath(std::move(path)));
   } else {
+    // report error
   }
 }
 

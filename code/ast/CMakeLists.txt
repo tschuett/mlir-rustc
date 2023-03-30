@@ -60,6 +60,7 @@ add_library(ast
            Attr.cpp
            OuterAttribute.cpp
            AttrInput.cpp
+           InnerAttribute.cpp
            )
 
 

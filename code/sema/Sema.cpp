@@ -5,6 +5,7 @@
 #include "AST/Item.h"
 #include "AST/Module.h"
 #include "AST/VisItem.h"
+#include "AttributeChecker/AttributeChecker.h"
 #include "Resolver/Resolver.h"
 #include "TyCtx/TyCtx.h"
 #include "TypeChecking/TypeChecking.h"
@@ -18,6 +19,7 @@ using namespace rust_compiler::ast;
 using namespace rust_compiler::basic;
 using namespace rust_compiler::sema::resolver;
 using namespace rust_compiler::sema::type_checking;
+using namespace rust_compiler::sema::attribute_checker;
 
 namespace rust_compiler::sema {
 
@@ -47,6 +49,8 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
   {
     TimeTraceScope scope("name resolution");
     resolver.resolveCrate(crate);
+    llvm::errs() << "Name Resolution finished"
+                 << "\n";
   }
 
   {
@@ -65,6 +69,13 @@ void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
   { TimeTraceScope scope("closure captures"); }
 
   { TimeTraceScope scope("constant evaluation"); }
+
+  {
+    TimeTraceScope scope("attribute checker");
+
+    AttributeChecker checker;
+    checker.checkCrate(crate);
+  }
 
   {
     TimeTraceScope scope("Sema");

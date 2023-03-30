@@ -16,6 +16,8 @@ public:
   void setAttr(const Attr &at) { attr = at; }
 
   void parseToMetaItem();
+
+  Attr &getAttr() const;
 };
 
 } // namespace rust_compiler::ast
