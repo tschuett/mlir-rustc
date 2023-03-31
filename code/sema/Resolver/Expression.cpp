@@ -183,12 +183,9 @@ void Resolver::resolveOperatorExpression(
     assert(false && "to be handled later");
   }
   case OperatorExpressionKind::ArithmeticOrLogicalExpression: {
-    llvm::errs() << "resolve ArithmeticOrLogicalExpression a" << "\n";
-    std::shared_ptr<ArithmeticOrLogicalExpression> arith =
-        std::static_pointer_cast<ArithmeticOrLogicalExpression>(op);
-    resolveExpression(arith->getLHS(), prefix, canonicalPrefix);
-    llvm::errs() << "resolve ArithmeticOrLogicalExpression b" << "\n";
-    resolveExpression(arith->getRHS(), prefix, canonicalPrefix);
+    resolveArithmeticOrLogicalExpression(
+        std::static_pointer_cast<ArithmeticOrLogicalExpression>(op), prefix,
+        canonicalPrefix);
     break;
   }
   case OperatorExpressionKind::ComparisonExpression: {
@@ -218,7 +215,9 @@ void Resolver::resolvePathExpression(
     std::shared_ptr<ast::PathExpression> path) {
   switch (path->getPathExpressionKind()) {
   case PathExpressionKind::PathInExpression: {
-    resolvePathInExpression(std::static_pointer_cast<PathInExpression>(path));
+    auto result = resolvePathInExpression(
+        std::static_pointer_cast<PathInExpression>(path));
+    assert(result.has_value());
     break;
   }
   case PathExpressionKind::QualifiedPathInExpression: {
@@ -235,7 +234,8 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
   NodeId moduleScopeId = peekCurrentModuleScope();
   NodeId previousResolvedNodeId = moduleScopeId;
 
-  llvm::errs() << "resolve PathInExpression" << "\n";
+  llvm::errs() << "resolve PathInExpression"
+               << "\n";
 
   std::vector<PathExprSegment> segments = path->getSegments();
 
@@ -383,6 +383,14 @@ void Resolver::resolveBlockExpression(
 
 void Resolver::verifyAssignee(std::shared_ptr<ast::Expression> assignee) {
   assert(false && "to be handled later");
+}
+
+void Resolver::resolveArithmeticOrLogicalExpression(
+    std::shared_ptr<ast::ArithmeticOrLogicalExpression> arith,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  resolveExpression(arith->getLHS(), prefix, canonicalPrefix);
+  resolveExpression(arith->getRHS(), prefix, canonicalPrefix);
 }
 
 } // namespace rust_compiler::sema::resolver

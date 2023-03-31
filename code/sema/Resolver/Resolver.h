@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ADT/CanonicalPath.h"
+#include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/ClosureExpression.h"
 #include "AST/Crate.h"
 #include "AST/Expression.h"
@@ -25,6 +26,7 @@
 #include "AST/StaticItem.h"
 #include "AST/Struct.h"
 #include "AST/StructStruct.h"
+#include "AST/Trait.h"
 #include "AST/TraitImpl.h"
 #include "AST/TupleStruct.h"
 #include "AST/Types/TupleType.h"
@@ -33,7 +35,6 @@
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
-#include "AST/Trait.h"
 #include "Basic/Ids.h"
 #include "Location.h"
 #include "TyCtx/TyCtx.h"
@@ -216,10 +217,12 @@ private:
   void resolveEnumerationItem(std::shared_ptr<ast::Enumeration>,
                               const adt::CanonicalPath &prefix,
                               const adt::CanonicalPath &canonicalPrefix);
-  void resolveEnumItem(std::shared_ptr<ast::EnumItem>, const adt::CanonicalPath &prefix,
+  void resolveEnumItem(std::shared_ptr<ast::EnumItem>,
+                       const adt::CanonicalPath &prefix,
                        const adt::CanonicalPath &canonicalPrefix);
-  void resolveTraitItem(std::shared_ptr<ast::Trait>, const adt::CanonicalPath &prefix,
-                       const adt::CanonicalPath &canonicalPrefix);
+  void resolveTraitItem(std::shared_ptr<ast::Trait>,
+                        const adt::CanonicalPath &prefix,
+                        const adt::CanonicalPath &canonicalPrefix);
 
   // expressions
   void resolveExpression(std::shared_ptr<ast::Expression>,
@@ -257,180 +260,183 @@ private:
                                 const adt::CanonicalPath &canonicalPrefix);
   void resolveQualifiedPathInExpression(
       std::shared_ptr<ast::QualifiedPathInExpression>);
+  void resolveArithmeticOrLogicalExpression(
+      std::shared_ptr<ast::ArithmeticOrLogicalExpression>,
+      const adt::CanonicalPath &prefix,
+      const adt::CanonicalPath &canonicalPrefix);
 
-  // types
-  std::optional<basic::NodeId>
-      resolveType(std::shared_ptr<ast::types::TypeExpression>);
-  std::optional<basic::NodeId>
-      resolveTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>);
-  std::optional<basic::NodeId>
-      resolveRelativeTypePath(std::shared_ptr<ast::types::TypePath>);
-  void resolveTypePathFunction(const ast::types::TypePathFn &);
 
-  // checks
-  void resolveVisibility(std::optional<ast::Visibility>);
+// types
+std::optional<basic::NodeId>
+    resolveType(std::shared_ptr<ast::types::TypeExpression>);
+std::optional<basic::NodeId>
+    resolveTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>);
+std::optional<basic::NodeId>
+    resolveRelativeTypePath(std::shared_ptr<ast::types::TypePath>);
+void resolveTypePathFunction(const ast::types::TypePathFn &);
 
-  // generics
-  void resolveWhereClause(const ast::WhereClause &);
-  void resolveGenericParams(const ast::GenericParams &,
-                            const adt::CanonicalPath &prefix,
-                            const adt::CanonicalPath &canonicalPrefix);
-  void resolveGenericArgs(const ast::GenericArgs &);
+// checks
+void resolveVisibility(std::optional<ast::Visibility>);
 
-  // patterns
-  void resolvePatternDeclarationWithBindings(
-      std::shared_ptr<ast::patterns::PatternNoTopAlt>, RibKind,
-      std::vector<PatternBinding> &bindings);
-  void
-      resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
-                                RibKind);
-  void resolvePatternDeclarationWithoutRange(
-      std::shared_ptr<ast::patterns::PatternWithoutRange>, RibKind,
-      std::vector<PatternBinding> &bindings);
-  void
-      resolvePathPatternDeclaration(std::shared_ptr<ast::patterns::PathPattern>,
-                                    RibKind);
+// generics
+void resolveWhereClause(const ast::WhereClause &);
+void resolveGenericParams(const ast::GenericParams &,
+                          const adt::CanonicalPath &prefix,
+                          const adt::CanonicalPath &canonicalPrefix);
+void resolveGenericArgs(const ast::GenericArgs &);
 
-  // statements
-  void resolveStatement(std::shared_ptr<ast::Statement>,
-                        const adt::CanonicalPath &prefix,
-                        const adt::CanonicalPath &canonicalPrefix,
-                        const adt::CanonicalPath &empty);
-  void resolveLetStatement(std::shared_ptr<ast::LetStatement>,
-                           const adt::CanonicalPath &prefix,
-                           const adt::CanonicalPath &canonicalPrefix);
-  void resolveExpressionStatement(std::shared_ptr<ast::ExpressionStatement>,
+// patterns
+void resolvePatternDeclarationWithBindings(
+    std::shared_ptr<ast::patterns::PatternNoTopAlt>, RibKind,
+    std::vector<PatternBinding> &bindings);
+void resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
+                               RibKind);
+void resolvePatternDeclarationWithoutRange(
+    std::shared_ptr<ast::patterns::PatternWithoutRange>, RibKind,
+    std::vector<PatternBinding> &bindings);
+void resolvePathPatternDeclaration(std::shared_ptr<ast::patterns::PathPattern>,
+                                   RibKind);
+
+// statements
+void resolveStatement(std::shared_ptr<ast::Statement>,
+                      const adt::CanonicalPath &prefix,
+                      const adt::CanonicalPath &canonicalPrefix,
+                      const adt::CanonicalPath &empty);
+void resolveLetStatement(std::shared_ptr<ast::LetStatement>,
+                         const adt::CanonicalPath &prefix,
+                         const adt::CanonicalPath &canonicalPrefix);
+void resolveExpressionStatement(std::shared_ptr<ast::ExpressionStatement>,
+                                const adt::CanonicalPath &prefix,
+                                const adt::CanonicalPath &canonicalPrefix);
+void resolveStructStructStatement(std::shared_ptr<ast::StructStruct>,
                                   const adt::CanonicalPath &prefix,
                                   const adt::CanonicalPath &canonicalPrefix);
-  void resolveStructStructStatement(std::shared_ptr<ast::StructStruct>,
-                                    const adt::CanonicalPath &prefix,
-                                    const adt::CanonicalPath &canonicalPrefix);
-  void resolveTupleStructStatement(std::shared_ptr<ast::TupleStruct>,
-                                   const adt::CanonicalPath &prefix,
-                                   const adt::CanonicalPath &canonicalPrefix);
+void resolveTupleStructStatement(std::shared_ptr<ast::TupleStruct>,
+                                 const adt::CanonicalPath &prefix,
+                                 const adt::CanonicalPath &canonicalPrefix);
 
-  std::optional<basic::NodeId> resolveSimplePath(const ast::SimplePath &path);
-  std::optional<basic::NodeId>
-      resolvePathInExpression(std::shared_ptr<ast::PathInExpression>);
+std::optional<basic::NodeId> resolveSimplePath(const ast::SimplePath &path);
+std::optional<basic::NodeId>
+    resolvePathInExpression(std::shared_ptr<ast::PathInExpression>);
 
-  void verifyAssignee(std::shared_ptr<ast::Expression>);
-  std::map<basic::NodeId, std::shared_ptr<ast::UseDeclaration>> useDeclarations;
-  std::map<basic::NodeId, std::shared_ptr<ast::Module>> modules;
+void verifyAssignee(std::shared_ptr<ast::Expression>);
+std::map<basic::NodeId, std::shared_ptr<ast::UseDeclaration>> useDeclarations;
+std::map<basic::NodeId, std::shared_ptr<ast::Module>> modules;
 
-  std::vector<Import> determinedImports;
+std::vector<Import> determinedImports;
 
-  //  std::map<adt::CanonicalPath,
-  //           std::pair<std::shared_ptr<ast::Module>, basic::NodeId>>
-  //      modules;
+//  std::map<adt::CanonicalPath,
+//           std::pair<std::shared_ptr<ast::Module>, basic::NodeId>>
+//      modules;
 
-  void pushNewModuleScope(basic::NodeId moduleId) {
-    currentModuleStack.push_back(moduleId);
-  }
+void pushNewModuleScope(basic::NodeId moduleId) {
+  currentModuleStack.push_back(moduleId);
+}
 
-  void popModuleScope() { currentModuleStack.pop_back(); }
+void popModuleScope() { currentModuleStack.pop_back(); }
 
-  basic::NodeId peekCurrentModuleScope() const {
-    return currentModuleStack.back();
-  }
+basic::NodeId peekCurrentModuleScope() const {
+  return currentModuleStack.back();
+}
 
-  basic::NodeId peekParentModuleScope() const {
-    assert(currentModuleStack.size() > 1);
-    return currentModuleStack.at(currentModuleStack.size() - 2);
-  }
+basic::NodeId peekParentModuleScope() const {
+  assert(currentModuleStack.size() > 1);
+  return currentModuleStack.at(currentModuleStack.size() - 2);
+}
 
-  void setUnitTypeNodeId(basic::NodeId id) { unitTyNodeId = id; }
+void setUnitTypeNodeId(basic::NodeId id) { unitTyNodeId = id; }
 
-  void insertResolvedName(basic::NodeId refId, basic::NodeId defId);
-  void insertResolvedType(basic::NodeId refId, basic::NodeId defId);
-  void insertCapturedItem(basic::NodeId id);
+void insertResolvedName(basic::NodeId refId, basic::NodeId defId);
+void insertResolvedType(basic::NodeId refId, basic::NodeId defId);
+void insertCapturedItem(basic::NodeId id);
 
-  bool declNeedsCapture(basic::NodeId declRibNodeId,
-                        basic::NodeId closureRibNodeId, const Scope &scope);
+bool declNeedsCapture(basic::NodeId declRibNodeId,
+                      basic::NodeId closureRibNodeId, const Scope &scope);
 
-  tyctx::TyCtx *tyCtx;
+tyctx::TyCtx *tyCtx;
 
-  // types
-  void generateBuiltins();
-  void setupBuiltin(std::string_view name, type_checking::TyTy::BaseType *tyty);
+// types
+void generateBuiltins();
+void setupBuiltin(std::string_view name, type_checking::TyTy::BaseType *tyty);
 
-  void insertBuiltinTypes(Rib *r);
-  std::vector<std::pair<std::string, ast::types::TypeExpression *>> &
-  getBuiltinTypes();
+void insertBuiltinTypes(Rib *r);
+std::vector<std::pair<std::string, ast::types::TypeExpression *>> &
+getBuiltinTypes();
 
-  // modules
-  basic::NodeId peekCrateModuleScope() {
-    assert(not currentModuleStack.empty());
-    return currentModuleStack.front();
-  }
+// modules
+basic::NodeId peekCrateModuleScope() {
+  assert(not currentModuleStack.empty());
+  return currentModuleStack.front();
+}
 
-  // Scopes
-  Scope &getTypeScope() { return typeScope; }
-  Scope &getLabelScope() { return labelScope; }
-  Scope &getMacroScope() { return macroScope; }
+// Scopes
+Scope &getTypeScope() { return typeScope; }
+Scope &getLabelScope() { return labelScope; }
+Scope &getMacroScope() { return macroScope; }
 
-  Scope nameScope;
-  Scope typeScope;
-  Scope labelScope;
-  Scope macroScope;
+Scope nameScope;
+Scope typeScope;
+Scope labelScope;
+Scope macroScope;
 
-  // Ribs
-  void pushNewNameRib(Rib *);
-  void pushNewTypeRib(Rib *);
-  void pushNewLabelRib(Rib *);
-  void pushNewMaroRib(Rib *);
+// Ribs
+void pushNewNameRib(Rib *);
+void pushNewTypeRib(Rib *);
+void pushNewLabelRib(Rib *);
+void pushNewMaroRib(Rib *);
 
-  // map a node to a rib
-  std::map<basic::NodeId, Rib *> nameRibs;
-  std::map<basic::NodeId, Rib *> typeRibs;
-  std::map<basic::NodeId, Rib *> labelRibs;
-  std::map<basic::NodeId, Rib *> macroRibs;
+// map a node to a rib
+std::map<basic::NodeId, Rib *> nameRibs;
+std::map<basic::NodeId, Rib *> typeRibs;
+std::map<basic::NodeId, Rib *> labelRibs;
+std::map<basic::NodeId, Rib *> macroRibs;
 
-  // keep track of the current module scope ids
-  std::vector<basic::NodeId> currentModuleStack;
+// keep track of the current module scope ids
+std::vector<basic::NodeId> currentModuleStack;
 
-  // Rest
-  basic::NodeId globalTypeNodeId;
-  basic::NodeId unitTyNodeId;
+// Rest
+basic::NodeId globalTypeNodeId;
+basic::NodeId unitTyNodeId;
 
-  // TyTy
+// TyTy
 
-  std::unique_ptr<type_checking::TyTy::UintType> u8;
-  std::unique_ptr<type_checking::TyTy::UintType> u16;
-  std::unique_ptr<type_checking::TyTy::UintType> u32;
-  std::unique_ptr<type_checking::TyTy::UintType> u64;
-  std::unique_ptr<type_checking::TyTy::UintType> u128;
+std::unique_ptr<type_checking::TyTy::UintType> u8;
+std::unique_ptr<type_checking::TyTy::UintType> u16;
+std::unique_ptr<type_checking::TyTy::UintType> u32;
+std::unique_ptr<type_checking::TyTy::UintType> u64;
+std::unique_ptr<type_checking::TyTy::UintType> u128;
 
-  std::unique_ptr<type_checking::TyTy::IntType> i8;
-  std::unique_ptr<type_checking::TyTy::IntType> i16;
-  std::unique_ptr<type_checking::TyTy::IntType> i32;
-  std::unique_ptr<type_checking::TyTy::IntType> i64;
-  std::unique_ptr<type_checking::TyTy::IntType> i128;
+std::unique_ptr<type_checking::TyTy::IntType> i8;
+std::unique_ptr<type_checking::TyTy::IntType> i16;
+std::unique_ptr<type_checking::TyTy::IntType> i32;
+std::unique_ptr<type_checking::TyTy::IntType> i64;
+std::unique_ptr<type_checking::TyTy::IntType> i128;
 
-  std::unique_ptr<type_checking::TyTy::FloatType> f32;
-  std::unique_ptr<type_checking::TyTy::FloatType> f64;
+std::unique_ptr<type_checking::TyTy::FloatType> f32;
+std::unique_ptr<type_checking::TyTy::FloatType> f64;
 
-  std::unique_ptr<type_checking::TyTy::BoolType> rbool;
+std::unique_ptr<type_checking::TyTy::BoolType> rbool;
 
-  std::unique_ptr<type_checking::TyTy::USizeType> usize;
-  std::unique_ptr<type_checking::TyTy::ISizeType> isize;
+std::unique_ptr<type_checking::TyTy::USizeType> usize;
+std::unique_ptr<type_checking::TyTy::ISizeType> isize;
 
-  std::unique_ptr<type_checking::TyTy::CharType> charType;
-  std::unique_ptr<type_checking::TyTy::StrType> strType;
-  std::unique_ptr<type_checking::TyTy::NeverType> never;
+std::unique_ptr<type_checking::TyTy::CharType> charType;
+std::unique_ptr<type_checking::TyTy::StrType> strType;
+std::unique_ptr<type_checking::TyTy::NeverType> never;
 
-  std::vector<std::pair<std::string, ast::types::TypeExpression *>> builtins;
+std::vector<std::pair<std::string, ast::types::TypeExpression *>> builtins;
 
-  ast::types::TupleType *emptyTupleType;
+ast::types::TupleType *emptyTupleType;
 
-  // captured variables by current closure
-  std::vector<basic::NodeId> closureContext;
-  std::map<basic::NodeId, std::set<basic::NodeId>> closureCaptureMappings;
+// captured variables by current closure
+std::vector<basic::NodeId> closureContext;
+std::map<basic::NodeId, std::set<basic::NodeId>> closureCaptureMappings;
 
-  // resolved items: reference -> definition
-  std::map<basic::NodeId, basic::NodeId> resolvedNames;
-  std::map<basic::NodeId, basic::NodeId> resolvedTypes;
-  std::map<basic::NodeId, basic::NodeId> resolvedLabels;
-  std::map<basic::NodeId, basic::NodeId> resolvedMacros;
+// resolved items: reference -> definition
+std::map<basic::NodeId, basic::NodeId> resolvedNames;
+std::map<basic::NodeId, basic::NodeId> resolvedTypes;
+std::map<basic::NodeId, basic::NodeId> resolvedLabels;
+std::map<basic::NodeId, basic::NodeId> resolvedMacros;
 };
 
 } // namespace rust_compiler::sema::resolver

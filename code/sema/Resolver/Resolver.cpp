@@ -286,6 +286,7 @@ void Resolver::resolveVisibility(std::optional<ast::Visibility> vis) {
 }
 
 void Resolver::insertResolvedName(NodeId ref, NodeId def) {
+  llvm::errs() << "insertResolvedName: " << ref << "->" << def << "\n";;
   resolvedNames[ref] = def;
   getNameScope().appendReferenceForDef(ref, def);
   insertCapturedItem(def);

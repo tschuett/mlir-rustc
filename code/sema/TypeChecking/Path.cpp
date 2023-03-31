@@ -4,9 +4,11 @@
 #include "Basic/Ids.h"
 #include "TyTy.h"
 #include "TypeChecking.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include "../Resolver/Resolver.h"
 
+#include <cstddef>
 #include <memory>
 
 using namespace rust_compiler::ast;
@@ -61,13 +63,31 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
   llvm::errs() << "resolveRootPathExpr: " << segs[0].getIdent().toString()
                << "\n";
 
+  NodeId refNodeId = UNKNOWN_NODEID;
+
+  if (auto name = resolver->lookupResolvedName(path->getNodeId())) {
+    refNodeId = *name;
+  } else if (auto type = resolver->lookupResolvedType(path->getNodeId())) {
+    refNodeId = *type;
+  }
+
+  if (refNodeId != UNKNOWN_NODEID) {
+    std::optional<TyTy::BaseType *> lookup = queryType(refNodeId);
+    if (!lookup) {
+      llvm::errs() << "failed to resolve root path: "
+                   << path->getLocation().toString() << "\n";
+      return new TyTy::ErrorType(path->getNodeId());
+    }
+    *offset = 1;
+    return *lookup;
+  }
+
   // if (segs.size() == 1)
   //   if (auto t = tcx->lookupBuiltin(segs[0].getIdent().toString())) {
   //     *offset = 1;
   //     return t;
   //   }
 
-  NodeId refNodeId = UNKNOWN_NODEID;
   for (unsigned i = 0; i < segs.size(); ++i) {
     PathExprSegment &seg = segs[0];
     bool isRoot = *offset == 0;
@@ -88,6 +108,7 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
 
       llvm::errs() << "failed to resolve root segment: "
                    << seg.getLocation().toString() << "\n";
+      llvm::errs() << seg.getNodeId() << "\n";
       return new TyTy::ErrorType(path->getNodeId());
     }
 
