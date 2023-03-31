@@ -66,6 +66,8 @@ public:
   virtual bool needsGenericSubstitutions() const = 0;
   virtual std::string toString() const = 0;
 
+  virtual unsigned getNumberOfSpecifiedBounds() = 0;
+
 protected:
   BaseType(basic::NodeId ref, basic::NodeId ty_ref, TypeKind kind,
            TypeIdentity ident);
@@ -83,7 +85,9 @@ public:
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
+  unsigned getNumberOfSpecifiedBounds() override;
 
+  IntKind getIntKind() const;
 private:
   IntKind kind;
 };
@@ -94,6 +98,7 @@ public:
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
+  unsigned getNumberOfSpecifiedBounds() override;
 
 private:
   UintKind kind;
@@ -105,6 +110,7 @@ public:
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
+  unsigned getNumberOfSpecifiedBounds() override;
 };
 
 class ISizeType : public BaseType {
@@ -113,6 +119,7 @@ public:
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
+  unsigned getNumberOfSpecifiedBounds() override;
 };
 
 class FloatType : public BaseType {
@@ -121,6 +128,7 @@ public:
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
+  unsigned getNumberOfSpecifiedBounds() override;
 
 private:
   FloatKind kind;
@@ -133,6 +141,8 @@ public:
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
+
+  unsigned getNumberOfSpecifiedBounds() override;
 };
 
 class CharType : public BaseType {
@@ -141,6 +151,8 @@ public:
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
+
+  unsigned getNumberOfSpecifiedBounds() override;
 };
 
 class StrType : public BaseType {
@@ -149,6 +161,8 @@ public:
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
+
+  unsigned getNumberOfSpecifiedBounds() override;
 };
 
 /// !
@@ -158,6 +172,8 @@ public:
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
+
+  unsigned getNumberOfSpecifiedBounds() override;
 };
 
 /// (.., .., ..)
@@ -167,6 +183,7 @@ public:
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
+  unsigned getNumberOfSpecifiedBounds() override;
 
   static TupleType *getUnitType(basic::NodeId);
 
@@ -190,6 +207,9 @@ public:
   TyTy::BaseType *getReturnType() const;
 
   bool needsGenericSubstitutions() const override;
+
+  unsigned getNumberOfSpecifiedBounds() override;
+
 
 private:
   basic::NodeId id;
@@ -216,6 +236,7 @@ public:
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
+    unsigned getNumberOfSpecifiedBounds() override;
 
 private:
   InferKind inferKind;
@@ -227,6 +248,8 @@ public:
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
+    unsigned getNumberOfSpecifiedBounds() override;
+
 };
 
 class WithLocation {

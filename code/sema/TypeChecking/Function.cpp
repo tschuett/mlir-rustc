@@ -32,7 +32,7 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
   TyTy::BaseType *retType = nullptr;
   Location returnTypeLoc = Location::getEmptyLocation();
   if (f->hasReturnType()) {
-    TyTy::BaseType *retType = checkType(f->getReturnType());
+    retType = checkType(f->getReturnType());
     assert(retType);
     if (retType->getKind() == TyTy::TypeKind::Error) {
       // report error
@@ -80,6 +80,8 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
   assert(path.has_value());
 
   tyctx::ItemIdentity identity = {*path, f->getLocation()};
+
+  assert(retType != nullptr);
 
   TyTy::FunctionType *funType = new TyTy::FunctionType(
       f->getNodeId(), f->getName(), identity, params, retType, substitutions);

@@ -129,6 +129,7 @@ TyTy::BaseType *TypeResolver::peekReturnType() {
 
 void TypeResolver::pushReturnType(TypeCheckContextItem item,
                                   TyTy::BaseType *returnType) {
+  assert(returnType != nullptr);
   returnTypeStack.push_back({std::move(item), returnType});
 }
 void TypeResolver::popReturnType() {

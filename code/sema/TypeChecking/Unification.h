@@ -18,6 +18,7 @@ public:
                         std::vector<InferenceSite> &infers);
 
 private:
+  TyTy::BaseType *expectIntType(TyTy::IntType *left, TyTy::BaseType *right);
 };
 
 TyTy::BaseType *unify(basic::NodeId, TyTy::WithLocation lhs,

@@ -12,6 +12,7 @@
 #include "TypeChecking.h"
 #include "Unification.h"
 
+#include <cassert>
 #include <memory>
 
 using namespace rust_compiler::ast;
@@ -220,9 +221,11 @@ TyTy::BaseType *TypeResolver::checkArithmeticOrLogicalExpression(
 
   assert(lhs->getKind() != TyTy::TypeKind::Error);
   assert(rhs->getKind() != TyTy::TypeKind::Error);
-  assert(false && "to be implemented");
 
   // FIXME resolveIOperatorOverload
+  bool operatorOverloaded =
+      resolveOperatorOverload(arith->getKind(), arith, lhs, rhs);
+  assert(operatorOverloaded);
 
   if (!(validateArithmeticType(arith->getKind(), lhs) and
         validateArithmeticType(arith->getKind(), rhs))) {
@@ -254,6 +257,8 @@ TyTy::BaseType *TypeResolver::checkReturnExpression(
                                           : ret->getLocation();
 
   TyTy::BaseType *functionReturnTye = peekReturnType();
+
+  assert(functionReturnTye != nullptr);
 
   TyTy::BaseType *ty = nullptr;
   if (ret->hasTailExpression()) {
@@ -331,6 +336,15 @@ bool TypeResolver::validateArithmeticType(
     }
   }
   }
+}
+
+bool TypeResolver::resolveOperatorOverload(
+    ArithmeticOrLogicalExpressionKind,
+    std::shared_ptr<ast::ArithmeticOrLogicalExpression>,
+    TyTy::BaseType*, TyTy::BaseType*) {
+  //assert(false);
+  // FIXME
+  return true;
 }
 
 } // namespace rust_compiler::sema::type_checking

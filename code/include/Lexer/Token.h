@@ -112,7 +112,8 @@ enum class TokenKind {
   ShrEq,
   OrEq,
   FatArrow,
-  Dollar
+  Dollar,
+  Tilde
 };
 
 class Token {

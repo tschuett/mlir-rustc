@@ -65,6 +65,8 @@ std::string FloatType::toString() const {
   }
 }
 
+IntKind IntType::getIntKind() const { return kind; }
+
 bool FloatType::needsGenericSubstitutions() const { return false; }
 
 IntType::IntType(basic::NodeId id, IntKind kind)
@@ -135,6 +137,8 @@ bool StrType::needsGenericSubstitutions() const { return false; }
 
 std::string StrType::toString() const { return "str"; }
 
+unsigned StrType::getNumberOfSpecifiedBounds() { return 0; }
+
 TupleType::TupleType(basic::NodeId id, Location loc)
     : BaseType(id, id, TypeKind::Tuple, TypeIdentity::from(loc)) {}
 
@@ -185,5 +189,29 @@ TyTy::BaseType *FunctionType::getReturnType() const { return returnType; }
 bool FunctionType::needsGenericSubstitutions() const { return true; }
 
 std::string FunctionType::toString() const { assert(false); }
+
+unsigned NeverType::getNumberOfSpecifiedBounds() { return 0; }
+
+unsigned CharType::getNumberOfSpecifiedBounds() { return 0; }
+
+unsigned ISizeType::getNumberOfSpecifiedBounds() { return 0; }
+
+unsigned USizeType::getNumberOfSpecifiedBounds() { return 0; }
+
+unsigned BoolType::getNumberOfSpecifiedBounds() { return 0; }
+
+unsigned FloatType::getNumberOfSpecifiedBounds() { return 0; }
+
+unsigned IntType::getNumberOfSpecifiedBounds() { return 0; }
+
+unsigned UintType::getNumberOfSpecifiedBounds() { return 0; }
+
+unsigned TupleType::getNumberOfSpecifiedBounds() { return 0; }
+
+unsigned FunctionType::getNumberOfSpecifiedBounds() { return 0; }
+
+unsigned ErrorType::getNumberOfSpecifiedBounds() { return 0; }
+
+unsigned InferType::getNumberOfSpecifiedBounds() { return 0; }
 
 } // namespace rust_compiler::sema::type_checking::TyTy

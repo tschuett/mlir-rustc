@@ -136,6 +136,11 @@ private:
 
   std::optional<TyTy::BaseType *> queryType(basic::NodeId id);
 
+  bool resolveOperatorOverload(
+      ArithmeticOrLogicalExpressionKind,
+      std::shared_ptr<ast::ArithmeticOrLogicalExpression>,
+      TyTy::BaseType*, TyTy::BaseType*);
+
   bool queryInProgress(basic::NodeId);
   void insertQuery(basic::NodeId);
   void queryCompleted(basic::NodeId);

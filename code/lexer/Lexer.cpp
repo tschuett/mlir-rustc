@@ -395,6 +395,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
 
     std::string ws = tryLexWhiteSpace(code);
     code.remove_prefix(ws.size());
+    columnNumber += ws.size();
 
     //    for (auto &ik : IK) {
     //      if (code.starts_with(std::get<1>(ik))) {
@@ -418,6 +419,7 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
 
     ws = tryLexWhiteSpace(code);
     code.remove_prefix(ws.size());
+    columnNumber += ws.size();
 
     if (code.starts_with("//")) {
       std::string comment = tryLexComment(code);
