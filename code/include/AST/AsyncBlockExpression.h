@@ -19,6 +19,8 @@ public:
   void setMove();
 
   void setBlock(std::shared_ptr<Expression>);
+
+  std::shared_ptr<Expression> getBlock() const { return block; };
 };
 
 } // namespace rust_compiler::ast

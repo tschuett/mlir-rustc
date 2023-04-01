@@ -88,6 +88,7 @@ public:
   unsigned getNumberOfSpecifiedBounds() override;
 
   IntKind getIntKind() const;
+
 private:
   IntKind kind;
 };
@@ -210,7 +211,6 @@ public:
 
   unsigned getNumberOfSpecifiedBounds() override;
 
-
 private:
   basic::NodeId id;
   std::string name;
@@ -236,7 +236,7 @@ public:
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
-    unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() override;
 
 private:
   InferKind inferKind;
@@ -248,8 +248,7 @@ public:
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
-    unsigned getNumberOfSpecifiedBounds() override;
-
+  unsigned getNumberOfSpecifiedBounds() override;
 };
 
 class WithLocation {
@@ -259,6 +258,8 @@ public:
       : type(type), loc(Location::getEmptyLocation()) {}
 
   BaseType *getType() const { return type; }
+
+  Location getLocation() const { return loc; }
 
 private:
   BaseType *type;

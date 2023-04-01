@@ -3,8 +3,8 @@
 #include "AST/ArrayElements.h"
 #include "AST/Expression.h"
 
-#include <vector>
 #include <optional>
+#include <vector>
 
 namespace rust_compiler::ast {
 
@@ -17,6 +17,9 @@ public:
                                ExpressionWithoutBlockKind::ArrayExpression) {}
 
   void setElements(const ArrayElements &a) { elements = a; }
+
+  bool hasArrayElements() const { return elements.has_value(); }
+  ArrayElements getArrayElements() const { return *elements; }
 };
 
 } // namespace rust_compiler::ast

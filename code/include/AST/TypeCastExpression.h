@@ -16,6 +16,8 @@ public:
 
   void setLeft(std::shared_ptr<Expression> l) { expr = l; }
   void setType(std::shared_ptr<types::TypeExpression> no) { type = no; }
+
+  std::shared_ptr<Expression> getLeft() const { return expr; }
 };
 
 } // namespace rust_compiler::ast

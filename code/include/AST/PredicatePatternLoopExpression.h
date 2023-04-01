@@ -1,6 +1,5 @@
 #pragma once
 
-#include "AST/BlockExpression.h"
 #include "AST/Expression.h"
 #include "AST/LoopExpression.h"
 #include "AST/Patterns/Patterns.h"
@@ -15,7 +14,7 @@ namespace rust_compiler::ast {
 
 class PredicatePatternLoopExpression final : public LoopExpression {
   std::shared_ptr<ast::Expression> body;
-  std::shared_ptr<patterns::Pattern> pattern;
+  std::shared_ptr<ast::patterns::Pattern> pattern;
   Scrutinee scrutinee;
   std::optional<std::string> loopLabel;
 
@@ -24,18 +23,14 @@ public:
       : LoopExpression(loc, LoopExpressionKind::PredicatePatternLoopExpression),
         scrutinee(loc) {}
 
-  //  void setCondition(std::shared_ptr<ast::Expression>);
-  //  void setBody(std::shared_ptr<ast::BlockExpression>);
-  //
-  //  std::shared_ptr<ast::Expression> getCondition() const;
-  //  std::shared_ptr<ast::BlockExpression> getBody() const;
-  //
-
-  void setPattern(std::shared_ptr<patterns::Pattern> pat) { pattern = pat; }
+  void setPattern(std::shared_ptr<ast::patterns::Pattern> pat) { pattern = pat; }
   void setScrutinee(const Scrutinee &expr) { scrutinee = expr; }
   void setBody(std::shared_ptr<Expression> bod) { body = bod; }
 
   void setLabel(std::string_view lab) { loopLabel = lab; }
+
+  Scrutinee getScrutinee() const { return scrutinee; }
+  std::shared_ptr<ast::Expression> getBody() const { return body; }
 };
 
 } // namespace rust_compiler::ast

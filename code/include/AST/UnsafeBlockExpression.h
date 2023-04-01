@@ -16,6 +16,8 @@ public:
                             ExpressionWithBlockKind::UnsafeBlockExpression) {}
 
   void setBlock(std::shared_ptr<Expression> b) { expr = b; }
+
+  std::shared_ptr<Expression> getBlock() const { return expr; }
 };
 
 } // namespace rust_compiler::ast

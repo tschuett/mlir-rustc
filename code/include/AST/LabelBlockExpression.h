@@ -20,6 +20,8 @@ public:
 
   void setLabel(std::string_view l) { loopLabel = l; }
   void setBlock(std::shared_ptr<Expression> b) { body = b; }
+
+  std::shared_ptr<Expression> getBody() const { return body; }
 };
 
 } // namespace rust_compiler::ast

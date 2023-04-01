@@ -15,6 +15,7 @@ public:
                                ExpressionWithoutBlockKind::GroupedExpression) {}
 
   void setExpression(std::shared_ptr<Expression> e) { expression = e; }
+  std::shared_ptr<Expression> getExpression() const { return expression; }
 };
 
 } // namespace rust_compiler::ast

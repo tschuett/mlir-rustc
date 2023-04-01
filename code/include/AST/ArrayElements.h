@@ -23,6 +23,12 @@ public:
   void setValue(std::shared_ptr<Expression> v) { value = v; }
   void setCount(std::shared_ptr<Expression> e) { count = e; }
   void addElement(std::shared_ptr<Expression> e) { elements.push_back(e); }
+  ArrayElementsKind getKind() const { return kind; }
+
+  std::shared_ptr<Expression> getValue() const { return value; }
+  std::vector<std::shared_ptr<Expression>> &getElements()  {
+    return elements;
+  }
 };
 
 } // namespace rust_compiler::ast

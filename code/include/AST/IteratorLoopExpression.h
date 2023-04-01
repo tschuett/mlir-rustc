@@ -8,7 +8,6 @@
 #include <optional>
 #include <string>
 
-
 namespace rust_compiler::ast {
 
 class IteratorLoopExpression final : public LoopExpression {
@@ -30,6 +29,9 @@ public:
   void setBody(const std::shared_ptr<Expression> bl) { body = bl; }
 
   void setLabel(std::string_view lab) { loopLabel = lab; }
+
+  std::shared_ptr<Expression> getBody() const { return body; }
+  std::shared_ptr<Expression> getRHS() const { return rhs; }
 };
 
 } // namespace rust_compiler::ast

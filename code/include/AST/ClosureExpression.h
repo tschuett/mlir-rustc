@@ -25,8 +25,10 @@ public:
   void setMove() { move = true; }
   void setParameters(const ClosureParameters &cp) { closureParameters = cp; }
   void setBlock(std::shared_ptr<Expression> e) { expr = e; }
-  void setExpr(std::shared_ptr<Expression> e) { expr = e; }
+  //  void setExpr(std::shared_ptr<Expression> e) { expr = e; }
   void setType(std::shared_ptr<types::TypeExpression> e) { type = e; }
+  std::shared_ptr<Expression> getBody() const { return *expr; }
+  bool hasBody() const { return expr.has_value(); }
 };
 
 } // namespace rust_compiler::ast

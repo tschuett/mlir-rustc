@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Autoderef.h"
 #include "Location.h"
 #include "TyTy.h"
 
@@ -7,15 +8,25 @@
 
 namespace rust_compiler::sema::type_checking {
 
-class CommitSite {};
-class InferenceSite {};
+class CoercionResult {
+  TyTy::BaseType *type;
 
-class Coercon {
+  std::vector<Adjustment> adjustments;
+
 public:
-  TyTy::BaseType *coercion(TyTy::WithLocation lhs, TyTy::WithLocation rhs,
-                           Location loc, bool commit, bool emitErrors,
-                           bool inference, std::vector<CommitSite> &commits,
-                           std::vector<InferenceSite> &infers);
+  TyTy::BaseType *getType() const { return type; }
+
+  std::vector<Adjustment> getAdjustments() const { return adjustments; }
+
+  bool isError() const {
+    return type == nullptr || type->getKind() == TyTy::TypeKind::Error;
+  }
+};
+
+class Coercion {
+public:
+  CoercionResult coercion(TyTy::BaseType *receiver, TyTy::BaseType *expected,
+                          Location loc, bool allowAutoderef);
 
 private:
 };

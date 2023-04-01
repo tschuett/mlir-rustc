@@ -4,6 +4,7 @@
 #include "ADT/ScopedHashTable.h"
 #include "AST/AssociatedItem.h"
 #include "Basic/Ids.h"
+#include "Sema/Autoderef.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyCtx.h"
 
@@ -105,7 +106,7 @@ public:
     resolved[id] = type;
   }
 
-  //TyTy::BaseType *peekReturnType();
+  void insertAutoderefMapping(NodeId, std::vector<sema::Adjustment>);
 
   std::optional<TyTy::BaseType *> lookupType(basic::NodeId);
   std::optional<ast::Item *> lookupItem(basic::NodeId);
@@ -138,7 +139,7 @@ private:
 
   std::map<NodeId, ast::Item *> itemMappings;
   std::map<NodeId, ast::Implementation *> implItemMapping;
-  std::map<NodeId, std::pair<ast::ExternalItem*, NodeId>> externItemMappings;
+  std::map<NodeId, std::pair<ast::ExternalItem *, NodeId>> externItemMappings;
 };
 
 } // namespace rust_compiler::tyctx
