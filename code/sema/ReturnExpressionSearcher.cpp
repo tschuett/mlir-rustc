@@ -47,7 +47,7 @@ void ReturnExpressionSearcher::visitMatchExpression(
   std::vector<std::pair<MatchArm, std::shared_ptr<Expression>>> arms =
       match->getMatchArms().getArms();
 
-  for (auto& arm: arms) {
+  for (auto &arm : arms) {
     visitExpression(arm.second.get());
     if (arm.first.hasGuard()) {
       MatchArmGuard guard = arm.first.getGuard();
@@ -358,6 +358,7 @@ void ReturnExpressionSearcher::visitExpressionStatement(
 void ReturnExpressionSearcher::visitStatement(ast::Statement *stmt) {
   switch (stmt->getKind()) {
   case StatementKind::EmptyStatement: {
+    break;
   }
   case StatementKind::ItemDeclaration: {
   }
@@ -365,6 +366,7 @@ void ReturnExpressionSearcher::visitStatement(ast::Statement *stmt) {
   }
   case StatementKind::ExpressionStatement: {
     visitExpressionStatement(static_cast<ExpressionStatement *>(stmt));
+    break;
   }
   case StatementKind::MacroInvocationSemi: {
   }
@@ -388,6 +390,8 @@ bool ReturnExpressionSearcher::containsReturnExpression(
 bool containsReturnExpression(ast::BlockExpression *block) {
   ReturnExpressionSearcher searcher;
 
+//  llvm::outs() << "containsReturnExpression: "
+//               << searcher.containsReturnExpression(block) << "\n";
   return searcher.containsReturnExpression(block);
 }
 

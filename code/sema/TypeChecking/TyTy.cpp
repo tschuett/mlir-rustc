@@ -31,8 +31,6 @@ BaseType::BaseType(basic::NodeId ref, basic::NodeId typeReference,
     : reference(ref), typeReference(typeReference), kind(kind),
       identity(ident) {}
 
-BaseType::~BaseType() {}
-
 basic::NodeId BaseType::getReference() const { return reference; }
 
 basic::NodeId BaseType::getTypeReference() const { return typeReference; }

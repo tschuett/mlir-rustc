@@ -19,7 +19,7 @@ public:
 
   void parseToMetaItem();
 
-  Attr& getAttr() const;
+  Attr getAttr() const { return attr; }
 };
 
 } // namespace rust_compiler::ast

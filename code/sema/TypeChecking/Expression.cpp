@@ -12,6 +12,8 @@
 #include "TypeChecking.h"
 #include "Unification.h"
 
+#include "../ReturnExpressionSearcher.h"
+
 #include <cassert>
 #include <memory>
 
@@ -166,15 +168,18 @@ TyTy::BaseType *TypeResolver::checkBlockExpression(
       std::shared_ptr<ExpressionStatement> es =
           std::static_pointer_cast<ExpressionStatement>(s);
       if (es->getKind() == ExpressionStatementKind::ExpressionWithBlock) {
-        // FIXME
+        // FIXME unify
       }
     }
   }
 
   if (stmts.hasTrailing())
     return checkExpression(stmts.getTrailing());
-  else
-    return TyTy::TupleType::getUnitType(block->getNodeId());
+  else if (containsReturnExpression(block.get()))
+    return new TyTy::NeverType(block->getNodeId());
+
+  // FIXME
+  return TyTy::TupleType::getUnitType(block->getNodeId());
 }
 
 TyTy::BaseType *TypeResolver::checkOperatorExpression(
@@ -340,10 +345,10 @@ bool TypeResolver::validateArithmeticType(
 
 bool TypeResolver::resolveOperatorOverload(
     ArithmeticOrLogicalExpressionKind,
-    std::shared_ptr<ast::ArithmeticOrLogicalExpression>,
-    TyTy::BaseType*, TyTy::BaseType*) {
-  //assert(false);
-  // FIXME
+    std::shared_ptr<ast::ArithmeticOrLogicalExpression>, TyTy::BaseType *,
+    TyTy::BaseType *) {
+  // assert(false);
+  //  FIXME
   return true;
 }
 

@@ -1,19 +1,24 @@
 #pragma once
 
-#include "Autoderef.h"
 #include "Location.h"
+#include "Sema/Autoderef.h"
 #include "TyTy.h"
 
 #include <vector>
 
 namespace rust_compiler::sema::type_checking {
 
-class CoercionResult {
-  TyTy::BaseType *type;
+/// https://doc.rust-lang.org/reference/type-coercions.html
 
+class CoercionResult {
   std::vector<Adjustment> adjustments;
+  TyTy::BaseType *type = nullptr;
 
 public:
+  CoercionResult(std::vector<Adjustment> adjustments, TyTy::BaseType *type)
+      : adjustments(std::move(adjustments)), type(type){};
+  CoercionResult() = default;
+
   TyTy::BaseType *getType() const { return type; }
 
   std::vector<Adjustment> getAdjustments() const { return adjustments; }
@@ -24,11 +29,14 @@ public:
 };
 
 class Coercion {
+  CoercionResult result;
+
 public:
   CoercionResult coercion(TyTy::BaseType *receiver, TyTy::BaseType *expected,
                           Location loc, bool allowAutoderef);
 
 private:
+  bool coerceToNever(TyTy::BaseType *receiver, TyTy::BaseType *expected);
 };
 
 TyTy::BaseType *coercion(basic::NodeId, TyTy::WithLocation lhs,

@@ -1,8 +1,8 @@
 #include "Coercion.h"
 
+#include "TyCtx/TyCtx.h"
 #include "TyTy.h"
 #include "Unification.h"
-#include "TyCtx/TyCtx.h"
 
 using namespace rust_compiler::tyctx;
 
@@ -11,6 +11,26 @@ namespace rust_compiler::sema::type_checking {
 CoercionResult Coercion::coercion(TyTy::BaseType *receiver,
                                   TyTy::BaseType *expected, Location loc,
                                   bool allowAutoderef) {
+//  llvm::errs() << receiver->toString() << "\n";
+//  llvm::errs() << expected->toString() << "\n";
+
+  bool success = false;
+  if (receiver->getKind() == TyTy::TypeKind::Never)
+    success = coerceToNever(receiver, expected);
+  else {
+    assert(false && "to be implemented");
+  }
+  assert(success);
+
+  return result;
+}
+
+bool Coercion::coerceToNever(TyTy::BaseType *receiver,
+                             TyTy::BaseType *expected) {
+  if (expected->getKind() == TyTy::TypeKind::Int) {
+    result = CoercionResult({}, expected);
+    return true;
+  }
   assert(false && "to be implemented");
 }
 
@@ -21,8 +41,6 @@ TyTy::BaseType *coercion(basic::NodeId, TyTy::WithLocation lhs,
 
 TyTy::BaseType *coercionWithSite(basic::NodeId id, TyTy::WithLocation lhs,
                                  TyTy::WithLocation rhs, Location unify) {
-  assert(false && "to be implemented");
-
   TyTy::BaseType *expectedType = lhs.getType();
   TyTy::BaseType *expression = rhs.getType();
 

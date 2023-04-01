@@ -76,7 +76,7 @@ Parser::parseClosureExpression(std::span<ast::OuterAttribute> outer) {
       printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    clos.setExpr(expr.getValue());
+    clos.setBlock(expr.getValue());
     return StringResult<std::shared_ptr<ast::Expression>>(
         std::make_shared<ClosureExpression>(clos));
   }

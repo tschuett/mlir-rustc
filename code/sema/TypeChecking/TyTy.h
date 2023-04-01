@@ -52,9 +52,9 @@ private:
   basic::NodeId id;
 };
 
-class BaseType { // : public TypeBoundsMapping
+class BaseType {
 public:
-  virtual ~BaseType();
+  virtual ~BaseType() = default;
 
   basic::NodeId getReference() const;
   basic::NodeId getTypeReference() const;

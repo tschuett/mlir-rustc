@@ -8,12 +8,10 @@ using namespace rust_compiler::ast;
 namespace rust_compiler::sema::attribute_checker {
 
 void AttributeChecker::checkCrate(std::shared_ptr<ast::Crate> crate) {
-  assert(false);
-
   std::vector<InnerAttribute> inner = crate->getInnerAttributes();
 
   for (auto &inn : inner) {
-    Attr &attr = inn.getAttr();
+    Attr attr = inn.getAttr();
     attr.parseMetaItem();
 
     AttrInput *input = attr.getInput();
@@ -50,7 +48,7 @@ void AttributeChecker::checkVisItem(VisItem *item) {
   }
   case VisItemKind::Function: {
     checkFunction(static_cast<Function*>(item));
-    assert(false);
+    break;
   }
   case VisItemKind::TypeAlias: {
     assert(false);

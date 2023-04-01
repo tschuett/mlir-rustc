@@ -7,7 +7,7 @@ void AttributeChecker::checkFunction(Function *item) {
   for (auto &outer : item->getOuterAttributes()) {
   }
 
-  assert(false);
+  //assert(false);
 }
 
 } // namespace rust_compiler::sema::attribute_checker

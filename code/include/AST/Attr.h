@@ -31,7 +31,7 @@ public:
   Attr(Attr &&other) = default;
   Attr &operator=(Attr &&other) = default;
 
-  AttrInput *getInput() const;
+  AttrInput *getInput() const { return attrInput.get(); }
 
 private:
   bool isParsedToMetaItem();

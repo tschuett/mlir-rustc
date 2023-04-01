@@ -140,6 +140,8 @@ private:
   std::map<NodeId, ast::Item *> itemMappings;
   std::map<NodeId, ast::Implementation *> implItemMapping;
   std::map<NodeId, std::pair<ast::ExternalItem *, NodeId>> externItemMappings;
+
+  std::map<NodeId, std::vector<sema::Adjustment>> autoderefMappings;
 };
 
 } // namespace rust_compiler::tyctx

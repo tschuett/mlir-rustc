@@ -181,4 +181,9 @@ TyCtx::lookupAssociatedItem(basic::NodeId implId) {
   assert(false);
 }
 
+void TyCtx::insertAutoderefMapping(NodeId id, std::vector<sema::Adjustment> ad) {
+  assert(autoderefMappings.find(id) == autoderefMappings.end());
+  autoderefMappings.emplace(id, std::move(ad));
+}
+
 } // namespace rust_compiler::tyctx
