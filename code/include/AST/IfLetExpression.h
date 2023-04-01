@@ -7,6 +7,8 @@
 
 namespace rust_compiler::ast {
 
+enum struct IfLetExpressionKind { NoElse, ElseBlock, ElseIf, ElseIfLet };
+
 class IfLetExpression final : public ExpressionWithBlock {
   std::shared_ptr<ast::patterns::Pattern> pattern;
   Scrutinee scrutinee;
@@ -14,6 +16,7 @@ class IfLetExpression final : public ExpressionWithBlock {
   std::shared_ptr<ast::Expression> trailingBlock;
   std::shared_ptr<ast::Expression> trailingIf;
   std::shared_ptr<ast::Expression> trailingIfLet;
+  IfLetExpressionKind kind = IfLetExpressionKind::NoElse;
 
 public:
   IfLetExpression(Location loc)
@@ -24,17 +27,34 @@ public:
     pattern = _pattern;
   }
 
+  IfLetExpressionKind getKind() const { return kind; }
+
   void setScrutinee(ast::Scrutinee _scrutinee) { scrutinee = _scrutinee; }
 
   void setBlock(std::shared_ptr<ast::Expression> _block) { block = _block; }
 
   void setTailBlock(std::shared_ptr<ast::Expression> block) {
     trailingBlock = block;
+    kind = IfLetExpressionKind::ElseBlock;
   }
 
-  void setIf(std::shared_ptr<ast::Expression> _if) { trailingIf = _if; }
+  std::shared_ptr<ast::Expression> getTailBlock() const { return block; }
 
-  void setIfLet(std::shared_ptr<ast::Expression> _if) { trailingIfLet = _if; }
+  void setIf(std::shared_ptr<ast::Expression> _if) {
+    trailingIf = _if;
+    kind = IfLetExpressionKind::ElseIf;
+  }
+
+  std::shared_ptr<ast::Expression> getIf() const { return trailingIf; }
+
+  void setIfLet(std::shared_ptr<ast::Expression> _if) {
+    trailingIfLet = _if;
+    kind = IfLetExpressionKind::ElseIfLet;
+  }
+
+  std::shared_ptr<ast::Expression> getIfLet() const { return trailingIfLet; }
+
+  std::shared_ptr<ast::Expression> getBlock() const { return block; }
 };
 
 } // namespace rust_compiler::ast

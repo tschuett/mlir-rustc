@@ -13,6 +13,8 @@ class ExpressionWithBlock;
 class IteratorLoopExpression;
 class ClosureExpression;
 class ArrayExpression;
+class IfLetExpression;
+class MatchExpression;
 } // namespace rust_compiler::ast
 
 namespace rust_compiler::sema {
@@ -37,6 +39,8 @@ private:
   void visitIteratorLoopExpression(ast::IteratorLoopExpression *);
   void visitClosureExpression(ast::ClosureExpression *);
   void visitArrayExpression(ast::ArrayExpression *);
+  void visitIfLetExpression(ast::IfLetExpression *stmt);
+  void visitMatchExpression(ast::MatchExpression *);
 };
 
 bool containsReturnExpression(ast::BlockExpression *block);

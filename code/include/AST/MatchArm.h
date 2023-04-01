@@ -28,6 +28,10 @@ public:
   }
 
   void setGuard(const MatchArmGuard &ar) { guard = ar; }
+
+  bool hasGuard() const { return guard.has_value(); }
+
+  MatchArmGuard getGuard() const { return *guard; }
 };
 
 } // namespace rust_compiler::ast

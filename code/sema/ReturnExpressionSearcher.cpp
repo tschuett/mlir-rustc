@@ -8,6 +8,7 @@
 #include "AST/AwaitExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/BorrowExpression.h"
+#include "AST/ClosureExpression.h"
 #include "AST/ComparisonExpression.h"
 #include "AST/CompoundAssignmentExpression.h"
 #include "AST/DereferenceExpression.h"
@@ -15,11 +16,14 @@
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/GroupedExpression.h"
+#include "AST/IfExpression.h"
+#include "AST/IfLetExpression.h"
 #include "AST/InfiniteLoopExpression.h"
 #include "AST/IteratorLoopExpression.h"
 #include "AST/LabelBlockExpression.h"
 #include "AST/LazyBooleanExpression.h"
 #include "AST/LoopExpression.h"
+#include "AST/MatchExpression.h"
 #include "AST/NegationExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/PredicateLoopExpression.h"
@@ -28,7 +32,6 @@
 #include "AST/Statement.h"
 #include "AST/TypeCastExpression.h"
 #include "AST/UnsafeBlockExpression.h"
-#include "AST/ClosureExpression.h"
 
 #include <memory>
 
@@ -36,15 +39,53 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::sema {
 
+void ReturnExpressionSearcher::visitMatchExpression(
+    ast::MatchExpression *match) {
+  Scrutinee scrut = match->getScrutinee();
+  visitExpression(scrut.getExpression().get());
+
+  std::vector<std::pair<MatchArm, std::shared_ptr<Expression>>> arms =
+      match->getMatchArms().getArms();
+
+  for (auto& arm: arms) {
+    visitExpression(arm.second.get());
+    if (arm.first.hasGuard()) {
+      MatchArmGuard guard = arm.first.getGuard();
+      visitExpression(guard.getGuard().get());
+    }
+  }
+}
+
+void ReturnExpressionSearcher::visitIfLetExpression(IfLetExpression *stmt) {
+  visitExpression(stmt->getBlock().get());
+  switch (stmt->getKind()) {
+  case IfLetExpressionKind::NoElse: {
+    break;
+  }
+  case IfLetExpressionKind::ElseBlock: {
+    visitExpression(stmt->getTailBlock().get());
+    break;
+  }
+  case IfLetExpressionKind::ElseIf: {
+    visitExpression(stmt->getIf().get());
+    break;
+  }
+  case IfLetExpressionKind::ElseIfLet: {
+    visitExpression(stmt->getIfLet().get());
+    break;
+  }
+  }
+}
+
 void ReturnExpressionSearcher::visitArrayExpression(ast::ArrayExpression *arr) {
   if (!arr->hasArrayElements())
-    return ;
+    return;
 
   ArrayElements elements = arr->getArrayElements();
-  switch(elements.getKind()) {
+  switch (elements.getKind()) {
   case ArrayElementsKind::List: {
-    std::vector<std::shared_ptr<Expression>> & el = elements.getElements();
-    for (auto value: el)
+    std::vector<std::shared_ptr<Expression>> &el = elements.getElements();
+    for (auto value : el)
       visitExpression(value.get());
     break;
   }
@@ -185,12 +226,16 @@ void ReturnExpressionSearcher::visitExpressionWithoutBlock(
     break;
   }
   case ExpressionWithoutBlockKind::IndexExpression: {
+    break;
   }
   case ExpressionWithoutBlockKind::TupleExpression: {
+    break;
   }
   case ExpressionWithoutBlockKind::TupleIndexingExpression: {
+    break;
   }
   case ExpressionWithoutBlockKind::StructExpression: {
+    break;
   }
   case ExpressionWithoutBlockKind::CallExpression: {
     break;
@@ -199,6 +244,7 @@ void ReturnExpressionSearcher::visitExpressionWithoutBlock(
     break;
   }
   case ExpressionWithoutBlockKind::FieldExpression: {
+    break;
   }
   case ExpressionWithoutBlockKind::ClosureExpression: {
     visitClosureExpression(static_cast<ClosureExpression *>(stmt));
@@ -210,10 +256,13 @@ void ReturnExpressionSearcher::visitExpressionWithoutBlock(
     break;
   }
   case ExpressionWithoutBlockKind::ContinueExpression: {
+    break;
   }
   case ExpressionWithoutBlockKind::BreakExpression: {
+    break;
   }
   case ExpressionWithoutBlockKind::RangeExpression: {
+    break;
   }
   case ExpressionWithoutBlockKind::ReturnExpression: {
     foundReturn = true;
@@ -223,6 +272,10 @@ void ReturnExpressionSearcher::visitExpressionWithoutBlock(
     return;
   }
   case ExpressionWithoutBlockKind::MacroInvocation: {
+    break;
+  }
+  case ExpressionWithoutBlockKind::PathExpression: {
+    break;
   }
   }
 }
@@ -269,10 +322,19 @@ void ReturnExpressionSearcher::visitExpressionWithBlock(
     break;
   }
   case ExpressionWithBlockKind::IfExpression: {
+    IfExpression *ifExpr = static_cast<IfExpression *>(stmt);
+    visitExpression(ifExpr->getBlock().get());
+    if (ifExpr->hasTrailing())
+      visitExpression(ifExpr->getTrailing().get());
+    break;
   }
   case ExpressionWithBlockKind::IfLetExpression: {
+    visitIfLetExpression(static_cast<IfLetExpression *>(stmt));
+    break;
   }
   case ExpressionWithBlockKind::MatchExpression: {
+    visitMatchExpression(static_cast<MatchExpression *>(stmt));
+    break;
   }
   }
 }
