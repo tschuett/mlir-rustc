@@ -18,6 +18,8 @@ public:
 
   void setToken(const lexer::Token &t) { token = t; }
   void setTree(std::shared_ptr<DelimTokenTree> delim) { tree = delim; }
+
+  std::vector<lexer::Token> toTokenStream();
 };
 
 } // namespace rust_compiler::ast

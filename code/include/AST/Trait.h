@@ -19,9 +19,11 @@
 
 namespace rust_compiler::ast {
 
+using namespace rust_compiler::lexer;
+
 class Trait : public VisItem {
   bool unsafe;
-  std::string identifier;
+  Identifier identifier;
   std::optional<GenericParams> genericParams;
   std::optional<types::TypeParamBounds> typeParamBounds;
   std::optional<WhereClause> whereClause;
@@ -36,7 +38,7 @@ public:
   std::span<std::shared_ptr<AssociatedItem>> getAssociatedItems() const;
 
   void setUnsafe() { unsafe = true; }
-  void setIdentifier(std::string_view id) { identifier = id; }
+  void setIdentifier(const Identifier &id) { identifier = id; }
   void setGenericParams(const GenericParams &p) { genericParams = p; }
 
   void setBounds(const types::TypeParamBounds &b) { typeParamBounds = b; }
@@ -44,9 +46,7 @@ public:
 
   void setInner(std::vector<InnerAttribute> &inn) { innerAttributes = inn; }
 
-  void addItem(const AssociatedItem& item) {
-    associatedItem.push_back(item);
-  }
+  void addItem(const AssociatedItem &item) { associatedItem.push_back(item); }
 };
 
 } // namespace rust_compiler::ast

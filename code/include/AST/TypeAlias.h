@@ -12,8 +12,10 @@
 
 namespace rust_compiler::ast {
 
+using namespace rust_compiler::lexer;
+
 class TypeAlias : public VisItem {
-  std::string identifier;
+  Identifier identifier;
   std::optional<GenericParams> genericParams;
   std::optional<types::TypeParamBounds> typeParamBounds;
   std::optional<WhereClause> whereClause;
@@ -25,7 +27,7 @@ public:
   TypeAlias(Location loc, std::optional<Visibility> vis)
       : VisItem(loc, VisItemKind::TypeAlias, vis) {}
 
-  void setIdentifier(std::string_view s) { identifier = s; }
+  void setIdentifier(const Identifier &s) { identifier = s; }
   void setGenericParams(const GenericParams &gp) { genericParams = gp; }
   void setParamBounds(const types::TypeParamBounds &tpb) {
     typeParamBounds = tpb;

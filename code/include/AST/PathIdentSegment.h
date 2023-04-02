@@ -1,10 +1,13 @@
 #pragma once
 
 #include "AST/AST.h"
+#include "Lexer/Identifier.h"
 
 #include <string_view>
 
 namespace rust_compiler::ast {
+
+using namespace rust_compiler::lexer;
 
 enum class PathIdentSegmentKind {
   Identifier,
@@ -17,14 +20,14 @@ enum class PathIdentSegmentKind {
 
 class PathIdentSegment : public Node {
   PathIdentSegmentKind kind;
-  std::string identifier;
+  Identifier identifier;
 
 public:
   PathIdentSegment(Location loc) : Node(loc) {}
 
   PathIdentSegmentKind getKind() const { return kind; }
 
-  void setIdentifier(std::string_view i) {
+  void setIdentifier(const Identifier &i) {
     kind = PathIdentSegmentKind::Identifier;
     identifier = i;
   }
@@ -35,12 +38,12 @@ public:
   void setCrate() { kind = PathIdentSegmentKind::crate; }
   void setDollarCrate() { kind = PathIdentSegmentKind::dollarCrate; }
 
-  std::string getIdentifier() const { return identifier; }
+  Identifier getIdentifier() const { return identifier; }
 
   std::string toString() const {
-    switch(kind) {
+    switch (kind) {
     case PathIdentSegmentKind::Identifier:
-      return identifier;
+      return identifier.toString();
     case PathIdentSegmentKind::super:
       return "super";
     case PathIdentSegmentKind::self:

@@ -1,9 +1,18 @@
 #include "AST/DelimTokenTree.h"
 
+using namespace rust_compiler::lexer;
+
 namespace rust_compiler::ast {
 
 bool DelimTokenTree::isEmpty() const { return trees.size() == 0; }
 
-lexer::TokenStream DelimTokenTree::toTokenStream() { assert(false); }
+std::vector<lexer::Token> DelimTokenTree::toTokenStream() {
+  std::vector<Token> tokens;
+  for (TokenTree &tree : trees) {
+    std::vector<Token> stream = tree.toTokenStream();
+    tokens.insert(tokens.end(), stream.begin(), stream.end());
+  }
+  return tokens;
+}
 
 } // namespace rust_compiler::ast

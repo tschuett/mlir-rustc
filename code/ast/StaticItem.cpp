@@ -6,7 +6,7 @@ namespace rust_compiler::ast {
 
 void StaticItem::setMut() { mut = true; }
 
-void StaticItem::setIdentifier(std::string_view _id) { identifier = _id; }
+void StaticItem::setIdentifier(const Identifier& _id) { identifier = _id; }
 
 void StaticItem::setType(std::shared_ptr<types::TypeExpression> _type) {
   type = _type;

@@ -12,25 +12,25 @@ void printTokenState(std::span<lexer::Token> tokens) {
   llvm::errs() << "next token@%" << tokens.size() << "\n";
 
   if (tokens[0].isIdentifier()) {
-    llvm::errs() << tokens[0].getIdentifier().c_str() << " ";
+    llvm::errs() << tokens[0].getIdentifier().toString().c_str() << " ";
   } else {
     llvm::errs() << Token2String(tokens[0].getKind()).c_str() << "";
   }
 
   if (tokens[1].isIdentifier()) {
-    llvm::errs() << tokens[1].getIdentifier().c_str() << " ";
+    llvm::errs() << tokens[1].getIdentifier().toString().c_str() << " ";
   } else {
     llvm::errs() << Token2String(tokens[1].getKind()).c_str() << " ";
   }
 
   if (tokens[2].isIdentifier()) {
-    llvm::errs() << tokens[2].getIdentifier().c_str() << " ";
+    llvm::errs() << tokens[2].getIdentifier().toString().c_str() << " ";
   } else {
     llvm::errs() << Token2String(tokens[2].getKind()).c_str() << " ";
   }
 
   if (tokens[3].isIdentifier()) {
-    llvm::errs() << tokens[3].getIdentifier().c_str() << " ";
+    llvm::errs() << tokens[3].getIdentifier().toString().c_str() << " ";
   } else {
     llvm::errs() << Token2String(tokens[3].getKind()).c_str() << " ";
   }

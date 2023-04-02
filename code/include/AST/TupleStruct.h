@@ -10,8 +10,10 @@
 
 namespace rust_compiler::ast {
 
+using namespace rust_compiler::lexer;
+
 class TupleStruct : public Struct {
-  std::string identifier;
+  Identifier identifier;
   std::optional<GenericParams> genericParms;
   std::optional<TupleFields> tupleFields;
   std::optional<WhereClause> whereClause;
@@ -20,12 +22,12 @@ public:
   TupleStruct(Location loc, std::optional<Visibility> vis)
       : Struct(loc, StructKind::TupleStruct2, vis) {}
 
-  void setIdentifier(std::string_view id) { identifier = id; }
+  void setIdentifier(const Identifier& id) { identifier = id; }
   void setGenericParams(const GenericParams &gp) { genericParms = gp; }
   void setWhereClause(const WhereClause &w) { whereClause = w; }
   void setTupleFields(const TupleFields &tp) { tupleFields = tp; }
 
-  std::string getName() const { return identifier; }
+  std::string getName() const { return identifier.toString(); }
 
   bool hasGenerics() const { return genericParms.has_value(); }
   GenericParams getGenericParams() const { return *genericParms; };

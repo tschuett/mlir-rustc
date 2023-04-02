@@ -1,5 +1,6 @@
 #include "Lexer/Lexer.h"
 #include "Lexer/Token.h"
+#include "llvm/Support/ErrorHandling.h"
 #include "unicode/uchar.h"
 
 namespace rust_compiler::lexer {
@@ -24,9 +25,11 @@ Token Lexer::advanceToken() {
 
   switch (next) {
 
-  case 'r':
+  case 'r': {
     if (peek() == '#' && isIdStart(1))
       return lexRawIdentifier();
+    break;
+  }
 
   case 'b': {
     if (peek() == '\'')
@@ -115,9 +118,12 @@ Token Lexer::advanceToken() {
     if (!isASCII() && isEmoji())
       return lexFakeIdentifierOrUnknownPrefix();
     // Error report
+    llvm::errs() << "unknown token: " << next << "\n";
+    assert(false);
   }
   }
   }
+  llvm_unreachable("unknown token");
 }
 
 bool Lexer::isIdStart(int i) {
@@ -133,6 +139,7 @@ UChar32 Lexer::getUchar(int i) {
   if (input < 128)
     return input; // ASCII 1 byte
   // FIXME
+  assert(false);
 }
 
 Token Lexer::lexNumericalLiteral() {

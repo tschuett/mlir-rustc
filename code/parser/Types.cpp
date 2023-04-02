@@ -965,8 +965,9 @@ PathKind Parser::testTypePathOrSimplePath() {
     } else if (checkKeyWord(KeyWordKind::KW_CRATE)) {
       assert(eatKeyWord(KeyWordKind::KW_CRATE));
       continue;
-    } else if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE)) {
-      assert(eatKeyWord(KeyWordKind::KW_DOLLARCRATE));
+    } else if (check(TokenKind::Dollar) && checkKeyWord(KeyWordKind::KW_CRATE)) {
+      assert(eat(TokenKind::Dollar));
+      assert(eatKeyWord(KeyWordKind::KW_CRATE));
       continue;
     } else if (checkKeyWord(KeyWordKind::KW_SELFTYPE)) {
       return PathKind::TypePath;

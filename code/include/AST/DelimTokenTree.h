@@ -20,7 +20,7 @@ public:
 
   bool isEmpty() const;
 
-  lexer::TokenStream toTokenStream();
+  std::vector<lexer::Token> toTokenStream();
 };
 
 } // namespace rust_compiler::ast

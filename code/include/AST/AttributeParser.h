@@ -5,9 +5,11 @@
 #include "AST/MetaItemInner.h"
 #include "AST/SimplePath.h"
 #include "AST/SimplePathSegment.h"
+#include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
 
 #include <memory>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -16,25 +18,50 @@
 namespace rust_compiler::ast {
 
 using namespace rust_compiler::adt;
+using namespace rust_compiler::lexer;
 
-class Literal {
+class AttributeLiteral {
   std::string storage;
-  LiteralExpressionKind kind;
+
+public:
+  AttributeLiteral(std::string_view, LiteralExpressionKind);
+};
+
+class AttributeLiteralExpression {
+public:
+  AttributeLiteralExpression(AttributeLiteral, Location);
 };
 
 class MetaItem : public MetaItemInner {};
 
 /// IDENTIFER = (STRING_LITERAL | RAW_STRING_LITERAL)
-class MetaNameValueStr : public MetaItem {
+class MetaNameValueString : public MetaItem {
   std::string identifier;
   Location loc;
 
   std::string str;
+
+public:
+  MetaNameValueString(std::string_view key, Location, std::string_view,
+                      Location);
+
+  MetaItemInner *clone() override;
 };
 
-class MetaListPaths : public MetaItem {};
+class MetaListPaths : public MetaItem {
+public:
+  MetaListPaths(std::string_view, Location, std::span<SimplePath>);
 
-class MetaListNameValueStr : public MetaItem {};
+  MetaItemInner *clone() override;
+};
+
+class MetaListNameValueString : public MetaItem {
+public:
+  MetaListNameValueString(std::string_view, Location,
+                          std::span<MetaNameValueString>);
+
+  MetaItemInner *clone() override;
+};
 
 /// IDENTIFIER
 class MetaWord : public MetaItem {
@@ -42,6 +69,9 @@ class MetaWord : public MetaItem {
   Location loc;
 
 public:
+  MetaWord(std::string_view word, Location loc);
+
+  MetaItemInner *clone() override;
 };
 
 class MetaItemSequence : public MetaItem {
@@ -58,7 +88,12 @@ public:
 
 class MetaItemLiteralExpression : public MetaItem {};
 
-class MetaItemPathLit : public MetaItem {};
+class MetaItemPathLit : public MetaItem {
+public:
+  MetaItemPathLit(SimplePath, AttributeLiteralExpression);
+
+  MetaItemInner *clone() override;
+};
 
 class MetaItemPath : public MetaItem {
   SimplePath path;
@@ -85,12 +120,14 @@ private:
 
   std::unique_ptr<MetaItemLiteralExpression> parseMetaItemLiteralExpression();
 
-  Literal parseLiteral();
+  std::optional<AttributeLiteral> parseLiteral();
   SimplePath parseSimplePath();
-  SimplePathSegment parseSimplePathSegment();
+  std::optional<SimplePathSegment> parseSimplePathSegment();
 
-  lexer::Token peekToken(int i = 0);
+  Token peekToken(int i = 0);
   void skipToken(int i = 0);
+
+  bool isMetaItemEnd(TokenKind kind);
 };
 
 } // namespace rust_compiler::ast

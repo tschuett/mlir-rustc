@@ -62,7 +62,7 @@ private:
 
   bool isASCII();
   bool isEmoji();
-  
+
   bool isIdStart(int i = 0);
   bool isIdContinue(int i = 0);
   UChar32 getUchar(int i = 0);

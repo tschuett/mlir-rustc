@@ -673,7 +673,7 @@ Parser::parseConstantItem(std::optional<ast::Visibility> vis) {
 
   if (check(TokenKind::Underscore)) {
     assert(eat(TokenKind::Underscore));
-    con.setIdentifier("_");
+    con.setUnderscore();
   } else if (check(TokenKind::Identifier)) {
     Token id = getToken();
     con.setIdentifier(id.getIdentifier());

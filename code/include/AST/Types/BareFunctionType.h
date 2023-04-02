@@ -6,6 +6,7 @@
 #include "AST/Types/ForLifetimes.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
+#include "llvm/Frontend/OpenMP/OMPConstants.h"
 
 #include <memory>
 #include <optional>
@@ -14,11 +15,13 @@
 
 namespace rust_compiler::ast::types {
 
+using namespace rust_compiler::lexer;
+
 class MaybeNamedParam : public Node {
   std::vector<OuterAttribute> outerAttributes;
 
   std::shared_ptr<ast::types::TypeExpression> type;
-  std::string identifier;
+  Identifier identifier;
   bool underscore = false;
 
 public:
@@ -28,7 +31,7 @@ public:
     outerAttributes = {o.begin(), o.end()};
   }
   void setType(std::shared_ptr<ast::types::TypeExpression> tt) { type = tt; }
-  void setIdentifier(std::string_view i) { identifier = i; }
+  void setIdentifier(const Identifier &i) { identifier = i; }
   void setUnderscore() { underscore = true; }
 };
 
@@ -107,7 +110,7 @@ public:
 class BareFunctionType : public TypeNoBounds {
   std::optional<ForLifetimes> forLifetimes;
   FunctionTypeQualifiers qualifiers;
-  std::string identifier;
+  //std::string identifier;
   std::optional<FunctionParametersMaybeNamedVariadic> params;
 
   std::optional<BareFunctionReturnType> returnType;

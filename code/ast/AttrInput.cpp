@@ -15,7 +15,7 @@ void AttrInput::parseToMetaItem() {
   if (tree->isEmpty())
     return;
 
-  lexer::TokenStream ts = tree->toTokenStream();
+  std::vector<lexer::Token> ts = tree->toTokenStream();
 
   AttributeParser parser = {ts};
 

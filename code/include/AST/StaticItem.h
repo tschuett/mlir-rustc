@@ -13,9 +13,11 @@
 
 namespace rust_compiler::ast {
 
+using namespace rust_compiler::lexer;
+
 class StaticItem : public VisItem {
   bool mut;
-  std::string identifier;
+  Identifier identifier;
 
   std::shared_ptr<types::TypeExpression> type;
   std::optional<std::shared_ptr<Expression>> init;
@@ -25,11 +27,11 @@ public:
       : VisItem(loc, VisItemKind::StaticItem, vis) {}
 
   void setMut();
-  void setIdentifier(std::string_view);
+  void setIdentifier(const Identifier &);
   void setType(std::shared_ptr<types::TypeExpression>);
   void setInit(std::shared_ptr<Expression>);
 
-  std::string getName() const { return identifier; }
+  std::string getName() const { return identifier.toString(); }
   std::shared_ptr<types::TypeExpression> getType() const { return type; }
   bool hasInit() const { return init.has_value(); }
   std::shared_ptr<Expression> getInit() const { return *init; }

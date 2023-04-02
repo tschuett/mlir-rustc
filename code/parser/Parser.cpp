@@ -10,8 +10,8 @@
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 
-#include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/FormatVariadic.h>
+#include <llvm/Support/raw_ostream.h>
 #include <string>
 #include <vector>
 
@@ -166,8 +166,10 @@ bool Parser::eatSimplePathSegment() {
     return eatKeyWord(KeyWordKind::KW_SELFTYPE);
   if (checkKeyWord(KeyWordKind::KW_CRATE))
     return eatKeyWord(KeyWordKind::KW_CRATE);
-  if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE))
-    return eatKeyWord(KeyWordKind::KW_DOLLARCRATE);
+  if (check(TokenKind::Dollar) && checkKeyWord(KeyWordKind::KW_CRATE, 1)) {
+    eat(TokenKind::Dollar);
+    return eatKeyWord(KeyWordKind::KW_CRATE);
+  }
   return false;
 }
 
@@ -184,8 +186,10 @@ bool Parser::eatPathIdentSegment() {
     return eatKeyWord((KeyWordKind::KW_SELFTYPE));
   if (checkKeyWord(KeyWordKind::KW_CRATE))
     return eatKeyWord((KeyWordKind::KW_CRATE));
-  if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE))
-    return eatKeyWord((KeyWordKind::KW_DOLLARCRATE));
+  if (check(TokenKind::Dollar) && checkKeyWord(KeyWordKind::KW_CRATE, 1)) {
+    eat(TokenKind::Dollar);
+    return eatKeyWord(KeyWordKind::KW_CRATE);
+  }
   return false;
 }
 
@@ -201,7 +205,8 @@ bool Parser::checkPathIdentSegment(uint8_t off) {
     return true;
   if (checkKeyWord(KeyWordKind::KW_CRATE, off))
     return true;
-  if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE, off))
+  if (check(TokenKind::Dollar, off) &&
+      checkKeyWord(KeyWordKind::KW_CRATE, off + 1))
     return true;
   return false;
 }
@@ -216,7 +221,7 @@ bool Parser::checkSimplePathSegment() {
     return true;
   if (checkKeyWord(KeyWordKind::KW_CRATE))
     return true;
-  if (checkKeyWord(KeyWordKind::KW_DOLLARCRATE))
+  if (check(TokenKind::Dollar) && checkKeyWord(KeyWordKind::KW_CRATE, 1))
     return true;
   return false;
 }
@@ -385,7 +390,7 @@ Parser::parseMod(std::optional<ast::Visibility> vis) {
     // mod foo;
     assert(eatKeyWord(lexer::KeyWordKind::KW_MOD));
     Token token = getToken();
-    std::string modName = token.getIdentifier();
+    std::string modName = token.getIdentifier().toString();
     assert(eat(lexer::TokenKind::Identifier));
     assert(eat(lexer::TokenKind::Semi));
 
@@ -403,7 +408,7 @@ Parser::parseMod(std::optional<ast::Visibility> vis) {
       check(lexer::TokenKind::BraceOpen, 2)) {
     assert(eatKeyWord(lexer::KeyWordKind::KW_MOD));
     Token token = getToken();
-    std::string modName = token.getIdentifier();
+    std::string modName = token.getIdentifier().toString();
     assert(eat(lexer::TokenKind::Identifier));
     assert(eat(lexer::TokenKind::BraceOpen));
     // mod foo {}
@@ -493,8 +498,7 @@ Parser::parseCrateModule(std::string_view crateName, basic::CrateNum crateNum) {
       printFunctionStack();
       std::string s =
           llvm::formatv("{0}\n{1}",
-                        "failed to parse item in crate : ",
-                        item.getError())
+                        "failed to parse item in crate : ", item.getError())
               .str();
       return Result<std::shared_ptr<ast::Crate>, std::string>(s);
     }
@@ -655,7 +659,7 @@ Result<ast::ConstParam, std::string> Parser::parseConstParam() {
 
   if (check(TokenKind::Identifier)) {
     Token tok = getToken();
-    param.setIdentifier(tok.getIdentifier());
+    param.setIdentifier(tok.getIdentifier().toString());
     assert(eat(TokenKind::Identifier));
   } else {
     return Result<ast::ConstParam, std::string>(
@@ -687,7 +691,7 @@ Result<ast::ConstParam, std::string> Parser::parseConstParam() {
       param.setBlock(block.getValue());
     } else if (check(TokenKind::Identifier)) {
       Token tok = getToken();
-      param.setInit(tok.getIdentifier());
+      param.setInit(tok.getIdentifier().toString());
       assert(check(TokenKind::Identifier));
     } else if (check(TokenKind::Minus)) {
       assert(check(TokenKind::Minus));
@@ -794,7 +798,7 @@ StringResult<ast::TypeParam> Parser::parseTypeParam() {
         "failed to parse identifier token in type param");
 
   Token tok = getToken();
-  param.setIdentifier(tok.getIdentifier());
+  param.setIdentifier(tok.getIdentifier().toString());
   assert(eat(TokenKind::Identifier));
 
   if (check(TokenKind::Colon) && check(TokenKind::Eq, 1)) {

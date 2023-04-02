@@ -518,7 +518,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   }
 
   Token id = getToken();
-  std::string identifier = id.getIdentifier();
+  std::string identifier = id.getIdentifier().toString();
 
   assert(eat(TokenKind::Identifier));
 

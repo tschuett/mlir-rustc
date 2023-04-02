@@ -277,7 +277,7 @@ Parser::parseFunctionParametersMaybeNamedVariadic() {
     llvm::errs() << "parseFunctionParametersMaybeNamedVariadic "
                  << Token2String(getToken().getKind()) << "\n";
     if (getToken().isIdentifier())
-      llvm::errs() << getToken().getIdentifier() << "\n";
+      llvm::errs() << getToken().getIdentifier().toString() << "\n";
     if (check(TokenKind::Eof)) {
       return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
           "failed to parse in function parameters maybe named variadic: "

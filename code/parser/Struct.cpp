@@ -41,7 +41,7 @@ StringResult<ast::StructExprField> Parser::parseStructExprField() {
   field.setOuterAttributes(ot);
 
   if (checkIdentifier() && check(TokenKind::Colon, 1)) {
-    field.setIdentifier(getToken().getIdentifier());
+    field.setIdentifier(getToken().getIdentifier().toString());
     assert(eat(TokenKind::Identifier));
     if (!check(TokenKind::Colon)) {
       return StringResult<ast::StructExprField>(
@@ -80,7 +80,7 @@ StringResult<ast::StructExprField> Parser::parseStructExprField() {
     field.setExpression(expr.getValue());
     return StringResult<ast::StructExprField>(field);
   } else if (checkIdentifier()) {
-    field.setIdentifier(getToken().getIdentifier());
+    field.setIdentifier(getToken().getIdentifier().toString());
     return StringResult<ast::StructExprField>(field);
   } else {
     return StringResult<ast::StructExprField>(

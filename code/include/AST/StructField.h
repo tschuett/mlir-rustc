@@ -13,10 +13,12 @@
 
 namespace rust_compiler::ast {
 
+using namespace rust_compiler::lexer;
+
 class StructField : public Node {
   std::vector<OuterAttribute> outerAttributes;
   std::optional<Visibility> visibility;
-  std::string identifier;
+  Identifier identifier;
   std::shared_ptr<ast::types::TypeExpression> type;
 
 public:
@@ -26,7 +28,7 @@ public:
     outerAttributes = o;
   }
   void setVisibility(const Visibility &vis) { visibility = vis; }
-  void setIdentifier(std::string_view id) { identifier = id; }
+  void setIdentifier(const Identifier& id) { identifier = id; }
   void setType(std::shared_ptr<ast::types::TypeExpression> t) { type = t; }
 
   std::optional<Visibility> getVisibility() const { return visibility; }

@@ -23,13 +23,28 @@ StringResult<ast::MacroMatch> Parser::parseMacroMatch() {
   Location loc = getLocation();
   MacroMatch match = {loc};
 
-  if (check(TokenKind::Dollar)) {
-    if (check(TokenKind::ParenOpen)) {
-      // MacroMatch
-    } else {
+  if (check(TokenKind::Dollar) && check(TokenKind::ParenOpen, 1)) {
+    eat(TokenKind::Dollar);
+    eat(TokenKind::ParenOpen);
+    while (true) {
+      if (getToken().getKind() == TokenKind::ParenClose) {
+      } else if (getToken().getKind() == TokenKind::Eof) {
+      }
+      StringResult<ast::MacroMatch> match = parseMacroMatch();
     }
+    // MacroMatch+
+  } else if (check(TokenKind::Dollar) && check(TokenKind::Underscore, 1)) {
+    //
+  } else if (check(TokenKind::Dollar) && check(TokenKind::Identifier, 1) &&
+             getToken(1).getIdentifier().isRawIdentifier()) {
+    //
+  } else if (check(TokenKind::Dollar) && check(TokenKind::Identifier, 1)) {
+    //
+  } else if (check(TokenKind::Dollar) && check(TokenKind::Keyword, 1)) {
+    //
   } else if (checkDelimiters()) {
     // MacroMatcher
+    StringResult<ast::MacroMatcher> matcher = parseMacroMatcher();
   } else if (!checkDelimiters()) {
     match.setToken(getToken());
     return StringResult<ast::MacroMatch>(match);
@@ -82,7 +97,7 @@ StringResult<ast::MacroFragSpec> Parser::parseMacroFragSpec() {
     return StringResult<ast::MacroFragSpec>("failed to parse marco frag spec");
 
   MacroFragSpecKind k =
-      StringSwitch<MacroFragSpecKind>(getToken().getIdentifier())
+      StringSwitch<MacroFragSpecKind>(getToken().getIdentifier().toString())
           .Case("block", MacroFragSpecKind::Block)
           .Case("expr", MacroFragSpecKind::Expr)
           .Case("ident", MacroFragSpecKind::Ident)
@@ -337,8 +352,7 @@ StringResult<ast::MacroRulesDef> Parser::parseMacroRulesDef() {
   return StringResult<ast::MacroRulesDef>("failed to parse macro rules def");
 }
 
-StringResult<std::shared_ptr<ast::Item>>
-Parser::parseMacroRulesDefinition() {
+StringResult<std::shared_ptr<ast::Item>> Parser::parseMacroRulesDefinition() {
   Location loc = getLocation();
   MacroRulesDefinition def = {loc};
 

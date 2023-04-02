@@ -190,7 +190,7 @@ StringResult<ast::use_tree::UseTree> Parser::parseUseTree() {
       tree.setKind(UseTreeKind::Rebinding);
       if (check(TokenKind::Identifier)) {
         // path as identifier
-        tree.setIdentifier(getToken().getIdentifier());
+        tree.setIdentifier(getToken().getIdentifier().toString());
         assert(eat(TokenKind::Identifier));
         // done
         return StringResult<ast::use_tree::UseTree>(tree);

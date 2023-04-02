@@ -11,7 +11,7 @@
 namespace rust_compiler::ast {
 
 class StructStruct : public Struct {
-  std::string identifier;
+  Identifier identifier;
   std::optional<GenericParams> genericParams;
   std::optional<WhereClause> whereClause;
   std::optional<StructFields> structFields;
@@ -22,14 +22,14 @@ public:
 
   void setWhereClause(const WhereClause &wc) { whereClause = wc; }
   void setGenericParams(const GenericParams &gp) { genericParams = gp; }
-  void setName(std::string_view id) { identifier = id; }
+  void setName(const Identifier id) { identifier = id; }
   void setFields(const StructFields &sf) { structFields = sf; }
 
   bool hasGenerics() const { return genericParams.has_value(); }
   bool hasWhereClause() const { return whereClause.has_value(); }
   bool hasStructFields() const { return structFields.has_value(); }
 
-  std::string getIdentifier() const { return identifier; }
+  std::string getIdentifier() const { return identifier.toString(); }
   GenericParams getGenericParams() const { return *genericParams; }
   WhereClause getWhereClause() const { return *whereClause; }
   StructFields getFields() const { return *structFields; }

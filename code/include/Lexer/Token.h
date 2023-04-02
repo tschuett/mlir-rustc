@@ -2,6 +2,7 @@
 
 #include "Lexer/KeyWords.h"
 #include "Location.h"
+#include "Lexer/Identifier.h"
 
 #include <string>
 #include <variant>
@@ -53,7 +54,7 @@ enum class TokenKind {
   BraceClose,
   // Amp,
   // DoubleAmp,
-  //String,
+  // String,
   // Pipe,
   Star,
   // Dash,
@@ -123,7 +124,8 @@ class Token {
   //  IntegerKind ik;
   //  FloatKind fk;
   KeyWordKind kw;
-
+  Identifier ident;
+  
   //  std::variant<int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t,
   //  int64_t,
   //               uint64_t, int128_t, uint128_t, float, double, std::string>
@@ -159,14 +161,15 @@ public:
   bool isIdentifier() const;
   bool isAs() const;
 
-  std::string getIdentifier() const { return storage; }
+  Identifier getIdentifier() const { return ident; }
 
   rust_compiler::Location getLocation() const { return loc; }
 
   std::string getLiteral() const { return storage; }
 
-    std::string getStorage() const { return storage; }
+  std::string getStorage() const { return storage; }
 
+  std::string toString();
 };
 
 std::string Token2String(TokenKind kind);

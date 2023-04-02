@@ -54,7 +54,7 @@ StringResult<ast::EnumItem> Parser::parseEnumItem() {
         "failed to parse identifier token in enum item");
   }
   Token tok = getToken();
-  item.setIdentifier(tok.getIdentifier());
+  item.setIdentifier(tok.getIdentifier().toString());
   assert(eat(TokenKind::Identifier));
 
   if (check(TokenKind::BraceOpen)) {

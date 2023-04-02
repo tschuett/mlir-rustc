@@ -241,6 +241,9 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::Dollar: {
     return std::string("?");
   }
+  case TokenKind::Tilde: {
+    return std::string("~");
+  }
   }
 }
 

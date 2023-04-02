@@ -11,8 +11,10 @@
 
 namespace rust_compiler::ast {
 
+using namespace rust_compiler::ast;
+
 class Enumeration : public VisItem {
-  std::string identifier;
+  Identifier identifier;
   std::optional<GenericParams> genericParams;
   std::optional<WhereClause> whereClause;
   std::optional<EnumItems> enumItems;
@@ -25,7 +27,7 @@ public:
 
   void setWhereClause(const WhereClause &wc) { whereClause = wc; }
 
-  void setIdentifier(std::string_view id) { identifier = id; }
+  void setIdentifier(const Identifier &id) { identifier = id; }
 
   void setItems(const EnumItems &ei) { enumItems = ei; }
 
@@ -40,7 +42,7 @@ public:
   bool hasEnumItems() const { return enumItems.has_value(); }
   EnumItems getEnumItems() const { return *enumItems; }
 
-  std::string getName() const { return identifier; }
+  std::string getName() const { return identifier.toString(); }
 };
 
-} // namespace rust_compiler::ast
+} // namespace st_compiler::ast

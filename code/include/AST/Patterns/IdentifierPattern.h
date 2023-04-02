@@ -2,16 +2,19 @@
 
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/PatternWithoutRange.h"
+#include "Lexer/Identifier.h"
 
 #include <memory>
 #include <string>
 
 namespace rust_compiler::ast::patterns {
 
+using namespace rust_compiler::lexer;
+
 class IdentifierPattern : public PatternWithoutRange {
   bool ref = false;
   bool mut = false;
-  std::string identifier = "";
+  Identifier identifier;
   std::shared_ptr<ast::patterns::PatternNoTopAlt> pattern;
 
 public:
@@ -19,13 +22,13 @@ public:
       : PatternWithoutRange(loc, PatternWithoutRangeKind::IdentifierPattern) {}
   void setRef() { ref = true; }
   void setMut() { mut = true; }
-  void setIdentifier(std::string_view id) { identifier = id; }
+  void setIdentifier(const Identifier &id) { identifier = id; }
 
   void addPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat) {
     pattern = pat;
   }
 
-  std::string getIdentifier() const { return identifier; }
+  Identifier getIdentifier() const { return identifier; }
   bool hasMut() const { return mut; }
   bool hasRef() const { return ref; }
 };
