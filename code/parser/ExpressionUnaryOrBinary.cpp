@@ -34,7 +34,7 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
   llvm::errs() << "parseUnaryExpression:: "
                << Token2String(getToken().getKind()) << "\n";
   if (getToken().isIdentifier()) {
-    llvm::errs() << getToken().getIdentifier() << "\n";
+    llvm::errs() << getToken().getIdentifier().toString() << "\n";
   }
 
   Token tok = getToken();
@@ -61,11 +61,11 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
                                                    restrictions);
       }
       case TokenKind::BraceOpen: {
-        bool notABlock = (getToken(1).isIdentifier() &&
-                          getToken(2).getKind() == TokenKind::Comma) ||
-                         (getToken(2).getKind() == TokenKind::Colon &&
-                          getToken(4).getKind() == TokenKind::Comma) ||
-                         !canTokenStartType(getToken(3));
+        //bool notABlock = (getToken(1).isIdentifier() &&
+        //                  getToken(2).getKind() == TokenKind::Comma) ||
+        //                 (getToken(2).getKind() == TokenKind::Colon &&
+        //                  getToken(4).getKind() == TokenKind::Comma) ||
+        //                 !canTokenStartType(getToken(3));
 
         /* definitely not a block:
          *  path '{' ident ','

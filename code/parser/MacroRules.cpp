@@ -1,3 +1,4 @@
+#include "ADT/Result.h"
 #include "AST/MacroFragSpec.h"
 #include "AST/MacroMatcher.h"
 #include "AST/MacroRepOp.h"
@@ -24,33 +25,115 @@ StringResult<ast::MacroMatch> Parser::parseMacroMatch() {
   MacroMatch match = {loc};
 
   if (check(TokenKind::Dollar) && check(TokenKind::ParenOpen, 1)) {
+    // MacroMatch+
     eat(TokenKind::Dollar);
     eat(TokenKind::ParenOpen);
     while (true) {
       if (getToken().getKind() == TokenKind::ParenClose) {
+        assert(eat(TokenKind::ParenClose));
+        break;
       } else if (getToken().getKind() == TokenKind::Eof) {
+        // report error
       }
-      StringResult<ast::MacroMatch> match = parseMacroMatch();
+      StringResult<ast::MacroMatch> macroMatch = parseMacroMatch();
+      if (!macroMatch) {
+        // report error
+      }
+      match.addMacroMatch(macroMatch.getValue());
     }
-    // MacroMatch+
+
+    StringResult<MacroRepSep> repSep = parseMacroRepSep();
+    if (!repSep) {
+      // optional
+    }
+    match.setMacroRepSep(repSep.getValue());
+
+    if (check(TokenKind::Star) or check(TokenKind::Plus) or
+        check(TokenKind::QMark)) {
+      StringResult<MacroRepOp> repOp = parseMacroRepOp();
+      if (!repOp) {
+        // report error
+      }
+      match.setMacroRepOp(repOp.getValue());
+    } else {
+      // report error
+    }
+    return StringResult<ast::MacroMatch>(match);
   } else if (check(TokenKind::Dollar) && check(TokenKind::Underscore, 1)) {
     //
+    match.setUnderScore();
+    assert(eat(TokenKind::Dollar));
+    assert(eat(TokenKind::Underscore));
+    if (!check(TokenKind::Colon)) {
+      // report error
+    }
+    assert(eat(TokenKind::Colon));
+    StringResult<MacroFragSpec> frag = parseMacroFragSpec();
+    if (!frag) {
+      // report error
+    }
+    match.setFragSpec(frag.getValue());
+    return StringResult<ast::MacroMatch>(match);
   } else if (check(TokenKind::Dollar) && check(TokenKind::Identifier, 1) &&
              getToken(1).getIdentifier().isRawIdentifier()) {
     //
+    match.setRawIdentifier(getToken(1).getIdentifier());
+    assert(eat(TokenKind::Dollar));
+    assert(eat(TokenKind::Identifier));
+    if (!check(TokenKind::Colon)) {
+      // report error
+    }
+    assert(eat(TokenKind::Colon));
+    StringResult<MacroFragSpec> frag = parseMacroFragSpec();
+    if (!frag) {
+      // report error
+    }
+    match.setFragSpec(frag.getValue());
+    return StringResult<ast::MacroMatch>(match);
   } else if (check(TokenKind::Dollar) && check(TokenKind::Identifier, 1)) {
-    //
+    match.setIdentifier(getToken(1).getIdentifier());
+    assert(eat(TokenKind::Dollar));
+    assert(eat(TokenKind::Identifier));
+    if (!check(TokenKind::Colon)) {
+      // report error
+    }
+    assert(eat(TokenKind::Colon));
+    StringResult<MacroFragSpec> frag = parseMacroFragSpec();
+    if (!frag) {
+      // report error
+    }
+    match.setFragSpec(frag.getValue());
+    return StringResult<ast::MacroMatch>(match);
   } else if (check(TokenKind::Dollar) && check(TokenKind::Keyword, 1)) {
-    //
+    match.setKeyWord(getToken(1));
+    assert(eat(TokenKind::Dollar));
+    assert(eat(TokenKind::Keyword));
+    if (!check(TokenKind::Colon)) {
+      // report error
+    }
+    assert(eat(TokenKind::Colon));
+    StringResult<MacroFragSpec> frag = parseMacroFragSpec();
+    if (!frag) {
+      // report error
+    }
+    match.setFragSpec(frag.getValue());
+    return StringResult<ast::MacroMatch>(match);
   } else if (checkDelimiters()) {
     // MacroMatcher
     StringResult<ast::MacroMatcher> matcher = parseMacroMatcher();
+    if (!matcher) {
+      // report error
+    }
+    match.setMacroMatcher(std::make_shared<MacroMatcher>(matcher.getValue()));
+    return StringResult<ast::MacroMatch>(match);
   } else if (!checkDelimiters()) {
     match.setToken(getToken());
     return StringResult<ast::MacroMatch>(match);
   }
 
   // error
+
+  return StringResult<ast::MacroMatch>("failed to parse macro match");
 }
 
 StringResult<ast::MacroRepSep> Parser::parseMacroRepSep() {

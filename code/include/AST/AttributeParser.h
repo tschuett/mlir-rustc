@@ -86,7 +86,11 @@ public:
   MetaItemInner *clone() override;
 };
 
-class MetaItemLiteralExpression : public MetaItem {};
+class MetaItemLiteralExpression : public MetaItem {
+public:
+  MetaItemLiteralExpression(AttributeLiteralExpression);
+  MetaItemInner *clone() override;
+};
 
 class MetaItemPathLit : public MetaItem {
 public:
@@ -99,18 +103,18 @@ class MetaItemPath : public MetaItem {
   SimplePath path;
 
 public:
-  MetaItemPath(SimplePath path) : path(std::move(path)) {}
+  MetaItemPath(SimplePath path) : path(path) {}
 
   MetaItemInner *clone() override;
 };
 
 class AttributeParser {
-  lexer::TokenStream ts;
+  std::vector<Token> ts;
 
   size_t offset;
 
 public:
-  AttributeParser(const lexer::TokenStream &ts) : ts(ts), offset(0) {}
+  AttributeParser(const std::vector<Token> ts) : ts(ts), offset(0) {}
 
   std::vector<std::unique_ptr<MetaItemInner>> parseMetaItemSequence();
 
@@ -121,7 +125,7 @@ private:
   std::unique_ptr<MetaItemLiteralExpression> parseMetaItemLiteralExpression();
 
   std::optional<AttributeLiteral> parseLiteral();
-  SimplePath parseSimplePath();
+  std::optional<SimplePath> parseSimplePath();
   std::optional<SimplePathSegment> parseSimplePathSegment();
 
   Token peekToken(int i = 0);

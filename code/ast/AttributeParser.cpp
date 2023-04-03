@@ -34,7 +34,7 @@ MetaItemInner *MetaItemSequence::clone() {
 
 std::vector<std::unique_ptr<MetaItemInner>>
 AttributeParser::parseMetaItemSequence() {
-  size_t length = ts.getLength();
+  size_t length = ts.size();
   std::vector<std::unique_ptr<MetaItemInner>> metaItems;
 
   if (peekToken().getKind() != TokenKind::ParenOpen) {
@@ -187,8 +187,16 @@ std::unique_ptr<MetaItemInner> AttributeParser::parseMetaItemInner() {
 }
 
 std::unique_ptr<MetaItem> AttributeParser::parsePathMetaItem() {
-  SimplePath path = parseSimplePath();
-  if (path.isEmpty()) {
+  std::optional<SimplePath> path = parseSimplePath();
+  if (!path) {
+    // report error
+    llvm::errs() << peekToken().getLocation().toString()
+                 << "failed to parse simple path in attribute"
+                 << "\n";
+    return nullptr;
+  }
+
+  if (path->isEmpty()) {
     // report error
     llvm::errs() << peekToken().getLocation().toString()
                  << "failed to parse simple path in attribute"
@@ -201,7 +209,7 @@ std::unique_ptr<MetaItem> AttributeParser::parsePathMetaItem() {
         parseMetaItemSequence();
 
     return std::unique_ptr<MetaItemSequence>(
-        new MetaItemSequence(std::move(path), std::move(metaItems)));
+        new MetaItemSequence(*path, std::move(metaItems)));
   } else if (peekToken().getKind() == TokenKind::Eq) {
     skipToken();
 
@@ -217,9 +225,9 @@ std::unique_ptr<MetaItem> AttributeParser::parsePathMetaItem() {
     AttributeLiteralExpression expr = {std::move(*lit), loc};
 
     return std::unique_ptr<MetaItemPathLit>(
-        new MetaItemPathLit(std::move(path), std::move(expr)));
+        new MetaItemPathLit(*path, std::move(expr)));
   } else if (peekToken().getKind() == TokenKind::Comma) {
-    return std::unique_ptr<MetaItemPath>(new MetaItemPath(std::move(path)));
+    return std::unique_ptr<MetaItemPath>(new MetaItemPath(*path));
   }
 
   // report error
@@ -268,10 +276,42 @@ std::optional<AttributeLiteral> AttributeParser::parseLiteral() {
                                 Token2String(peekToken().getKind()))
                << "\n";
   return std::nullopt;
-  ;
 }
 
-SimplePath AttributeParser::parseSimplePath() {}
+std::optional<SimplePath> AttributeParser::parseSimplePath() {
+  Location loc = peekToken().getLocation();
+  SimplePath path{loc};
+
+  if (peekToken().getKind() == TokenKind::PathSep) {
+    path.setWithDoubleColon();
+    skipToken();
+  }
+
+  std::optional<SimplePathSegment> segment = parseSimplePathSegment();
+  if (!segment) {
+    // report error
+    llvm::errs() << "failed to parse simple tpath in attribute simple path"
+                 << "\n";
+    return std::nullopt;
+  }
+  path.addPathSegment(*segment);
+
+  while (peekToken().getKind() == TokenKind::PathSep) {
+    skipToken();
+
+    std::optional<SimplePathSegment> segment = parseSimplePathSegment();
+    if (!segment) {
+      // report error
+      llvm::errs()
+          << "failed to parse simple path segment in attribute simple path"
+          << "\n";
+      return std::nullopt;
+    }
+    path.addPathSegment(*segment);
+  }
+
+  return SimplePath(loc);
+}
 
 std::optional<SimplePathSegment> AttributeParser::parseSimplePathSegment() {
   Token token = peekToken();
@@ -325,9 +365,18 @@ std::optional<SimplePathSegment> AttributeParser::parseSimplePathSegment() {
 }
 
 std::unique_ptr<MetaItemLiteralExpression>
-AttributeParser::parseMetaItemLiteralExpression() {}
+AttributeParser::parseMetaItemLiteralExpression() {
+  Location loc = peekToken().getLocation();
+  auto lit = parseLiteral();
+  if (!lit)
+    return nullptr;
 
-lexer::Token AttributeParser::peekToken(int i) { return ts.getAt(offset + i); }
+  AttributeLiteralExpression expr = {*lit, loc};
+  return std::unique_ptr<MetaItemLiteralExpression>(
+      new MetaItemLiteralExpression(expr));
+}
+
+lexer::Token AttributeParser::peekToken(int i) { return ts[offset + i]; }
 
 void AttributeParser::skipToken(int i) { offset += 1 + i; }
 

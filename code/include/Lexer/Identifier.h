@@ -21,7 +21,6 @@ public:
   bool isRawIdentifier() const;
 
   static Identifier fromString(std::string_view);
-
 };
 
 } // namespace rust_compiler::lexer
