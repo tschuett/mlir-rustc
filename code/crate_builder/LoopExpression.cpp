@@ -1,6 +1,7 @@
 #include "AST/LoopExpression.h"
 
 #include "CrateBuilder/CrateBuilder.h"
+#include <cassert>
 
 using namespace rust_compiler::ast;
 
@@ -25,6 +26,7 @@ CrateBuilder::emitLoopExpression(std::shared_ptr<ast::LoopExpression> expr) {
     break;
   }
   }
+  assert(false);
 }
 
 } // namespace rust_compiler::crate_builder

@@ -92,7 +92,7 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
     PathExprSegment &seg = segs[0];
     bool isRoot = *offset == 0;
     bool haveMoreSegments = segs.size() - 1 != i;
-    NodeId astNodeId = seg.getNodeId();
+    // NodeId astNodeId = seg.getNodeId();
 
     NodeId refNodeId = UNKNOWN_NODEID;
 
@@ -140,6 +140,7 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
 
     assert(false && "to be implemented");
   }
+  assert(false && "to be implemented");
 }
 
 TyTy::BaseType *TypeResolver::resolveSegmentsExpression(

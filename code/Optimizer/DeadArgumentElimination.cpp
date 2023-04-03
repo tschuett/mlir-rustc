@@ -29,10 +29,14 @@ private:
 void DeadArgumentEliminationPass::surveyFunction(mlir::func::FuncOp &f) {}
 
 bool DeadArgumentEliminationPass::removeDeadStuffFromFunction(
-    mlir::func::FuncOp &f) {}
+    mlir::func::FuncOp &f) {
+  assert(false);
+}
 
 bool DeadArgumentEliminationPass::removeDeadArgumentsFromCallers(
-    mlir::func::FuncOp &f) {}
+    mlir::func::FuncOp &f) {
+  assert(false);
+}
 
 void DeadArgumentEliminationPass::runOnOperation() {
   mlir::ModuleOp module = getOperation();

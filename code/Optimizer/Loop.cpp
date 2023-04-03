@@ -33,10 +33,10 @@ public:
 void LoopPass::runOnOperation() {
   mlir::func::FuncOp f = getOperation();
 
-  mlir::AliasAnalysis &aliasAnalysis = getAnalysis<mlir::AliasAnalysis>();
+  [[maybe_unused]]mlir::AliasAnalysis &aliasAnalysis = getAnalysis<mlir::AliasAnalysis>();
   MemorySSA &memorySSA = getAnalysis<MemorySSA>();
 
-  MemorySSAWalker *walker = memorySSA.buildMemorySSA();
+  [[maybe_unused]]MemorySSAWalker *walker = memorySSA.buildMemorySSA();
 
   LoopDetector loopDetector;
   std::optional<Function> fun = loopDetector.analyze(&f);

@@ -30,6 +30,7 @@ CanonicalPath ScopedCanonicalPath::getCurrentPath() const {
 
   // FIXME the path prefix is missing
   //return CanonicalPath(path);
+  assert(false);
 }
 
 void ScopedCanonicalPath::registerScope(ScopedCanonicalPathScope *scope,

@@ -54,6 +54,7 @@ std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
   } else {
     // error
   }
+  assert(false);
 }
 
 } // namespace rust_compiler::crate_loader

@@ -1,17 +1,16 @@
-#include "Hir/HirOps.h"
 #include "Hir/HirDialect.h"
+#include "Hir/HirOps.h"
 #include "Mir/MirDialect.h"
 #include "Optimizer/Passes.h"
-#include "mlir/Support/LLVM.h"
 
+#include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/IR/Dominance.h>
 #include <mlir/IR/Operation.h>
 #include <mlir/Interfaces/SideEffectInterfaces.h>
+#include <mlir/Support/LLVM.h>
 #include <mlir/Transforms/DialectConversion.h>
-
-#include <mlir/Dialect/Arith/IR/Arith.h>
 
 using namespace rust_compiler::hir;
 using namespace rust_compiler::Mir;
@@ -32,10 +31,10 @@ public:
 } // namespace
 
 void ConvertHirToMirPass::runOnOperation() {
-  mlir::ModuleOp m = getOperation();
+  // mlir::ModuleOp m = getOperation();
 
-   mlir::ConversionTarget target(getContext());
+  mlir::ConversionTarget target(getContext());
 
-   target.addIllegalDialect<HirDialect>();
-   target.addLegalDialect<MirDialect>();
+  target.addIllegalDialect<HirDialect>();
+  target.addLegalDialect<MirDialect>();
 }

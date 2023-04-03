@@ -119,7 +119,7 @@ void Loop::findPreheader() {
     return;
 
   unsigned cnt = 0;
-  for (auto succ : out->getSuccessors())
+  for ([[maybe_unused]]auto succ : out->getSuccessors())
     ++cnt;
   if (cnt != 1)
     return;
@@ -334,8 +334,8 @@ void LoopDetector::analyzeLoopNests() {
   llvm::SmallVector<unsigned> head;
   for (auto par : nestingCandidates) {
     auto [l, r] = par;
-    uint32_t rightLevel = levels.lookup(r);
-    uint32_t leftLevel = levels.lookup(l);
+    [[maybe_unused]]uint32_t rightLevel = levels.lookup(r);
+    [[maybe_unused]]uint32_t leftLevel = levels.lookup(l);
   }
 }
 
@@ -380,6 +380,8 @@ std::optional<Function> LoopDetector::analyze(mlir::func::FuncOp *f) {
   detectLoopCandidates();
 
   analyzeRelationShips();
+
+  return std::nullopt;
 }
 
 } // namespace rust_compiler::analysis

@@ -20,6 +20,7 @@ TypeResolver::checkStatement(std::shared_ptr<ast::Statement> stmt) {
   }
   case ast::StatementKind::ItemDeclaration: {
     assert(false && "to be implemented");
+    break;
   }
   case ast::StatementKind::LetStatement: {
     return checkLetStatement(std::static_pointer_cast<LetStatement>(stmt));
@@ -27,12 +28,13 @@ TypeResolver::checkStatement(std::shared_ptr<ast::Statement> stmt) {
   case ast::StatementKind::ExpressionStatement: {
     return checkExpressionStatement(
         std::static_pointer_cast<ExpressionStatement>(stmt));
-    assert(false && "to be implemented");
   }
   case ast::StatementKind::MacroInvocationSemi: {
     assert(false && "to be implemented");
+    break;
   }
   }
+  assert(false);
 }
 
 TyTy::BaseType *TypeResolver::checkExpressionStatement(
@@ -76,10 +78,10 @@ TypeResolver::checkLetStatement(std::shared_ptr<ast::LetStatement> let) {
     specifiedTypeLocation = let->getType()->getLocation();
   }
 
-  TyTy::BaseType *elseExprType = nullptr;
+  [[maybe_unused]] TyTy::BaseType *elseExprType = nullptr;
   if (let->hasElse()) {
     elseExprType = checkExpression(let->getElse());
-    elseExprType->getKind() == TyTy::TypeKind::Never;
+    // elseExprType->getKind() == TyTy::TypeKind::Never;
   }
 
   if (specifiedType != nullptr && initExprType != nullptr) {

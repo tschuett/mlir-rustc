@@ -11,8 +11,8 @@ namespace rust_compiler::sema::type_checking {
 CoercionResult Coercion::coercion(TyTy::BaseType *receiver,
                                   TyTy::BaseType *expected, Location loc,
                                   bool allowAutoderef) {
-//  llvm::errs() << receiver->toString() << "\n";
-//  llvm::errs() << expected->toString() << "\n";
+  //  llvm::errs() << receiver->toString() << "\n";
+  //  llvm::errs() << expected->toString() << "\n";
 
   bool success = false;
   if (receiver->getKind() == TyTy::TypeKind::Never)
@@ -59,7 +59,7 @@ TyTy::BaseType *coercionWithSite(basic::NodeId id, TyTy::WithLocation lhs,
   TyTy::BaseType *coerced = unifyWithSite(
       id, lhs, TyTy::WithLocation(receiver, rhs.getLocation()), unify);
 
-  TyCtx::get()->insertAutoderefMapping(id, std::move(result.getAdjustments()));
+  TyCtx::get()->insertAutoderefMapping(id, result.getAdjustments());
 
   return coerced;
 }

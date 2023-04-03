@@ -214,8 +214,7 @@ Parser::parseStatementOrExpressionWithoutBlock() {
     }
     case KeyWordKind::KW_SUPER:
     case KeyWordKind::KW_SELFVALUE:
-    case KeyWordKind::KW_SELFTYPE:
-    case KeyWordKind::KW_DOLLARCRATE: {
+    case KeyWordKind::KW_SELFTYPE: {
       // something that starts with a path:
       Restrictions restrictions;
       Result<std::shared_ptr<ast::Expression>, std::string> expr =
@@ -278,6 +277,32 @@ Parser::parseStatementOrExpressionWithoutBlock() {
     }
   } else if (!getToken().isKeyWord()) {
     switch (getToken().getKind()) {
+    case TokenKind::Dollar: {
+      if (!checkKeyWord(KeyWordKind::KW_CRATE))
+        break;
+      // something that starts with a path:
+      Restrictions restrictions;
+      Result<std::shared_ptr<ast::Expression>, std::string> expr =
+          parseExpressionWithoutBlock(outerAttr, restrictions);
+      if (!expr) {
+        llvm::errs() << "failed to parse expression without block in statement "
+                        "or expression without block"
+                     << "\n";
+      }
+      if (check(TokenKind::Semi)) {
+        // must be expression statement
+        assert(eat(TokenKind::Semi));
+        ExpressionStatement stmt = {loc};
+        stmt.setTrailingSemi();
+        stmt.setExprWoBlock(expr.getValue());
+        return StringResult<ExpressionOrStatement>(
+            ExpressionOrStatement(std::make_shared<ExpressionStatement>(stmt)));
+      } else {
+        // must be expression
+        return StringResult<ExpressionOrStatement>(
+            ExpressionOrStatement(expr.getValue()));
+      }
+    }
     case TokenKind::BraceOpen: {
       // block expr
       Result<std::shared_ptr<ast::Expression>, std::string> block =
@@ -381,8 +406,8 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
 
   BlockExpression bloc = {loc};
 
-//  llvm::errs() << "parseBlockExpression"
-//               << "\n";
+  //  llvm::errs() << "parseBlockExpression"
+  //               << "\n";
 
   if (!check(TokenKind::BraceOpen)) {
     return Result<std::shared_ptr<ast::Expression>, std::string>(

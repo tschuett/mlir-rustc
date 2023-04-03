@@ -3,6 +3,7 @@
 #include "AST/AST.h"
 #include "AST/OuterAttribute.h"
 #include "AST/Patterns/Pattern.h"
+#include "Lexer/Identifier.h"
 
 #include <memory>
 #include <optional>
@@ -10,6 +11,8 @@
 #include <vector>
 
 namespace rust_compiler::ast::patterns {
+
+using namespace rust_compiler::lexer;
 
 class StructPatternEtCetera : public Node {
   std::vector<OuterAttribute> outerAttributes;
@@ -28,7 +31,7 @@ class StructPatternField : public Node {
   std::vector<OuterAttribute> outerAttributes;
   StructPatternFieldKind kind;
   std::string tupleIndex;
-  std::string identifier;
+  Identifier identifier;
   bool ref = false;
   bool mut = false;
   std::shared_ptr<ast::patterns::Pattern> pattern;
@@ -38,7 +41,7 @@ public:
 
   void setKind(StructPatternFieldKind kin) { kind = kin; }
   void setTupleIndex(std::string_view idx) { tupleIndex = idx; }
-  void setIdentifier(std::string_view i) { identifier = i; }
+  void setIdentifier(const Identifier i) { identifier = i; }
   void setOuterAttributes(std::span<OuterAttribute> o) {
     outerAttributes = {o.begin(), o.end()};
   };

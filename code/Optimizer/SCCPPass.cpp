@@ -24,7 +24,7 @@ using namespace llvm;
 using namespace mlir;
 
 void SCCPPass::runOnOperation() {
-  mlir::ModuleOp module = getOperation();
+  //  mlir::ModuleOp module = getOperation();
 
   //  module.walk([&](mlir::func::FuncOp f) {
   //    //  isAsync() -> rewrite

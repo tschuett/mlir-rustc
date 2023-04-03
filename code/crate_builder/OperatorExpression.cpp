@@ -46,6 +46,7 @@ mlir::Value CrateBuilder::emitOperatorExpression(
     break;
   }
   }
+  assert(false);
 }
 
 mlir::Value CrateBuilder::emitArithmeticOrLogicalExpression(
@@ -82,6 +83,7 @@ mlir::Value CrateBuilder::emitArithmeticOrLogicalExpression(
     break;
   }
   }
+  assert(false);
 }
 
 } // namespace rust_compiler::crate_builder

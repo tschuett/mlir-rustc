@@ -211,6 +211,8 @@ public:
 
   unsigned getNumberOfSpecifiedBounds() override;
 
+  basic::NodeId getId() const { return id; }
+
 private:
   basic::NodeId id;
   std::string name;

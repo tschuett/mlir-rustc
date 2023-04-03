@@ -73,6 +73,11 @@ Parser::parseRangeExpression(std::span<OuterAttribute> outer) {
   //  return parseRangeExpression(left.getValue());
   //
   //
+
+  llvm::errs() << "failed to parse range expression"
+               << "\n";
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      "failed to parse range expression");
 }
 
 StringResult<std::shared_ptr<ast::Expression>>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/Expression.h"
+#include "Lexer/Identifier.h"
 
 #include <memory>
 #include <string>
@@ -8,9 +9,11 @@
 
 namespace rust_compiler::ast {
 
+using namespace rust_compiler::lexer;
+
 class FieldExpression : public ExpressionWithoutBlock {
   std::shared_ptr<Expression> expr;
-  std::string identifier;
+  Identifier identifier;
 
 public:
   FieldExpression(Location loc)
@@ -18,7 +21,7 @@ public:
                                ExpressionWithoutBlockKind::FieldExpression) {}
 
   void setLeft(std::shared_ptr<Expression> l) { expr = l; }
-  void setIdentifier(std::string_view s) { identifier = s; }
+  void setIdentifier(const Identifier id) { identifier = id; }
 };
 
 } // namespace rust_compiler::ast

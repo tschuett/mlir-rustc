@@ -5,8 +5,8 @@
 #include "Location.h"
 #include "Resolver.h"
 
-#include <string_view>
 #include <map>
+#include <string_view>
 
 namespace rust_compiler::sema::resolver {
 
@@ -27,6 +27,10 @@ public:
       : mut(mut), isRef(isRef), loc(loc) {}
 
   Location getLocation() const { return loc; }
+
+  bool isReference() const { return isRef; }
+
+  Mutability getMutability() const { return mut;}
 };
 
 class PatternDeclaration {

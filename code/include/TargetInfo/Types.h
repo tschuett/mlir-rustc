@@ -83,7 +83,7 @@ public:
 };
 
 class PointerType : public Type {
-  BuiltinKind builtin;
+  [[maybe_unused]]BuiltinKind builtin;
 
 public:
   PointerType(BuiltinKind bk) : Type(TypeKind::PointerType), builtin(bk) {}
@@ -94,7 +94,7 @@ public:
 };
 
 class ScalableVectorType : public Type {
-  BuiltinKind builtin;
+  [[maybe_unused]]BuiltinKind builtin;
 
 public:
   ScalableVectorType(BuiltinKind bk)
@@ -106,7 +106,7 @@ public:
 };
 
 class ScalablePredicateType : public Type {
-  BuiltinKind builtin;
+  [[maybe_unused]]BuiltinKind builtin;
 
 public:
   ScalablePredicateType(BuiltinKind bk)
@@ -167,7 +167,7 @@ public:
 class BitfieldType : public Type {
   // Fundamental data type, i.e, BuiltinType, VectorType, ScalableVectorType,
   // ScalablePredicateType, PointerType
-  Type *fundamentDataType;
+[[maybe_unused]]  Type *fundamentDataType;
   size_t sizeInBytes;
   size_t bits;
 

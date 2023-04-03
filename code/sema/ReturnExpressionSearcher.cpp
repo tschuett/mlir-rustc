@@ -361,14 +361,18 @@ void ReturnExpressionSearcher::visitStatement(ast::Statement *stmt) {
     break;
   }
   case StatementKind::ItemDeclaration: {
+    break;
   }
   case StatementKind::LetStatement: {
+    break;
   }
   case StatementKind::ExpressionStatement: {
     visitExpressionStatement(static_cast<ExpressionStatement *>(stmt));
     break;
   }
   case StatementKind::MacroInvocationSemi: {
+    assert(false);
+    break;
   }
   }
 }

@@ -33,6 +33,7 @@ CrateBuilder::emitExpressionWithBlock(std::shared_ptr<ast::Expression> expr) {
     break;
   }
   }
+  assert(false);
 }
 
 } // namespace rust_compiler::crate_builder

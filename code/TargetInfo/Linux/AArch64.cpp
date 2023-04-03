@@ -282,7 +282,7 @@ bool AArch64Linux::isHomogeneousShortVectorAggregate(const Type *type) {
     if (members.size() > 4)
       return false;
     if (auto mem = dyn_cast<VectorType>(members[0])) {
-      size_t bits = mem->getBits();
+      [[maybe_unused]]size_t bits = mem->getBits();
       // a short vector
       return isShortVector(mem);
     } else {

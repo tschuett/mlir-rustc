@@ -137,7 +137,7 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
     }
 
     if (i == 0) {
-      NodeId resolvedNode = UNKNOWN_NODEID;
+      //NodeId resolvedNode = UNKNOWN_NODEID;
       adt::CanonicalPath path =
           adt::CanonicalPath::newSegment(segment.getNodeId(), ident.toString());
       if (auto node = getTypeScope().lookup(path)) {

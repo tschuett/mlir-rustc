@@ -8,7 +8,7 @@ namespace rust_compiler::target_info {
 class Type;
 
 class Signature {
-  Type *returnType;
+  [[maybe_unused]]Type *returnType;
   std::vector<Type *> arguments;
 
 public:

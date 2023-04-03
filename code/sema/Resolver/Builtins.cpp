@@ -89,7 +89,7 @@ void Resolver::generateBuiltins() {
 
 void Resolver::setupBuiltin(std::string_view name, TyTy::BaseType *tyty) {
   PathIdentSegment seg = {Location::getBuiltinLocation()};
-  seg.setIdentifier(name);
+  seg.setIdentifier(Identifier::fromString(name));
   types::TypePathSegment typeSeg = {Location::getBuiltinLocation()};
   typeSeg.setSegment(seg);
 

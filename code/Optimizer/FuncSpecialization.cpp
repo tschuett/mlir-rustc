@@ -58,7 +58,7 @@ void FuncSpecialPass::analyzeCallOp(mlir::func::CallOp *call,
       llvm::SmallVector<OpFoldResult, 1> foldedOp;
       LogicalResult result = op->fold(/*operands*/ std::nullopt, foldedOp);
       if (succeeded(result)) {
-        Attribute attr = foldedOp.front().get<Attribute>();
+        [[maybe_unused]]Attribute attr = foldedOp.front().get<Attribute>();
         op->getDialect();
       }
     }

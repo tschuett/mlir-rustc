@@ -74,7 +74,7 @@ void PatternDeclaration::resolvePatternWithoutRange(
 void PatternDeclaration::resolveIdentifierPattern(
     std::shared_ptr<ast::patterns::IdentifierPattern> id) {
   Mutability mut = id->hasMut() ? Mutability::Mutable : Mutability::Immutable;
-  addNewBinding(id->getIdentifier(), id->getNodeId(),
+  addNewBinding(id->getIdentifier().toString(), id->getNodeId(),
                 BindingTypeInfo(mut, id->hasRef(), id->getLocation()));
 }
 

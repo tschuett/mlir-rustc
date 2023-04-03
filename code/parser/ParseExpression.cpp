@@ -25,8 +25,6 @@ adt::StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseExpression(Precedence rightBindingPower,
                         std::span<ast::OuterAttribute> outer,
                         Restrictions restrictions) {
-  CheckPoint cp = getCheckPoint();
-
 //  llvm::errs() << "parseExpression"
 //               << "\n";
 

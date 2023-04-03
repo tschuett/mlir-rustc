@@ -249,7 +249,7 @@ TypeResolver::resolveSegmentsType(basic::NodeId rootResolvedNodeId,
                               size_t offset, TyTy::BaseType *pathType) {
   assert(false && "to be implemented");
 
-  basic::NodeId resolvedNodeId = rootResolvedNodeId;
+  //basic::NodeId resolvedNodeId = rootResolvedNodeId;
   TyTy::BaseType *prevSegment = pathType;
 
   std::vector<TypePathSegment> segs = tp->getSegments();

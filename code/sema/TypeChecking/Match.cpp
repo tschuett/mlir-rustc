@@ -9,7 +9,7 @@ TyTy::BaseType *
 TypeResolver::checkMatchExpression(std::shared_ptr<ast::MatchExpression> m) {
 
   assert(false && "to be implemented");
-  TyTy::BaseType *scrutineeType =
+  [[maybe_unused]]TyTy::BaseType *scrutineeType =
       checkExpression(m->getScrutinee().getExpression());
 
   MatchArms matchArms = m->getMatchArms();
@@ -17,9 +17,8 @@ TypeResolver::checkMatchExpression(std::shared_ptr<ast::MatchExpression> m) {
   std::vector<std::pair<MatchArm, std::shared_ptr<ast::Expression>>> arms =
       matchArms.getArms();
 
-  for (auto& arm: arms) {
+  for (auto &arm : arms) {
     auto [ar, expr] = arm;
-    
   }
 }
 

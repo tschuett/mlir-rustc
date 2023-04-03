@@ -62,7 +62,6 @@ mlir::Value CrateBuilder::emitExpressionWithoutBlock(
     std::shared_ptr<ast::MethodCallExpression> call =
         std::static_pointer_cast<ast::MethodCallExpression>(withOut);
     return emitMethodCallExpression(call);
-    break;
   }
   case ast::ExpressionWithoutBlockKind::FieldExpression: {
     break;
@@ -92,6 +91,7 @@ mlir::Value CrateBuilder::emitExpressionWithoutBlock(
     break;
   }
   }
+  assert(false);
 }
 
 //mlir::Value

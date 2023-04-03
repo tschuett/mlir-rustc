@@ -272,7 +272,7 @@ TyTy::BaseType *TypeResolver::checkReturnExpression(
     ty = TyTy::TupleType::getUnitType(ret->getNodeId());
   }
 
-  TyTy::BaseType *infered =
+  [[maybe_unused]]TyTy::BaseType *infered =
       unify(ret->getNodeId(), TyTy::WithLocation(functionReturnTye),
             TyTy::WithLocation(ty, loc), ret->getLocation());
 

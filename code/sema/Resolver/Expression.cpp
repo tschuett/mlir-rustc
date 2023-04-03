@@ -248,7 +248,7 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
       llvm::errs() << path->getLocation().toString()
                    << llvm::formatv("failed to resolve {0} in paths can only "
                                     "be used in start position",
-                                    ident.getIdentifier())
+                                    ident.getIdentifier().toString())
                    << "\n";
       return std::nullopt;
     }
@@ -275,11 +275,11 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
 
     if (i == 0) {
       // name first
-      NodeId resolvedNode = UNKNOWN_NODEID;
+      //NodeId resolvedNode = UNKNOWN_NODEID;
       CanonicalPath path =
           CanonicalPath::newSegment(seg.getNodeId(), ident.toString());
       if (auto node = getNameScope().lookup(path)) {
-        resolvedNode = *node;
+        //resolvedNode = *node;
         resolvedNodeId = *node;
       } else if (auto node = getTypeScope().lookup(path)) {
         insertResolvedType(seg.getNodeId(), *node);
@@ -310,7 +310,7 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
           // report error
           llvm::errs() << seg.getLocation().toString()
                        << llvm::formatv("cannot find path {0} in this scope",
-                                        ident.getIdentifier())
+                                        ident.getIdentifier().toString())
                        << "\n";
           return std::nullopt;
         }
@@ -325,7 +325,7 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
       // report error
       llvm::errs() << seg.getLocation().toString()
                    << llvm::formatv("cannot find path {0} in this scope",
-                                    ident.getIdentifier())
+                                    ident.getIdentifier().toString())
                    << "\n";
       return std::nullopt;
     }

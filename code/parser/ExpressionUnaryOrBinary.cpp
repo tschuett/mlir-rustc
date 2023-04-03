@@ -61,11 +61,11 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
                                                    restrictions);
       }
       case TokenKind::BraceOpen: {
-        //bool notABlock = (getToken(1).isIdentifier() &&
-        //                  getToken(2).getKind() == TokenKind::Comma) ||
-        //                 (getToken(2).getKind() == TokenKind::Colon &&
-        //                  getToken(4).getKind() == TokenKind::Comma) ||
-        //                 !canTokenStartType(getToken(3));
+        // bool notABlock = (getToken(1).isIdentifier() &&
+        //                   getToken(2).getKind() == TokenKind::Comma) ||
+        //                  (getToken(2).getKind() == TokenKind::Colon &&
+        //                   getToken(4).getKind() == TokenKind::Comma) ||
+        //                  !canTokenStartType(getToken(3));
 
         /* definitely not a block:
          *  path '{' ident ','
@@ -263,6 +263,53 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
       return parseArrayExpression(outer);
     case TokenKind::BraceOpen:
       return parseBlockExpression(outer);
+    case TokenKind::Dollar: {
+      if (!checkKeyWord(KeyWordKind::KW_CRATE, 1))
+        break;
+      /* best option: parse as path, then extract identifier, macro,
+       * struct/enum, or just path info from it */
+      StringResult<std::shared_ptr<Expression>> path =
+          parsePathInExpressionPratt();
+      if (!path) {
+        // handle error
+        return StringResult<std::shared_ptr<ast::Expression>>(
+            "failed to parse pathin expression in unary expression");
+      }
+
+      std::shared_ptr<PathInExpression> p =
+          std::static_pointer_cast<PathInExpression>(path.getValue());
+      if (tok.isKeyWord() &&
+          (tok.getKeyWordKind() == KeyWordKind::KW_SELFVALUE) &&
+          p->isSingleSegment()) {
+        return path;
+      }
+
+      switch (getToken().getKind()) {
+      case TokenKind::Not: {
+        return parseMacroInvocationExpressionPratt(path.getValue(), outer,
+                                                   restrictions);
+      }
+      case TokenKind::BraceOpen: {
+
+        bool notaBlock = (getToken(1).isIdentifier() &&
+                          getToken(2).getKind() == TokenKind::Comma) ||
+                         (getToken(2).getKind() == TokenKind::Colon &&
+                          getToken(4).getKind() == TokenKind::Comma) ||
+                         !canTokenStartType(getToken(3));
+        if (!restrictions.canBeStructExpr && !notaBlock)
+          return path;
+        return parseStructExpressionStructPratt(path.getValue(), outer);
+      }
+      case TokenKind::ParenOpen: {
+        if (!restrictions.canBeStructExpr)
+          return path;
+        return parseStructExpressionTuplePratt(path.getValue(), outer);
+      }
+      default: {
+        return path;
+      }
+      }
+    }
     default: {
       llvm::errs() << "parseUnaryExpressio2n: error unhandled token kind: "
                    << Token2String(getToken().getKind()) << "\n";
@@ -281,7 +328,7 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
     switch (getToken().getKeyWordKind()) {
     case KeyWordKind::KW_SELFTYPE:
     case KeyWordKind::KW_SELFVALUE:
-    case KeyWordKind::KW_DOLLARCRATE:
+      // case KeyWordKind::KW_DOLLARCRATE:
     case KeyWordKind::KW_CRATE:
     case KeyWordKind::KW_SUPER: {
 
@@ -391,15 +438,21 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
     }
     }
   }
+  llvm::errs() << "unexpected token: " << Token2String(getToken().getKind())
+               << "\n";
+  llvm::errs() << "in parseUnaryExpression: "
+               << KeyWord2String(getToken().getKeyWordKind()) << "\n";
+  return StringResult<std::shared_ptr<ast::Expression>>(
+      "unexpected token in unary expression");
 }
 
 ///  Note that this only parses segment-first paths, not global ones, i.e.
 ///  there is ::. */
 StringResult<std::shared_ptr<Expression>> Parser::parsePathInExpressionPratt() {
 
-//  llvm::outs() << "parse pathin expression pratt"
-//               << "\n";
-//
+  //  llvm::outs() << "parse pathin expression pratt"
+  //               << "\n";
+  //
   PathInExpression pathIn = PathInExpression(getLocation());
 
   PathIdentSegment ident = PathIdentSegment(getLocation());
@@ -407,6 +460,9 @@ StringResult<std::shared_ptr<Expression>> Parser::parsePathInExpressionPratt() {
   if (getToken().isIdentifier()) {
     ident.setIdentifier(getToken().getIdentifier());
     assert(eat(TokenKind::Identifier));
+  } else if (check(TokenKind::Dollar) &&
+             checkKeyWord(KeyWordKind::KW_CRATE, 1)) {
+    ident.setDollarCrate();
   } else if (getToken().isKeyWord()) {
     switch (getToken().getKeyWordKind()) {
     case KeyWordKind::KW_SUPER:
@@ -420,9 +476,6 @@ StringResult<std::shared_ptr<Expression>> Parser::parsePathInExpressionPratt() {
       break;
     case KeyWordKind::KW_CRATE:
       ident.setCrate();
-      break;
-    case KeyWordKind::KW_DOLLARCRATE:
-      ident.setDollarCrate();
       break;
     default: {
       std::optional<std::string> kind =

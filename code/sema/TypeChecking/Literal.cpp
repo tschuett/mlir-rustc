@@ -38,8 +38,9 @@ TypeResolver::checkLiteral(std::shared_ptr<ast::LiteralExpression> lit) {
   case ast::LiteralExpressionKind::True:
   case ast::LiteralExpressionKind::False:
     TyTy::BaseType * builtin = tcx->lookupBuiltin("bool");
-    assert(false && "to be implemented");
+    return builtin;
   }
+  assert(false);
 }
 
 } // namespace rust_compiler::sema::type_checking

@@ -18,7 +18,7 @@ class LoopDetector;
 class Loop;
 
 class LoopNest {
-  Loop *topLoop;
+  //Loop *topLoop;
   // std::vector<>
 
 public:
