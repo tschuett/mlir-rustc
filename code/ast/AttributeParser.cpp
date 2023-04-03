@@ -9,6 +9,7 @@
 
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
+#include <vector>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::adt;
@@ -374,6 +375,28 @@ void AttributeParser::skipToken(int i) { offset += 1 + i; }
 
 bool AttributeParser::isMetaItemEnd(TokenKind kind) {
   return kind == TokenKind::Comma || kind == TokenKind::ParenClose;
+}
+
+MetaItemInner *MetaWord::clone() { return new MetaWord(identifier, loc); }
+
+MetaItemInner *MetaNameValueString::clone() {
+  return new MetaNameValueString(identifier, loc, str);
+}
+
+MetaItemInner *MetaListPaths::clone() {
+  return new MetaListPaths(ident, loc, paths);
+}
+
+MetaItemInner *MetaListNameValueString::clone() {
+  return new MetaListNameValueString(ident, loc, kvs);
+}
+
+MetaItemInner *MetaItemPathLit::clone() {
+  return new MetaItemPathLit(path, expr);
+}
+
+MetaItemInner *MetaItemLiteralExpression::clone() {
+  return new MetaItemLiteralExpression(expr);
 }
 
 } // namespace rust_compiler::ast

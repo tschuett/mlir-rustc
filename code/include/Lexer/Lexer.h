@@ -49,6 +49,7 @@ private:
   Token lexHexLiteral();
   Token lexDecOrFloatLiteral();
 
+  Token lexIdentifierOrKeyWord();
   Token lexIdentifierOrUnknownPrefix();
   Token lexFakeIdentifierOrUnknownPrefix();
 

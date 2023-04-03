@@ -1,7 +1,8 @@
 #include "Lexer/Lexer.h"
 #include "Lexer/Token.h"
-#include "llvm/Support/ErrorHandling.h"
-#include "unicode/uchar.h"
+
+#include <llvm/Support/ErrorHandling.h>
+#include <unicode/uchar.h>
 
 namespace rust_compiler::lexer {
 
@@ -134,23 +135,87 @@ bool Lexer::isIdContinue(int i) {
   return u_hasBinaryProperty(getUchar(i), UCHAR_XID_CONTINUE);
 }
 
+/// https://stackoverflow.com/questions/1543613/how-does-utf-8-variable-width-encoding-work
 UChar32 Lexer::getUchar(int i) {
   uint8_t input = peek(i);
-  if (input < 128)
+  if (input < 128) {
     return input; // ASCII 1 byte
-  // FIXME
-  assert(false);
+  } else if ((input & 0xC0) == 0x80) {
+    // invalid
+  } else if ((input & 0xE0) == 0xC0) {
+    // 2 bytes
+    uint8_t input2 = peek(i + 1);
+    if ((input2 & 0xC0) != 0x80)
+      return 0xFFFE;
+
+    uint32_t output = ((input & 0x1F) << 6) | ((input2 & 0x3F) << 0);
+    return output;
+  } else if ((input & 0xF0) == 0xE0) {
+    // 3 bytes
+    uint8_t input2 = peek(i + 1);
+    if ((input2 & 0xC0) != 0x80)
+      return 0xFFFE;
+
+    uint8_t input3 = peek(i + 2);
+    if ((input3 & 0xC0) != 0x80)
+      return 0xFFFE;
+
+    uint32_t output = ((input & 0x0F) << 12) | ((input2 & 0x3F) << 6) |
+                      ((input3 & 0x3F) << 0);
+    return output;
+  } else if ((input & 0xF8) == 0xF0) {
+    // 4 bytes
+    uint8_t input2 = peek(i + 1);
+    if ((input2 & 0xC0) != 0x80)
+      return 0xFFFE;
+
+    uint8_t input3 = peek(i + 2);
+    if ((input3 & 0xC0) != 0x80)
+      return 0xFFFE;
+
+    uint8_t input4 = peek(i + 3);
+    if ((input4 & 0xC0) != 0x80)
+      return 0xFFFE;
+
+    uint32_t output = ((input & 0x07) << 18) | ((input2 & 0x3F) << 12) |
+                      ((input3 & 0x3F) << 6) | ((input4 & 0x3F) << 0);
+    return output;
+  } else
+    // report error
+    llvm::errs() << getLocation().toString() << "invalid UTF-8"
+                 << "\n";
+  return 0xFFFE;
 }
 
 Token Lexer::lexNumericalLiteral() {
   if (peek() == 'b')
-    lexBinLiteral();
+    return lexBinLiteral();
   else if (peek() == 'o')
-    lexOctLiteral();
+    return lexOctLiteral();
   else if (peek() == 'x')
-    lexHexLiteral();
+    return lexHexLiteral();
 
   return lexDecOrFloatLiteral();
+}
+
+// Token Lexer::lexRawIdentifier() {}
+
+Token Lexer::lexIdentifierOrKeyWord() {
+  if (peek() == '_') {
+  } else {
+    UChar32 next = getUchar();
+    // XID_START
+    if (!u_hasBinaryProperty(next, UCHAR_XID_START)) {
+      // report error
+    }
+    //skip32(next);
+  }
+
+  //UChar32 next = getUchar();
+
+  // XID_Continue*
+  //UChar32 codepoint;
+  assert(false);
 }
 
 } // namespace rust_compiler::lexer
