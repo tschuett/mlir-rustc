@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25.0)
+cmake_minimum_required(VERSION 3.26.1)
 
 project(rust_compiler)
 
@@ -65,10 +65,18 @@ if (CMAKE_BUILD_TYPE STREQUAL "Release")
     endif ()
 endif ()
 
-#find_package(GTest REQUIRED)
+find_package(GTest REQUIRED)
+
+find_package(Doxygen REQUIRED)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(GTest REQUIRED gtest)
+#pkg_check_modules(GTest REQUIRED gtest)
+
+#pkg_check_modules(icu-uc REQUIRED icu)
+
+#find_package(ICU 61.0 REQUIRED)
+find_package(ICU 61.0 COMPONENTS uc i18n REQUIRED)
+
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -76,3 +84,14 @@ add_subdirectory(code)
 add_subdirectory(tools)
 add_subdirectory(tests)
 
+set(DOXYGEN_GENERATE_HTML YES)
+set(DOXYGEN_GENERATE_MAN NO)
+
+set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "${CMAKE_CURRENT_SOURCE_DIR}/doxygen/index.md")
+set(DOXYGEN_EXCLUDE_PATTERNS "*.pb.*")
+
+doxygen_add_docs(
+  doxygen
+  ${PROJECT_SOURCE_DIR}
+  COMMENT "Generate HTML pages"
+)
