@@ -62,6 +62,7 @@ add_library(ast
            AttrInput.cpp
            InnerAttribute.cpp
            DelimTokenTree.cpp
+           MetaItemInner.cpp
            )
 
 

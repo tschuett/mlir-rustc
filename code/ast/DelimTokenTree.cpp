@@ -15,4 +15,13 @@ std::vector<lexer::Token> DelimTokenTree::toTokenStream() {
   return tokens;
 }
 
+std::vector<lexer::Token> TokenTree::toTokenStream() {
+  std::vector<lexer::Token> tokens;
+  if (tree != nullptr) {
+    std::vector<Token> stream = tree->toTokenStream();
+    tokens.insert(tokens.end(), stream.begin(), stream.end());
+  }
+  return tokens;
+}
+
 } // namespace rust_compiler::ast

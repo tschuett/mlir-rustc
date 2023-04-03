@@ -15,9 +15,11 @@ public:
 
   virtual MetaItemInner *clone() = 0;
 
-  std::unique_ptr<MetaNameValueString> tryMetaNameValueString() const;
+  virtual std::unique_ptr<MetaNameValueString> tryMetaNameValueString() const;
 
   virtual SimplePath tryPathItem() const;
+
+  virtual bool isKeyValuePair() const = 0;
 };
 
 } // namespace rust_compiler::ast

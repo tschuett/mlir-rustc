@@ -5,6 +5,7 @@
 #include "AST/MetaItemInner.h"
 #include "AST/SimplePath.h"
 #include "AST/SimplePathSegment.h"
+#include "Lexer/Identifier.h"
 #include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
 
@@ -22,56 +23,88 @@ using namespace rust_compiler::lexer;
 
 class AttributeLiteral {
   std::string storage;
+  LiteralExpressionKind kind;
 
 public:
-  AttributeLiteral(std::string_view, LiteralExpressionKind);
+  AttributeLiteral(std::string_view lit, LiteralExpressionKind kind)
+      : storage(lit), kind(kind){};
+
+  LiteralExpressionKind getKind() const { return kind; }
 };
 
 class AttributeLiteralExpression {
+  AttributeLiteral literal;
+  Location loc;
+
 public:
-  AttributeLiteralExpression(AttributeLiteral, Location);
+  AttributeLiteralExpression(AttributeLiteral lit, Location loc)
+      : literal(lit), loc(loc){};
 };
 
 class MetaItem : public MetaItemInner {};
 
 /// IDENTIFER = (STRING_LITERAL | RAW_STRING_LITERAL)
 class MetaNameValueString : public MetaItem {
-  std::string identifier;
+  Identifier identifier;
   Location loc;
 
-  std::string str;
+  Token str;
 
 public:
-  MetaNameValueString(std::string_view key, Location, std::string_view,
-                      Location);
+  MetaNameValueString(const Identifier &key, Location lc, const Token &t)
+      : identifier(key), loc(lc), str(t) {}
 
   MetaItemInner *clone() override;
+
+  bool isKeyValuePair() const override { return true; }
+
+  std::unique_ptr<MetaNameValueString> tryMetaNameValueString() const override;
 };
 
 class MetaListPaths : public MetaItem {
+  Identifier ident;
+  Location loc;
+  std::vector<SimplePath> paths;
+
 public:
-  MetaListPaths(std::string_view, Location, std::span<SimplePath>);
+  MetaListPaths(const Identifier &id, Location lc, std::span<SimplePath> path)
+      : ident(id), loc(lc) {
+    paths = {path.begin(), path.end()};
+  }
 
   MetaItemInner *clone() override;
+
+  bool isKeyValuePair() const override { return false; }
 };
 
 class MetaListNameValueString : public MetaItem {
+  Identifier ident;
+  Location loc;
+  std::vector<MetaNameValueString> kvs;
+
 public:
-  MetaListNameValueString(std::string_view, Location,
-                          std::span<MetaNameValueString>);
+  MetaListNameValueString(const Identifier &id, Location lc,
+                          std::span<MetaNameValueString> kv)
+      : ident(id), loc(lc) {
+    kvs = {kv.begin(), kv.end()};
+  }
 
   MetaItemInner *clone() override;
+
+  bool isKeyValuePair() const override { return false; }
 };
 
 /// IDENTIFIER
 class MetaWord : public MetaItem {
-  std::string identifier;
+  Identifier identifier;
   Location loc;
 
 public:
-  MetaWord(std::string_view word, Location loc);
+  MetaWord(const Identifier &word, Location loc) : identifier(word), loc(loc) {}
 
   MetaItemInner *clone() override;
+
+  bool isKeyValuePair() const override { return false; }
 };
 
 class MetaItemSequence : public MetaItem {
@@ -84,19 +117,31 @@ public:
       : path(std::move(path)), sequence(std::move(sequence)) {}
 
   MetaItemInner *clone() override;
+
+  bool isKeyValuePair() const override { return false; }
 };
 
 class MetaItemLiteralExpression : public MetaItem {
+  AttributeLiteralExpression expr;
+
 public:
-  MetaItemLiteralExpression(AttributeLiteralExpression);
+  MetaItemLiteralExpression(AttributeLiteralExpression exp) : expr(exp) {}
   MetaItemInner *clone() override;
+
+  bool isKeyValuePair() const override { return false; }
 };
 
 class MetaItemPathLit : public MetaItem {
+  SimplePath path;
+  AttributeLiteralExpression expr;
+
 public:
-  MetaItemPathLit(SimplePath, AttributeLiteralExpression);
+  MetaItemPathLit(SimplePath p, AttributeLiteralExpression exp)
+      : path(p), expr(exp){};
 
   MetaItemInner *clone() override;
+
+  bool isKeyValuePair() const override { return false; }
 };
 
 class MetaItemPath : public MetaItem {
@@ -106,6 +151,8 @@ public:
   MetaItemPath(SimplePath path) : path(path) {}
 
   MetaItemInner *clone() override;
+
+  bool isKeyValuePair() const override { return false; }
 };
 
 class AttributeParser {

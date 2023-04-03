@@ -3,6 +3,7 @@
 #include "AST/LiteralExpression.h"
 #include "AST/SimplePath.h"
 #include "AST/SimplePathSegment.h"
+#include "Lexer/Identifier.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 
@@ -13,12 +14,6 @@ using namespace rust_compiler::lexer;
 using namespace rust_compiler::adt;
 
 namespace rust_compiler::ast {
-
-static std::string unquoteString(std::string input) {
-  assert(input.front() == '"');
-  assert(input.back() == '"');
-  return input.substr(1, input.length() - 2);
-}
 
 MetaItemInner *MetaItemPath::clone() { return new MetaItemPath(path); }
 
@@ -108,7 +103,7 @@ std::unique_ptr<MetaItemInner> AttributeParser::parseMetaItemInner() {
   if (peekToken(1).getKind() == TokenKind::PathSep)
     return parsePathMetaItem();
 
-  std::string ident = peekToken().toString();
+  Identifier ident = peekToken().getIdentifier();
   Location identLoc = peekToken().getLocation();
 
   if (isMetaItemEnd(peekToken(1).getKind())) {
@@ -121,15 +116,12 @@ std::unique_ptr<MetaItemInner> AttributeParser::parseMetaItemInner() {
     if (peekToken(2).getKind() == TokenKind::STRING_LITERAL &&
         isMetaItemEnd(peekToken(3).getKind())) {
       Token valueToken = peekToken(2);
-      std::string value = valueToken.toString();
       Location loc = valueToken.getLocation();
 
       skipToken(2);
 
-      std::string rawValue = unquoteString(value);
-
       return std::unique_ptr<MetaNameValueString>(
-          new MetaNameValueString(ident, identLoc, rawValue, loc));
+          new MetaNameValueString(ident, identLoc, valueToken));
     } else {
       return parsePathMetaItem();
     }
