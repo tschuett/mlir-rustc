@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
     action.setCurrentInput(input);
     action.setEdition(basic::Edition::Edition2024);
 
-    action.execute();
+    (void)action.execute();
 
   } else if (const llvm::opt::Arg *A = Args.getLastArg(OPT_withsema)) {
     SemaOnlyAction action;
@@ -133,7 +133,7 @@ int main(int argc, char **argv) {
     action.setCurrentInput(input);
     action.setEdition(basic::Edition::Edition2024);
 
-    action.execute();
+    (void)action.execute();
   } else if (const llvm::opt::Arg *A = Args.getLastArg(OPT_compile)) {
     CodeGenAction action;
 
@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
     action.setCurrentInput(input);
     action.setEdition(basic::Edition::Edition2024);
 
-    action.execute();
+    (void)action.execute();
   } else {
     // error
   }

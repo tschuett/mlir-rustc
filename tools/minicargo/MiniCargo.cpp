@@ -1,17 +1,15 @@
 #include "Opts.inc"
+#include "Rustc.h"
 #include "Toml/Toml.h"
 
+#include <fstream>
 #include <llvm/ADT/StringRef.h>
 #include <llvm/Option/ArgList.h>
 #include <llvm/Option/OptTable.h>
 #include <llvm/Option/Option.h>
 #include <llvm/Support/raw_ostream.h>
-
-#include <fstream>
 #include <sstream>
 #include <string>
-
-#include "Rustc.h"
 
 const std::string PATH = "/Users/schuett/Work/aws_ec2_analyzer/Cargo.toml";
 
@@ -46,10 +44,9 @@ const llvm::opt::OptTable::Info InfoTable[] = {
 #undef OPTION
 };
 
-class MiniCargoOptTable : public llvm::opt::OptTable {
+class MiniCargoOptTable : public llvm::opt::GenericOptTable {
 public:
-  MiniCargoOptTable() : OptTable(InfoTable) { setGroupedShortOptions(true); }
-  ArrayRef<StringLiteral> getPrefixesUnion() const override {}
+  MiniCargoOptTable() : opt::GenericOptTable(InfoTable) {}
 };
 
 } // namespace
