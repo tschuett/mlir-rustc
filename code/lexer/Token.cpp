@@ -200,9 +200,9 @@ std::string Token2String(TokenKind kind) {
   case TokenKind::At: {
     return std::string("@");
   }
-//  case TokenKind::RESERVED_NUMBER: {
-//    return std::string("reserved number");
-//  }
+    //  case TokenKind::RESERVED_NUMBER: {
+    //    return std::string("reserved number");
+    //  }
   case TokenKind::StarEq: {
     return std::string("*=");
   }
@@ -385,5 +385,7 @@ std::string Token::toString() {
     return "";
   }
 }
+
+std::string Token::charToString() const { return utf8Storage.toString(); }
 
 } // namespace rust_compiler::lexer

@@ -173,9 +173,9 @@ public:
   std::string toString();
 
 private:
-  std::string charToString();
-  std::string LifetimeOrLabelToString();
-  std::string LifetimeTokenToString();
+  std::string charToString() const;
+  std::string LifetimeOrLabelToString() const;
+  std::string LifetimeTokenToString() const;
 };
 
 std::string Token2String(TokenKind kind);

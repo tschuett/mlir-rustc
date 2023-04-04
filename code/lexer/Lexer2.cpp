@@ -5,7 +5,7 @@
 #include <unicode/uchar.h>
 
 namespace rust_compiler::lexer {
-
+/// https://doc.rust-lang.org/reference/crates-and-source-files.html
 /// https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_lexer/lib.rs.html
 Token Lexer::advanceToken() {
   char next;
@@ -43,6 +43,8 @@ Token Lexer::advanceToken() {
       return lexRawDoubleQuotedString();
     return lexIdentifierOrUnknownPrefix();
   }
+
+    // acount for BOM?
 
     // Identifier
 
@@ -208,13 +210,13 @@ Token Lexer::lexIdentifierOrKeyWord() {
     if (!u_hasBinaryProperty(next, UCHAR_XID_START)) {
       // report error
     }
-    //skip32(next);
+    // skip32(next);
   }
 
-  //UChar32 next = getUchar();
+  // UChar32 next = getUchar();
 
   // XID_Continue*
-  //UChar32 codepoint;
+  // UChar32 codepoint;
   assert(false);
 }
 
