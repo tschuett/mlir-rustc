@@ -40,8 +40,8 @@ std::string Utf8String::toString() const {
   ucnv_close(conv);
 }
 
-void Utf8String::clear() {
-  storage.clear();
-}
+void Utf8String::clear() { storage.clear(); }
+
+void Utf8String::push_back(char c) { storage.push_back(c); }
 
 } // namespace rust_compiler::adt

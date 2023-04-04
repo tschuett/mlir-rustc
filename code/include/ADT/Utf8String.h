@@ -2,7 +2,6 @@
 
 #include <string>
 #include <unicode/uchar.h>
-//#include <unicode/umachine.h>
 #include <vector>
 
 namespace rust_compiler::adt {
