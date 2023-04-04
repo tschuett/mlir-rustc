@@ -75,7 +75,7 @@ find_package(PkgConfig REQUIRED)
 #pkg_check_modules(icu-uc REQUIRED icu)
 
 #find_package(ICU 61.0 REQUIRED)
-find_package(ICU 61.0 COMPONENTS uc i18n REQUIRED)
+find_package(ICU 61.0 COMPONENTS uc REQUIRED)
 
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

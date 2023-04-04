@@ -5,6 +5,7 @@ add_library(lexer
            KeyWords.cpp
            CodePoint.cpp
            Lexer2.cpp
+           Identifier.cpp
            )
 
 
@@ -16,6 +17,7 @@ llvm_map_components_to_libnames(llvm_libs Support)
 target_link_libraries(
         lexer
         PRIVATE
+        adt
         ${llvm_libs}
-        ${ICU_i18n_LIBRARIES}
+        ${ICU_UC_LIBRARIES}
         )

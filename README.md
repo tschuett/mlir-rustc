@@ -16,6 +16,8 @@
 * trunk LLVM/MLIR
 * cmake
 * Google Test
+* icu
+* doxygen
 
 
 # TODO

@@ -453,14 +453,14 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       continue;
     }
 
-    std::optional<std::string> ch = tryLexChar(code);
-    if (ch) {
-      ts.append(Token(Location(fileName, lineNumber, columnNumber),
-                      TokenKind::Char, *ch));
-      code.remove_prefix(ch->size());
-      columnNumber += ch->size();
-      continue;
-    }
+//    std::optional<std::string> ch = tryLexChar(code);
+//    if (ch) {
+//      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+//                      TokenKind::Char, *ch));
+//      code.remove_prefix(ch->size());
+//      columnNumber += ch->size();
+//      continue;
+//    }
 
     std::optional<std::string> id = tryLexIdentifier(code);
     if (id) {

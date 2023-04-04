@@ -1,11 +1,11 @@
 #pragma once
 
+#include "Lexer/Identifier.h"
 #include "Lexer/KeyWords.h"
 #include "Location.h"
-#include "Lexer/Identifier.h"
+#include "ADT/Utf8String.h"
 
 #include <string>
-#include <variant>
 
 // https://doc.rust-lang.org/reference/tokens.html
 // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_ast/token/enum.TokenKind.html
@@ -58,7 +58,7 @@ enum class TokenKind {
   // Pipe,
   Star,
   // Dash,
-  Char,
+  // Char,
   Plus,
   Keyword,
   Not,
@@ -89,9 +89,9 @@ enum class TokenKind {
   LIFETIME_OR_LABEL,
   // DollarUnderScore,
   CHAR_LITERAL,
-  QUOTE_ESCAPE,
-  ASCII_ESCAPE,
-  UNICODE_ESCAPE,
+  //QUOTE_ESCAPE,
+  //ASCII_ESCAPE,
+  //UNICODE_ESCAPE,
   STRING_LITERAL,
   RAW_STRING_LITERAL,
   BYTE_LITERAL,
@@ -99,7 +99,7 @@ enum class TokenKind {
   RAW_BYTE_STRING_LITERAL,
   INTEGER_LITERAL,
   FLOAT_LITERAL,
-  RESERVED_NUMBER,
+  //  RESERVED_NUMBER,
   Eof,
   At,
   StarEq,
@@ -125,7 +125,8 @@ class Token {
   //  FloatKind fk;
   KeyWordKind kw;
   Identifier ident;
-  
+  adt::Utf8String utf8Storage;
+
   //  std::variant<int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t,
   //  int64_t,
   //               uint64_t, int128_t, uint128_t, float, double, std::string>
@@ -170,6 +171,11 @@ public:
   std::string getStorage() const { return storage; }
 
   std::string toString();
+
+private:
+  std::string charToString();
+  std::string LifetimeOrLabelToString();
+  std::string LifetimeTokenToString();
 };
 
 std::string Token2String(TokenKind kind);

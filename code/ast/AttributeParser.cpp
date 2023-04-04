@@ -399,4 +399,10 @@ MetaItemInner *MetaItemLiteralExpression::clone() {
   return new MetaItemLiteralExpression(expr);
 }
 
+std::unique_ptr<MetaNameValueString>
+MetaNameValueString::tryMetaNameValueString() const {
+  return std::unique_ptr<MetaNameValueString>(
+      new MetaNameValueString(identifier, loc, str));
+}
+
 } // namespace rust_compiler::ast
