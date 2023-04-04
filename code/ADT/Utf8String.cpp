@@ -1,26 +1,47 @@
 #include "ADT/Utf8String.h"
 
+#include <unicode/uchar.h>
+#include <unicode/ucnv.h>
 #include <unicode/utext.h>
 
 namespace rust_compiler::adt {
 
 bool Utf8String::isASCII() const {
+  //  UText ut = UTEXT_INITIALIZER;
+  //  UErrorCode status = U_ZERO_ERROR;
+  //  utext_openUTF8(&ut, storage.c_str(), -1, &status);
+  //
+  //  UChar32 c;
+  //
+  //  bool isAscii = true;
+  //  for (c = utext_next32From(&ut, 0); c >= 0; c = utext_next32(&ut)) {
+  //    if (c > 127)
+  //      isAscii = false;
+  //  }
+  //
+  //  utext_close(&ut);
+  //
+  bool isASCII = true;
 
-  UText ut = UTEXT_INITIALIZER;
-  UErrorCode status = U_ZERO_ERROR;
-  utext_openUTF8(&ut, storage.c_str(), -1, &status);
-
-  UChar32 c;
-
-  bool isAscii = true;
-  for (c = utext_next32From(&ut, 0); c >= 0; c = utext_next32(&ut)) {
+  for (UChar32 c : storage)
     if (c > 127)
-      isAscii = false;
-  }
+      isASCII = false;
 
-  utext_close(&ut);
+  return isASCII;
+}
 
-  return isAscii;
+std::string Utf8String::toString() const {
+
+  assert(false);
+  UErrorCode status = U_ZERO_ERROR;
+
+  UConverter *conv = ucnv_open("US-ASCII", &status);
+
+  ucnv_close(conv);
+}
+
+void Utf8String::clear() {
+  storage.clear();
 }
 
 } // namespace rust_compiler::adt

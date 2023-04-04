@@ -20,4 +20,5 @@ target_link_libraries(
         adt
         ${llvm_libs}
         ${ICU_UC_LIBRARIES}
+        ${ICU_IO_LIBRARIES}
         )

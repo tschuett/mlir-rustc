@@ -341,7 +341,7 @@ std::optional<SimplePathSegment> AttributeParser::parseSimplePathSegment() {
       if (peekToken(1).isKeyWord() &&
           (peekToken(1).getKeyWordKind() == KeyWordKind::KW_CRATE)) {
         skipToken(1);
-        segment.setIdentifier(Identifier::fromString("$crate"));
+        segment.setIdentifier(Identifier("$crate"));
         return segment;
       }
       break;

@@ -3,12 +3,13 @@
 
 #include <llvm/Support/ErrorHandling.h>
 #include <unicode/uchar.h>
+#include <unicode/ustdio.h>
 
 namespace rust_compiler::lexer {
 /// https://doc.rust-lang.org/reference/crates-and-source-files.html
 /// https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_lexer/lib.rs.html
 Token Lexer::advanceToken() {
-  char next;
+  UChar32 next;
 
   if (auto c = bump())
     next = *c;
@@ -218,6 +219,22 @@ Token Lexer::lexIdentifierOrKeyWord() {
   // XID_Continue*
   // UChar32 codepoint;
   assert(false);
+}
+
+void Lexer::lex(std::string_view fileName) {
+  UFILE *file = u_fopen(fileName.data(), "r", nullptr, nullptr);
+
+  UChar32 token = u_fgetcx(file);
+  tokens.push_back(token);
+
+  while (token != U_EOF) {
+    token = u_fgetcx(file);
+    tokens.push_back(token);
+  }
+
+  u_fclose(file);
+
+  offset = 0;
 }
 
 } // namespace rust_compiler::lexer

@@ -43,7 +43,7 @@ StringResult<ast::SimplePathSegment> Parser::parseSimplePathSegment() {
     return StringResult<ast::SimplePathSegment>(seg);
   } else if (check(TokenKind::Dollar) &&
              checkKeyWord(KeyWordKind::KW_CRATE, 1)) {
-    seg.setIdentifier(Identifier::fromString("$crate"));
+    seg.setIdentifier(Identifier("$crate"));
     assert(eat(TokenKind::Dollar));
     assert(eatKeyWord(KeyWordKind::KW_CRATE));
     return StringResult<ast::SimplePathSegment>(seg);
@@ -480,7 +480,7 @@ StringResult<ast::SimplePath> Parser::parseSimplePath() {
     segment.setKeyWord(KeyWordKind::KW_CRATE);
   } else if (check(TokenKind::Dollar) &&
              checkKeyWord(KeyWordKind::KW_CRATE, 1)) {
-    segment.setIdentifier(Identifier::fromString("$crate"));
+    segment.setIdentifier(Identifier("$crate"));
   } else {
     // error: there are no empty paths
     std::string s =
@@ -518,7 +518,7 @@ StringResult<ast::SimplePath> Parser::parseSimplePath() {
         segment.setKeyWord(KeyWordKind::KW_CRATE);
       } else if (check(TokenKind::Dollar) &&
                  checkKeyWord(KeyWordKind::KW_CRATE, 1)) {
-        segment.setIdentifier(Identifier::fromString("$crate"));
+        segment.setIdentifier(Identifier("$crate"));
       } else {
         std::string s =
             llvm::formatv("{0} {1}", "parseSimplePath; unknown token: ",

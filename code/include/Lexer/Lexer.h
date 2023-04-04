@@ -1,27 +1,31 @@
 #pragma once
 
 #include "Lexer/TokenStream.h"
-#include "unicode/uchar.h"
 
 #include <string_view>
+#include <unicode/uchar.h>
 
+/// Rust input is interpreted as a sequence of Unicode code points encoded in
+/// UTF-8.
 namespace rust_compiler::lexer {
 
 TokenStream lex(std::string_view code, std::string_view fileName);
 
 /// https://doc.rust-lang.org/reference/tokens.html
 class Lexer {
-  std::string chars;
+  // std::string chars;
   std::string fileName;
   uint32_t remaining;
   TokenStream tokenStream;
   uint32_t offset;
 
+  std::vector<UChar32> tokens;
+
 public:
-  void lex();
+  void lex(std::string_view fileName);
 
 private:
-  std::optional<char> bump();
+  std::optional<UChar32> bump();
 
   Token advanceToken();
 
@@ -68,7 +72,7 @@ private:
   bool isIdContinue(int i = 0);
   UChar32 getUchar(int i = 0);
   void skip();
-  char peek(int i = 0);
+  UChar32 peek(int i = 0);
 };
 
 } // namespace rust_compiler::lexer

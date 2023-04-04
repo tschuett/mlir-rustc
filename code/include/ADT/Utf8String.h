@@ -1,21 +1,25 @@
 #pragma once
 
-#include <unicode/uchar.h>
-
 #include <string>
+#include <unicode/uchar.h>
+//#include <unicode/umachine.h>
+#include <vector>
 
 namespace rust_compiler::adt {
 
 class Utf8String {
   /// an array of UChar32
-  std::string storage;
+  std::vector<UChar32> storage;
 
- public:
+public:
   void append(UChar32);
 
   bool isASCII() const;
 
   std::string toString() const;
+
+  void clear();
+  void push_back(char);
 };
 
 } // namespace rust_compiler::adt
