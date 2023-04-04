@@ -7,6 +7,11 @@ message(STATUS "Using LLVM in: ${LLVM_DIR}")
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
+include(CheckTypeSize)
+
+check_type_size("__int128" SIZEOF_INT128)
+check_type_size("unsigned __int128" SIZEOF_UINT128)
+
 enable_testing()
 include(CTest)
 

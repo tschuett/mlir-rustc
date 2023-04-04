@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ADT/Result.h"
+#include "ADT/Utf8String.h"
 #include "AST/LiteralExpression.h"
 #include "AST/MetaItemInner.h"
 #include "AST/SimplePath.h"
@@ -23,11 +24,15 @@ using namespace rust_compiler::lexer;
 
 class AttributeLiteral {
   std::string storage;
+  Utf8String utf8Storage;
   LiteralExpressionKind kind;
 
 public:
   AttributeLiteral(std::string_view lit, LiteralExpressionKind kind)
       : storage(lit), kind(kind){};
+
+  AttributeLiteral(const Utf8String &lit, LiteralExpressionKind kind)
+      : utf8Storage(lit), kind(kind){};
 
   LiteralExpressionKind getKind() const { return kind; }
 };

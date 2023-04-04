@@ -31,7 +31,6 @@ bool Utf8String::isASCII() const {
 }
 
 std::string Utf8String::toString() const {
-
   assert(false);
   UErrorCode status = U_ZERO_ERROR;
 

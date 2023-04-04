@@ -19,7 +19,7 @@ class Identifier {
 
 public:
   Identifier() = default;
-  
+
   /// must be ASCII. No UTF-8
   Identifier(std::string_view);
 

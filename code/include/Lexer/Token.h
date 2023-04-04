@@ -169,8 +169,9 @@ public:
   std::string getLiteral() const { return storage; }
 
   std::string getStorage() const { return storage; }
+  adt::Utf8String getUtf8Storage() const { return utf8Storage; }
 
-  std::string toString();
+  //std::string toString();
 
 private:
   std::string charToString() const;

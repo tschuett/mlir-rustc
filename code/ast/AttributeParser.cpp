@@ -244,22 +244,22 @@ std::optional<AttributeLiteral> AttributeParser::parseLiteral() {
   } else {
     switch (peekToken().getKind()) {
     case TokenKind::CHAR_LITERAL:
-      return AttributeLiteral(peekToken().toString(),
+      return AttributeLiteral(peekToken().getUtf8Storage(),
                               LiteralExpressionKind::CharLiteral);
     case TokenKind::STRING_LITERAL:
-      return AttributeLiteral(peekToken().toString(),
+      return AttributeLiteral(peekToken().getUtf8Storage(),
                               LiteralExpressionKind::StringLiteral);
     case TokenKind::BYTE_LITERAL:
-      return AttributeLiteral(peekToken().toString(),
+      return AttributeLiteral(peekToken().getLiteral(),
                               LiteralExpressionKind::ByteLiteral);
     case TokenKind::BYTE_STRING_LITERAL:
-      return AttributeLiteral(peekToken().toString(),
+      return AttributeLiteral(peekToken().getLiteral(),
                               LiteralExpressionKind::ByteStringLiteral);
     case TokenKind::INTEGER_LITERAL:
-      return AttributeLiteral(peekToken().toString(),
+      return AttributeLiteral(peekToken().getLiteral(),
                               LiteralExpressionKind::IntegerLiteral);
     case TokenKind::FLOAT_LITERAL:
-      return AttributeLiteral(peekToken().toString(),
+      return AttributeLiteral(peekToken().getLiteral(),
                               LiteralExpressionKind::FloatLiteral);
     default: {
     }
