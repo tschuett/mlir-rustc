@@ -208,7 +208,7 @@ StringResult<ast::PathIdentSegment> Parser::parsePathIdentSegment() {
   if (check(TokenKind::Identifier)) {
     Token tok = getToken();
     seg.setIdentifier(tok.getIdentifier());
-    // llvm::errs() << "parsePathIdentSegment: " << tok.getIdentifier() << "\n";
+    //llvm::errs() << "parsePathIdentSegment: " << tok.getIdentifier().toString() << "\n";
     assert(eat(TokenKind::Identifier));
   } else if (checkKeyWord(KeyWordKind::KW_SUPER)) {
     seg.setSuper();

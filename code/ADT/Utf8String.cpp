@@ -4,6 +4,8 @@
 #include <unicode/ucnv.h>
 #include <unicode/utext.h>
 
+#include <llvm/Support/raw_ostream.h>
+
 namespace rust_compiler::adt {
 
 bool Utf8String::isASCII() const {
@@ -31,19 +33,21 @@ bool Utf8String::isASCII() const {
 }
 
 std::string Utf8String::toString() const {
-//  assert(false);
-//  UErrorCode status = U_ZERO_ERROR;
-//
-//  UConverter *conv = ucnv_open("US-ASCII", &status);
-//
-//  ucnv_close(conv);
+  //  assert(false);
+  //  UErrorCode status = U_ZERO_ERROR;
+  //
+  //  UConverter *conv = ucnv_open("US-ASCII", &status);
+  //
+  //  ucnv_close(conv);
 
   std::string result;
-  for (UChar32 c: storage) {
+  for (UChar32 c : storage) {
     if (c > 127)
       assert(false && "no ascii");
     result.push_back(c);
   }
+
+  //llvm::errs() << "Utf8String::toString(): " << storage.size() << "\n";
 
   return result;
 }

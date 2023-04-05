@@ -162,7 +162,8 @@ public:
   bool isIdentifier() const;
   bool isAs() const;
 
-  Identifier getIdentifier() const { return ident; }
+  /// FIXME: change with Lexer2
+  Identifier getIdentifier() const { return Identifier(storage); }
 
   rust_compiler::Location getLocation() const { return loc; }
 
