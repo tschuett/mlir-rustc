@@ -518,11 +518,10 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   }
 
   Token id = getToken();
-  std::string identifier = id.getIdentifier().toString();
 
   assert(eat(TokenKind::Identifier));
 
-  fun.setIdentifier(identifier);
+  fun.setIdentifier(id.getIdentifier());
 
   if (check(TokenKind::Lt)) {
     StringResult<ast::GenericParams> genericParams = parseGenericParams();

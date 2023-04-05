@@ -2,6 +2,7 @@
 
 #include "ADT/CanonicalPath.h"
 #include "Basic/Ids.h"
+#include "Lexer/Identifier.h"
 #include "Location.h"
 #include "TyCtx/TyCtx.h"
 #include "TypeIdentity.h"
@@ -171,7 +172,7 @@ bool ErrorType::needsGenericSubstitutions() const { return false; }
 std::string ErrorType::toString() const { return "error"; }
 
 FunctionType::FunctionType(
-    basic::NodeId id, std::string_view name, tyctx::ItemIdentity ident,
+    basic::NodeId id, lexer::Identifier name, tyctx::ItemIdentity ident,
     std::vector<std::pair<
         std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
         TyTy::BaseType *>>

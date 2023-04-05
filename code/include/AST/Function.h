@@ -24,7 +24,7 @@ class Function : public VisItem {
   std::optional<FunctionReturnType> returnType;
   WhereClause whereClause;
 
-  std::string identifier;
+  Identifier identifier;
 
 public:
   Function(Location loc, std::optional<Visibility> vis)
@@ -47,9 +47,9 @@ public:
 
   void setReturnType(const FunctionReturnType &ret) { returnType = ret; }
 
-  void setIdentifier(std::string_view id) { identifier = id; }
+  void setIdentifier(const Identifier& id) { identifier = id; }
 
-  std::string_view getName() const { return identifier; }
+  Identifier getName() const { return identifier; }
 
   bool hasReturnType() const { return returnType.has_value(); }
 

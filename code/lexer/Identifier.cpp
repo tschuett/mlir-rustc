@@ -28,12 +28,14 @@ bool Identifier::isASCII() const {
 bool Identifier::isRawIdentifier() const { assert(false); }
 
 std::string Identifier::toString() const {
-  assert(false);
-  UErrorCode status = U_ZERO_ERROR;
-
-  UConverter *conv = ucnv_open("US-ASCII", &status);
-
-  ucnv_close(conv);
+//  assert(false);
+//  UErrorCode status = U_ZERO_ERROR;
+//
+//  UConverter *conv = ucnv_open("US-ASCII", &status);
+//
+//  ucnv_close(conv);
+//
+  return storage.toString();
 }
 
 Identifier::Identifier(std::string_view id) {

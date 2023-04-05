@@ -27,6 +27,12 @@ public:
   bool isASCII() const;
   bool isRawIdentifier() const;
 
+  bool operator==(const Identifier &b) const { return storage == b.storage; }
+
+  bool operator<(const Identifier &b) const {
+    return storage < b.storage;
+  }
+
 private:
 };
 

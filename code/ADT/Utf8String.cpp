@@ -31,12 +31,21 @@ bool Utf8String::isASCII() const {
 }
 
 std::string Utf8String::toString() const {
-  assert(false);
-  UErrorCode status = U_ZERO_ERROR;
+//  assert(false);
+//  UErrorCode status = U_ZERO_ERROR;
+//
+//  UConverter *conv = ucnv_open("US-ASCII", &status);
+//
+//  ucnv_close(conv);
 
-  UConverter *conv = ucnv_open("US-ASCII", &status);
+  std::string result;
+  for (UChar32 c: storage) {
+    if (c > 127)
+      assert(false && "no ascii");
+    result.push_back(c);
+  }
 
-  ucnv_close(conv);
+  return result;
 }
 
 void Utf8String::clear() { storage.clear(); }

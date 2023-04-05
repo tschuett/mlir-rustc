@@ -208,7 +208,7 @@ private:
   void resolveStructItem(std::shared_ptr<ast::Struct>,
                          const adt::CanonicalPath &prefix,
                          const adt::CanonicalPath &canonicalPrefix);
-  void resolveStructStructItem(std::shared_ptr<ast::StructStruct>,
+  void resolveStructStructItem(std::shared_ptr<rust_compiler::ast::StructStruct>,
                                const adt::CanonicalPath &prefix,
                                const adt::CanonicalPath &canonicalPrefix);
   void resolveTupleStructItem(std::shared_ptr<ast::TupleStruct>,

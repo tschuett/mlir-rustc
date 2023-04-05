@@ -137,9 +137,9 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
     }
 
     if (i == 0) {
-      //NodeId resolvedNode = UNKNOWN_NODEID;
-      adt::CanonicalPath path =
-          adt::CanonicalPath::newSegment(segment.getNodeId(), ident.toString());
+      // NodeId resolvedNode = UNKNOWN_NODEID;
+      adt::CanonicalPath path = adt::CanonicalPath::newSegment(
+          segment.getNodeId(), Identifier(ident.toString()));
       if (auto node = getTypeScope().lookup(path)) {
         insertResolvedType(segment.getNodeId(), *node);
         resolvedNodeId = *node;
@@ -156,8 +156,12 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
 
     if (resolvedNodeId == UNKNOWN_NODEID &&
         previousResolveNodeId == moduleScopeId) {
-      std::optional<adt::CanonicalPath> resolvedChild =
-          tyCtx->lookupModuleChild(moduleScopeId, ident.toString());
+      std::optional<adt::CanonicalPath> resolvedChild;
+      if (ident.getKind() == PathIdentSegmentKind::Identifier)
+        resolvedChild = tyCtx->lookupModuleChild(
+            moduleScopeId,
+            adt::CanonicalPath::newSegment(ident.getNodeId(),
+                                           Identifier(ident.getIdentifier())));
       if (resolvedChild) {
         NodeId resolvedNode = resolvedChild->getNodeId();
         if (getNameScope().wasDeclDeclaredInCurrentScope(resolvedNode)) {
@@ -205,7 +209,8 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
       insertResolvedName(typePath->getNodeId(), resolvedNodeId);
     } else if (getTypeScope().wasDeclDeclaredInCurrentScope(resolvedNodeId)) {
       insertResolvedType(typePath->getNodeId(), resolvedNodeId);
-      llvm::errs() << "it is a type" << "\n";
+      llvm::errs() << "it is a type"
+                   << "\n";
     } else {
       llvm_unreachable("");
     }

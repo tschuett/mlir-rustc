@@ -1058,7 +1058,7 @@ Parser::parseBreakExpression(std::span<OuterAttribute>) {
     assert(eat(TokenKind::LIFETIME_OR_LABEL));
     // do something
     LifetimeOrLabel l = {loc};
-    l.setLifeTime(getToken().getStorage());
+    l.setLifeTime(getToken().getIdentifier());
     breakExpr.setLifetime(l);
   }
 
@@ -1405,7 +1405,7 @@ Parser::parseContinueExpression(std::span<OuterAttribute>) {
   if (check(TokenKind::LIFETIME_OR_LABEL)) {
     Token tok = getToken();
     LifetimeOrLabel l = {getToken().getLocation()};
-    l.setLifeTime(tok.getStorage());
+    l.setLifeTime(tok.getIdentifier());
     assert(eat(TokenKind::LIFETIME_OR_LABEL));
     cont.setLifetime(l);
   }

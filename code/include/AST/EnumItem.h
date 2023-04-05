@@ -18,7 +18,7 @@ enum class EnumItemKind { Tuple, Struct, Discriminant };
 class EnumItem : public Node {
   std::vector<OuterAttribute> outerAttributes;
   std::optional<Visibility> visibility;
-  std::string identifier;
+  Identifier identifier;
   std::optional<
       std::variant<EnumItemTuple, EnumItemStruct, EnumItemDiscriminant>>
       item;
@@ -34,7 +34,7 @@ public:
 
   void setVisibility(const Visibility &vis) { visibility = vis; }
 
-  void setIdentifier(std::string_view i) { identifier = i; }
+  void setIdentifier(const Identifier& i) { identifier = i; }
 
   void setEnumItemTuple(const EnumItemTuple &tu) {
     item = tu;
@@ -57,7 +57,7 @@ public:
   EnumItemStruct getStruct() const { return std::get<EnumItemStruct>(*item); }
   EnumItemTuple getTuple() const { return std::get<EnumItemTuple>(*item); }
 
-  std::string getName() const { return identifier; }
+  Identifier getName() const { return identifier; }
 };
 
 } // namespace rust_compiler::ast

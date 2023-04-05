@@ -275,11 +275,11 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
 
     if (i == 0) {
       // name first
-      //NodeId resolvedNode = UNKNOWN_NODEID;
-      CanonicalPath path =
-          CanonicalPath::newSegment(seg.getNodeId(), ident.toString());
+      // NodeId resolvedNode = UNKNOWN_NODEID;
+      CanonicalPath path = CanonicalPath::newSegment(
+          seg.getNodeId(), Identifier(ident.toString()));
       if (auto node = getNameScope().lookup(path)) {
-        //resolvedNode = *node;
+        // resolvedNode = *node;
         resolvedNodeId = *node;
       } else if (auto node = getTypeScope().lookup(path)) {
         insertResolvedType(seg.getNodeId(), *node);
@@ -296,8 +296,9 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
 
     if (resolvedNodeId == UNKNOWN_NODEID &&
         previousResolvedNodeId == moduleScopeId) {
-      std::optional<CanonicalPath> resolvedChild =
-          tyCtx->lookupModuleChild(moduleScopeId, ident.toString());
+      std::optional<CanonicalPath> resolvedChild = tyCtx->lookupModuleChild(
+          moduleScopeId, CanonicalPath::newSegment(
+                             ident.getNodeId(), Identifier(ident.toString())));
       if (resolvedChild) {
         NodeId resolvedNode = resolvedChild->getNodeId();
         if (getNameScope().wasDeclDeclaredInCurrentScope(resolvedNode)) {

@@ -30,7 +30,7 @@ bool Rib::wasDeclDeclaredHere(basic::NodeId def) const {
 
 void Rib::insertName(const adt::CanonicalPath &path, basic::NodeId id,
                      Location loc, bool shadow, RibKind kind) {
-  llvm::errs() << "insertName: " << path.asString() << "\n";
+  // llvm::errs() << "insertName: " << path.asString() << "\n";
   auto it = pathMappings.find(path);
   if (it != pathMappings.end() && !shadow)
     return;
@@ -44,7 +44,8 @@ void Rib::insertName(const adt::CanonicalPath &path, basic::NodeId id,
 
 std::optional<basic::NodeId> Rib::lookupName(const adt::CanonicalPath &ident) {
   auto it = pathMappings.find(ident);
-  llvm::errs() << "lookupName: " << ident.asString() << " " << (it == pathMappings.end()) << "\n";
+  // llvm::errs() << "lookupName: " << ident.asString() << " " << (it ==
+  // pathMappings.end()) << "\n";
   if (it == pathMappings.end())
     return std::nullopt;
 
@@ -103,12 +104,12 @@ void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
   // get the root segment
   NodeId crateId = crate->getNodeId();
   CanonicalPath cratePrefix =
-      CanonicalPath::newSegment(crateId, crate->getCrateName());
+      CanonicalPath::newSegment(crateId, Identifier(crate->getCrateName()));
   cratePrefix.setCrateNum(crate->getCrateNum());
 
   // setup a dummy crate node
   getNameScope().insert(
-      CanonicalPath::newSegment(crate->getNodeId(), "__$$crate__"),
+      CanonicalPath::newSegment(crate->getNodeId(), Identifier("__$$crate__")),
       crate->getNodeId(), Location::getEmptyLocation(), RibKind::Dummy);
 
   // setup the root scope
@@ -188,8 +189,8 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
     break;
   }
   case VisItemKind::Enumeration: {
-    resolveEnumerationItem(std::static_pointer_cast<Enumeration>(visItem), prefix,
-                        canonicalPrefix);
+    resolveEnumerationItem(std::static_pointer_cast<Enumeration>(visItem),
+                           prefix, canonicalPrefix);
     break;
   }
   case VisItemKind::Union: {
@@ -208,7 +209,7 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
   }
   case VisItemKind::Trait: {
     resolveTraitItem(std::static_pointer_cast<Trait>(visItem), prefix,
-                      canonicalPrefix);
+                     canonicalPrefix);
     break;
   }
   case VisItemKind::Implementation: {
@@ -286,21 +287,23 @@ void Resolver::resolveVisibility(std::optional<ast::Visibility> vis) {
 }
 
 void Resolver::insertResolvedName(NodeId ref, NodeId def) {
-  llvm::errs() << "insertResolvedName: " << ref << "->" << def << "\n";;
+  llvm::errs() << "insertResolvedName: " << ref << "->" << def << "\n";
+  ;
   resolvedNames[ref] = def;
   getNameScope().appendReferenceForDef(ref, def);
   insertCapturedItem(def);
 }
 
 std::optional<basic::NodeId> Scope::lookup(const adt::CanonicalPath &p) {
-    llvm::errs() << "Scope::lookup: " << p.asString() << "\n";
+  // llvm::errs() << "Scope::lookup: " << p.asString() << "\n";
 
   for (auto r : stack) {
     std::optional<NodeId> result = r->lookupName(p);
     if (result)
       return *result;
   }
-  llvm::errs() << "Scope::lookup: " << p.asString() << ": failed" << "\n";
+  // llvm::errs() << "Scope::lookup: " << p.asString() << ": failed"
+  //              << "\n";
   return std::nullopt;
 }
 
@@ -423,8 +426,8 @@ Resolver::lookupResolvedType(basic::NodeId nodeId) {
 void Resolver::insertBuiltinTypes(Rib *r) {
   auto builtins = getBuiltinTypes();
   for (auto &builtin : builtins) {
-    CanonicalPath builtinPath =
-        CanonicalPath::newSegment(builtin.second->getNodeId(), builtin.first);
+    CanonicalPath builtinPath = CanonicalPath::newSegment(
+        builtin.second->getNodeId(), Identifier(builtin.first));
     r->insertName(builtinPath, builtin.second->getNodeId(),
                   Location::getBuiltinLocation(), false, RibKind::Type);
   }

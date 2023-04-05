@@ -49,9 +49,10 @@ void Resolver::resolvePatternDeclarationWithoutRange(
   case PatternWithoutRangeKind::IdentifierPattern: {
     std::shared_ptr<ast::patterns::IdentifierPattern> id =
         std::static_pointer_cast<IdentifierPattern>(pat);
-    getNameScope().insert(CanonicalPath::newSegment(
-                              id->getNodeId(), id->getIdentifier().toString()),
-                          id->getNodeId(), id->getLocation(), rib);
+    getNameScope().insert(
+        CanonicalPath::newSegment(id->getNodeId(),
+                                  Identifier(id->getIdentifier().toString())),
+        id->getNodeId(), id->getLocation(), rib);
     break;
   }
   case PatternWithoutRangeKind::WildcardPattern: {

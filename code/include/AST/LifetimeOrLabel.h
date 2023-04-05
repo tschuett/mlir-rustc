@@ -1,19 +1,22 @@
 #pragma once
 
 #include "AST/AST.h"
+#include "Lexer/Identifier.h"
 
 #include <string>
 
 namespace rust_compiler::ast {
 
+using namespace rust_compiler::lexer;
+
 class LifetimeOrLabel : public Node {
-  std::string label;
+  Identifier label;
 
 public:
   LifetimeOrLabel(Location loc) : Node(loc) {}
 
-  void setLifeTime(std::string_view l) { label = l; }
-  std::string getLabel() const { return label; }
+  void setLifeTime(const Identifier &l) { label = l; }
+  Identifier getLabel() const { return label; }
 };
 
 } // namespace rust_compiler::ast

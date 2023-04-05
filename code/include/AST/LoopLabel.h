@@ -2,6 +2,7 @@
 
 #include "AST/AST.h"
 #include "AST/LifetimeOrLabel.h"
+#include "Lexer/Identifier.h"
 
 namespace rust_compiler::ast {
 
@@ -11,7 +12,7 @@ class LoopLabel : public Node {
 public:
   LoopLabel(Location loc) : Node(loc), label(loc) {}
 
-  std::string getName() const { return label.getLabel(); }
+  lexer::Identifier getName() const { return label.getLabel(); }
 };
 
 } // namespace rust_compiler::ast

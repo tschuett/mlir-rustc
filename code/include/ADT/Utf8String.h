@@ -19,6 +19,26 @@ public:
 
   void clear();
   void push_back(char);
+
+  bool operator==(const Utf8String &b) const {
+    if (storage.size() != b.storage.size())
+      return false;
+    for (unsigned i = 0; i < storage.size(); ++i)
+      if (storage[i] != b.storage[i])
+        return false;
+    return true;
+  }
+
+  bool operator<(const Utf8String &b) const {
+    if (storage.size() > b.storage.size())
+      return false;
+    if (storage.size() < b.storage.size())
+      return true;
+    for (unsigned i = 0; i < storage.size(); ++i)
+      if (storage[i] < b.storage[i])
+        return true;
+    return false;
+  }
 };
 
 } // namespace rust_compiler::adt

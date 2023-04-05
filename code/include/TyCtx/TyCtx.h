@@ -49,7 +49,7 @@ public:
   ast::Module *lookupModule(basic::NodeId);
 
   std::optional<adt::CanonicalPath>
-  lookupModuleChild(basic::NodeId module, std::string_view item_name);
+  lookupModuleChild(basic::NodeId module, const adt::CanonicalPath& path);
   std::optional<std::pair<ast::Enumeration *, ast::EnumItem *>>
   lookupEnumItem(NodeId id);
   void insertVariantDefinition(NodeId id, NodeId variant);
@@ -75,7 +75,7 @@ public:
     return it->second;
   }
 
-  void insertModuleChildItem(basic::NodeId module, adt::CanonicalPath child) {
+  void insertModuleChildItem(basic::NodeId module, const adt::CanonicalPath& child) {
     auto it = moduleChildItems.find(module);
     if (it == moduleChildItems.end())
       moduleChildItems.insert({module, {child}});

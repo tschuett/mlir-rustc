@@ -134,7 +134,8 @@ TypeResolver::checkTypePath(std::shared_ptr<ast::types::TypePath> tp) {
 
 TyTy::BaseType *
 TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
-                              size_t *offset, basic::NodeId *resolvedNodeId) {
+                                  size_t *offset,
+                                  basic::NodeId *resolvedNodeId) {
   // assert(false && "to be implemented");
 
   TyTy::BaseType *rootType = nullptr;
@@ -244,12 +245,12 @@ TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
 
 TyTy::BaseType *
 TypeResolver::resolveSegmentsType(basic::NodeId rootResolvedNodeId,
-                              basic::NodeId pathNodeId,
-                              std::shared_ptr<ast::types::TypePath> tp,
-                              size_t offset, TyTy::BaseType *pathType) {
+                                  basic::NodeId pathNodeId,
+                                  std::shared_ptr<ast::types::TypePath> tp,
+                                  size_t offset, TyTy::BaseType *pathType) {
   assert(false && "to be implemented");
 
-  //basic::NodeId resolvedNodeId = rootResolvedNodeId;
+  // basic::NodeId resolvedNodeId = rootResolvedNodeId;
   TyTy::BaseType *prevSegment = pathType;
 
   std::vector<TypePathSegment> segs = tp->getSegments();

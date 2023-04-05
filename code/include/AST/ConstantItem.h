@@ -5,6 +5,7 @@
 #include "AST/Types/TypeExpression.h"
 #include "AST/VisItem.h"
 #include "AST/WhereClause.h"
+#include "Lexer/Identifier.h"
 #include "Location.h"
 
 #include <optional>
@@ -31,10 +32,10 @@ public:
   void setType(std::shared_ptr<ast::types::TypeExpression>);
   void setInit(std::shared_ptr<Expression>);
 
-  std::string getName() const {
+  Identifier getName() const {
     if (underscore)
-      return "_";
-    return identifier.toString();
+      return Identifier("_");
+    return identifier;
   }
   std::shared_ptr<types::TypeExpression> getType() const { return type; }
   bool hasInit() const { return init.has_value(); }

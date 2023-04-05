@@ -2,6 +2,7 @@
 
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "Basic/Ids.h"
+#include "Lexer/Identifier.h"
 #include "Location.h"
 #include "Substitutions.h"
 #include "TyCtx/ItemIdentity.h"
@@ -195,7 +196,7 @@ private:
 class FunctionType : public BaseType {
 public:
   FunctionType(
-      basic::NodeId, std::string_view name, tyctx::ItemIdentity,
+      basic::NodeId, lexer::Identifier name, tyctx::ItemIdentity,
       std::vector<std::pair<
           std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
           TyTy::BaseType *>>
@@ -215,7 +216,7 @@ public:
 
 private:
   basic::NodeId id;
-  std::string name;
+  lexer::Identifier name;
   tyctx::ItemIdentity ident;
   std::vector<
       std::pair<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,

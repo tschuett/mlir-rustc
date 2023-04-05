@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Basic/Ids.h"
+#include "Lexer/Identifier.h"
 
 #include <span>
 #include <string>
@@ -8,17 +9,19 @@
 #include <vector>
 
 /// https://doc.rust-lang.org/reference/paths.html#canonical-paths
-
+/// They come from items and path-like objects
 namespace rust_compiler::adt {
 
+using namespace rust_compiler::lexer;
+
 class CanonicalPath {
-  std::vector<std::pair<basic::NodeId, std::string>> segments;
+  std::vector<std::pair<basic::NodeId, Identifier>> segments;
   basic::CrateNum crateNum;
 
 public:
-  static CanonicalPath newSegment(basic::NodeId id, std::string_view path) {
-    assert(!path.empty());
-    return CanonicalPath({std::pair<basic::NodeId, std::string>(id, path)},
+  static CanonicalPath newSegment(basic::NodeId id, const Identifier &path) {
+    // assert(!path.empty());
+    return CanonicalPath({std::pair<basic::NodeId, Identifier>(id, path)},
                          basic::UNKNOWN_CREATENUM);
   }
 
@@ -26,22 +29,22 @@ public:
     return CanonicalPath({}, basic::UNKNOWN_CREATENUM);
   }
 
-  std::string asString() const {
-    std::string buf;
-    for (size_t i = 0; i < segments.size(); i++) {
-      bool haveMore = (i + 1) < segments.size();
-      const std::string &seg = segments.at(i).second;
-      buf += seg + (haveMore ? "::" : "");
-    }
-    return buf;
-  }
+  //  std::string asString() const {
+  //    std::string buf;
+  //    for (size_t i = 0; i < segments.size(); i++) {
+  //      bool haveMore = (i + 1) < segments.size();
+  //      const std::string &seg = segments.at(i).second;
+  //      buf += seg + (haveMore ? "::" : "");
+  //    }
+  //    return buf;
+  //  }
 
   CanonicalPath append(const CanonicalPath &other) const {
     assert(!other.isEmpty());
     if (isEmpty())
       return CanonicalPath(other.segments, crateNum);
 
-    std::vector<std::pair<basic::NodeId, std::string>> copy(segments);
+    std::vector<std::pair<basic::NodeId, Identifier>> copy(segments);
     for (auto &s : other.segments)
       copy.push_back(s);
 
@@ -67,14 +70,32 @@ public:
     return true;
   }
 
+  /// it ignores the node ids
+  bool isEqualByName(const CanonicalPath &b) const;
+
+  bool operator==(const CanonicalPath &b) const {
+    if (segments.size() != b.segments.size())
+      return false;
+
+    for (unsigned i = 0; i < segments.size(); ++i)
+      if (segments[i] != b.segments[i])
+        return false;
+
+    return true;
+  }
+
   bool operator<(const CanonicalPath &b) const {
-    return asString() < b.asString();
+    if (segments.size() < b.segments.size())
+      return true;
+    for (unsigned i = 0; i < segments.size(); ++i)
+      if (segments[i].second < b.segments[i].second)
+        return true;
+    return false;
   }
 
 private:
-  explicit CanonicalPath(
-      std::vector<std::pair<basic::NodeId, std::string>> path,
-      basic::CrateNum crateNum)
+  explicit CanonicalPath(std::vector<std::pair<basic::NodeId, Identifier>> path,
+                         basic::CrateNum crateNum)
       : segments(path), crateNum(crateNum) {}
 };
 

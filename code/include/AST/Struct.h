@@ -4,6 +4,7 @@
 
 namespace rust_compiler::ast {
 
+/// unfortunate hack
 enum StructKind { StructStruct2, TupleStruct2 };
 
 class Struct : public VisItem {

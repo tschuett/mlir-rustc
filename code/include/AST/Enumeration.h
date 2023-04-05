@@ -4,6 +4,7 @@
 #include "AST/GenericParams.h"
 #include "AST/VisItem.h"
 #include "AST/WhereClause.h"
+#include "Lexer/Identifier.h"
 
 #include <optional>
 #include <string>
@@ -42,7 +43,7 @@ public:
   bool hasEnumItems() const { return enumItems.has_value(); }
   EnumItems getEnumItems() const { return *enumItems; }
 
-  std::string getName() const { return identifier.toString(); }
+  Identifier getName() const { return identifier; }
 };
 
 } // namespace st_compiler::ast

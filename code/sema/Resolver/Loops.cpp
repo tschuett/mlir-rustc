@@ -43,7 +43,7 @@ void Resolver::resolveInfiniteLoopExpression(
     const adt::CanonicalPath &canonicalPrefix) {
   if (infini->hasLabel()) {
     LoopLabel l = infini->getLabel();
-    std::string name = l.getName();
+    Identifier name = l.getName();
     NodeId id = l.getNodeId();
     getLabelScope().insert(CanonicalPath::newSegment(infini->getNodeId(), name),
                            id, l.getLocation(), RibKind::Label);

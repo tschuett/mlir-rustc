@@ -31,7 +31,7 @@ public:
   void setType(std::shared_ptr<types::TypeExpression>);
   void setInit(std::shared_ptr<Expression>);
 
-  std::string getName() const { return identifier.toString(); }
+  Identifier getName() const { return identifier; }
   std::shared_ptr<types::TypeExpression> getType() const { return type; }
   bool hasInit() const { return init.has_value(); }
   std::shared_ptr<Expression> getInit() const { return *init; }

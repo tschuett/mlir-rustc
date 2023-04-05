@@ -60,15 +60,14 @@ bool TyCtx::isModule(NodeId id) {
 }
 
 std::optional<adt::CanonicalPath>
-TyCtx::lookupModuleChild(NodeId module, std::string_view itemName) {
+TyCtx::lookupModuleChild(NodeId module, const adt::CanonicalPath& item) {
   std::optional<std::vector<adt::CanonicalPath>> children =
       lookupModuleChildrenItems(module);
   if (!children)
     return std::nullopt;
 
   for (auto &child : *children) {
-    std::string asString = child.asString();
-    if (asString == itemName)
+    if (child.isEqualByName(item))
       return child;
   }
   return std::nullopt;

@@ -4,6 +4,7 @@
 #include "AST/Struct.h"
 #include "AST/TupleFields.h"
 #include "AST/WhereClause.h"
+#include "Lexer/Identifier.h"
 
 #include <optional>
 #include <string>
@@ -27,7 +28,7 @@ public:
   void setWhereClause(const WhereClause &w) { whereClause = w; }
   void setTupleFields(const TupleFields &tp) { tupleFields = tp; }
 
-  std::string getName() const { return identifier.toString(); }
+  Identifier getName() const { return identifier; }
 
   bool hasGenerics() const { return genericParms.has_value(); }
   GenericParams getGenericParams() const { return *genericParms; };

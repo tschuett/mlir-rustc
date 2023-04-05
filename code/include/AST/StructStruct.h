@@ -4,11 +4,14 @@
 #include "AST/Struct.h"
 #include "AST/StructFields.h"
 #include "AST/WhereClause.h"
+#include "Lexer/Identifier.h"
 
 #include <optional>
 #include <string>
 
 namespace rust_compiler::ast {
+
+using namespace rust_compiler::lexer;
 
 class StructStruct : public Struct {
   Identifier identifier;
@@ -29,7 +32,7 @@ public:
   bool hasWhereClause() const { return whereClause.has_value(); }
   bool hasStructFields() const { return structFields.has_value(); }
 
-  std::string getIdentifier() const { return identifier.toString(); }
+  Identifier getIdentifier() const { return identifier; }
   GenericParams getGenericParams() const { return *genericParams; }
   WhereClause getWhereClause() const { return *whereClause; }
   StructFields getFields() const { return *structFields; }
