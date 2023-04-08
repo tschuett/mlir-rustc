@@ -1,20 +1,21 @@
 #include "ItemVisitor.h"
 
 #include "AST/BlockExpression.h"
+#include "AST/ConstantItem.h"
 #include "AST/Enumeration.h"
 #include "AST/ExternBlock.h"
 #include "AST/ExternCrate.h"
 #include "AST/Implementation.h"
 #include "AST/InherentImpl.h"
+#include "AST/Item.h"
 #include "AST/Statements.h"
+#include "AST/StaticItem.h"
 #include "AST/Struct.h"
 #include "AST/Trait.h"
 #include "AST/TraitImpl.h"
 #include "AST/TypeAlias.h"
-#include "AST/UseDeclaration.h"
 #include "AST/Union.h"
-#include "AST/ConstantItem.h"
-#include "AST/StaticItem.h"
+#include "AST/UseDeclaration.h"
 
 #include <memory>
 
@@ -35,11 +36,15 @@ void visitStruct(std::shared_ptr<ast::Struct> fun, ItemVisitor *visitor);
 void visitEnumeration(std::shared_ptr<ast::Enumeration> fun,
                       ItemVisitor *visitor);
 void visitTypeAlias(std::shared_ptr<ast::TypeAlias> fun, ItemVisitor *visitor);
-void visitUseDeclaration(std::shared_ptr<ast::UseDeclaration> fun, ItemVisitor *visitor);
-void visitExternCrate(std::shared_ptr<ast::ExternCrate> fun, ItemVisitor *visitor);
+void visitUseDeclaration(std::shared_ptr<ast::UseDeclaration> fun,
+                         ItemVisitor *visitor);
+void visitExternCrate(std::shared_ptr<ast::ExternCrate> fun,
+                      ItemVisitor *visitor);
 void visitUnion(std::shared_ptr<ast::Union> fun, ItemVisitor *visitor);
-void visitConstantItem(std::shared_ptr<ast::ConstantItem> fun, ItemVisitor *visitor);
-void visitStaticItem(std::shared_ptr<ast::StaticItem> fun, ItemVisitor *visitor);
+void visitConstantItem(std::shared_ptr<ast::ConstantItem> fun,
+                       ItemVisitor *visitor);
+void visitStaticItem(std::shared_ptr<ast::StaticItem> fun,
+                     ItemVisitor *visitor);
 
 ///
 
@@ -96,8 +101,7 @@ void visitImplementation(std::shared_ptr<ast::Implementation> impl,
 }
 
 void visitAssociatedItem(std::shared_ptr<ast::AssociatedItem> assoItem,
-                         ItemVisitor *visitor) {
-}
+                         ItemVisitor *visitor) {}
 
 void visitTrait(std::shared_ptr<ast::Trait> trait, ItemVisitor *visitor) {
   for (auto &assoItem : trait->getAssociatedItems()) {
@@ -190,7 +194,15 @@ void visitVisItem(std::shared_ptr<ast::VisItem> visItem, ItemVisitor *visitor) {
 
 void visitItem(std::shared_ptr<ast::Item> item, ItemVisitor *visitor) {
   visitor->visitItem(item);
-  visitVisItem(item->getVisItem(), visitor);
+  switch (item->getItemKind()) {
+  case ItemKind::VisItem: {
+    visitVisItem(std::static_pointer_cast<VisItem>(item), visitor);
+    break;
+  }
+  case ItemKind::MacroItem: {
+    break;
+  }
+  }
 }
 
 void run(std::shared_ptr<ast::Crate> crate, ItemVisitor *visitor) {

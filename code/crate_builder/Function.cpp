@@ -16,8 +16,6 @@ using namespace rust_compiler::adt;
 namespace rust_compiler::crate_builder {
 
 mlir::FunctionType CrateBuilder::getFunctionType(ast::Function *fun) {
-  assert(false);
-
   llvm::SmallVector<mlir::Type> parameterType;
   FunctionParameters params = fun->getParams();
   std::vector<FunctionParam> parms = params.getParams();
@@ -49,13 +47,13 @@ mlir::FunctionType CrateBuilder::getFunctionType(ast::Function *fun) {
 }
 
 /// FIXME set visibility: { sym_visibility = "public" }
-void CrateBuilder::emitFunction(std::shared_ptr<ast::Function> f) {
+void CrateBuilder::emitFunction(ast::Function* f) {
 
   ScopedHashTableScope<std::string, mlir::Value> scope(symbolTable);
 
   builder.setInsertionPointToEnd(theModule.getBody());
 
-  mlir::FunctionType funType = getFunctionType(f.get());
+  mlir::FunctionType funType = getFunctionType(f);
 
   mlir::func::FuncOp fun = builder.create<mlir::func::FuncOp>(
       getLocation(f->getLocation()), "foo", funType);

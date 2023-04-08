@@ -13,10 +13,12 @@
 #include "AST/MethodCallExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/Types/TypeExpression.h"
+#include "AST/Types/TypeNoBounds.h"
 #include "AST/VariableDeclaration.h"
 #include "CrateBuilder/Target.h"
 #include "Hir/HirDialect.h"
 #include "AST/ReturnExpression.h"
+#include "AST/Types/TypePath.h"
 
 #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
@@ -99,10 +101,10 @@ public:
   mlir::ModuleOp getModule() const { return theModule; };
 
 private:
-  void emitItem(std::shared_ptr<ast::Item> &);
-  void emitVisItem(std::shared_ptr<ast::VisItem>);
-  void emitFunction(std::shared_ptr<ast::Function>);
-  void emitModule(std::shared_ptr<ast::Module>);
+  void emitItem(ast::Item *item);
+  void emitVisItem(ast::VisItem *vis);
+  void emitFunction(ast::Function *fun);
+  void emitModule(ast::Module*);
   std::optional<mlir::Value> emitBlockExpression(ast::BlockExpression *);
   std::optional<mlir::Value> emitStatements(ast::Statements);
   mlir::Value emitExpression(ast::Expression* expr);
@@ -126,6 +128,8 @@ private:
   mlir::FunctionType getFunctionType(ast::Function *);
 
   mlir::Type getType(ast::types::TypeExpression *);
+  mlir::Type getTypeNoBounds(ast::types::TypeNoBounds *);
+  mlir::Type getTypePath(ast::types::TypePath *);
 
   /// Helper conversion for a Rust AST location to an MLIR location.
   mlir::Location getLocation(const Location &loc) {

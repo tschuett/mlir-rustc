@@ -24,12 +24,10 @@ public:
   explicit Item(Location loc, ItemKind kind) : Node(loc), kind(kind) {}
 
   void setOuterAttributes(std::span<OuterAttribute> outer);
-  void setVisItem(std::shared_ptr<VisItem> visItem);
 
   std::span<OuterAttribute> getOuterAttributes() ;
 
   ItemKind getItemKind() const { return kind; }
-  std::shared_ptr<VisItem> getVisItem() const;
 };
 
 } // namespace rust_compiler::ast

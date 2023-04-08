@@ -1,3 +1,5 @@
+#include "AST/Item.h"
+
 #include "AST/Module.h"
 #include "AST/VisItem.h"
 #include "CrateBuilder/CrateBuilder.h"
@@ -8,16 +10,23 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::crate_builder {
 
-void CrateBuilder::emitItem(std::shared_ptr<Item> &item) {
-
-  emitVisItem(item->getVisItem());
+void CrateBuilder::emitItem(Item *item) {
+  switch (item->getItemKind()) {
+  case ItemKind::VisItem: {
+    emitVisItem(static_cast<VisItem *>(item));
+    break;
+  }
+  case ItemKind::MacroItem: {
+    assert(false && "to be implemented");
+  }
+  }
 }
 
-void CrateBuilder::emitVisItem(std::shared_ptr<VisItem> visItem) {
+void CrateBuilder::emitVisItem(VisItem *visItem) {
 
   switch (visItem->getKind()) {
   case VisItemKind::Module: {
-    emitModule(std::static_pointer_cast<ast::Module>(visItem));
+    emitModule(static_cast<ast::Module *>(visItem));
     break;
   }
   case VisItemKind::ExternCrate: {
@@ -27,7 +36,7 @@ void CrateBuilder::emitVisItem(std::shared_ptr<VisItem> visItem) {
     break;
   }
   case VisItemKind::Function: {
-    emitFunction(std::static_pointer_cast<ast::Function>(visItem));
+    emitFunction(static_cast<ast::Function *>(visItem));
     break;
   }
   case VisItemKind::TypeAlias: {
