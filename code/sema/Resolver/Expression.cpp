@@ -276,8 +276,9 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
     if (i == 0) {
       // name first
       // NodeId resolvedNode = UNKNOWN_NODEID;
+      assert(ident.toString().size() != 0);
       CanonicalPath path = CanonicalPath::newSegment(
-          seg.getNodeId(), Identifier(ident.toString()));
+          seg.getNodeId(), lexer::Identifier(ident.toString()));
       if (auto node = getNameScope().lookup(path)) {
         // resolvedNode = *node;
         resolvedNodeId = *node;

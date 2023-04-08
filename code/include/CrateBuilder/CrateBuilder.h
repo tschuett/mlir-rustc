@@ -6,10 +6,12 @@
 #include "AST/CallExpression.h"
 #include "AST/Crate.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/Function.h"
 #include "AST/LetStatement.h"
 #include "AST/LoopExpression.h"
 #include "AST/MethodCallExpression.h"
 #include "AST/OperatorExpression.h"
+#include "AST/Types/TypeExpression.h"
 #include "AST/VariableDeclaration.h"
 #include "CrateBuilder/Target.h"
 #include "Hir/HirDialect.h"
@@ -30,7 +32,8 @@
 
 namespace rust_compiler::crate_builder {
 
-/// Lowers an AST Crate into a mix of Hir, Arith, MemRef, ... dialects into an MLIR module
+/// Lowers an AST Crate into a mix of Hir, Arith, MemRef, ... dialects into an
+/// MLIR module
 class CrateBuilder {
   std::string moduleName;
   // mlir::MLIRContext context;
@@ -119,6 +122,9 @@ private:
   mlir::Value
   emitMethodCallExpression(std::shared_ptr<ast::MethodCallExpression> expr);
 
+  mlir::FunctionType getFunctionType(ast::Function *);
+
+  mlir::Type getType(ast::types::TypeExpression *);
 
   /// Helper conversion for a Rust AST location to an MLIR location.
   mlir::Location getLocation(const Location &loc) {

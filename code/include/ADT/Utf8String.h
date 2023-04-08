@@ -10,7 +10,11 @@ class Utf8String {
   /// an array of UChar32
   std::vector<UChar32> storage;
 
+  size_t size = 0;
+
 public:
+  Utf8String() = default;
+
   void append(UChar32);
 
   bool isASCII() const;
@@ -31,6 +35,7 @@ public:
 
   bool operator<(const Utf8String &b) const {
     if (storage.size() > b.storage.size())
+      // if (size > b.size)
       return false;
     if (storage.size() < b.storage.size())
       return true;

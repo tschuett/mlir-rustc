@@ -14,6 +14,7 @@ add_library(crate_builder
            OperatorExpression.cpp
            Target.cpp
            Calls.cpp
+           Types.cpp
            )
 
 

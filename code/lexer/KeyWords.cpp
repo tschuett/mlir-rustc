@@ -1,8 +1,21 @@
 #include "Lexer/KeyWords.h"
 
+#include <optional>
+
 namespace rust_compiler::lexer {
 
 // FIXME: slow
+
+//std::optional<std::string> KeyWord2String(KeyWordKind kind) {
+//  switch (kind) {
+//    case KeyWordKind::KW_AS : return "as";
+//    case KeyWordKind::KW_BREAK : return "break";
+//    case KeyWordKind::KW_CONST : return "const";
+//    case KeyWordKind::KW_CONTINUE : return "continue";
+//    case KeyWordKind::KW_CRATE : return "crate";
+//  }
+//  return std::nullopt;
+//}
 
 static const std::pair<KeyWordKind, std::string> KW[] = {
     {KeyWordKind::KW_AS, "as"},

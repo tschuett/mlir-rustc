@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Basic/Edition.h"
+
 #include <optional>
 #include <string>
 
@@ -61,9 +63,13 @@ enum class KeyWordKind {
   KW_YIELD,
   KW_TRY,
 
-  //KW_DOLLARCRATE,
+  // KW_DOLLARCRATE,
   KW_MACRO_RULES
 };
+
+bool isStrictKeyword(KeyWordKind, basic::Edition);
+bool isReservedKeyword(KeyWordKind, basic::Edition);
+bool isWeakKeyword(KeyWordKind, basic::Edition);
 
 std::optional<std::string> KeyWord2String(KeyWordKind);
 

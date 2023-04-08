@@ -21,7 +21,9 @@ class CanonicalPath {
 public:
   static CanonicalPath newSegment(basic::NodeId id, const Identifier &path) {
     // assert(!path.empty());
-    return CanonicalPath({std::pair<basic::NodeId, Identifier>(id, path)},
+    std::vector<std::pair<basic::NodeId, Identifier>> segment;
+    segment.push_back({std::pair<basic::NodeId, Identifier>(id, path)});
+    return CanonicalPath(segment,
                          basic::UNKNOWN_CREATENUM);
   }
 
@@ -96,7 +98,11 @@ public:
 private:
   explicit CanonicalPath(std::vector<std::pair<basic::NodeId, Identifier>> path,
                          basic::CrateNum crateNum)
-      : segments(path), crateNum(crateNum) {}
+      : crateNum(crateNum) {
+    for (unsigned i = 0; i < path.size(); ++i)
+      segments.push_back(path[i]);
+    segments.size();
+  }
 };
 
 } // namespace rust_compiler::adt
