@@ -71,10 +71,11 @@ void CrateBuilder::emitFunction(std::shared_ptr<ast::Function> f) {
   //   fun.setAttr(mlir::SymbolTable::getVisibilityAttrName(),
   //               mlir::StringAttr::get("public", ctx));
   //
-  if (f->hasBody()) {
-    Expression *expr = f->getBody().get();
-    emitBlockExpression(static_cast<ast::BlockExpression*>(expr));
-  }
+
+  builder.setInsertionPointToStart(&entryBlock);
+
+  if (f->hasBody())
+      emitBlockExpression(static_cast<ast::BlockExpression *>(f->getBody().get()));
 
   functionMap.insert({"foo", fun});
 }

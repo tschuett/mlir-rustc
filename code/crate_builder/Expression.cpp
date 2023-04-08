@@ -20,17 +20,11 @@ mlir::Value CrateBuilder::emitExpression(ast::Expression *expr) {
 }
 
 mlir::Value
-CrateBuilder::emitExpressionWithoutBlock(ast::ExpressionWithoutBlock *expr) {
-  assert(false);
-}
-
-mlir::Value
-CrateBuilder::emitExpressionWithBlock(ast::ExpressionWithBlock *expr) {
-  assert(false);
-}
-
-mlir::Value
 CrateBuilder::emitMethodCallExpression(ast::MethodCallExpression *expr) {
+  assert(false);
+}
+
+mlir::Value CrateBuilder::emitReturnExpression(ast::ReturnExpression *expr) {
   assert(false);
 }
 
