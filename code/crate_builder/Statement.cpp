@@ -2,13 +2,14 @@
 
 #include "AST/ExpressionStatement.h"
 #include "CrateBuilder/CrateBuilder.h"
+
 #include <memory>
 
 using namespace rust_compiler::ast;
 
 namespace rust_compiler::crate_builder {
 
-void CrateBuilder::emitStatement(std::shared_ptr<ast::Statement> stmt) {
+void CrateBuilder::emitStatement(ast::Statement *stmt) {
   switch (stmt->getKind()) {
   case StatementKind::EmptyStatement: {
     // empty
@@ -18,11 +19,12 @@ void CrateBuilder::emitStatement(std::shared_ptr<ast::Statement> stmt) {
     break;
   }
   case ast::StatementKind::LetStatement: {
-    emitLetStatement(std::static_pointer_cast<ast::LetStatement>(stmt));
+    emitLetStatement(static_cast<ast::LetStatement *>(stmt));
     break;
   }
   case ast::StatementKind::ExpressionStatement: {
-    emitExpressionStatement(std::static_pointer_cast<ast::ExpressionStatement>(stmt));
+    emitExpressionStatement(
+        static_cast<ast::ExpressionStatement *>(stmt));
     break;
   }
   case ast::StatementKind::MacroInvocationSemi: {
@@ -30,5 +32,7 @@ void CrateBuilder::emitStatement(std::shared_ptr<ast::Statement> stmt) {
   }
   }
 }
+
+void CrateBuilder::emitLetStatement(ast::LetStatement *let) { assert(false); }
 
 } // namespace rust_compiler::crate_builder

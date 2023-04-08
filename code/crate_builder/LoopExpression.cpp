@@ -8,7 +8,7 @@ using namespace rust_compiler::ast;
 namespace rust_compiler::crate_builder {
 
 mlir::Value
-CrateBuilder::emitLoopExpression(std::shared_ptr<ast::LoopExpression> expr) {
+CrateBuilder::emitLoopExpression(ast::LoopExpression* expr) {
   switch (expr->getLoopExpressionKind()) {
   case LoopExpressionKind::InfiniteLoopExpression: {
     break;

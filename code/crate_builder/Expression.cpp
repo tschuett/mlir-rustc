@@ -4,18 +4,34 @@
 
 namespace rust_compiler::crate_builder {
 
-mlir::Value
-CrateBuilder::emitExpression(std::shared_ptr<ast::Expression> expr) {
+mlir::Value CrateBuilder::emitExpression(ast::Expression *expr) {
   switch (expr->getExpressionKind()) {
   case ast::ExpressionKind::ExpressionWithBlock: {
-    return emitExpressionWithBlock(expr);
+    return emitExpressionWithBlock(
+        static_cast<ast::ExpressionWithBlock *>(expr));
     break;
   }
   case ast::ExpressionKind::ExpressionWithoutBlock: {
-    return emitExpressionWithoutBlock(expr);
+    return emitExpressionWithoutBlock(
+        static_cast<ast::ExpressionWithoutBlock *>(expr));
     break;
   }
   }
+}
+
+mlir::Value
+CrateBuilder::emitExpressionWithoutBlock(ast::ExpressionWithoutBlock *expr) {
+  assert(false);
+}
+
+mlir::Value
+CrateBuilder::emitExpressionWithBlock(ast::ExpressionWithBlock *expr) {
+  assert(false);
+}
+
+mlir::Value
+CrateBuilder::emitMethodCallExpression(ast::MethodCallExpression *expr) {
+  assert(false);
 }
 
 } // namespace rust_compiler::crate_builder

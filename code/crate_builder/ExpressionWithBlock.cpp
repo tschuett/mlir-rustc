@@ -8,11 +8,9 @@ using namespace rust_compiler::ast;
 namespace rust_compiler::crate_builder {
 
 mlir::Value
-CrateBuilder::emitExpressionWithBlock(std::shared_ptr<ast::Expression> expr) {
+CrateBuilder::emitExpressionWithBlock(ast::ExpressionWithBlock* expr) {
 
-  std::shared_ptr<ast::ExpressionWithBlock> block =
-      std::static_pointer_cast<ExpressionWithBlock>(expr);
-  switch (block->getWithBlockKind()) {
+  switch (expr->getWithBlockKind()) {
   case ExpressionWithBlockKind::BlockExpression: {
     break;
   }
@@ -20,8 +18,7 @@ CrateBuilder::emitExpressionWithBlock(std::shared_ptr<ast::Expression> expr) {
     break;
   }
   case ExpressionWithBlockKind::LoopExpression: {
-    return emitLoopExpression(std::static_pointer_cast<LoopExpression>(block));
-    break;
+    return emitLoopExpression(static_cast<LoopExpression*>(expr));
   }
   case ExpressionWithBlockKind::IfExpression: {
     break;

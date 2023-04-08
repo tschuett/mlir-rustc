@@ -9,8 +9,8 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::crate_builder {
 
-mlir::Value CrateBuilder::emitOperatorExpression(
-    std::shared_ptr<ast::OperatorExpression> expr) {
+mlir::Value
+CrateBuilder::emitOperatorExpression(ast::OperatorExpression *expr) {
 
   switch (expr->getKind()) {
   case OperatorExpressionKind::BorrowExpression: {
@@ -27,7 +27,7 @@ mlir::Value CrateBuilder::emitOperatorExpression(
   }
   case OperatorExpressionKind::ArithmeticOrLogicalExpression: {
     return emitArithmeticOrLogicalExpression(
-        std::static_pointer_cast<ArithmeticOrLogicalExpression>(expr));
+        static_cast<ArithmeticOrLogicalExpression *>(expr));
     break;
   }
   case OperatorExpressionKind::ComparisonExpression: {
@@ -50,7 +50,7 @@ mlir::Value CrateBuilder::emitOperatorExpression(
 }
 
 mlir::Value CrateBuilder::emitArithmeticOrLogicalExpression(
-    std::shared_ptr<ArithmeticOrLogicalExpression> expr) {
+    ArithmeticOrLogicalExpression *expr) {
   switch (expr->getKind()) {
   case ArithmeticOrLogicalExpressionKind::Addition: {
     break;

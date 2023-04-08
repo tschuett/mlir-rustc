@@ -5,6 +5,7 @@
 #include "AST/BlockExpression.h"
 #include "AST/CallExpression.h"
 #include "AST/Crate.h"
+#include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/Function.h"
 #include "AST/LetStatement.h"
@@ -15,6 +16,7 @@
 #include "AST/VariableDeclaration.h"
 #include "CrateBuilder/Target.h"
 #include "Hir/HirDialect.h"
+#include "AST/ReturnExpression.h"
 
 #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
@@ -44,9 +46,7 @@ class CrateBuilder {
   Target target;
   std::stack<mlir::Block *> breakPoints;
 
-  adt::ScopedHashTable<std::string,
-                       std::pair<mlir::Value, ast::VariableDeclaration *>>
-      symbolTable;
+  adt::ScopedHashTable<std::string, mlir::Value> symbolTable;
 
   /// A mapping for the functions that have been code generated to MLIR.
   llvm::StringMap<mlir::func::FuncOp> functionMap;
@@ -103,24 +103,25 @@ private:
   void emitVisItem(std::shared_ptr<ast::VisItem>);
   void emitFunction(std::shared_ptr<ast::Function>);
   void emitModule(std::shared_ptr<ast::Module>);
-  std::optional<mlir::Value>
-      emitBlockExpression(std::shared_ptr<ast::BlockExpression>);
+  std::optional<mlir::Value> emitBlockExpression(ast::BlockExpression *);
   std::optional<mlir::Value> emitStatements(ast::Statements);
-  mlir::Value emitExpression(std::shared_ptr<ast::Expression> expr);
-  mlir::Value emitExpressionWithoutBlock(std::shared_ptr<ast::Expression> expr);
-  mlir::Value emitExpressionWithBlock(std::shared_ptr<ast::Expression> expr);
-  void emitStatement(std::shared_ptr<ast::Statement>);
-  void emitExpressionStatement(std::shared_ptr<ast::ExpressionStatement> stmt);
-  void emitLetStatement(std::shared_ptr<ast::LetStatement> stmt);
-  mlir::Value emitLoopExpression(std::shared_ptr<ast::LoopExpression> expr);
+  mlir::Value emitExpression(ast::Expression* expr);
+  mlir::Value emitExpressionWithoutBlock(ast::ExpressionWithoutBlock* expr);
+  mlir::Value emitExpressionWithBlock(ast::ExpressionWithBlock* expr);
+  void emitStatement(ast::Statement *);
+  void emitExpressionStatement(ast::ExpressionStatement *stmt);
+  void emitLetStatement(ast::LetStatement *stmt);
+  mlir::Value emitLoopExpression(ast::LoopExpression* expr);
   mlir::Value
-  emitOperatorExpression(std::shared_ptr<ast::OperatorExpression> expr);
+  emitOperatorExpression(ast::OperatorExpression* expr);
   mlir::Value emitArithmeticOrLogicalExpression(
-      std::shared_ptr<ast::ArithmeticOrLogicalExpression> expr);
+      ast::ArithmeticOrLogicalExpression* expr);
 
-  mlir::Value emitCallExpression(std::shared_ptr<ast::CallExpression> expr);
+  mlir::Value emitCallExpression(ast::CallExpression* expr);
   mlir::Value
-  emitMethodCallExpression(std::shared_ptr<ast::MethodCallExpression> expr);
+  emitMethodCallExpression(ast::MethodCallExpression* expr);
+  mlir::Value
+  emitReturnExpression(ast::ReturnExpression* expr);
 
   mlir::FunctionType getFunctionType(ast::Function *);
 

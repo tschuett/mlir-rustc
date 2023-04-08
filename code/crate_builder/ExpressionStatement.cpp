@@ -4,8 +4,7 @@
 
 namespace rust_compiler::crate_builder {
 
-void CrateBuilder::emitExpressionStatement(
-    std::shared_ptr<ast::ExpressionStatement> stmt) {
+void CrateBuilder::emitExpressionStatement(ast::ExpressionStatement *stmt) {
   // FIXME
   assert(false);
 

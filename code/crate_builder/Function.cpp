@@ -11,6 +11,7 @@
 #include <mlir/IR/Types.h>
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::adt;
 
 namespace rust_compiler::crate_builder {
 
@@ -24,6 +25,7 @@ mlir::FunctionType CrateBuilder::getFunctionType(ast::Function *fun) {
     switch (parm.getKind()) {
     case FunctionParamKind::Pattern: {
       parameterType.push_back(getType(parm.getType().get()));
+      FunctionParamPattern pattern = parm.getPattern();
       break;
     }
     case FunctionParamKind::DotDotDot: {
@@ -48,22 +50,33 @@ mlir::FunctionType CrateBuilder::getFunctionType(ast::Function *fun) {
 
 /// FIXME set visibility: { sym_visibility = "public" }
 void CrateBuilder::emitFunction(std::shared_ptr<ast::Function> f) {
+
+  ScopedHashTableScope<std::string, mlir::Value> scope(symbolTable);
+
+  builder.setInsertionPointToEnd(theModule.getBody());
+
   mlir::FunctionType funType = getFunctionType(f.get());
 
   mlir::func::FuncOp fun = builder.create<mlir::func::FuncOp>(
       getLocation(f->getLocation()), "foo", funType);
 
+  mlir::Block &entryBlock = fun.front();
+  llvm::SmallVector<std::string> parameterNames;
+  // entryBlock.getArguments()
+
   // mlir::MLIRContext *ctx = fun.getContext();
 
-  //mlir::SymbolTable::setSymbolVisibility(&fun,
-  //                                       mlir::SymbolTable::Visibility::Public);
-  //  fun.setAttr(mlir::SymbolTable::getVisibilityAttrName(),
-  //              mlir::StringAttr::get("public", ctx));
+  // mlir::SymbolTable::setSymbolVisibility(&fun,
+  //                                        mlir::SymbolTable::Visibility::Public);
+  //   fun.setAttr(mlir::SymbolTable::getVisibilityAttrName(),
+  //               mlir::StringAttr::get("public", ctx));
   //
-  assert(false);
-  if (f->hasBody())
-    emitBlockExpression(
-        std::static_pointer_cast<ast::BlockExpression>(f->getBody()));
+  if (f->hasBody()) {
+    Expression *expr = f->getBody().get();
+    emitBlockExpression(static_cast<ast::BlockExpression*>(expr));
+  }
+
+  functionMap.insert({"foo", fun});
 }
 
 } // namespace rust_compiler::crate_builder

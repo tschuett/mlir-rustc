@@ -3,12 +3,12 @@
 namespace rust_compiler::crate_builder {
 
 mlir::Value
-CrateBuilder::emitCallExpression(std::shared_ptr<ast::CallExpression> expr) {
+CrateBuilder::emitCallExpression(ast::CallExpression* expr) {
   assert(false);
 }
 
 mlir::Value
-emitMethodCallExpression(std::shared_ptr<ast::MethodCallExpression> expr) {
+emitMethodCallExpression(ast::MethodCallExpression* expr) {
   assert(false);
 }
 
