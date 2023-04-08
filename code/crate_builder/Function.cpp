@@ -22,8 +22,9 @@ mlir::FunctionType CrateBuilder::getFunctionType(ast::Function *fun) {
   for (FunctionParam &parm : parms) {
     switch (parm.getKind()) {
     case FunctionParamKind::Pattern: {
-      parameterType.push_back(getType(parm.getType().get()));
       FunctionParamPattern pattern = parm.getPattern();
+      assert(pattern.hasType());
+      parameterType.push_back(getType(pattern.getType().get()));
       break;
     }
     case FunctionParamKind::DotDotDot: {

@@ -12,13 +12,14 @@
 #include "AST/LoopExpression.h"
 #include "AST/MethodCallExpression.h"
 #include "AST/OperatorExpression.h"
+#include "AST/ReturnExpression.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
+#include "AST/Types/TypePath.h"
 #include "AST/VariableDeclaration.h"
 #include "CrateBuilder/Target.h"
 #include "Hir/HirDialect.h"
-#include "AST/ReturnExpression.h"
-#include "AST/Types/TypePath.h"
+#include "TyCtx/TyCtx.h"
 
 #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
@@ -56,45 +57,47 @@ class CrateBuilder {
   mlir::Region *functionRegion = nullptr;
   mlir::Block *entryBlock = nullptr;
 
+  tyctx::TyCtx *tyCtx;
+
 public:
   CrateBuilder(llvm::raw_ostream &OS, mlir::ModuleOp &theModule,
                mlir::MLIRContext &context, llvm::TargetMachine *tm)
       : builder(&context), theModule(theModule),
-        serializer(OS, llvm::remarks::SerializerMode::Separate),
-        target(tm){
+        serializer(OS, llvm::remarks::SerializerMode::Separate), target(tm) {
+    tyCtx = tyctx::TyCtx::get();
 
-            //    // Create `Target`
-            //    std::string theTriple =
-            //        llvm::Triple::normalize(llvm::sys::getDefaultTargetTriple());
-            //
-            //    std::string error;
-            //    const llvm::Target *theTarget =
-            //        llvm::TargetRegistry::lookupTarget(theTriple, error);
-            //
-            //    std::string featuresStr;
-            //    std::string cpu = std::string(llvm::sys::getHostCPUName());
-            //    std::unique_ptr<::llvm::TargetMachine> tm;
-            //    tm.reset(theTarget->createTargetMachine(
-            //        theTriple, /*CPU=*/cpu,
-            //        /*Features=*/featuresStr, llvm::TargetOptions(),
-            //        /*Reloc::Model=*/llvm::Reloc::Model::PIC_,
-            //        /*CodeModel::Model=*/std::nullopt,
-            //        llvm::CodeGenOpt::Aggressive));
-            //    assert(tm && "Failed to create TargetMachine");
-            //
-            //    Target target = {tm.get()};
-            //
-            //    // builder = {&context};
-            //
-            //    context.getOrLoadDialect<hir::HirDialect>();
-            //    context.getOrLoadDialect<mlir::func::FuncDialect>();
-            //    context.getOrLoadDialect<mlir::arith::ArithDialect>();
-            //    //context.getOrLoadDialect<mlir::async::AsyncDialect>();
-            //    //context.getOrLoadDialect<mlir::memref::MemRefDialect>();
-            //    context.getOrLoadDialect<mlir::cf::ControlFlowDialect>();
-            //
-            //    theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
-        };
+    //    // Create `Target`
+    //    std::string theTriple =
+    //        llvm::Triple::normalize(llvm::sys::getDefaultTargetTriple());
+    //
+    //    std::string error;
+    //    const llvm::Target *theTarget =
+    //        llvm::TargetRegistry::lookupTarget(theTriple, error);
+    //
+    //    std::string featuresStr;
+    //    std::string cpu = std::string(llvm::sys::getHostCPUName());
+    //    std::unique_ptr<::llvm::TargetMachine> tm;
+    //    tm.reset(theTarget->createTargetMachine(
+    //        theTriple, /*CPU=*/cpu,
+    //        /*Features=*/featuresStr, llvm::TargetOptions(),
+    //        /*Reloc::Model=*/llvm::Reloc::Model::PIC_,
+    //        /*CodeModel::Model=*/std::nullopt,
+    //        llvm::CodeGenOpt::Aggressive));
+    //    assert(tm && "Failed to create TargetMachine");
+    //
+    //    Target target = {tm.get()};
+    //
+    //    // builder = {&context};
+    //
+    //    context.getOrLoadDialect<hir::HirDialect>();
+    //    context.getOrLoadDialect<mlir::func::FuncDialect>();
+    //    context.getOrLoadDialect<mlir::arith::ArithDialect>();
+    //    //context.getOrLoadDialect<mlir::async::AsyncDialect>();
+    //    //context.getOrLoadDialect<mlir::memref::MemRefDialect>();
+    //    context.getOrLoadDialect<mlir::cf::ControlFlowDialect>();
+    //
+    //    theModule = mlir::ModuleOp::create(builder.getUnknownLoc());
+  };
 
   void emitCrate(rust_compiler::ast::Crate *crate);
 
@@ -104,26 +107,23 @@ private:
   void emitItem(ast::Item *item);
   void emitVisItem(ast::VisItem *vis);
   void emitFunction(ast::Function *fun);
-  void emitModule(ast::Module*);
+  void emitModule(ast::Module *);
   std::optional<mlir::Value> emitBlockExpression(ast::BlockExpression *);
   std::optional<mlir::Value> emitStatements(ast::Statements);
-  mlir::Value emitExpression(ast::Expression* expr);
-  mlir::Value emitExpressionWithoutBlock(ast::ExpressionWithoutBlock* expr);
-  mlir::Value emitExpressionWithBlock(ast::ExpressionWithBlock* expr);
+  mlir::Value emitExpression(ast::Expression *expr);
+  mlir::Value emitExpressionWithoutBlock(ast::ExpressionWithoutBlock *expr);
+  mlir::Value emitExpressionWithBlock(ast::ExpressionWithBlock *expr);
   void emitStatement(ast::Statement *);
   void emitExpressionStatement(ast::ExpressionStatement *stmt);
   void emitLetStatement(ast::LetStatement *stmt);
-  mlir::Value emitLoopExpression(ast::LoopExpression* expr);
+  mlir::Value emitLoopExpression(ast::LoopExpression *expr);
+  mlir::Value emitOperatorExpression(ast::OperatorExpression *expr);
   mlir::Value
-  emitOperatorExpression(ast::OperatorExpression* expr);
-  mlir::Value emitArithmeticOrLogicalExpression(
-      ast::ArithmeticOrLogicalExpression* expr);
+  emitArithmeticOrLogicalExpression(ast::ArithmeticOrLogicalExpression *expr);
 
-  mlir::Value emitCallExpression(ast::CallExpression* expr);
-  mlir::Value
-  emitMethodCallExpression(ast::MethodCallExpression* expr);
-  mlir::Value
-  emitReturnExpression(ast::ReturnExpression* expr);
+  mlir::Value emitCallExpression(ast::CallExpression *expr);
+  mlir::Value emitMethodCallExpression(ast::MethodCallExpression *expr);
+  mlir::Value emitReturnExpression(ast::ReturnExpression *expr);
 
   mlir::FunctionType getFunctionType(ast::Function *);
 

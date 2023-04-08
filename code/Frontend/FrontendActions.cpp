@@ -67,12 +67,14 @@ void CodeGenAction::setMLIRDataLayout(mlir::ModuleOp &mlirModule,
   mlirModule->setAttr(
       mlir::LLVM::LLVMDialect::getDataLayoutAttrName(),
       mlir::StringAttr::get(context, dl.getStringRepresentation()));
-  mlir::DataLayoutSpecInterface dlSpec = mlir::translateDataLayout(dl, context);
-  mlirModule->setAttr(mlir::DLTIDialect::kDataLayoutAttrName, dlSpec);
+  //mlir::DataLayoutSpecInterface dlSpec = mlir::translateDataLayout(dl, context);
+  //mlirModule->setAttr(mlir::DLTIDialect::kDataLayoutAttrName, dlSpec);
 }
 
 /// Runs parsing, sema and lowers to MLIR.
 bool CodeGenAction::beginSourceFileAction() {
+  llvm::errs() << "beginSourceFileAction"
+               << "\n";
   llvmCtx = std::make_unique<llvm::LLVMContext>();
   // CompilerInstance &ci = this->getInstance();
 
@@ -258,6 +260,9 @@ void CodeGenAction::runOptimizationPipeline(llvm::raw_pwrite_stream &os) {
 }
 
 void CodeGenAction::executeAction() {
+  if (not beginSourceFileAction())
+    return;
+
   CompilerInstance &ci = this->getInstance();
 
   if (!llvmModule)
