@@ -3,11 +3,12 @@
 #include "AST/MacroItem.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyCtx.h"
-#include "TyTy.h"
+#include "TyCtx/TyTy.h"
 
 #include <cassert>
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::tyctx;
 
 namespace rust_compiler::sema::type_checking {
 

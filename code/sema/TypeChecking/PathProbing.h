@@ -1,11 +1,13 @@
 #pragma once
 
 #include "AST/PathIdentSegment.h"
-#include "TyTy.h"
+#include "TyCtx/TyTy.h"
 
 #include <set>
 
 namespace rust_compiler::sema::type_checking {
+
+using namespace rust_compiler::tyctx;
 
 class PathProbeCandidate {};
 

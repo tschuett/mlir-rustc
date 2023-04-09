@@ -1,8 +1,10 @@
 #include "Unification.h"
 
-#include "TyTy.h"
+#include "TyCtx/TyTy.h"
 
 namespace rust_compiler::sema::type_checking {
+
+using namespace rust_compiler::tyctx;
 
 TyTy::BaseType *Unification::unify(TyTy::WithLocation lhs,
                                    TyTy::WithLocation rhs, Location loc,
@@ -123,7 +125,7 @@ TyTy::BaseType *Unification::expectIntType(TyTy::IntType *left,
 
 TyTy::BaseType *unify(basic::NodeId, TyTy::WithLocation lhs,
                       TyTy::WithLocation rhs, Location unify) {
-  //assert(false && "to be implemented");
+  // assert(false && "to be implemented");
 
   std::vector<CommitSite> commits;
   std::vector<InferenceSite> infers;

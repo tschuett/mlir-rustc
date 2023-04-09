@@ -5,11 +5,11 @@
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "Coercion.h"
 #include "Location.h"
-#include "Substitutions.h"
+#include "TyCtx/Substitutions.h"
 #include "TyCtx/NodeIdentity.h"
-#include "TyTy.h"
+#include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
-#include "llvm/Support/raw_ostream.h"
+#include <llvm/Support/raw_ostream.h>
 
 #include <optional>
 #include <utility>

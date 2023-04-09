@@ -1,7 +1,7 @@
 #include "Coercion.h"
 
 #include "TyCtx/TyCtx.h"
-#include "TyTy.h"
+#include "TyCtx/TyTy.h"
 #include "Unification.h"
 
 using namespace rust_compiler::tyctx;

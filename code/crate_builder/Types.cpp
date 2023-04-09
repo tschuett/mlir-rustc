@@ -4,7 +4,7 @@
 
 using namespace rust_compiler::ast::types;
 using namespace rust_compiler::tyctx;
-using namespace rust_compiler::sema::type_checking::TyTy;
+using namespace rust_compiler::tyctx;
 
 namespace rust_compiler::crate_builder {
 
@@ -75,11 +75,17 @@ mlir::Type CrateBuilder::getTypeNoBounds(ast::types::TypeNoBounds *noBounds) {
 }
 
 mlir::Type CrateBuilder::getTypePath(ast::types::TypePath *path) {
-  using TypeKind = rust_compiler::sema::type_checking::TyTy::TypeKind;
+  using TypeKind = rust_compiler::tyctx::TyTy::TypeKind;
+
+  llvm::errs() << "codegen: " << path->getNodeId() << "\n";
 
   std::optional<TyTy::BaseType *> maybeType =
       tyCtx->lookupType(path->getNodeId());
   if (maybeType) {
+    void *type = *maybeType;
+    llvm::errs() << "codegen: " << type << "\n";
+    llvm::errs() << "codegen: " << ((*maybeType) == nullptr) << "\n";
+    llvm::errs() << "codegen: " << (*maybeType)->toString() << "\n";
     switch ((*maybeType)->getKind()) {
     case TypeKind::Bool: {
       assert(false && "to be implemented");

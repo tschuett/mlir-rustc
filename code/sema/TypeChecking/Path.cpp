@@ -2,7 +2,7 @@
 #include "AST/PathExpression.h"
 #include "AST/PathInExpression.h"
 #include "Basic/Ids.h"
-#include "TyTy.h"
+#include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
 #include "llvm/Support/raw_ostream.h"
 
@@ -13,6 +13,7 @@
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::basic;
+using namespace rust_compiler::tyctx;
 
 namespace rust_compiler::sema::type_checking {
 

@@ -1,11 +1,13 @@
 #pragma once
 
 #include "Location.h"
-#include "TyTy.h"
+#include "TyCtx/TyTy.h"
 
 #include <vector>
 
 namespace rust_compiler::sema::type_checking {
+
+using namespace rust_compiler::tyctx;
 
 class CommitSite {};
 class InferenceSite {};

@@ -4,10 +4,10 @@
 #include "AST/Types/TypePath.h"
 #include "Basic/Ids.h"
 #include "PathProbing.h"
-#include "Substitutions.h"
-#include "TyTy.h"
+#include "TyCtx/Substitutions.h"
+#include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
-#include "llvm/Support/raw_ostream.h"
+#include <llvm/Support/raw_ostream.h>
 
 #include "../Resolver/Resolver.h"
 
@@ -18,6 +18,7 @@
 using namespace rust_compiler::ast;
 using namespace rust_compiler::ast::types;
 using namespace rust_compiler::basic;
+using namespace rust_compiler::tyctx;
 
 namespace rust_compiler::sema::type_checking {
 
@@ -149,6 +150,8 @@ TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
   if (segs.size() == 1)
     if (auto t = tcx->lookupBuiltin(segs[0].getSegment().toString())) {
       *offset = 1;
+      llvm::errs() << path->getNodeId() << " -> " << t->toString() << "\n";
+      llvm::errs() << (void*)t << "\n";
       return t;
     }
 

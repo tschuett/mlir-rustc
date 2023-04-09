@@ -27,10 +27,10 @@
 #include "AST/Types/TypePath.h"
 #include "AST/WhereClause.h"
 #include "Basic/Ids.h"
-#include "Substitutions.h"
 #include "TyCtx/NodeIdentity.h"
+#include "TyCtx/Substitutions.h"
 #include "TyCtx/TyCtx.h"
-#include "TyTy.h"
+#include "TyCtx/TyTy.h"
 
 // #include "../Resolver/Resolver.h"
 
@@ -45,6 +45,7 @@ class Resolver;
 namespace rust_compiler::sema::type_checking {
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::tyctx;
 
 class TypeCheckContextItem {
 public:

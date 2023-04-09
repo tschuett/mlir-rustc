@@ -2,7 +2,7 @@
 
 #include "Location.h"
 #include "Sema/Autoderef.h"
-#include "TyTy.h"
+#include "TyCtx/TyTy.h"
 
 #include <vector>
 
@@ -10,6 +10,8 @@ namespace rust_compiler::sema::type_checking {
 
 /// https://doc.rust-lang.org/reference/type-coercions.html
 
+  using namespace rust_compiler::tyctx;
+  
 class CoercionResult {
   std::vector<Adjustment> adjustments;
   TyTy::BaseType *type = nullptr;

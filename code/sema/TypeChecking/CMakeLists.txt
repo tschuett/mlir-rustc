@@ -1,6 +1,5 @@
 add_library(TypeChecking
             TypeChecking.cpp
-            TyTy.cpp
             Item.cpp
             Function.cpp
             Types.cpp
@@ -12,7 +11,6 @@ add_library(TypeChecking
             Literal.cpp
             Path.cpp
             Match.cpp
-            Substitutions.cpp
             Coercion.cpp
             PathProbing.cpp
             Pointer.cpp

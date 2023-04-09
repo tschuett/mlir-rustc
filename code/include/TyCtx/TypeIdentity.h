@@ -3,7 +3,7 @@
 #include "ADT/CanonicalPath.h"
 #include "Location.h"
 
-namespace rust_compiler::sema::type_checking {
+namespace rust_compiler::tyctx {
 
 class TypeIdentity {
   adt::CanonicalPath path;
@@ -23,4 +23,4 @@ public:
   }
 };
 
-} // namespace rust_compiler::sema::type_checking
+} // namespace rust_compiler::tyctx

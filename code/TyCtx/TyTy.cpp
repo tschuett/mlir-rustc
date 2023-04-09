@@ -1,18 +1,18 @@
-#include "TyTy.h"
+#include "TyCtx/TyTy.h"
 
 #include "ADT/CanonicalPath.h"
 #include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
 #include "Location.h"
 #include "TyCtx/TyCtx.h"
-#include "TypeIdentity.h"
+#include "TyCtx/TypeIdentity.h"
 
 #include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::adt;
 using namespace rust_compiler::tyctx;
 
-namespace rust_compiler::sema::type_checking::TyTy {
+namespace rust_compiler::tyctx::TyTy {
 
 TypeVariable::TypeVariable(basic::NodeId id) : id(id) {
   TyCtx *context = TyCtx::get();
@@ -89,7 +89,7 @@ std::string IntType::toString() const {
 }
 
 ISizeType::ISizeType(basic::NodeId id)
-    : BaseType(id, id, TypeKind::Int, TypeIdentity::empty()) {}
+    : BaseType(id, id, TypeKind::ISize, TypeIdentity::empty()) {}
 
 bool ISizeType::needsGenericSubstitutions() const { return false; }
 
@@ -123,7 +123,7 @@ std::string UintType::toString() const {
 }
 
 USizeType::USizeType(basic::NodeId id)
-    : BaseType(id, id, TypeKind::Uint, TypeIdentity::empty()) {}
+    : BaseType(id, id, TypeKind::USize, TypeIdentity::empty()) {}
 
 bool USizeType::needsGenericSubstitutions() const { return false; }
 

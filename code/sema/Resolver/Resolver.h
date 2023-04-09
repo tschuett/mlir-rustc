@@ -39,7 +39,7 @@
 #include "Location.h"
 #include "TyCtx/TyCtx.h"
 
-#include "../TypeChecking/TyTy.h"
+//#include "../TypeChecking/TyTy.h"
 // #include "../TypeChecking/TypeChecking.h"
 
 #include <cassert>
@@ -345,7 +345,7 @@ private:
     return currentModuleStack.at(currentModuleStack.size() - 2);
   }
 
-  void setUnitTypeNodeId(basic::NodeId id) { unitTyNodeId = id; }
+  //void setUnitTypeNodeId(basic::NodeId id) { unitTyNodeId = id; }
 
   void insertResolvedName(basic::NodeId refId, basic::NodeId defId);
   void insertResolvedType(basic::NodeId refId, basic::NodeId defId);
@@ -357,12 +357,12 @@ private:
   tyctx::TyCtx *tyCtx;
 
   // types
-  void generateBuiltins();
-  void setupBuiltin(std::string_view name, type_checking::TyTy::BaseType *tyty);
+//  void generateBuiltins();
+//  void setupBuiltin(std::string_view name, type_checking::TyTy::BaseType *tyty);
 
   void insertBuiltinTypes(Rib *r);
-  std::vector<std::pair<std::string, ast::types::TypeExpression *>> &
-  getBuiltinTypes();
+//  std::vector<std::pair<std::string, ast::types::TypeExpression *>> &
+//  getBuiltinTypes();
 
   // modules
   basic::NodeId peekCrateModuleScope() {
@@ -395,39 +395,6 @@ private:
   // keep track of the current module scope ids
   std::vector<basic::NodeId> currentModuleStack;
 
-  // Rest
-  basic::NodeId globalTypeNodeId;
-  basic::NodeId unitTyNodeId;
-
-  // TyTy
-
-  std::unique_ptr<type_checking::TyTy::UintType> u8;
-  std::unique_ptr<type_checking::TyTy::UintType> u16;
-  std::unique_ptr<type_checking::TyTy::UintType> u32;
-  std::unique_ptr<type_checking::TyTy::UintType> u64;
-  std::unique_ptr<type_checking::TyTy::UintType> u128;
-
-  std::unique_ptr<type_checking::TyTy::IntType> i8;
-  std::unique_ptr<type_checking::TyTy::IntType> i16;
-  std::unique_ptr<type_checking::TyTy::IntType> i32;
-  std::unique_ptr<type_checking::TyTy::IntType> i64;
-  std::unique_ptr<type_checking::TyTy::IntType> i128;
-
-  std::unique_ptr<type_checking::TyTy::FloatType> f32;
-  std::unique_ptr<type_checking::TyTy::FloatType> f64;
-
-  std::unique_ptr<type_checking::TyTy::BoolType> rbool;
-
-  std::unique_ptr<type_checking::TyTy::USizeType> usize;
-  std::unique_ptr<type_checking::TyTy::ISizeType> isize;
-
-  std::unique_ptr<type_checking::TyTy::CharType> charType;
-  std::unique_ptr<type_checking::TyTy::StrType> strType;
-  std::unique_ptr<type_checking::TyTy::NeverType> never;
-
-  std::vector<std::pair<std::string, ast::types::TypeExpression *>> builtins;
-
-  ast::types::TupleType *emptyTupleType;
 
   // captured variables by current closure
   std::vector<basic::NodeId> closureContext;

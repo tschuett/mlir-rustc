@@ -1,6 +1,6 @@
-#include "Substitutions.h"
+#include "TyCtx/Substitutions.h"
 
-namespace rust_compiler::sema::type_checking::TyTy {
+namespace rust_compiler::tyctx::TyTy {
 
 SubstitutionArgumentMappings getUsedSubstitutionArguments(TyTy::BaseType *);
 

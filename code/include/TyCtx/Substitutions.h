@@ -2,7 +2,7 @@
 
 // #include "TyTy.h"
 
-namespace rust_compiler::sema::type_checking::TyTy {
+namespace rust_compiler::tyctx::TyTy {
 
 class BaseType;
 
@@ -12,4 +12,4 @@ class SubstitutionArgumentMappings {};
 
 SubstitutionArgumentMappings getUsedSubstitutionArguments(TyTy::BaseType *);
 
-} // namespace rust_compiler::sema::type_checking::TyTy
+} // namespace rust_compiler::tyctx::TyTy

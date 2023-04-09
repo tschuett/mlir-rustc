@@ -76,10 +76,7 @@ Resolver::Resolver() noexcept
     : tyCtx(tyctx::TyCtx::get()), nameScope(Scope(tyCtx->getCurrentCrate())),
       typeScope(Scope(tyCtx->getCurrentCrate())),
       labelScope(Scope(tyCtx->getCurrentCrate())),
-      macroScope(Scope(tyCtx->getCurrentCrate())),
-      globalTypeNodeId(UNKNOWN_NODEID), unitTyNodeId(UNKNOWN_NODEID) {
-  generateBuiltins();
-}
+      macroScope(Scope(tyCtx->getCurrentCrate())) {}
 
 void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
   // lookup current crate name
@@ -424,7 +421,7 @@ Resolver::lookupResolvedType(basic::NodeId nodeId) {
 }
 
 void Resolver::insertBuiltinTypes(Rib *r) {
-  auto builtins = getBuiltinTypes();
+  auto builtins = tyCtx->getBuiltinTypes();
   for (auto &builtin : builtins) {
     CanonicalPath builtinPath = CanonicalPath::newSegment(
         builtin.second->getNodeId(), Identifier(builtin.first));
@@ -433,10 +430,10 @@ void Resolver::insertBuiltinTypes(Rib *r) {
   }
 }
 
-std::vector<std::pair<std::string, ast::types::TypeExpression *>> &
-Resolver::getBuiltinTypes() {
-  return builtins;
-}
+// std::vector<std::pair<std::string, ast::types::TypeExpression *>> &
+// Resolver::getBuiltinTypes() {
+//   return builtins;
+// }
 
 } // namespace rust_compiler::sema::resolver
 

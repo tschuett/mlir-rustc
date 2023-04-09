@@ -3,12 +3,13 @@
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
 #include "Coercion.h"
-#include "TyTy.h"
+#include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
 
 #include <memory>
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::tyctx;
 
 namespace rust_compiler::sema::type_checking {
 

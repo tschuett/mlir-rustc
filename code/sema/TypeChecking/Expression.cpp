@@ -8,7 +8,7 @@
 #include "AST/OperatorExpression.h"
 #include "AST/PathExpression.h"
 #include "AST/Statement.h"
-#include "TyTy.h"
+#include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
 #include "Unification.h"
 
@@ -18,6 +18,7 @@
 #include <memory>
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::tyctx;
 
 namespace rust_compiler::sema::type_checking {
 

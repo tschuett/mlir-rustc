@@ -9,7 +9,7 @@
 #include "TyCtx/NodeIdentity.h"
 #include "TypeIdentity.h"
 
-namespace rust_compiler::sema::type_checking::TyTy {
+namespace rust_compiler::tyctx::TyTy {
 
 /// https://doc.rust-lang.org/reference/types.html
 // https://rustc-dev-guide.rust-lang.org/type-inference.html#inference-variables
@@ -269,4 +269,4 @@ private:
   Location loc;
 };
 
-} // namespace rust_compiler::sema::type_checking::TyTy
+} // namespace rust_compiler::tyctx::TyTy

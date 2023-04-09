@@ -3,12 +3,11 @@
 #include "ADT/CanonicalPath.h"
 #include "ADT/ScopedHashTable.h"
 #include "AST/AssociatedItem.h"
+#include "AST/Types/TupleType.h"
 #include "Basic/Ids.h"
 #include "Sema/Autoderef.h"
 #include "TyCtx/NodeIdentity.h"
-#include "TyCtx/TyCtx.h"
-
-#include "../../code/sema/TypeChecking/TyTy.h"
+#include "TyCtx/TyTy.h"
 
 #include <map>
 #include <optional>
@@ -38,6 +37,8 @@ class TyCtx {
 public:
   static TyCtx *get();
 
+  TyCtx();
+
   basic::NodeId getNextNodeId();
 
   void insertModule(ast::Module *);
@@ -49,7 +50,7 @@ public:
   ast::Module *lookupModule(basic::NodeId);
 
   std::optional<adt::CanonicalPath>
-  lookupModuleChild(basic::NodeId module, const adt::CanonicalPath& path);
+  lookupModuleChild(basic::NodeId module, const adt::CanonicalPath &path);
   std::optional<std::pair<ast::Enumeration *, ast::EnumItem *>>
   lookupEnumItem(NodeId id);
   void insertVariantDefinition(NodeId id, NodeId variant);
@@ -75,7 +76,8 @@ public:
     return it->second;
   }
 
-  void insertModuleChildItem(basic::NodeId module, const adt::CanonicalPath& child) {
+  void insertModuleChildItem(basic::NodeId module,
+                             const adt::CanonicalPath &child) {
     auto it = moduleChildItems.find(module);
     if (it == moduleChildItems.end())
       moduleChildItems.insert({module, {child}});
@@ -114,10 +116,24 @@ public:
   std::optional<ast::Implementation *> lookupImplementation(basic::NodeId);
   std::optional<ast::AssociatedItem *> lookupAssociatedItem(basic::NodeId);
 
+  std::vector<std::pair<std::string, ast::types::TypeExpression *>> &
+  getBuiltinTypes() {
+    return builtins;
+  }
+
 private:
+  void generateBuiltins();
+
+  void setupBuiltin(std::string_view name, TyTy::BaseType *tyty);
+  void setUnitTypeNodeId(basic::NodeId id) { unitTyNodeId = id; }
+
   basic::CrateNum crateNumIter = 7;
   basic::NodeId nodeIdIter = 7;
   basic::CrateNum currentCrateNum = basic::UNKNOWN_CREATENUM;
+
+  basic::NodeId unitTyNodeId = UNKNOWN_NODEID;
+  basic::NodeId globalTypeNodeId = basic::UNKNOWN_NODEID;
+
 
   std::map<basic::NodeId, ast::Module *> modules;
   std::map<basic::NodeId, ast::Item *> items;
@@ -132,7 +148,7 @@ private:
 
   std::map<basic::NodeId, basic::NodeId> nodeIdRefs;
   std::map<basic::NodeId, TyTy::BaseType *> resolved;
-  std::vector<std::unique_ptr<TyTy::BaseType>> builtins;
+  std::vector<std::unique_ptr<TyTy::BaseType>> builtinsList;
 
   std::map<NodeId, std::pair<ast::Enumeration *, ast::EnumItem *>>
       enumItemsMappings;
@@ -142,6 +158,36 @@ private:
   std::map<NodeId, std::pair<ast::ExternalItem *, NodeId>> externItemMappings;
 
   std::map<NodeId, std::vector<sema::Adjustment>> autoderefMappings;
+
+  // TyTy
+
+  std::unique_ptr<TyTy::UintType> u8;
+  std::unique_ptr<TyTy::UintType> u16;
+  std::unique_ptr<TyTy::UintType> u32;
+  std::unique_ptr<TyTy::UintType> u64;
+  std::unique_ptr<TyTy::UintType> u128;
+
+  std::unique_ptr<TyTy::IntType> i8;
+  std::unique_ptr<TyTy::IntType> i16;
+  std::unique_ptr<TyTy::IntType> i32;
+  std::unique_ptr<TyTy::IntType> i64;
+  std::unique_ptr<TyTy::IntType> i128;
+
+  std::unique_ptr<TyTy::FloatType> f32;
+  std::unique_ptr<TyTy::FloatType> f64;
+
+  std::unique_ptr<TyTy::BoolType> rbool;
+
+  std::unique_ptr<TyTy::USizeType> usize;
+  std::unique_ptr<TyTy::ISizeType> isize;
+
+  std::unique_ptr<TyTy::CharType> charType;
+  std::unique_ptr<TyTy::StrType> strType;
+  std::unique_ptr<TyTy::NeverType> never;
+
+  std::vector<std::pair<std::string, ast::types::TypeExpression *>> builtins;
+
+  ast::types::TupleType *emptyTupleType;
 };
 
 } // namespace rust_compiler::tyctx

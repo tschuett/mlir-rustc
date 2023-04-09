@@ -2,12 +2,13 @@
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/PatternWithoutRange.h"
 #include "AST/Patterns/RangePattern.h"
-#include "TyTy.h"
+#include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
 
 #include <memory>
 
 using namespace rust_compiler::ast::patterns;
+using namespace rust_compiler::tyctx;
 
 namespace rust_compiler::sema::type_checking {
 
