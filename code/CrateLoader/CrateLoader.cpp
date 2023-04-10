@@ -3,6 +3,8 @@
 #include "LoadModule.h"
 #include "TyCtx/TyCtx.h"
 
+#include "Session/Session.h"
+
 #include <llvm/ADT/SmallVector.h>
 #include <llvm/Support/FileSystem.h>
 #include <llvm/Support/Path.h>
@@ -19,7 +21,7 @@ std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
 
   llvm::outs() << "loadCrate: " << path << ":" << crateName << "\n";
 
-  tyctx::TyCtx::get()->setCurrentCrate(crateNum);
+  tyctx::TyCtx* ctx = rust_compiler::session::session->getTypeContext();
 
   if (mode == LoadMode::File) {
     if (not llvm::sys::fs::exists(libFile)) {
@@ -30,7 +32,7 @@ std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
     std::shared_ptr<ast::Crate> crate = loadRootModule(
         libFile, llvm::sys::path::filename(path), crateName, crateNum);
 
-    tyctx::TyCtx::get()->insertASTCrate(crate.get(), crateNum);
+    ctx->insertASTCrate(crate.get(), crateNum);
 
     return crate;
 
@@ -48,7 +50,7 @@ std::shared_ptr<ast::Crate> loadCrate(std::string_view path,
 
     // FIXME load and merge tree
 
-    tyctx::TyCtx::get()->insertASTCrate(crate.get(), crateNum);
+    ctx->insertASTCrate(crate.get(), crateNum);
 
     return crate;
   } else {

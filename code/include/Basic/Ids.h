@@ -23,4 +23,6 @@ struct DefId {
   CrateNum krate;
 };
 
+NodeId getNextNodeId();
+
 } // namespace rust_compiler::basic

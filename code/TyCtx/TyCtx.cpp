@@ -31,19 +31,19 @@ std::optional<std::string> TyCtx::getCrateName(CrateNum cnum) {
   return it->second->getCrateName();
 }
 
-TyCtx *TyCtx::get() {
-  static std::unique_ptr<TyCtx> instance;
-  if (!instance)
-    instance = std::unique_ptr<TyCtx>(new TyCtx());
+//TyCtx *TyCtx::get() {
+//  static std::unique_ptr<TyCtx> instance;
+//  if (!instance)
+//    instance = std::unique_ptr<TyCtx>(new TyCtx());
+//
+//  return instance.get();
+//}
 
-  return instance.get();
-}
-
-NodeId TyCtx::getNextNodeId() {
-  auto it = nodeIdIter;
-  ++nodeIdIter;
-  return it;
-}
+//NodeId TyCtx::getNextNodeId() {
+//  auto it = nodeIdIter;
+//  ++nodeIdIter;
+//  return it;
+//}
 
 void TyCtx::insertModule(ast::Module *mod) { assert(false); }
 

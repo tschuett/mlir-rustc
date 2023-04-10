@@ -3,6 +3,7 @@
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TyTy.h"
 #include "Unification.h"
+#include "Session/Session.h"
 
 using namespace rust_compiler::tyctx;
 
@@ -59,7 +60,8 @@ TyTy::BaseType *coercionWithSite(basic::NodeId id, TyTy::WithLocation lhs,
   TyTy::BaseType *coerced = unifyWithSite(
       id, lhs, TyTy::WithLocation(receiver, rhs.getLocation()), unify);
 
-  TyCtx::get()->insertAutoderefMapping(id, result.getAdjustments());
+  rust_compiler::session::session->getTypeContext()->insertAutoderefMapping(
+      id, result.getAdjustments());
 
   return coerced;
 }

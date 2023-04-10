@@ -6,6 +6,7 @@
 #include "Location.h"
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TypeIdentity.h"
+#include "Session/Session.h"
 
 #include <llvm/Support/raw_ostream.h>
 
@@ -15,13 +16,13 @@ using namespace rust_compiler::tyctx;
 namespace rust_compiler::tyctx::TyTy {
 
 TypeVariable::TypeVariable(basic::NodeId id) : id(id) {
-  TyCtx *context = TyCtx::get();
+  TyCtx *context = rust_compiler::session::session->getTypeContext();
   if (!context->lookupType(id))
     assert(false);
 }
 
 TyTy::BaseType *TypeVariable::getType() const {
-  TyCtx *context = TyCtx::get();
+  TyCtx *context = rust_compiler::session::session->getTypeContext();
   if (auto type = context->lookupType(id))
     return *type;
   assert(false);
@@ -213,4 +214,4 @@ unsigned ErrorType::getNumberOfSpecifiedBounds() { return 0; }
 
 unsigned InferType::getNumberOfSpecifiedBounds() { return 0; }
 
-} // namespace rust_compiler::sema::type_checking::TyTy
+} // namespace rust_compiler::tyctx::TyTy

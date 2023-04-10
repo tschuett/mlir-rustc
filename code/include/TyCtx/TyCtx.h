@@ -35,11 +35,11 @@ using namespace rust_compiler::basic;
 
 class TyCtx {
 public:
-  static TyCtx *get();
+  //static TyCtx *get();
 
   TyCtx();
 
-  basic::NodeId getNextNodeId();
+  //basic::NodeId getNextNodeId();
 
   void insertModule(ast::Module *);
   void insertItem(ast::Item *);
@@ -127,8 +127,8 @@ private:
   void setupBuiltin(std::string_view name, TyTy::BaseType *tyty);
   void setUnitTypeNodeId(basic::NodeId id) { unitTyNodeId = id; }
 
-  basic::CrateNum crateNumIter = 7;
-  basic::NodeId nodeIdIter = 7;
+  //basic::CrateNum crateNumIter = 7;
+  //basic::NodeId nodeIdIter = 7;
   basic::CrateNum currentCrateNum = basic::UNKNOWN_CREATENUM;
 
   basic::NodeId unitTyNodeId = UNKNOWN_NODEID;

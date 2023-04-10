@@ -19,6 +19,7 @@
 #include "AST/VariableDeclaration.h"
 #include "CrateBuilder/Target.h"
 #include "Hir/HirDialect.h"
+#include "Session/Session.h"
 #include "TyCtx/TyCtx.h"
 
 #include <llvm/MC/TargetRegistry.h>
@@ -64,7 +65,7 @@ public:
                mlir::MLIRContext &context, llvm::TargetMachine *tm)
       : builder(&context), theModule(theModule),
         serializer(OS, llvm::remarks::SerializerMode::Separate), target(tm) {
-    tyCtx = tyctx::TyCtx::get();
+    tyCtx = rust_compiler::session::session->getTypeContext();
 
     //    // Create `Target`
     //    std::string theTriple =

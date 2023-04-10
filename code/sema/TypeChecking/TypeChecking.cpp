@@ -5,6 +5,8 @@
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TyTy.h"
 
+#include "Session/Session.h"
+
 #include <cassert>
 
 using namespace rust_compiler::ast;
@@ -102,7 +104,7 @@ std::optional<TyTy::BaseType *> TypeResolver::queryType(basic::NodeId id) {
 }
 
 TypeResolver::TypeResolver(resolver::Resolver *r) {
-  tcx = tyctx::TyCtx::get();
+  tcx = rust_compiler::session::session->getTypeContext();
   resolver = r;
 }
 

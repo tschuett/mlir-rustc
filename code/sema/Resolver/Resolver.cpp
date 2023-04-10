@@ -8,7 +8,8 @@
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
 #include "Basic/Ids.h"
-#include "mlir/Transforms/Passes.h"
+#include "Session/Session.h"
+#include <mlir/Transforms/Passes.h>
 
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
@@ -73,7 +74,7 @@ void Resolver::pushNewLabelRib(Rib *r) { labelRibs[r->getNodeId()] = r; }
 void Resolver::pushNewMaroRib(Rib *r) { macroRibs[r->getNodeId()] = r; }
 
 Resolver::Resolver() noexcept
-    : tyCtx(tyctx::TyCtx::get()), nameScope(Scope(tyCtx->getCurrentCrate())),
+  : tyCtx( rust_compiler::session::session->getTypeContext()), nameScope(Scope(tyCtx->getCurrentCrate())),
       typeScope(Scope(tyCtx->getCurrentCrate())),
       labelScope(Scope(tyCtx->getCurrentCrate())),
       macroScope(Scope(tyCtx->getCurrentCrate())) {}
@@ -81,6 +82,8 @@ Resolver::Resolver() noexcept
 void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
   // lookup current crate name
   CrateNum cnum = tyCtx->getCurrentCrate();
+    llvm::errs() << cnum << "\n";
+
   std::optional<std::string> crateName = tyCtx->getCrateName(cnum);
   assert(crateName.has_value());
 

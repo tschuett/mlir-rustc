@@ -4,7 +4,11 @@
 #include "CrateLoader/CrateLoader.h"
 #include "Frontend/FrontendOptions.h"
 #include "Sema/Sema.h"
-#include "llvm/Support/Error.h"
+#include "Session/Session.h"
+#include "TyCtx/TyCtx.h"
+
+#include <llvm/Support/Error.h>
+#include <random>
 
 using namespace rust_compiler::sema;
 using namespace rust_compiler::crate_loader;
@@ -54,7 +58,25 @@ std::string FrontendAction::getRemarksOutput() {
 }
 
 llvm::Error FrontendAction::execute() {
+
+  using namespace rust_compiler::session;
+
+//  std::mt19937 gen32;
+//  basic::CrateNum crateNum = gen32();
+
+  basic::CrateNum crateNum = 1; // runParse
+  Session currentSession = Session{crateNum, nullptr};
+  rust_compiler::session::session = &currentSession;
+
+  llvm::errs() << crateNum << "\n";
+
+  tyctx::TyCtx ctx;
+  ctx.setCurrentCrate(crateNum);
+
+  rust_compiler::session::session->setTypeContext(&ctx);
+
   executeAction();
+
   return llvm::Error::success();
 }
 
