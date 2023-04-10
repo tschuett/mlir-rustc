@@ -9,7 +9,9 @@
 #include "AST/Visiblity.h"
 #include "Basic/Ids.h"
 #include "Session/Session.h"
-#include <mlir/Transforms/Passes.h>
+// #include <mlir/Transforms/Passes.h>
+#include "Session/Session.h"
+#include "AST/PathExpression.h"
 
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
@@ -74,7 +76,8 @@ void Resolver::pushNewLabelRib(Rib *r) { labelRibs[r->getNodeId()] = r; }
 void Resolver::pushNewMaroRib(Rib *r) { macroRibs[r->getNodeId()] = r; }
 
 Resolver::Resolver() noexcept
-  : tyCtx( rust_compiler::session::session->getTypeContext()), nameScope(Scope(tyCtx->getCurrentCrate())),
+    : tyCtx(rust_compiler::session::session->getTypeContext()),
+      nameScope(Scope(tyCtx->getCurrentCrate())),
       typeScope(Scope(tyCtx->getCurrentCrate())),
       labelScope(Scope(tyCtx->getCurrentCrate())),
       macroScope(Scope(tyCtx->getCurrentCrate())) {}
@@ -82,7 +85,7 @@ Resolver::Resolver() noexcept
 void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
   // lookup current crate name
   CrateNum cnum = tyCtx->getCurrentCrate();
-    llvm::errs() << cnum << "\n";
+  llvm::errs() << cnum << "\n";
 
   std::optional<std::string> crateName = tyCtx->getCrateName(cnum);
   assert(crateName.has_value());
@@ -292,6 +295,8 @@ void Resolver::insertResolvedName(NodeId ref, NodeId def) {
   resolvedNames[ref] = def;
   getNameScope().appendReferenceForDef(ref, def);
   insertCapturedItem(def);
+  rust_compiler::session::session->getTypeContext()->insertResolvedName(ref,
+                                                                        def);
 }
 
 std::optional<basic::NodeId> Scope::lookup(const adt::CanonicalPath &p) {

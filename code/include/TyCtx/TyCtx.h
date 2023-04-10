@@ -35,11 +35,7 @@ using namespace rust_compiler::basic;
 
 class TyCtx {
 public:
-  //static TyCtx *get();
-
   TyCtx();
-
-  //basic::NodeId getNextNodeId();
 
   void insertModule(ast::Module *);
   void insertItem(ast::Item *);
@@ -116,6 +112,10 @@ public:
   std::optional<ast::Implementation *> lookupImplementation(basic::NodeId);
   std::optional<ast::AssociatedItem *> lookupAssociatedItem(basic::NodeId);
 
+  [[nodiscard]] std::optional<basic::NodeId> lookupName(basic::NodeId);
+
+  void insertResolvedName(basic::NodeId ref, basic::NodeId def);
+
   std::vector<std::pair<std::string, ast::types::TypeExpression *>> &
   getBuiltinTypes() {
     return builtins;
@@ -127,13 +127,12 @@ private:
   void setupBuiltin(std::string_view name, TyTy::BaseType *tyty);
   void setUnitTypeNodeId(basic::NodeId id) { unitTyNodeId = id; }
 
-  //basic::CrateNum crateNumIter = 7;
-  //basic::NodeId nodeIdIter = 7;
+  // basic::CrateNum crateNumIter = 7;
+  // basic::NodeId nodeIdIter = 7;
   basic::CrateNum currentCrateNum = basic::UNKNOWN_CREATENUM;
 
   basic::NodeId unitTyNodeId = UNKNOWN_NODEID;
   basic::NodeId globalTypeNodeId = basic::UNKNOWN_NODEID;
-
 
   std::map<basic::NodeId, ast::Module *> modules;
   std::map<basic::NodeId, ast::Item *> items;
@@ -149,6 +148,8 @@ private:
   std::map<basic::NodeId, basic::NodeId> nodeIdRefs;
   std::map<basic::NodeId, TyTy::BaseType *> resolved;
   std::vector<std::unique_ptr<TyTy::BaseType>> builtinsList;
+
+  std::map<basic::NodeId, basic::NodeId> resolvedNames;
 
   std::map<NodeId, std::pair<ast::Enumeration *, ast::EnumItem *>>
       enumItemsMappings;

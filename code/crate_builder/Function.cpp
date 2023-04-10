@@ -1,4 +1,5 @@
 #include "AST/FunctionParam.h"
+#include "Basic/Ids.h"
 #include "CrateBuilder/CrateBuilder.h"
 
 #include <llvm/ADT/SmallVector.h>
@@ -48,9 +49,9 @@ mlir::FunctionType CrateBuilder::getFunctionType(ast::Function *fun) {
 }
 
 /// FIXME set visibility: { sym_visibility = "public" }
-void CrateBuilder::emitFunction(ast::Function* f) {
+void CrateBuilder::emitFunction(ast::Function *f) {
 
-  ScopedHashTableScope<std::string, mlir::Value> scope(symbolTable);
+  ScopedHashTableScope<basic::NodeId, mlir::Value> scope(symbolTable);
 
   builder.setInsertionPointToEnd(theModule.getBody());
 
@@ -60,7 +61,16 @@ void CrateBuilder::emitFunction(ast::Function* f) {
       getLocation(f->getLocation()), "foo", funType);
 
   mlir::Block &entryBlock = fun.front();
-  llvm::SmallVector<std::string> parameterNames;
+  llvm::SmallVector<basic::NodeId> parameterNames;
+
+  for (FunctionParam &parm : f->getParams().getParams()) {
+    if (parm.getKind() == FunctionParamKind::Pattern) {
+      parameterNames.push_back(parm.getPattern().getPattern()->getNodeId());
+    } else {
+      assert(false);
+    }
+  }
+
   // entryBlock.getArguments()
 
   // mlir::MLIRContext *ctx = fun.getContext();
@@ -74,7 +84,8 @@ void CrateBuilder::emitFunction(ast::Function* f) {
   builder.setInsertionPointToStart(&entryBlock);
 
   if (f->hasBody())
-      emitBlockExpression(static_cast<ast::BlockExpression *>(f->getBody().get()));
+    emitBlockExpression(
+        static_cast<ast::BlockExpression *>(f->getBody().get()));
 
   functionMap.insert({"foo", fun});
 }

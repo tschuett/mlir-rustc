@@ -36,6 +36,10 @@
 #include <optional>
 #include <stack>
 
+namespace rust_compiler::ast {
+class PathExpression;
+}
+
 namespace rust_compiler::crate_builder {
 
 /// Lowers an AST Crate into a mix of Hir, Arith, MemRef, ... dialects into an
@@ -50,7 +54,7 @@ class CrateBuilder {
   Target target;
   std::stack<mlir::Block *> breakPoints;
 
-  adt::ScopedHashTable<std::string, mlir::Value> symbolTable;
+  adt::ScopedHashTable<basic::NodeId, mlir::Value> symbolTable;
 
   /// A mapping for the functions that have been code generated to MLIR.
   llvm::StringMap<mlir::func::FuncOp> functionMap;
@@ -124,13 +128,17 @@ private:
 
   mlir::Value emitCallExpression(ast::CallExpression *expr);
   mlir::Value emitMethodCallExpression(ast::MethodCallExpression *expr);
-  mlir::Value emitReturnExpression(ast::ReturnExpression *expr);
+  void emitReturnExpression(ast::ReturnExpression *expr);
+  mlir::Value emitPathExpression(ast::PathExpression *expr);
 
   mlir::FunctionType getFunctionType(ast::Function *);
 
   mlir::Type getType(ast::types::TypeExpression *);
+  mlir::Type getExpression(ast::Expression *);
   mlir::Type getTypeNoBounds(ast::types::TypeNoBounds *);
   mlir::Type getTypePath(ast::types::TypePath *);
+
+  mlir::Type convertTyTyToMLIR(tyctx::TyTy::BaseType *);
 
   /// Helper conversion for a Rust AST location to an MLIR location.
   mlir::Location getLocation(const Location &loc) {

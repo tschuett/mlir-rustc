@@ -1,6 +1,7 @@
 #include "AST/AwaitExpression.h"
 #include "AST/CallExpression.h"
 #include "AST/Expression.h"
+#include "AST/PathExpression.h"
 #include "AST/ReturnExpression.h"
 #include "CrateBuilder/CrateBuilder.h"
 #include "Hir/HirOps.h"
@@ -18,7 +19,7 @@ CrateBuilder::emitExpressionWithoutBlock(ast::ExpressionWithoutBlock *expr) {
     break;
   }
   case ast::ExpressionWithoutBlockKind::PathExpression: {
-    break;
+    return emitPathExpression(static_cast<PathExpression*>(expr));
   }
   case ast::ExpressionWithoutBlockKind::OperatorExpression: {
     return emitOperatorExpression(static_cast<OperatorExpression *>(expr));
@@ -77,7 +78,8 @@ CrateBuilder::emitExpressionWithoutBlock(ast::ExpressionWithoutBlock *expr) {
     break;
   }
   case ast::ExpressionWithoutBlockKind::ReturnExpression: {
-    return emitReturnExpression(static_cast<ReturnExpression *>(expr));
+    emitReturnExpression(static_cast<ReturnExpression *>(expr));
+    break;
   }
   case ast::ExpressionWithoutBlockKind::UnderScoreExpression: {
     break;

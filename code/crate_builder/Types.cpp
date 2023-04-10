@@ -1,6 +1,7 @@
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
 #include "CrateBuilder/CrateBuilder.h"
+#include "TyCtx/TyTy.h"
 
 using namespace rust_compiler::ast::types;
 using namespace rust_compiler::tyctx;
@@ -74,65 +75,97 @@ mlir::Type CrateBuilder::getTypeNoBounds(ast::types::TypeNoBounds *noBounds) {
   assert(false);
 }
 
-mlir::Type CrateBuilder::getTypePath(ast::types::TypePath *path) {
+mlir::Type CrateBuilder::getExpression(ast::Expression *expr) {
+  using namespace rust_compiler::tyctx::TyTy;
+
+  llvm::errs() << "codegen: " << expr->getNodeId() << "\n";
+
+  std::optional<TyTy::BaseType *> maybeType =
+      tyCtx->lookupType(expr->getNodeId());
+  if (maybeType) {
+    return convertTyTyToMLIR(*maybeType);
+  }
+  assert(false);
+}
+
+mlir::Type CrateBuilder::convertTyTyToMLIR(TyTy::BaseType *type) {
   using TypeKind = rust_compiler::tyctx::TyTy::TypeKind;
+  using IntKind = rust_compiler::tyctx::TyTy::IntKind;
+
+  switch (type->getKind()) {
+  case TypeKind::Bool: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::Char: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::Int: {
+    switch (static_cast<TyTy::IntType *>(type)->getIntKind()) {
+    case IntKind::I8: {
+      assert(false && "to be implemented");
+    }
+    case IntKind::I16: {
+      assert(false && "to be implemented");
+    }
+    case IntKind::I32: {
+      return builder.getI32Type();
+    }
+    case IntKind::I64: {
+      assert(false && "to be implemented");
+    }
+    case IntKind::I128: {
+      assert(false && "to be implemented");
+    }
+    }
+  }
+  case TypeKind::Uint: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::USize: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::ISize: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::Float: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::Closure: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::Function: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::Inferred: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::Never: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::Str: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::Tuple: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::Parameter: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::Error: {
+    assert(false && "to be implemented");
+  }
+  }
+}
+
+mlir::Type CrateBuilder::getTypePath(ast::types::TypePath *path) {
+  using namespace rust_compiler::tyctx::TyTy;
 
   llvm::errs() << "codegen: " << path->getNodeId() << "\n";
 
   std::optional<TyTy::BaseType *> maybeType =
       tyCtx->lookupType(path->getNodeId());
   if (maybeType) {
-    void *type = *maybeType;
-    llvm::errs() << "codegen: " << type << "\n";
-    llvm::errs() << "codegen: " << ((*maybeType) == nullptr) << "\n";
-    llvm::errs() << "codegen: " << (*maybeType)->toString() << "\n";
-    switch ((*maybeType)->getKind()) {
-    case TypeKind::Bool: {
-      assert(false && "to be implemented");
-    }
-    case TypeKind::Char: {
-      assert(false && "to be implemented");
-    }
-    case TypeKind::Int: {
-      assert(false && "to be implemented");
-    }
-    case TypeKind::Uint: {
-      assert(false && "to be implemented");
-    }
-    case TypeKind::USize: {
-      assert(false && "to be implemented");
-    }
-    case TypeKind::ISize: {
-      assert(false && "to be implemented");
-    }
-    case TypeKind::Float: {
-      assert(false && "to be implemented");
-    }
-    case TypeKind::Closure: {
-      assert(false && "to be implemented");
-    }
-    case TypeKind::Function: {
-      assert(false && "to be implemented");
-    }
-    case TypeKind::Inferred: {
-      assert(false && "to be implemented");
-    }
-    case TypeKind::Never: {
-      assert(false && "to be implemented");
-    }
-    case TypeKind::Str: {
-      assert(false && "to be implemented");
-    }
-    case TypeKind::Tuple: {
-      assert(false && "to be implemented");
-    }
-    case TypeKind::Parameter: {
-      assert(false && "to be implemented");
-    }
-    case TypeKind::Error: {
-      assert(false && "to be implemented");
-    }
-    }
+    return convertTyTyToMLIR(*maybeType);
   }
   assert(false);
 }
