@@ -26,6 +26,7 @@
 #include <mlir/Dialect/MemRef/IR/MemRef.h>
 #include <mlir/Interfaces/DataLayoutInterfaces.h>
 #include <mlir/Pass/PassManager.h>
+#include <mlir/Target/LLVMIR/Dialect/Builtin/BuiltinToLLVMIRTranslation.h>
 #include <mlir/Target/LLVMIR/Dialect/LLVMIR/LLVMToLLVMIRTranslation.h>
 #include <mlir/Target/LLVMIR/Import.h>
 #include <mlir/Target/LLVMIR/ModuleTranslation.h>
@@ -67,8 +68,9 @@ void CodeGenAction::setMLIRDataLayout(mlir::ModuleOp &mlirModule,
   mlirModule->setAttr(
       mlir::LLVM::LLVMDialect::getDataLayoutAttrName(),
       mlir::StringAttr::get(context, dl.getStringRepresentation()));
-  //mlir::DataLayoutSpecInterface dlSpec = mlir::translateDataLayout(dl, context);
-  //mlirModule->setAttr(mlir::DLTIDialect::kDataLayoutAttrName, dlSpec);
+  // mlir::DataLayoutSpecInterface dlSpec = mlir::translateDataLayout(dl,
+  // context); mlirModule->setAttr(mlir::DLTIDialect::kDataLayoutAttrName,
+  // dlSpec);
 }
 
 /// Runs parsing, sema and lowers to MLIR.
@@ -158,6 +160,11 @@ void CodeGenAction::generateLLVMIR() {
 
   // fir::support::loadDialects(*mlirCtx);
   // fir::support::registerLLVMTranslation(*mlirCtx);
+  mlir::DialectRegistry registry;
+  // Register builtin dialect interface.
+  mlir::registerBuiltinDialectTranslation(registry);
+  mlirCtx->appendDialectRegistry(registry);
+
   mlir::registerLLVMDialectTranslation(*mlirCtx);
 
   // Set-up the MLIR pass manager

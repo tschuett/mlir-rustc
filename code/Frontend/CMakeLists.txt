@@ -22,4 +22,5 @@ target_link_libraries(Frontend
                       MLIRLLVMIRToLLVMTranslation
                       MLIRLLVMToLLVMIRTranslation
                       MLIRDataLayoutInterfaces
+                      MLIRBuiltinToLLVMIRTranslation
                       )

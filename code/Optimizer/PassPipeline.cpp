@@ -30,33 +30,33 @@ void createDefaultOptimizerPassPipeline(mlir::PassManager &pm,
   pm.addPass(optimizer::createConvertMirToLirPass());
   // Lir
 
-  pm.addPass(mlir::createSCCPPass());
-  pm.addPass(optimizer::createDeadArgumentEliminationPass());
-  pm.addPass(optimizer::createLoopPass());
-  pm.addPass(optimizer::createFuncSpecialPass());
+  //pm.addPass(mlir::createSCCPPass());
+  //pm.addPass(optimizer::createDeadArgumentEliminationPass());
+  //pm.addPass(optimizer::createLoopPass());
+  //pm.addPass(optimizer::createFuncSpecialPass());
 
   pm.addPass(optimizer::createConvertLirToLLVMPass());
   // LLLVM Dialect
 
   // optimize
-  pm.addPass(mlir::createCanonicalizerPass());
-  pm.addPass(mlir::createCSEPass());
+  //pm.addPass(mlir::createCanonicalizerPass());
+  //pm.addPass(mlir::createCSEPass());
   // pm.addPass(optimizer::createCombinerPass());
-  pm.addPass(mlir::createSCCPPass());
-  pm.addPass(mlir::createInlinerPass());
+  //pm.addPass(mlir::createSCCPPass());
+  //pm.addPass(mlir::createInlinerPass());
 
   //  pm.addPass(mlir::createLoopInvariantCodeMotionPass());
 
-  pm.addPass(createAttributer());
+  //pm.addPass(createAttributer());
   // pm.addPass(createGVNPass());
   // pm.addPass(createRewritePass());
   // pm.addPass(createDeadCodeEliminationPass());
 
-  pm.addPass(createSummaryWriterPass(options));
+  //pm.addPass(createSummaryWriterPass(options));
 
   // lower
-  pm.addPass(mlir::createCanonicalizerPass());
-  pm.addPass(mlir::createCSEPass());
+  //pm.addPass(mlir::createCanonicalizerPass());
+  //pm.addPass(mlir::createCSEPass());
   // pm.addPass(optimizer::createLowerErrorPropagationPass());
   // pm.addPass(optimizer::createLowerAwaitPass());
   //  pm.addPass(mlir::createAsyncFuncToAsyncRuntimePass());
