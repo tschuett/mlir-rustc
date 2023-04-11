@@ -20,7 +20,7 @@ CompilerInstance::createDefaultOutputFile(llvm::StringRef baseInput,
     std::string object = {objectFile.begin(), objectFile.end()};
 
     std::error_code EC;
-    
+
     llvm::raw_fd_stream s = {object, EC};
 
     // Creates the file descriptor for the output file
