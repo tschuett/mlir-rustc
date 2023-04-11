@@ -22,6 +22,7 @@
 #include "Session/Session.h"
 #include "TyCtx/TyCtx.h"
 
+#include <llvm/ADT/ScopedHashTable.h>
 #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
 #include <llvm/Target/TargetMachine.h>
@@ -54,7 +55,7 @@ class CrateBuilder {
   Target target;
   std::stack<mlir::Block *> breakPoints;
 
-  adt::ScopedHashTable<basic::NodeId, mlir::Value> symbolTable;
+  llvm::ScopedHashTable<basic::NodeId, mlir::Value> symbolTable;
 
   /// A mapping for the functions that have been code generated to MLIR.
   llvm::StringMap<mlir::func::FuncOp> functionMap;
@@ -115,8 +116,8 @@ private:
   void emitModule(ast::Module *);
   std::optional<mlir::Value> emitBlockExpression(ast::BlockExpression *);
   std::optional<mlir::Value> emitStatements(ast::Statements);
-  mlir::Value emitExpression(ast::Expression *expr);
-  mlir::Value emitExpressionWithoutBlock(ast::ExpressionWithoutBlock *expr);
+  std::optional<mlir::Value> emitExpression(ast::Expression *expr);
+  std::optional<mlir::Value> emitExpressionWithoutBlock(ast::ExpressionWithoutBlock *expr);
   mlir::Value emitExpressionWithBlock(ast::ExpressionWithBlock *expr);
   void emitStatement(ast::Statement *);
   void emitExpressionStatement(ast::ExpressionStatement *stmt);
@@ -139,6 +140,8 @@ private:
   mlir::Type getTypePath(ast::types::TypePath *);
 
   mlir::Type convertTyTyToMLIR(tyctx::TyTy::BaseType *);
+
+  void declare(basic::NodeId, mlir::Value);
 
   /// Helper conversion for a Rust AST location to an MLIR location.
   mlir::Location getLocation(const Location &loc) {

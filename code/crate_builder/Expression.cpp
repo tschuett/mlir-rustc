@@ -1,16 +1,14 @@
 #include "AST/Expression.h"
 
+#include "AST/PathExpression.h"
 #include "Basic/Ids.h"
 #include "CrateBuilder/CrateBuilder.h"
-// #include <mlir/Dialect/Arith/IR/Arith.h>
-
-#include "AST/PathExpression.h"
 
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 
 namespace rust_compiler::crate_builder {
 
-mlir::Value CrateBuilder::emitExpression(ast::Expression *expr) {
+std::optional<mlir::Value> CrateBuilder::emitExpression(ast::Expression *expr) {
   switch (expr->getExpressionKind()) {
   case ast::ExpressionKind::ExpressionWithBlock: {
     return emitExpressionWithBlock(
@@ -32,21 +30,28 @@ CrateBuilder::emitMethodCallExpression(ast::MethodCallExpression *expr) {
 
 void CrateBuilder::emitReturnExpression(ast::ReturnExpression *expr) {
   if (expr->hasTailExpression()) {
-    mlir::Value result = emitExpression(expr->getExpression().get());
-    builder.create<mlir::func::ReturnOp>(getLocation(expr->getLocation()),
-                                         result);
+    std::optional<mlir::Value> result =
+        emitExpression(expr->getExpression().get());
+    if (result) {
+      builder.create<mlir::func::ReturnOp>(getLocation(expr->getLocation()),
+                                           *result);
+      return;
+    }
+    llvm::errs() << "emitExpression in emitReturnExpression failed"
+                 << "\n";
+    return;
   }
   builder.create<mlir::func::ReturnOp>(getLocation(expr->getLocation()));
-
-  // return builder.create<mlir::arith::ConstantIntOp
 }
 
 mlir::Value CrateBuilder::emitPathExpression(ast::PathExpression *expr) {
   std::optional<basic::NodeId> id = tyCtx->lookupName(expr->getNodeId());
   if (id) {
-    std::optional<mlir::Value> value = symbolTable.find(*id);
-    if (value)
-      return *value;
+    llvm::errs() << *id << "\n";
+    auto it = symbolTable.begin(*id);
+    if (it != symbolTable.end()) {
+      return *it;
+    }
   }
   assert(false);
 }

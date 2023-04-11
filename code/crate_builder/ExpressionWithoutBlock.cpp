@@ -12,10 +12,11 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::crate_builder {
 
-mlir::Value
+  std::optional<mlir::Value>
 CrateBuilder::emitExpressionWithoutBlock(ast::ExpressionWithoutBlock *expr) {
   switch (expr->getWithoutBlockKind()) {
   case ast::ExpressionWithoutBlockKind::LiteralExpression: {
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::PathExpression: {
@@ -25,9 +26,11 @@ CrateBuilder::emitExpressionWithoutBlock(ast::ExpressionWithoutBlock *expr) {
     return emitOperatorExpression(static_cast<OperatorExpression *>(expr));
   }
   case ast::ExpressionWithoutBlockKind::GroupedExpression: {
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::ArrayExpression: {
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::AwaitExpression: {
@@ -36,18 +39,23 @@ CrateBuilder::emitExpressionWithoutBlock(ast::ExpressionWithoutBlock *expr) {
     //    mlir::Value body = emitExpression(await->getBody());
     //    return builder.create<hir::AwaitOp>(getLocation(await->getLocation()),
     //                                        body);
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::IndexExpression: {
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::TupleExpression: {
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::TupleIndexingExpression: {
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::StructExpression: {
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::CallExpression: {
@@ -60,31 +68,39 @@ CrateBuilder::emitExpressionWithoutBlock(ast::ExpressionWithoutBlock *expr) {
     return emitMethodCallExpression(call);
   }
   case ast::ExpressionWithoutBlockKind::FieldExpression: {
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::ClosureExpression: {
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::AsyncBlockExpression: {
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::ContinueExpression: {
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::BreakExpression: {
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::RangeExpression: {
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::ReturnExpression: {
     emitReturnExpression(static_cast<ReturnExpression *>(expr));
-    break;
+    return std::nullopt;
   }
   case ast::ExpressionWithoutBlockKind::UnderScoreExpression: {
+    assert(false && "to be implemented");
     break;
   }
   case ast::ExpressionWithoutBlockKind::MacroInvocation: {
+    assert(false && "to be implemented");
     break;
   }
   }

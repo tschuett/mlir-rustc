@@ -1,8 +1,10 @@
 #include "AST/FunctionParam.h"
 #include "Basic/Ids.h"
 #include "CrateBuilder/CrateBuilder.h"
+#include "mlir/IR/Location.h"
 
 #include <llvm/ADT/SmallVector.h>
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/BuiltinAttributes.h>
@@ -15,6 +17,13 @@ using namespace rust_compiler::ast;
 using namespace rust_compiler::adt;
 
 namespace rust_compiler::crate_builder {
+
+void CrateBuilder::declare(basic::NodeId id, mlir::Value val) {
+
+  llvm::errs() << "declare: " << id << "\n";
+
+  symbolTable.insert(id, val);
+}
 
 mlir::FunctionType CrateBuilder::getFunctionType(ast::Function *fun) {
   llvm::SmallVector<mlir::Type> parameterType;
@@ -42,6 +51,8 @@ mlir::FunctionType CrateBuilder::getFunctionType(ast::Function *fun) {
   if (fun->hasReturnType())
     returnType = getType(fun->getReturnType().get());
 
+  llvm::errs() << "getFunctionType: " << parameterType.size() << "\n";
+
   mlir::TypeRange inputs = parameterType;
   mlir::TypeRange results = {returnType};
 
@@ -51,27 +62,56 @@ mlir::FunctionType CrateBuilder::getFunctionType(ast::Function *fun) {
 /// FIXME set visibility: { sym_visibility = "public" }
 void CrateBuilder::emitFunction(ast::Function *f) {
 
-  ScopedHashTableScope<basic::NodeId, mlir::Value> scope(symbolTable);
+  llvm::ScopedHashTableScope<basic::NodeId, mlir::Value> scope(symbolTable);
 
   builder.setInsertionPointToEnd(theModule.getBody());
 
   mlir::FunctionType funType = getFunctionType(f);
 
-  mlir::func::FuncOp fun = builder.create<mlir::func::FuncOp>(
-      getLocation(f->getLocation()), "foo", funType);
+  llvm::errs() << "inputs: " << funType.getNumInputs() << "\n";
 
-  mlir::Block &entryBlock = fun.front();
+  llvm::errs() << "outputs: " << funType.getNumResults() << "\n";
+
   llvm::SmallVector<basic::NodeId> parameterNames;
-
+  llvm::SmallVector<mlir::Type> parameterTypes;
+  llvm::SmallVector<mlir::Location> parameterLocation;
   for (FunctionParam &parm : f->getParams().getParams()) {
     if (parm.getKind() == FunctionParamKind::Pattern) {
       parameterNames.push_back(parm.getPattern().getPattern()->getNodeId());
+      llvm::errs() << "pattern: " << parm.getPattern().getPattern()->getNodeId()
+                   << "\n";
+      parameterTypes.push_back(getType(parm.getPattern().getType().get()));
+      parameterLocation.push_back(getLocation(parm.getLocation()));
     } else {
       assert(false);
     }
   }
 
-  // entryBlock.getArguments()
+  mlir::func::FuncOp fun = builder.create<mlir::func::FuncOp>(
+      getLocation(f->getLocation()), "foo", funType);
+  assert(fun != nullptr);
+
+  llvm::errs() << "declaration?: " << fun.isDeclaration() << "\n";
+
+  llvm::errs() << "block arguments: " << parameterTypes.size() << "\n";
+
+  // mlir::Block* entryBlock = builder.createBlock(&fun.front(),
+  // parameterTypes);
+  mlir::Block *entryBlock = builder.createBlock(
+      &fun.getBody(), {}, parameterTypes, parameterLocation);
+
+  // mlir::Block &entryBlock = fun.front();
+
+  llvm::errs() << parameterNames.size() << "\n";
+  llvm::errs() << "PROBLEM: " << entryBlock->getArguments().size() << "\n";
+  llvm::errs() << "PROBLEM: " << entryBlock->getNumArguments() << "\n";
+
+  for (const auto namedValue :
+       llvm::zip(parameterNames, entryBlock->getArguments()))
+    declare(std::get<0>(namedValue), std::get<1>(namedValue));
+
+  llvm::errs() << symbolTable.count(109) << "\n";
+  llvm::errs() << symbolTable.count(parameterNames[0]) << "\n";
 
   // mlir::MLIRContext *ctx = fun.getContext();
 
@@ -81,7 +121,7 @@ void CrateBuilder::emitFunction(ast::Function *f) {
   //               mlir::StringAttr::get("public", ctx));
   //
 
-  builder.setInsertionPointToStart(&entryBlock);
+  builder.setInsertionPointToStart(entryBlock);
 
   if (f->hasBody())
     emitBlockExpression(

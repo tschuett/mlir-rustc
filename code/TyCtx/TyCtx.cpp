@@ -5,10 +5,10 @@
 #include "AST/Crate.h"
 #include "AST/EnumItem.h"
 #include "AST/ExternalItem.h"
-#include "Basic/Ids.h"
 #include "AST/Types/TypePath.h"
+#include "Basic/Ids.h"
 
-//#include "../sema/TypeChecking/TypeChecking.h"
+// #include "../sema/TypeChecking/TypeChecking.h"
 
 #include <memory>
 #include <optional>
@@ -17,7 +17,7 @@ using namespace rust_compiler::basic;
 using namespace rust_compiler::ast;
 using namespace rust_compiler::ast::types;
 using namespace rust_compiler::adt;
-//using namespace rust_compiler::sema::type_checking;
+// using namespace rust_compiler::sema::type_checking;
 
 namespace rust_compiler::tyctx {
 
@@ -31,19 +31,30 @@ std::optional<std::string> TyCtx::getCrateName(CrateNum cnum) {
   return it->second->getCrateName();
 }
 
-//TyCtx *TyCtx::get() {
-//  static std::unique_ptr<TyCtx> instance;
-//  if (!instance)
-//    instance = std::unique_ptr<TyCtx>(new TyCtx());
+// TyCtx *TyCtx::get() {
+//   static std::unique_ptr<TyCtx> instance;
+//   if (!instance)
+//     instance = std::unique_ptr<TyCtx>(new TyCtx());
 //
-//  return instance.get();
-//}
+//   return instance.get();
+// }
 
-//NodeId TyCtx::getNextNodeId() {
-//  auto it = nodeIdIter;
-//  ++nodeIdIter;
-//  return it;
-//}
+// NodeId TyCtx::getNextNodeId() {
+//   auto it = nodeIdIter;
+//   ++nodeIdIter;
+//   return it;
+// }
+
+void TyCtx::insertResolvedName(NodeId ref, NodeId def) {
+  resolvedNames[ref] = def;
+}
+
+std::optional<NodeId> TyCtx::lookupName(NodeId ref) {
+  auto it = resolvedNames.find(ref);
+  if (it == resolvedNames.end())
+    return std::nullopt;
+  return it->second;
+}
 
 void TyCtx::insertModule(ast::Module *mod) { assert(false); }
 
@@ -193,54 +204,45 @@ void TyCtx::insertAutoderefMapping(NodeId id,
 
 void TyCtx::generateBuiltins() {
   // unsigned integer
-  u8 = std::make_unique<TyTy::UintType>(getNextNodeId(),
-                                        TyTy::UintKind::U8);
+  u8 = std::make_unique<TyTy::UintType>(getNextNodeId(), TyTy::UintKind::U8);
   setupBuiltin("u8", u8.get());
 
-  u16 = std::make_unique<TyTy::UintType>(getNextNodeId(),
-                                         TyTy::UintKind::U16);
+  u16 = std::make_unique<TyTy::UintType>(getNextNodeId(), TyTy::UintKind::U16);
   setupBuiltin("u16", u16.get());
 
-  u32 = std::make_unique<TyTy::UintType>(getNextNodeId(),
-                                         TyTy::UintKind::U32);
+  u32 = std::make_unique<TyTy::UintType>(getNextNodeId(), TyTy::UintKind::U32);
   setupBuiltin("u32", u32.get());
 
-  u64 = std::make_unique<TyTy::UintType>(getNextNodeId(),
-                                         TyTy::UintKind::U64);
+  u64 = std::make_unique<TyTy::UintType>(getNextNodeId(), TyTy::UintKind::U64);
   setupBuiltin("u64", u64.get());
 
-  u128 = std::make_unique<TyTy::UintType>(getNextNodeId(),
-                                          TyTy::UintKind::U128);
+  u128 =
+      std::make_unique<TyTy::UintType>(getNextNodeId(), TyTy::UintKind::U128);
   setupBuiltin("u128", u128.get());
 
   // signed integer
-  i8 = std::make_unique<TyTy::IntType>(getNextNodeId(),
-                                       TyTy::IntKind::I8);
+  i8 = std::make_unique<TyTy::IntType>(getNextNodeId(), TyTy::IntKind::I8);
   setupBuiltin("i8", i8.get());
 
-  i16 = std::make_unique<TyTy::IntType>(getNextNodeId(),
-                                        TyTy::IntKind::I16);
+  i16 = std::make_unique<TyTy::IntType>(getNextNodeId(), TyTy::IntKind::I16);
   setupBuiltin("i16", i16.get());
 
-  i32 = std::make_unique<TyTy::IntType>(getNextNodeId(),
-                                        TyTy::IntKind::I32);
+  i32 = std::make_unique<TyTy::IntType>(getNextNodeId(), TyTy::IntKind::I32);
   setupBuiltin("i32", i32.get());
 
-  i64 = std::make_unique<TyTy::IntType>(getNextNodeId(),
-                                        TyTy::IntKind::I64);
+  i64 = std::make_unique<TyTy::IntType>(getNextNodeId(), TyTy::IntKind::I64);
   setupBuiltin("i64", i64.get());
 
-  i128 = std::make_unique<TyTy::IntType>(getNextNodeId(),
-                                         TyTy::IntKind::I128);
+  i128 = std::make_unique<TyTy::IntType>(getNextNodeId(), TyTy::IntKind::I128);
   setupBuiltin("i128", i128.get());
 
   // float
-  f32 = std::make_unique<TyTy::FloatType>(getNextNodeId(),
-                                          TyTy::FloatKind::F32);
+  f32 =
+      std::make_unique<TyTy::FloatType>(getNextNodeId(), TyTy::FloatKind::F32);
   setupBuiltin("f32", f32.get());
 
-  f64 = std::make_unique<TyTy::FloatType>(getNextNodeId(),
-                                          TyTy::FloatKind::F64);
+  f64 =
+      std::make_unique<TyTy::FloatType>(getNextNodeId(), TyTy::FloatKind::F64);
   setupBuiltin("f64", f64.get());
 
   // bool
@@ -263,13 +265,12 @@ void TyCtx::generateBuiltins() {
   never = std::make_unique<TyTy::NeverType>(getNextNodeId());
   setupBuiltin("!", never.get());
 
-  TyTy::TupleType *unitType =
-      TyTy::TupleType::getUnitType(getNextNodeId());
+  TyTy::TupleType *unitType = TyTy::TupleType::getUnitType(getNextNodeId());
 
   emptyTupleType = new ast::types::TupleType(Location::getBuiltinLocation());
   builtins.push_back({"()", emptyTupleType});
   insertBuiltin(unitType->getReference(), emptyTupleType->getNodeId(),
-                       unitType);
+                unitType);
   setUnitTypeNodeId(emptyTupleType->getNodeId());
 }
 

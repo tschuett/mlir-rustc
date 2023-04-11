@@ -1,8 +1,6 @@
 #include "AST/Expression.h"
 #include "CrateBuilder/CrateBuilder.h"
-#include "Hir/HirOps.h"
 
-using namespace rust_compiler::hir;
 
 namespace rust_compiler::crate_builder {
 

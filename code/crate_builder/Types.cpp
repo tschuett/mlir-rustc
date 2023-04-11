@@ -78,8 +78,6 @@ mlir::Type CrateBuilder::getTypeNoBounds(ast::types::TypeNoBounds *noBounds) {
 mlir::Type CrateBuilder::getExpression(ast::Expression *expr) {
   using namespace rust_compiler::tyctx::TyTy;
 
-  llvm::errs() << "codegen: " << expr->getNodeId() << "\n";
-
   std::optional<TyTy::BaseType *> maybeType =
       tyCtx->lookupType(expr->getNodeId());
   if (maybeType) {
@@ -159,8 +157,6 @@ mlir::Type CrateBuilder::convertTyTyToMLIR(TyTy::BaseType *type) {
 
 mlir::Type CrateBuilder::getTypePath(ast::types::TypePath *path) {
   using namespace rust_compiler::tyctx::TyTy;
-
-  llvm::errs() << "codegen: " << path->getNodeId() << "\n";
 
   std::optional<TyTy::BaseType *> maybeType =
       tyCtx->lookupType(path->getNodeId());
