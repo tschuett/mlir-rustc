@@ -9,6 +9,8 @@
 #include "TyCtx/NodeIdentity.h"
 #include "TypeIdentity.h"
 
+#include <set>
+
 namespace rust_compiler::tyctx::TyTy {
 
 /// https://doc.rust-lang.org/reference/types.html
@@ -61,6 +63,7 @@ public:
   basic::NodeId getTypeReference() const;
 
   void setReference(basic::NodeId);
+  void appendReference(basic::NodeId);
 
   TypeKind getKind() const { return kind; }
 
@@ -78,6 +81,8 @@ private:
   basic::NodeId typeReference;
   TypeKind kind;
   TypeIdentity identity;
+
+  std::set<basic::NodeId> combined;
 };
 
 class IntType : public BaseType {
@@ -233,7 +238,7 @@ public:
 
 class InferType : public BaseType {
 public:
-  InferType(basic::NodeId, Location loc);
+  InferType(basic::NodeId, InferKind kind, Location loc);
 
   InferKind getInferredKind() const { return inferKind; }
 

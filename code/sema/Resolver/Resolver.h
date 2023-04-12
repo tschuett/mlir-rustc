@@ -34,6 +34,7 @@
 #include "AST/Types/TypePathFn.h"
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
+#include "AST/IfExpression.h"
 #include "AST/Visiblity.h"
 #include "Basic/Ids.h"
 #include "Location.h"
@@ -242,6 +243,9 @@ private:
                                  const adt::CanonicalPath &prefix,
                                  const adt::CanonicalPath &canonicalPrefix);
   void resolveLoopExpression(std::shared_ptr<ast::LoopExpression>,
+                             const adt::CanonicalPath &prefix,
+                             const adt::CanonicalPath &canonicalPrefix);
+  void resolveIfExpression(std::shared_ptr<ast::IfExpression>,
                              const adt::CanonicalPath &prefix,
                              const adt::CanonicalPath &canonicalPrefix);
   void resolvePathExpression(std::shared_ptr<ast::PathExpression>);

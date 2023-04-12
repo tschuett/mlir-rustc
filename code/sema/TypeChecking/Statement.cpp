@@ -56,19 +56,20 @@ TyTy::BaseType *TypeResolver::checkExpressionStatement(
 
 TyTy::BaseType *
 TypeResolver::checkLetStatement(std::shared_ptr<ast::LetStatement> let) {
-  assert(false && "to be implemented");
+  //  assert(false && "to be implemented");
 
   std::shared_ptr<ast::patterns::PatternNoTopAlt> pattern = let->getPattern();
 
   TyTy::BaseType *initExprType = nullptr;
   Location initExprTypeLocation = {let->getLocation()};
-  ;
 
   if (let->hasInit()) {
     initExprType = checkExpression(let->getInit());
     initExprTypeLocation = let->getInit()->getLocation();
     if (initExprType->getKind() == TyTy::TypeKind::Error)
       return nullptr;
+
+    initExprType->appendReference(let->getNodeId());
   }
 
   TyTy::BaseType *specifiedType = nullptr;
@@ -82,9 +83,11 @@ TypeResolver::checkLetStatement(std::shared_ptr<ast::LetStatement> let) {
   [[maybe_unused]] TyTy::BaseType *elseExprType = nullptr;
   if (let->hasElse()) {
     elseExprType = checkExpression(let->getElse());
-    // elseExprType->getKind() == TyTy::TypeKind::Never;
   }
 
+  // FIXME: elseExprType
+
+  // let x: i32 = 5;
   if (specifiedType != nullptr && initExprType != nullptr) {
     coercion(let->getNodeId(),
              TyTy::WithLocation(specifiedType, specifiedTypeLocation),
@@ -94,16 +97,20 @@ TypeResolver::checkLetStatement(std::shared_ptr<ast::LetStatement> let) {
     checkPattern(pattern, specifiedType);
   } else {
     if (specifiedType != nullptr) {
+      // let x: i32;
       checkPattern(pattern, specifiedType);
     } else if (initExprType != nullptr) {
+      // let x = 5;
       checkPattern(pattern, initExprType);
     } else {
-      // infer
-      TyTy::BaseType *inferType =
-          new TyTy::InferType(let->getNodeId(), let->getLocation());
+      // let x;
+      TyTy::BaseType *inferType = new TyTy::InferType(
+          let->getNodeId(), TyTy::InferKind::General, let->getLocation());
       checkPattern(pattern, inferType);
     }
   }
+
+  return TyTy::TupleType::getUnitType(let->getNodeId());
 }
 
 } // namespace rust_compiler::sema::type_checking

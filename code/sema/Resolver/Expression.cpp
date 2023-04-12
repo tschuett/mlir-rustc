@@ -65,7 +65,9 @@ void Resolver::resolveExpressionWithBlock(
     break;
   }
   case ExpressionWithBlockKind::IfExpression: {
-    assert(false && "to be handled later");
+    resolveIfExpression(std::static_pointer_cast<IfExpression>(withBlock),
+                        prefix, canonicalPrefix);
+    break;
   }
   case ExpressionWithBlockKind::IfLetExpression: {
     assert(false && "to be handled later");
@@ -83,7 +85,8 @@ void Resolver::resolveExpressionWithoutBlock(
     const adt::CanonicalPath &canonicalPrefix) {
   switch (woBlock->getWithoutBlockKind()) {
   case ExpressionWithoutBlockKind::LiteralExpression: {
-    assert(false && "to be handled later");
+    // ignored
+    break;
   }
   case ExpressionWithoutBlockKind::PathExpression: {
     resolvePathExpression(std::static_pointer_cast<PathExpression>(woBlock));
@@ -393,6 +396,16 @@ void Resolver::resolveArithmeticOrLogicalExpression(
     const adt::CanonicalPath &canonicalPrefix) {
   resolveExpression(arith->getLHS(), prefix, canonicalPrefix);
   resolveExpression(arith->getRHS(), prefix, canonicalPrefix);
+}
+
+void Resolver::resolveIfExpression(std::shared_ptr<ast::IfExpression> ifExpr,
+                                   const adt::CanonicalPath &prefix,
+                                   const adt::CanonicalPath &canonicalPrefix) {
+  resolveExpression(ifExpr->getCondition(), prefix, canonicalPrefix);
+  resolveExpression(ifExpr->getBlock(), prefix, canonicalPrefix);
+
+  if (ifExpr->hasTrailing())
+    resolveExpression(ifExpr->getTrailing(), prefix, canonicalPrefix);
 }
 
 } // namespace rust_compiler::sema::resolver

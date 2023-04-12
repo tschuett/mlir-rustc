@@ -4,9 +4,10 @@
 #include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
 #include "Location.h"
+#include "Session/Session.h"
+#include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TypeIdentity.h"
-#include "Session/Session.h"
 
 #include <llvm/Support/raw_ostream.h>
 
@@ -38,6 +39,8 @@ basic::NodeId BaseType::getReference() const { return reference; }
 basic::NodeId BaseType::getTypeReference() const { return typeReference; }
 
 void BaseType::setReference(basic::NodeId ref) { reference = ref; }
+
+void BaseType::appendReference(basic::NodeId ref) { combined.insert(ref); }
 
 BoolType::BoolType(basic::NodeId reference)
     : BaseType(reference, reference, TypeKind::Bool, TypeIdentity::empty()) {}
@@ -213,5 +216,22 @@ unsigned FunctionType::getNumberOfSpecifiedBounds() { return 0; }
 unsigned ErrorType::getNumberOfSpecifiedBounds() { return 0; }
 
 unsigned InferType::getNumberOfSpecifiedBounds() { return 0; }
+
+InferType::InferType(basic::NodeId ref, InferKind kind, Location loc)
+    : BaseType(ref, ref, TypeKind::Inferred, TypeIdentity::from(loc)),
+      inferKind(kind) {}
+
+std::string InferType::toString() const {
+  switch (inferKind) {
+  case InferKind::Float:
+    return "<float>";
+  case InferKind::Integral:
+    return "<integer>";
+  case InferKind::General:
+    return "T?";
+  }
+}
+
+bool InferType::needsGenericSubstitutions() const { return false; }
 
 } // namespace rust_compiler::tyctx::TyTy

@@ -198,19 +198,19 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
     }
   }
 
-  llvm::errs() << "resolve path type: resolved node?"
-               << "\n";
+//  llvm::errs() << "resolve path type: resolved node?"
+//               << "\n";
 
   if (resolvedNodeId != UNKNOWN_NODEID) {
-    llvm::errs() << "resolve path type: resolved node"
-                 << "\n";
+//    llvm::errs() << "resolve path type: resolved node"
+//                 << "\n";
     // first name
     if (getNameScope().wasDeclDeclaredInCurrentScope(resolvedNodeId)) {
       insertResolvedName(typePath->getNodeId(), resolvedNodeId);
     } else if (getTypeScope().wasDeclDeclaredInCurrentScope(resolvedNodeId)) {
       insertResolvedType(typePath->getNodeId(), resolvedNodeId);
-      llvm::errs() << "it is a type"
-                   << "\n";
+//      llvm::errs() << "it is a type"
+//                   << "\n";
     } else {
       llvm_unreachable("");
     }
