@@ -61,9 +61,6 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
 
   std::vector<PathExprSegment> segs = path->getSegments();
 
-  llvm::errs() << "resolveRootPathExpr: " << segs[0].getIdent().toString()
-               << "\n";
-
   NodeId refNodeId = UNKNOWN_NODEID;
 
   if (auto name = resolver->lookupResolvedName(path->getNodeId())) {

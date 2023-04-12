@@ -144,14 +144,11 @@ TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
 
   std::vector<TypePathSegment> segs = path->getSegments();
 
-  llvm::errs() << "resolveRootPath: " << segs[0].getSegment().toString()
-               << "\n";
-
   if (segs.size() == 1)
     if (auto t = tcx->lookupBuiltin(segs[0].getSegment().toString())) {
       *offset = 1;
-      llvm::errs() << path->getNodeId() << " -> " << t->toString() << "\n";
-      llvm::errs() << (void*)t << "\n";
+//      llvm::errs() << path->getNodeId() << " -> " << t->toString() << "\n";
+//      llvm::errs() << (void*)t << "\n";
       return t;
     }
 

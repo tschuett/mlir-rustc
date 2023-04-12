@@ -47,7 +47,6 @@ void CrateBuilder::emitReturnExpression(ast::ReturnExpression *expr) {
 mlir::Value CrateBuilder::emitPathExpression(ast::PathExpression *expr) {
   std::optional<basic::NodeId> id = tyCtx->lookupName(expr->getNodeId());
   if (id) {
-    llvm::errs() << *id << "\n";
     auto it = symbolTable.begin(*id);
     if (it != symbolTable.end()) {
       return *it;

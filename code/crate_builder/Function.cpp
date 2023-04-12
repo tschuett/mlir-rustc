@@ -19,9 +19,6 @@ using namespace rust_compiler::adt;
 namespace rust_compiler::crate_builder {
 
 void CrateBuilder::declare(basic::NodeId id, mlir::Value val) {
-
-  llvm::errs() << "declare: " << id << "\n";
-
   symbolTable.insert(id, val);
 }
 
@@ -51,8 +48,6 @@ mlir::FunctionType CrateBuilder::getFunctionType(ast::Function *fun) {
   if (fun->hasReturnType())
     returnType = getType(fun->getReturnType().get());
 
-  llvm::errs() << "getFunctionType: " << parameterType.size() << "\n";
-
   mlir::TypeRange inputs = parameterType;
   mlir::TypeRange results = {returnType};
 
@@ -68,18 +63,12 @@ void CrateBuilder::emitFunction(ast::Function *f) {
 
   mlir::FunctionType funType = getFunctionType(f);
 
-  llvm::errs() << "inputs: " << funType.getNumInputs() << "\n";
-
-  llvm::errs() << "outputs: " << funType.getNumResults() << "\n";
-
   llvm::SmallVector<basic::NodeId> parameterNames;
   llvm::SmallVector<mlir::Type> parameterTypes;
   llvm::SmallVector<mlir::Location> parameterLocation;
   for (FunctionParam &parm : f->getParams().getParams()) {
     if (parm.getKind() == FunctionParamKind::Pattern) {
       parameterNames.push_back(parm.getPattern().getPattern()->getNodeId());
-      llvm::errs() << "pattern: " << parm.getPattern().getPattern()->getNodeId()
-                   << "\n";
       parameterTypes.push_back(getType(parm.getPattern().getType().get()));
       parameterLocation.push_back(getLocation(parm.getLocation()));
     } else {
@@ -91,10 +80,6 @@ void CrateBuilder::emitFunction(ast::Function *f) {
       getLocation(f->getLocation()), "foo", funType);
   assert(fun != nullptr);
 
-  llvm::errs() << "declaration?: " << fun.isDeclaration() << "\n";
-
-  llvm::errs() << "block arguments: " << parameterTypes.size() << "\n";
-
   // mlir::Block* entryBlock = builder.createBlock(&fun.front(),
   // parameterTypes);
   mlir::Block *entryBlock = builder.createBlock(
@@ -102,16 +87,9 @@ void CrateBuilder::emitFunction(ast::Function *f) {
 
   // mlir::Block &entryBlock = fun.front();
 
-  llvm::errs() << parameterNames.size() << "\n";
-  llvm::errs() << "PROBLEM: " << entryBlock->getArguments().size() << "\n";
-  llvm::errs() << "PROBLEM: " << entryBlock->getNumArguments() << "\n";
-
   for (const auto namedValue :
        llvm::zip(parameterNames, entryBlock->getArguments()))
     declare(std::get<0>(namedValue), std::get<1>(namedValue));
-
-  llvm::errs() << symbolTable.count(109) << "\n";
-  llvm::errs() << symbolTable.count(parameterNames[0]) << "\n";
 
   // mlir::MLIRContext *ctx = fun.getContext();
 
