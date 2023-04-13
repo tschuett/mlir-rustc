@@ -58,8 +58,7 @@ TyTy::BaseType *TypeResolver::checkExpressionWithBlock(
   }
   case ast::ExpressionWithBlockKind::IfExpression: {
     assert(false && "to be implemented");
-    return checkIfExpression(
-        std::static_pointer_cast<IfExpression>(withBlock));
+    return checkIfExpression(std::static_pointer_cast<IfExpression>(withBlock));
   }
   case ast::ExpressionWithBlockKind::IfLetExpression: {
     assert(false && "to be implemented");
@@ -358,10 +357,23 @@ bool TypeResolver::resolveOperatorOverload(
 TyTy::BaseType *
 TypeResolver::checkIfExpression(std::shared_ptr<ast::IfExpression> ifExpr) {
   checkExpression(ifExpr->getCondition());
-  checkExpression(ifExpr->getBlock());
 
-  if (ifExpr->hasTrailing())
-    checkExpression(ifExpr->getTrailing());
+  TyTy::BaseType *blk = checkExpression(ifExpr->getBlock());
+
+  if (ifExpr->hasTrailing()) {
+    TyTy::BaseType *elseBlk = checkExpression(ifExpr->getTrailing());
+
+    if (blk->getKind() == TyTy::TypeKind::Never)
+      return elseBlk;
+    if (elseBlk->getKind() == TyTy::TypeKind::Never)
+      return blk;
+
+    return unifyWithSite(
+        ifExpr->getNodeId(),
+        TyTy::WithLocation(blk, ifExpr->getBlock()->getLocation()),
+        TyTy::WithLocation(elseBlk, ifExpr->getTrailing()->getLocation()),
+        ifExpr->getLocation());
+  }
 
   return TyTy::TupleType::getUnitType(ifExpr->getNodeId());
 }
