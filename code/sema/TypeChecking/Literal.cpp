@@ -13,7 +13,8 @@ TypeResolver::checkLiteral(std::shared_ptr<ast::LiteralExpression> lit) {
 
   switch (lit->getLiteralKind()) {
   case ast::LiteralExpressionKind::CharLiteral: {
-    assert(false && "to be implemented");
+    TyTy::BaseType * builtin = tcx->lookupBuiltin("char");
+    return builtin;
   }
   case ast::LiteralExpressionKind::StringLiteral: {
     assert(false && "to be implemented");

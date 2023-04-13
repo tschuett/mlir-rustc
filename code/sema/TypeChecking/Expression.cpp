@@ -58,6 +58,8 @@ TyTy::BaseType *TypeResolver::checkExpressionWithBlock(
   }
   case ast::ExpressionWithBlockKind::IfExpression: {
     assert(false && "to be implemented");
+    return checkIfExpression(
+        std::static_pointer_cast<IfExpression>(withBlock));
   }
   case ast::ExpressionWithBlockKind::IfLetExpression: {
     assert(false && "to be implemented");
@@ -273,7 +275,7 @@ TyTy::BaseType *TypeResolver::checkReturnExpression(
     ty = TyTy::TupleType::getUnitType(ret->getNodeId());
   }
 
-  [[maybe_unused]]TyTy::BaseType *infered =
+  [[maybe_unused]] TyTy::BaseType *infered =
       unify(ret->getNodeId(), TyTy::WithLocation(functionReturnTye),
             TyTy::WithLocation(ty, loc), ret->getLocation());
 
@@ -351,6 +353,17 @@ bool TypeResolver::resolveOperatorOverload(
   // assert(false);
   //  FIXME
   return true;
+}
+
+TyTy::BaseType *
+TypeResolver::checkIfExpression(std::shared_ptr<ast::IfExpression> ifExpr) {
+  checkExpression(ifExpr->getCondition());
+  checkExpression(ifExpr->getBlock());
+
+  if (ifExpr->hasTrailing())
+    checkExpression(ifExpr->getTrailing());
+
+  return TyTy::TupleType::getUnitType(ifExpr->getNodeId());
 }
 
 } // namespace rust_compiler::sema::type_checking

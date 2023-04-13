@@ -31,6 +31,7 @@
 #include "TyCtx/Substitutions.h"
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TyTy.h"
+#include "AST/IfExpression.h"
 
 // #include "../Resolver/Resolver.h"
 
@@ -101,6 +102,8 @@ private:
   TyTy::BaseType *checkNeverType(std::shared_ptr<ast::types::NeverType>);
   TyTy::BaseType *
       checkExpressionStatement(std::shared_ptr<ast::ExpressionStatement>);
+  TyTy::BaseType *
+      checkIfExpression(std::shared_ptr<ast::IfExpression>);
 
   bool validateArithmeticType(ast::ArithmeticOrLogicalExpressionKind,
                               TyTy::BaseType *t);

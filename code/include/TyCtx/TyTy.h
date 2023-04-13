@@ -44,6 +44,18 @@ enum class UintKind { U8, U16, U32, U64, U128 };
 
 enum class FloatKind { F32, F64 };
 
+enum class SignedHint { Signed, Unsigned, Unkown };
+enum class SizeHint { S8, S16, S32, S64, S128, Unknown };
+
+class TypeHint {
+  SignedHint shint;
+  SizeHint szhint;
+
+public:
+  SignedHint getSignedHint() const { return shint; }
+  SizeHint getSiizeHint() const { return szhint; }
+};
+
 class BaseType;
 
 class TypeVariable {
