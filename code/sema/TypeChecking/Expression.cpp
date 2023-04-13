@@ -1,6 +1,7 @@
 #include "AST/Expression.h"
 
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/AssignmentExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/ClosureExpression.h"
 #include "AST/ExpressionStatement.h"
@@ -8,6 +9,7 @@
 #include "AST/OperatorExpression.h"
 #include "AST/PathExpression.h"
 #include "AST/Statement.h"
+#include "Coercion.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
 #include "Unification.h"
@@ -214,6 +216,8 @@ TyTy::BaseType *TypeResolver::checkOperatorExpression(
   }
   case OperatorExpressionKind::AssignmentExpression: {
     assert(false && "to be implemented");
+    return checkAssignmentExpression(
+        std::static_pointer_cast<AssignmentExpression>(op));
   }
   case OperatorExpressionKind::CompoundAssignmentExpression: {
     assert(false && "to be implemented");
@@ -376,6 +380,19 @@ TypeResolver::checkIfExpression(std::shared_ptr<ast::IfExpression> ifExpr) {
   }
 
   return TyTy::TupleType::getUnitType(ifExpr->getNodeId());
+}
+
+TyTy::BaseType *TypeResolver::checkAssignmentExpression(
+    std::shared_ptr<ast::AssignmentExpression> ass) {
+  auto lhs = checkExpression(ass->getLHS());
+  auto rhs = checkExpression(ass->getRHS());
+
+  coercionWithSite(ass->getNodeId(),
+                   TyTy::WithLocation(lhs, ass->getLHS()->getLocation()),
+                   TyTy::WithLocation(rhs, ass->getRHS()->getLocation()),
+                   ass->getLocation());
+
+  return TyTy::TupleType::getUnitType(ass->getNodeId());
 }
 
 } // namespace rust_compiler::sema::type_checking

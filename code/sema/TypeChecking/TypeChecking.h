@@ -32,6 +32,7 @@
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TyTy.h"
 #include "AST/IfExpression.h"
+#include "AST/AssignmentExpression.h"
 
 // #include "../Resolver/Resolver.h"
 
@@ -104,6 +105,8 @@ private:
       checkExpressionStatement(std::shared_ptr<ast::ExpressionStatement>);
   TyTy::BaseType *
       checkIfExpression(std::shared_ptr<ast::IfExpression>);
+  TyTy::BaseType *
+      checkAssignmentExpression(std::shared_ptr<ast::AssignmentExpression>);
 
   bool validateArithmeticType(ast::ArithmeticOrLogicalExpressionKind,
                               TyTy::BaseType *t);
