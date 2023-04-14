@@ -1,14 +1,17 @@
 #pragma once
 
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/AssignmentExpression.h"
 #include "AST/AssociatedItem.h"
 #include "AST/ClosureExpression.h"
+#include "AST/ComparisonExpression.h"
 #include "AST/Crate.h"
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/ExternalItem.h"
 #include "AST/Function.h"
 #include "AST/GenericParams.h"
+#include "AST/IfExpression.h"
 #include "AST/Implementation.h"
 #include "AST/Item.h"
 #include "AST/LetStatement.h"
@@ -31,8 +34,6 @@
 #include "TyCtx/Substitutions.h"
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TyTy.h"
-#include "AST/IfExpression.h"
-#include "AST/AssignmentExpression.h"
 
 // #include "../Resolver/Resolver.h"
 
@@ -103,8 +104,7 @@ private:
   TyTy::BaseType *checkNeverType(std::shared_ptr<ast::types::NeverType>);
   TyTy::BaseType *
       checkExpressionStatement(std::shared_ptr<ast::ExpressionStatement>);
-  TyTy::BaseType *
-      checkIfExpression(std::shared_ptr<ast::IfExpression>);
+  TyTy::BaseType *checkIfExpression(std::shared_ptr<ast::IfExpression>);
   TyTy::BaseType *
       checkAssignmentExpression(std::shared_ptr<ast::AssignmentExpression>);
 
@@ -124,6 +124,8 @@ private:
 
   TyTy::BaseType *checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>);
   TyTy::BaseType *checkTypePath(std::shared_ptr<ast::types::TypePath>);
+  TyTy::BaseType *
+      checkComparisonExpression(std::shared_ptr<ast::ComparisonExpression>);
 
   TyTy::BaseType *
   resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,

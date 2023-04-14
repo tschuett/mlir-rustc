@@ -4,6 +4,7 @@
 #include "AST/AssignmentExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/ClosureExpression.h"
+#include "AST/ComparisonExpression.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/LiteralExpression.h"
 #include "AST/OperatorExpression.h"
@@ -206,7 +207,8 @@ TyTy::BaseType *TypeResolver::checkOperatorExpression(
         std::static_pointer_cast<ArithmeticOrLogicalExpression>(op));
   }
   case OperatorExpressionKind::ComparisonExpression: {
-    assert(false && "to be implemented");
+    return checkComparisonExpression(
+        std::static_pointer_cast<ComparisonExpression>(op));
   }
   case OperatorExpressionKind::LazyBooleanExpression: {
     assert(false && "to be implemented");
@@ -392,6 +394,22 @@ TyTy::BaseType *TypeResolver::checkAssignmentExpression(
                    ass->getLocation());
 
   return TyTy::TupleType::getUnitType(ass->getNodeId());
+}
+
+TyTy::BaseType *TypeResolver::checkComparisonExpression(
+    std::shared_ptr<ast::ComparisonExpression> cmp) {
+  TyTy::BaseType *l = checkExpression(cmp->getLHS());
+  TyTy::BaseType *r = checkExpression(cmp->getRHS());
+
+  unifyWithSite(
+      cmp->getNodeId(), TyTy::WithLocation(l, cmp->getLHS()->getLocation()),
+      TyTy::WithLocation(r, cmp->getRHS()->getLocation()), cmp->getLocation());
+
+  std::optional<TyTy::BaseType *> bo = tcx->lookupBuiltin("bool");
+  if (bo)
+    return *bo;
+
+  assert(false);
 }
 
 } // namespace rust_compiler::sema::type_checking
