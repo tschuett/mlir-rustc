@@ -5,6 +5,8 @@
 #include "AST/AssignmentExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/ClosureExpression.h"
+#include "AST/ComparisonExpression.h"
+#include "AST/DereferenceExpression.h"
 #include "AST/LoopExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/PathExprSegment.h"
@@ -174,10 +176,15 @@ void Resolver::resolveOperatorExpression(
     const adt::CanonicalPath &canonicalPrefix) {
   switch (op->getKind()) {
   case OperatorExpressionKind::BorrowExpression: {
-    assert(false && "to be handled later");
+    resolveBorrowExpression(std::static_pointer_cast<BorrowExpression>(op),
+                            prefix, canonicalPrefix);
+    break;
   }
   case OperatorExpressionKind::DereferenceExpression: {
-    assert(false && "to be handled later");
+    resolveDereferenceExpression(
+        std::static_pointer_cast<DereferenceExpression>(op), prefix,
+        canonicalPrefix);
+    break;
   }
   case OperatorExpressionKind::ErrorPropagationExpression: {
     assert(false && "to be handled later");
@@ -192,7 +199,10 @@ void Resolver::resolveOperatorExpression(
     break;
   }
   case OperatorExpressionKind::ComparisonExpression: {
-    assert(false && "to be handled later");
+    resolveComparisonExpression(
+        std::static_pointer_cast<ComparisonExpression>(op), prefix,
+        canonicalPrefix);
+    break;
   }
   case OperatorExpressionKind::LazyBooleanExpression: {
     assert(false && "to be handled later");
@@ -201,12 +211,12 @@ void Resolver::resolveOperatorExpression(
     assert(false && "to be handled later");
   }
   case OperatorExpressionKind::AssignmentExpression: {
-    assert(false && "to be handled later");
     std::shared_ptr<AssignmentExpression> assign =
         std::static_pointer_cast<AssignmentExpression>(op);
     resolveExpression(assign->getLHS(), prefix, canonicalPrefix);
     resolveExpression(assign->getRHS(), prefix, canonicalPrefix);
     verifyAssignee(assign->getLHS());
+    break;
   }
   case OperatorExpressionKind::CompoundAssignmentExpression: {
     assert(false && "to be handled later");
@@ -406,6 +416,28 @@ void Resolver::resolveIfExpression(std::shared_ptr<ast::IfExpression> ifExpr,
 
   if (ifExpr->hasTrailing())
     resolveExpression(ifExpr->getTrailing(), prefix, canonicalPrefix);
+}
+
+void Resolver::resolveComparisonExpression(
+    std::shared_ptr<ast::ComparisonExpression> cmp,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  resolveExpression(cmp->getLHS(), prefix, canonicalPrefix);
+  resolveExpression(cmp->getRHS(), prefix, canonicalPrefix);
+}
+
+void Resolver::resolveDereferenceExpression(
+    std::shared_ptr<ast::DereferenceExpression> deref,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  resolveExpression(deref->getRHS(), prefix, canonicalPrefix);
+}
+
+void Resolver::resolveBorrowExpression(
+    std::shared_ptr<ast::BorrowExpression> borrow,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  resolveExpression(borrow->getExpression(), prefix, canonicalPrefix);
 }
 
 } // namespace rust_compiler::sema::resolver

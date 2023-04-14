@@ -39,6 +39,9 @@
 #include "Basic/Ids.h"
 #include "Location.h"
 #include "TyCtx/TyCtx.h"
+#include "AST/ComparisonExpression.h"
+#include "AST/DereferenceExpression.h"
+#include "AST/BorrowExpression.h"
 
 //#include "../TypeChecking/TyTy.h"
 // #include "../TypeChecking/TypeChecking.h"
@@ -268,6 +271,15 @@ private:
       std::shared_ptr<ast::ArithmeticOrLogicalExpression>,
       const adt::CanonicalPath &prefix,
       const adt::CanonicalPath &canonicalPrefix);
+  void resolveComparisonExpression(std::shared_ptr<ast::ComparisonExpression>,
+                                const adt::CanonicalPath &prefix,
+                                const adt::CanonicalPath &canonicalPrefix);
+  void resolveDereferenceExpression(std::shared_ptr<ast::DereferenceExpression>,
+                                const adt::CanonicalPath &prefix,
+                                const adt::CanonicalPath &canonicalPrefix);
+  void resolveBorrowExpression(std::shared_ptr<ast::BorrowExpression>,
+                                const adt::CanonicalPath &prefix,
+                                const adt::CanonicalPath &canonicalPrefix);
 
   // types
   std::optional<basic::NodeId>

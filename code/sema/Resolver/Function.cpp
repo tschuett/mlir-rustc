@@ -66,8 +66,9 @@ void Resolver::resolveFunction(std::shared_ptr<ast::Function> fun,
     }
   }
 
-  llvm::errs() << "resolve block epxression" << "\n";
-  
+  llvm::errs() << "resolve block epxression"
+               << "\n";
+
   resolveExpression(fun->getBody(), prefix, canonicalPrefix);
 
   getNameScope().pop();

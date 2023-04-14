@@ -215,7 +215,6 @@ TyTy::BaseType *TypeResolver::checkOperatorExpression(
     assert(false && "to be implemented");
   }
   case OperatorExpressionKind::AssignmentExpression: {
-    assert(false && "to be implemented");
     return checkAssignmentExpression(
         std::static_pointer_cast<AssignmentExpression>(op));
   }

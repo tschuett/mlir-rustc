@@ -78,10 +78,13 @@ void CrateBuilder::emitLetStatement(ast::LetStatement *stmt) {
 
   mlir::MemRefType memRef = mlir::MemRefType::Builder(1, elementType);
 
-  [[maybe_unused]] mlir::Value addr = builder.create<mlir::memref::AllocaOp>(
+  mlir::Value addr = builder.create<mlir::memref::AllocaOp>(
       getLocation(stmt->getLocation()), memRef);
 
   allocaTable.insert(stmt->getPattern()->getNodeId(), addr);
 }
 
 } // namespace rust_compiler::crate_builder
+
+
+// FIXME always destructuring
