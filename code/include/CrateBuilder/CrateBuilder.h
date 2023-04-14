@@ -57,6 +57,8 @@ class CrateBuilder {
 
   llvm::ScopedHashTable<basic::NodeId, mlir::Value> symbolTable;
 
+  llvm::ScopedHashTable<basic::NodeId, mlir::Value> allocaTable;
+
   /// A mapping for the functions that have been code generated to MLIR.
   llvm::StringMap<mlir::func::FuncOp> functionMap;
 
@@ -117,7 +119,8 @@ private:
   std::optional<mlir::Value> emitBlockExpression(ast::BlockExpression *);
   std::optional<mlir::Value> emitStatements(ast::Statements);
   std::optional<mlir::Value> emitExpression(ast::Expression *expr);
-  std::optional<mlir::Value> emitExpressionWithoutBlock(ast::ExpressionWithoutBlock *expr);
+  std::optional<mlir::Value>
+  emitExpressionWithoutBlock(ast::ExpressionWithoutBlock *expr);
   mlir::Value emitExpressionWithBlock(ast::ExpressionWithBlock *expr);
   void emitStatement(ast::Statement *);
   void emitExpressionStatement(ast::ExpressionStatement *stmt);

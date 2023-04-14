@@ -5,6 +5,8 @@
 #include "CrateBuilder/CrateBuilder.h"
 
 #include <memory>
+#include <mlir/Dialect/MemRef/IR/MemRef.h>
+#include <mlir/IR/BuiltinTypes.h>
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::ast::patterns;
@@ -13,7 +15,7 @@ namespace rust_compiler::crate_builder {
 
 class Variable {};
 
-std::vector<Variable>
+[[maybe_unused]]static std::vector<Variable>
 getVariables(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat) {
   assert(false);
   switch (pat->getKind()) {
@@ -64,9 +66,22 @@ getVariables(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat) {
   }
 }
 
-void LetStatement::emitLetStatement(std::shared_ptr<ast::LetStatement> stmt) {
+void CrateBuilder::emitLetStatement(ast::LetStatement *stmt) {
 
   assert(false);
+
+  // memrefType
+
+  assert(stmt->hasType());
+
+  mlir::Type elementType = getType(stmt->getType().get());
+
+  mlir::MemRefType memRef = mlir::MemRefType::Builder(1, elementType);
+
+  [[maybe_unused]] mlir::Value addr = builder.create<mlir::memref::AllocaOp>(
+      getLocation(stmt->getLocation()), memRef);
+
+  allocaTable.insert(stmt->getPattern()->getNodeId(), addr);
 }
 
 } // namespace rust_compiler::crate_builder

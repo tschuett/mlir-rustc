@@ -3,6 +3,7 @@
 #include "AST/PathExpression.h"
 #include "Basic/Ids.h"
 #include "CrateBuilder/CrateBuilder.h"
+#include "mlir/Dialect/MemRef/IR/MemRef.h"
 
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 
@@ -50,6 +51,10 @@ mlir::Value CrateBuilder::emitPathExpression(ast::PathExpression *expr) {
     auto it = symbolTable.begin(*id);
     if (it != symbolTable.end()) {
       return *it;
+    }
+    auto it2 = allocaTable.begin(*id);
+    if (it2 != allocaTable.end()) {
+      return builder.create<mlir::memref::LoadOp>(getLocation(expr->getLocation()), *it2);
     }
   }
   assert(false);

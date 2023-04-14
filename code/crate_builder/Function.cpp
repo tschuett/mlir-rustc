@@ -58,6 +58,7 @@ mlir::FunctionType CrateBuilder::getFunctionType(ast::Function *fun) {
 void CrateBuilder::emitFunction(ast::Function *f) {
 
   llvm::ScopedHashTableScope<basic::NodeId, mlir::Value> scope(symbolTable);
+  llvm::ScopedHashTableScope<basic::NodeId, mlir::Value> allocaScope(allocaTable);
 
   builder.setInsertionPointToEnd(theModule.getBody());
 

@@ -15,6 +15,7 @@ add_library(crate_builder
            Target.cpp
            Calls.cpp
            Types.cpp
+           LetStatement.cpp
            )
 
 

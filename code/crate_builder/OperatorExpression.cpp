@@ -13,7 +13,6 @@ namespace rust_compiler::crate_builder {
 
 mlir::Value
 CrateBuilder::emitOperatorExpression(ast::OperatorExpression *expr) {
-
   switch (expr->getKind()) {
   case OperatorExpressionKind::BorrowExpression: {
     break;
@@ -30,7 +29,6 @@ CrateBuilder::emitOperatorExpression(ast::OperatorExpression *expr) {
   case OperatorExpressionKind::ArithmeticOrLogicalExpression: {
     return emitArithmeticOrLogicalExpression(
         static_cast<ArithmeticOrLogicalExpression *>(expr));
-    break;
   }
   case OperatorExpressionKind::ComparisonExpression: {
     break;
