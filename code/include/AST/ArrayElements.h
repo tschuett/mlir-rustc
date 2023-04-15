@@ -25,7 +25,9 @@ public:
   void addElement(std::shared_ptr<Expression> e) { elements.push_back(e); }
   ArrayElementsKind getKind() const { return kind; }
 
+  std::shared_ptr<Expression> getCount() const { return count; }
   std::shared_ptr<Expression> getValue() const { return value; }
+
   std::vector<std::shared_ptr<Expression>> &getElements()  {
     return elements;
   }

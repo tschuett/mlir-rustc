@@ -23,12 +23,15 @@ public:
     // assert(!path.empty());
     std::vector<std::pair<basic::NodeId, Identifier>> segment;
     segment.push_back({std::pair<basic::NodeId, Identifier>(id, path)});
-    return CanonicalPath(segment,
-                         basic::UNKNOWN_CREATENUM);
+    return CanonicalPath(segment, basic::UNKNOWN_CREATENUM);
   }
 
   static CanonicalPath createEmpty() {
     return CanonicalPath({}, basic::UNKNOWN_CREATENUM);
+  }
+
+  static CanonicalPath getBigSelf(basic::NodeId id) {
+    return CanonicalPath::newSegment(id, Identifier("Self"));
   }
 
   //  std::string asString() const {

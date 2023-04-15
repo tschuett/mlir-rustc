@@ -140,4 +140,10 @@ void Resolver::resolveTraitItem(std::shared_ptr<ast::Trait> trait,
   assert(false && "to be handled later");
 }
 
+void Resolver::resolveAssociatedItem(
+    const ast::AssociatedItem &, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  assert(false && "to be handled later");
+}
+
 } // namespace rust_compiler::sema::resolver

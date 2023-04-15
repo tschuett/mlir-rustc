@@ -2,11 +2,18 @@
 
 #include "ADT/CanonicalPath.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/ArrayExpression.h"
+#include "AST/AssociatedItem.h"
+#include "AST/BorrowExpression.h"
 #include "AST/ClosureExpression.h"
+#include "AST/ComparisonExpression.h"
 #include "AST/Crate.h"
+#include "AST/DereferenceExpression.h"
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/IfExpression.h"
 #include "AST/Implementation.h"
+#include "AST/IndexEpression.h"
 #include "AST/InfiniteLoopExpression.h"
 #include "AST/InherentImpl.h"
 #include "AST/LetStatement.h"
@@ -29,22 +36,21 @@
 #include "AST/Trait.h"
 #include "AST/TraitImpl.h"
 #include "AST/TupleStruct.h"
+#include "AST/Types/ImplTraitType.h"
+#include "AST/Types/TraitObjectType.h"
 #include "AST/Types/TupleType.h"
 #include "AST/Types/TypeExpression.h"
+#include "AST/Types/TypeNoBounds.h"
 #include "AST/Types/TypePathFn.h"
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
-#include "AST/IfExpression.h"
 #include "AST/Visiblity.h"
 #include "Basic/Ids.h"
 #include "Location.h"
 #include "TyCtx/TyCtx.h"
-#include "AST/ComparisonExpression.h"
-#include "AST/DereferenceExpression.h"
-#include "AST/BorrowExpression.h"
 
-//#include "../TypeChecking/TyTy.h"
-// #include "../TypeChecking/TypeChecking.h"
+// #include "../TypeChecking/TyTy.h"
+//  #include "../TypeChecking/TypeChecking.h"
 
 #include <cassert>
 #include <map>
@@ -78,7 +84,15 @@ struct PatternBinding {
 ///  https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/struct.Resolver.html
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/struct.Rib.html
-enum class RibKind { Dummy, Function, Label, Parameter, Type, Variable };
+enum class RibKind {
+  Dummy,
+  Function,
+  Label,
+  Parameter,
+  Unkown,
+  Type,
+  Variable
+};
 
 class Rib {
 public:
@@ -96,6 +110,8 @@ public:
   void appendReferenceForDef(basic::NodeId ref, basic::NodeId def);
   bool wasDeclDeclaredHere(basic::NodeId def) const;
   std::optional<RibKind> lookupDeclType(basic::NodeId id);
+
+  void clearName(const adt::CanonicalPath &path, basic::NodeId id);
 
 private:
   basic::CrateNum crateNum;
@@ -117,7 +133,8 @@ public:
 
   basic::CrateNum getCrateNum() const { return crateNum; }
 
-  void insert(const adt::CanonicalPath &, basic::NodeId, Location, RibKind);
+  void insert(const adt::CanonicalPath &, basic::NodeId, Location,
+              RibKind kind = RibKind::Unkown);
   void appendReferenceForDef(basic::NodeId ref, basic::NodeId def);
 
   bool wasDeclDeclaredInCurrentScope(basic::NodeId def) const;
@@ -212,9 +229,10 @@ private:
   void resolveStructItem(std::shared_ptr<ast::Struct>,
                          const adt::CanonicalPath &prefix,
                          const adt::CanonicalPath &canonicalPrefix);
-  void resolveStructStructItem(std::shared_ptr<rust_compiler::ast::StructStruct>,
-                               const adt::CanonicalPath &prefix,
-                               const adt::CanonicalPath &canonicalPrefix);
+  void
+  resolveStructStructItem(std::shared_ptr<rust_compiler::ast::StructStruct>,
+                          const adt::CanonicalPath &prefix,
+                          const adt::CanonicalPath &canonicalPrefix);
   void resolveTupleStructItem(std::shared_ptr<ast::TupleStruct>,
                               const adt::CanonicalPath &prefix,
                               const adt::CanonicalPath &canonicalPrefix);
@@ -227,6 +245,9 @@ private:
   void resolveTraitItem(std::shared_ptr<ast::Trait>,
                         const adt::CanonicalPath &prefix,
                         const adt::CanonicalPath &canonicalPrefix);
+  void resolveAssociatedItem(const ast::AssociatedItem &,
+                             const adt::CanonicalPath &prefix,
+                             const adt::CanonicalPath &canonicalPrefix);
 
   // expressions
   void resolveExpression(std::shared_ptr<ast::Expression>,
@@ -249,8 +270,8 @@ private:
                              const adt::CanonicalPath &prefix,
                              const adt::CanonicalPath &canonicalPrefix);
   void resolveIfExpression(std::shared_ptr<ast::IfExpression>,
-                             const adt::CanonicalPath &prefix,
-                             const adt::CanonicalPath &canonicalPrefix);
+                           const adt::CanonicalPath &prefix,
+                           const adt::CanonicalPath &canonicalPrefix);
   void resolvePathExpression(std::shared_ptr<ast::PathExpression>);
   void resolveBlockExpression(std::shared_ptr<ast::BlockExpression>,
                               const adt::CanonicalPath &prefix,
@@ -272,14 +293,20 @@ private:
       const adt::CanonicalPath &prefix,
       const adt::CanonicalPath &canonicalPrefix);
   void resolveComparisonExpression(std::shared_ptr<ast::ComparisonExpression>,
-                                const adt::CanonicalPath &prefix,
-                                const adt::CanonicalPath &canonicalPrefix);
+                                   const adt::CanonicalPath &prefix,
+                                   const adt::CanonicalPath &canonicalPrefix);
   void resolveDereferenceExpression(std::shared_ptr<ast::DereferenceExpression>,
-                                const adt::CanonicalPath &prefix,
-                                const adt::CanonicalPath &canonicalPrefix);
+                                    const adt::CanonicalPath &prefix,
+                                    const adt::CanonicalPath &canonicalPrefix);
   void resolveBorrowExpression(std::shared_ptr<ast::BorrowExpression>,
-                                const adt::CanonicalPath &prefix,
-                                const adt::CanonicalPath &canonicalPrefix);
+                               const adt::CanonicalPath &prefix,
+                               const adt::CanonicalPath &canonicalPrefix);
+  void resolveArrayExpression(std::shared_ptr<ast::ArrayExpression>,
+                              const adt::CanonicalPath &prefix,
+                              const adt::CanonicalPath &canonicalPrefix);
+  void resolveIndexExpression(std::shared_ptr<ast::IndexExpression>,
+                              const adt::CanonicalPath &prefix,
+                              const adt::CanonicalPath &canonicalPrefix);
 
   // types
   std::optional<basic::NodeId>
@@ -289,6 +316,18 @@ private:
   std::optional<basic::NodeId>
       resolveRelativeTypePath(std::shared_ptr<ast::types::TypePath>);
   void resolveTypePathFunction(const ast::types::TypePathFn &);
+
+  std::optional<adt::CanonicalPath>
+  resolveTypeToCanonicalPath(ast::types::TypeExpression *);
+
+  std::string
+  resolveTypeToString(ast::types::TypeExpression *);
+  std::string
+  resolveTypeNoBoundsToString(ast::types::TypeNoBounds *);
+  std::string
+  resolveImplTraitTypeToString(ast::types::ImplTraitType *);
+  std::string
+  resolveTraitObjectTypeToString(ast::types::TraitObjectType *);
 
   // checks
   void resolveVisibility(std::optional<ast::Visibility>);
@@ -361,7 +400,7 @@ private:
     return currentModuleStack.at(currentModuleStack.size() - 2);
   }
 
-  //void setUnitTypeNodeId(basic::NodeId id) { unitTyNodeId = id; }
+  // void setUnitTypeNodeId(basic::NodeId id) { unitTyNodeId = id; }
 
   void insertResolvedName(basic::NodeId refId, basic::NodeId defId);
   void insertResolvedType(basic::NodeId refId, basic::NodeId defId);
@@ -373,12 +412,13 @@ private:
   tyctx::TyCtx *tyCtx;
 
   // types
-//  void generateBuiltins();
-//  void setupBuiltin(std::string_view name, type_checking::TyTy::BaseType *tyty);
+  //  void generateBuiltins();
+  //  void setupBuiltin(std::string_view name, type_checking::TyTy::BaseType
+  //  *tyty);
 
   void insertBuiltinTypes(Rib *r);
-//  std::vector<std::pair<std::string, ast::types::TypeExpression *>> &
-//  getBuiltinTypes();
+  //  std::vector<std::pair<std::string, ast::types::TypeExpression *>> &
+  //  getBuiltinTypes();
 
   // modules
   basic::NodeId peekCrateModuleScope() {
@@ -410,7 +450,6 @@ private:
 
   // keep track of the current module scope ids
   std::vector<basic::NodeId> currentModuleStack;
-
 
   // captured variables by current closure
   std::vector<basic::NodeId> closureContext;

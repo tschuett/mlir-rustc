@@ -2,6 +2,8 @@
 
 #include "ADT/CanonicalPath.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/ArrayElements.h"
+#include "AST/ArrayExpression.h"
 #include "AST/AssignmentExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/ClosureExpression.h"
@@ -104,13 +106,17 @@ void Resolver::resolveExpressionWithoutBlock(
     assert(false && "to be handled later");
   }
   case ExpressionWithoutBlockKind::ArrayExpression: {
-    assert(false && "to be handled later");
+    resolveArrayExpression(std::static_pointer_cast<ArrayExpression>(woBlock),
+                           prefix, canonicalPrefix);
+    break;
   }
   case ExpressionWithoutBlockKind::AwaitExpression: {
     assert(false && "to be handled later");
   }
   case ExpressionWithoutBlockKind::IndexExpression: {
-    assert(false && "to be handled later");
+    resolveIndexExpression(std::static_pointer_cast<IndexExpression>(woBlock),
+                           prefix, canonicalPrefix);
+    break;
   }
   case ExpressionWithoutBlockKind::TupleExpression: {
     assert(false && "to be handled later");
@@ -438,6 +444,33 @@ void Resolver::resolveBorrowExpression(
     const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
   resolveExpression(borrow->getExpression(), prefix, canonicalPrefix);
+}
+
+void Resolver::resolveArrayExpression(
+    std::shared_ptr<ast::ArrayExpression> arr, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  if (arr->hasArrayElements()) {
+    ArrayElements el = arr->getArrayElements();
+    switch (el.getKind()) {
+    case ArrayElementsKind::List: {
+      for (auto expr : el.getElements())
+        resolveExpression(expr, prefix, canonicalPrefix);
+      break;
+    }
+    case ArrayElementsKind::Repeated: {
+      resolveExpression(el.getCount(), prefix, canonicalPrefix);
+      resolveExpression(el.getValue(), prefix, canonicalPrefix);
+    }
+    }
+  }
+}
+
+void Resolver::resolveIndexExpression(
+    std::shared_ptr<ast::IndexExpression> indx,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  resolveExpression(indx->getArray(), prefix, canonicalPrefix);
+  resolveExpression(indx->getIndex(), prefix, canonicalPrefix);
 }
 
 } // namespace rust_compiler::sema::resolver

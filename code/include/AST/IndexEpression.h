@@ -17,6 +17,9 @@ public:
 
   void setLeft(std::shared_ptr<Expression> l) { array = l; }
   void setRight(std::shared_ptr<Expression> r) { index = r; }
+
+  std::shared_ptr<Expression> getArray() const { return array; }
+  std::shared_ptr<Expression> getIndex() const { return index; }
 };
 
 } // namespace rust_compiler::ast

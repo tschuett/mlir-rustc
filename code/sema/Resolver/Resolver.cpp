@@ -8,10 +8,11 @@
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
 #include "Basic/Ids.h"
+#include "Lexer/Identifier.h"
 #include "Session/Session.h"
 // #include <mlir/Transforms/Passes.h>
-#include "Session/Session.h"
 #include "AST/PathExpression.h"
+#include "Session/Session.h"
 
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
@@ -251,10 +252,64 @@ void Resolver::resolveMacroItem(std::shared_ptr<ast::MacroItem>,
   assert(false && "to be handled later");
 }
 
-void Resolver::resolveInherentImpl(std::shared_ptr<ast::InherentImpl>,
+void Resolver::resolveInherentImpl(std::shared_ptr<ast::InherentImpl> implBlock,
                                    const adt::CanonicalPath &prefix,
                                    const adt::CanonicalPath &canonicalPrefix) {
-  assert(false && "to be handled later");
+  NodeId scopeNodeId = implBlock->getNodeId();
+  getNameScope().push(scopeNodeId);
+  getTypeScope().push(scopeNodeId);
+  pushNewNameRib(getNameScope().peek());
+  pushNewTypeRib(getTypeScope().peek());
+
+  resolveVisibility(implBlock->getVisibility());
+
+  if (implBlock->hasGenericParams()) {
+    GenericParams parms = implBlock->getGenericParams();
+    resolveGenericParams(parms, prefix, canonicalPrefix);
+  }
+
+  if (implBlock->hasWhereClause()) {
+    WhereClause wh = implBlock->getWhereClause();
+    resolveWhereClause(wh);
+  }
+
+  resolveType(implBlock->getType());
+
+  // setup canonical paths
+
+  //  std::optional<CanonicalPath> selfCPath =
+  //      resolveTypeToCanonicalPath(implBlock->getType().get());
+  //  assert(selfCPath.has_value());
+  std::string typeName = resolveTypeToString(implBlock->getType().get());
+
+  CanonicalPath implType = CanonicalPath::newSegment(
+      implBlock->getType()->getNodeId(), Identifier(typeName));
+  CanonicalPath implPrefix = prefix.append(implType);
+  CanonicalPath cpath = CanonicalPath::createEmpty();
+
+  if (canonicalPrefix.getSize() <= 1) {
+    cpath = implType;
+  } else {
+    std::string segBuffer = "<impl " + typeName + ">";
+    CanonicalPath seg = CanonicalPath::newSegment(implBlock->getNodeId(),
+                                                  lexer::Identifier(segBuffer));
+    cpath = canonicalPrefix.append(seg);
+  }
+
+  // FIXME
+
+  CanonicalPath Self = CanonicalPath::getBigSelf(implBlock->getNodeId());
+
+  getTypeScope().insert(Self, implBlock->getType()->getNodeId(),
+                        implBlock->getType()->getLocation());
+
+  for (auto asso : implBlock->getAssociatedItems())
+    resolveAssociatedItem(asso, implPrefix, cpath);
+
+  getTypeScope().peek()->clearName(Self, implBlock->getType()->getNodeId());
+
+  getTypeScope().pop();
+  getNameScope().pop();
 }
 
 void Resolver::resolveTraitImpl(std::shared_ptr<ast::TraitImpl>,

@@ -8,10 +8,10 @@
 #include "AST/Types/Types.h"
 #include "AST/WhereClause.h"
 
-#include <optional>
-#include <vector>
-#include <span>
 #include <memory>
+#include <optional>
+#include <span>
+#include <vector>
 
 namespace rust_compiler::ast {
 
@@ -24,11 +24,8 @@ class InherentImpl : public Implementation {
   std::vector<AssociatedItem> associatedItems;
 
 public:
-  InherentImpl(Location loc,
-               std::optional<Visibility> vis)
+  InherentImpl(Location loc, std::optional<Visibility> vis)
       : Implementation(ImplementationKind::InherentImpl, loc, vis) {}
-
-  std::span<AssociatedItem> getAssociatedItems() const;
 
   void setInnerAttributes(std::span<InnerAttribute> i) {
     innerAttributes = {i.begin(), i.end()};
@@ -39,6 +36,18 @@ public:
     associatedItems.push_back(as);
   }
   void setType(std::shared_ptr<ast::types::TypeExpression> te) { type = te; }
+
+  bool hasGenericParams() const { return genericParams.has_value(); }
+  GenericParams getGenericParams() const { return *genericParams; }
+
+  bool hasWhereClause() const { return whereClause.has_value(); }
+  WhereClause getWhereClause() const { return *whereClause; }
+
+  std::shared_ptr<types::TypeExpression> getType() const { return type; }
+
+  std::vector<AssociatedItem> getAssociatedItems() const {
+    return associatedItems;
+  }
 };
 
 } // namespace rust_compiler::ast

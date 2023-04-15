@@ -23,6 +23,10 @@ public:
   void setTrailingComma() { trailingComma = true; }
 
   size_t getSize() const { return items.size(); }
+
+  std::vector<std::shared_ptr<WhereClauseItem>> getItems() const {
+    return items;
+  }
 };
 
 } // namespace rust_compiler::ast

@@ -19,6 +19,8 @@ public:
   void setTrailingComma() { trailingComma = true; }
 
   size_t getNumberOfParams() const { return genericParams.size(); }
+
+  std::vector<GenericParam> getGenericParams() const { return genericParams; }
 };
 
 } // namespace rust_compiler::ast
