@@ -2,7 +2,6 @@
 
 #include "ADT/ScopedHashTable.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
-#include "AST/ComparisonExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/CallExpression.h"
 #include "AST/ComparisonExpression.h"
@@ -10,6 +9,8 @@
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/Function.h"
+#include "AST/IfExpression.h"
+#include "AST/IfLetExpression.h"
 #include "AST/LetStatement.h"
 #include "AST/LoopExpression.h"
 #include "AST/MethodCallExpression.h"
@@ -25,12 +26,9 @@
 #include "TyCtx/TyCtx.h"
 
 #include <llvm/ADT/ScopedHashTable.h>
-#include <llvm/MC/TargetRegistry.h>
+// #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
 #include <llvm/Target/TargetMachine.h>
-//#include <llvm/TargetParser/Host.h>
-//#include <mlir/Dialect/Arith/IR/Arith.h>
-//#include <mlir/Dialect/ControlFlow/IR/ControlFlow.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/Builders.h>
 #include <mlir/IR/BuiltinOps.h>
@@ -131,13 +129,18 @@ private:
   mlir::Value emitOperatorExpression(ast::OperatorExpression *expr);
   mlir::Value
   emitArithmeticOrLogicalExpression(ast::ArithmeticOrLogicalExpression *expr);
-  mlir::Value
-  emitComparisonExpression(ast::ComparisonExpression *expr);
+  mlir::Value emitComparisonExpression(ast::ComparisonExpression *expr);
 
   mlir::Value emitCallExpression(ast::CallExpression *expr);
   mlir::Value emitMethodCallExpression(ast::MethodCallExpression *expr);
   void emitReturnExpression(ast::ReturnExpression *expr);
   mlir::Value emitPathExpression(ast::PathExpression *expr);
+  mlir::Value emitIfExpression(ast::IfExpression *expr);
+  mlir::Value emitIfLetExpression(ast::IfLetExpression *expr);
+  mlir::Value emitComparePatternWithExpression(ast::patterns::Pattern *pattern,
+                                               ast::Expression *expr);
+  mlir::Value emitComparePatternWithOperatorExpression(ast::patterns::Pattern *pattern,
+                                               ast::OperatorExpression *expr);
 
   mlir::FunctionType getFunctionType(ast::Function *);
 

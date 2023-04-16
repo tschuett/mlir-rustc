@@ -66,12 +66,12 @@ void CrateBuilder::emitFunction(ast::Function *f) {
 
   llvm::SmallVector<basic::NodeId> parameterNames;
   llvm::SmallVector<mlir::Type> parameterTypes;
-  llvm::SmallVector<mlir::Location> parameterLocation;
+  llvm::SmallVector<mlir::Location> parameterLocations;
   for (FunctionParam &parm : f->getParams().getParams()) {
     if (parm.getKind() == FunctionParamKind::Pattern) {
       parameterNames.push_back(parm.getPattern().getPattern()->getNodeId());
       parameterTypes.push_back(getType(parm.getPattern().getType().get()));
-      parameterLocation.push_back(getLocation(parm.getLocation()));
+      parameterLocations.push_back(getLocation(parm.getLocation()));
     } else {
       assert(false);
     }
@@ -84,7 +84,7 @@ void CrateBuilder::emitFunction(ast::Function *f) {
   // mlir::Block* entryBlock = builder.createBlock(&fun.front(),
   // parameterTypes);
   mlir::Block *entryBlock = builder.createBlock(
-      &fun.getBody(), {}, parameterTypes, parameterLocation);
+      &fun.getBody(), {}, parameterTypes, parameterLocations);
 
   // mlir::Block &entryBlock = fun.front();
 

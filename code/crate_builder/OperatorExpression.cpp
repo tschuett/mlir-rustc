@@ -4,10 +4,10 @@
 #include "AST/ComparisonExpression.h"
 #include "CrateBuilder/CrateBuilder.h"
 #include "TyCtx/TyTy.h"
-#include "mlir/IR/BuiltinAttributes.h"
 
 #include <memory>
 #include <mlir/Dialect/Arith/IR/Arith.h>
+#include <mlir/IR/BuiltinAttributes.h>
 #include <optional>
 
 using namespace rust_compiler::ast;

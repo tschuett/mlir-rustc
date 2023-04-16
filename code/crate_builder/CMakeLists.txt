@@ -16,6 +16,7 @@ add_library(crate_builder
            Calls.cpp
            Types.cpp
            LetStatement.cpp
+           ComparePatternWithExpression.cpp
            )
 
 
