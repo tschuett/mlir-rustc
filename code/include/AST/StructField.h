@@ -28,11 +28,12 @@ public:
     outerAttributes = o;
   }
   void setVisibility(const Visibility &vis) { visibility = vis; }
-  void setIdentifier(const Identifier& id) { identifier = id; }
+  void setIdentifier(const Identifier &id) { identifier = id; }
   void setType(std::shared_ptr<ast::types::TypeExpression> t) { type = t; }
 
   std::optional<Visibility> getVisibility() const { return visibility; }
   std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
+  Identifier getIdentifier() const { return identifier; }
 };
 
 } // namespace rust_compiler::ast

@@ -13,6 +13,8 @@
 
 namespace rust_compiler::tyctx::TyTy {
 
+using namespace rust_compiler::adt;
+
 /// https://doc.rust-lang.org/reference/types.html
 // https://rustc-dev-guide.rust-lang.org/type-inference.html#inference-variables
 // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_type_ir/sty/enum.TyKind.html
@@ -34,6 +36,7 @@ enum class TypeKind {
   Str,
   Tuple,
   Parameter,
+  ADT,
 
   Error
 };
@@ -284,6 +287,33 @@ public:
 private:
   BaseType *type;
   Location loc;
+};
+
+class StructFieldType {
+public:
+  StructFieldType(basic::NodeId, const adt::Identifier &, TyTy::BaseType *,
+                  Location loc);
+};
+
+/// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.VariantDef.html
+enum class VariantKind { Struct };
+
+class VariantDef {
+public:
+  VariantDef(basic::NodeId, const adt::Identifier &, TypeIdentity, VariantKind,
+             std::vector<TyTy::StructFieldType *>);
+};
+
+enum class ADTKind { StructStruct };
+
+class ADTType : public BaseType {
+public:
+  ADTType(basic::NodeId, const adt::Identifier &, TypeIdentity, ADTKind,
+          std::vector<VariantDef *>, std::vector<SubstitutionParamMapping>);
+
+  bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
+  unsigned getNumberOfSpecifiedBounds() override;
 };
 
 } // namespace rust_compiler::tyctx::TyTy

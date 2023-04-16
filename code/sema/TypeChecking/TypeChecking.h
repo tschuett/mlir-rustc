@@ -25,6 +25,7 @@
 #include "AST/Patterns/PatternWithoutRange.h"
 #include "AST/Patterns/RangePattern.h"
 #include "AST/ReturnExpression.h"
+#include "AST/StructStruct.h"
 #include "AST/Types/NeverType.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypePath.h"
@@ -78,6 +79,8 @@ private:
   void checkVisItem(std::shared_ptr<ast::VisItem> v);
   void checkMacroItem(std::shared_ptr<ast::MacroItem> v);
   void checkFunction(std::shared_ptr<ast::Function> f);
+  void checkStruct(ast::Struct *s);
+  void checkStructStruct(ast::StructStruct *s);
   TyTy::BaseType *checkType(std::shared_ptr<ast::types::TypeExpression>);
   void checkWhereClause(const ast::WhereClause &);
   TyTy::BaseType *checkExpression(std::shared_ptr<ast::Expression>);

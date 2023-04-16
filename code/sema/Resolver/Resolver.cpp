@@ -46,6 +46,21 @@ void Rib::insertName(const adt::CanonicalPath &path, basic::NodeId id,
   declTypeMappings.insert({id, kind});
 }
 
+void Rib::clearName(const adt::CanonicalPath &path, basic::NodeId id) {
+  assert(false);
+  auto ii = pathMappings.find(path);
+  if (ii != pathMappings.end())
+    pathMappings.erase(ii);
+
+  auto ij = reversePathMappings.find(id);
+  if (ij != reversePathMappings.end())
+    reversePathMappings.erase(ij);
+
+  auto ik = declsWithinRib.find(id);
+  if (ik != declsWithinRib.end())
+    declsWithinRib.erase(ik);
+}
+
 std::optional<basic::NodeId> Rib::lookupName(const adt::CanonicalPath &ident) {
   auto it = pathMappings.find(ident);
   // llvm::errs() << "lookupName: " << ident.asString() << " " << (it ==
