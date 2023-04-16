@@ -234,4 +234,73 @@ std::string InferType::toString() const {
 
 bool InferType::needsGenericSubstitutions() const { return false; }
 
+bool isSignedIntegerLike(TypeKind kind) {
+  switch (kind) {
+  case TypeKind::Int:
+  case TypeKind::ISize:
+    return true;
+  case TypeKind::Uint:
+  case TypeKind::USize:
+  case TypeKind::Float:
+  case TypeKind::Bool:
+  case TypeKind::Char:
+  case TypeKind::Closure:
+  case TypeKind::Function:
+  case TypeKind::Inferred:
+  case TypeKind::Never:
+  case TypeKind::Str:
+  case TypeKind::Tuple:
+  case TypeKind::Parameter:
+  case TypeKind::ADT:
+  case TypeKind::Error:
+    return false;
+  }
+}
+
+bool isIntegerLike(TypeKind kind) {
+  switch (kind) {
+  case TypeKind::Int:
+  case TypeKind::Uint:
+  case TypeKind::USize:
+  case TypeKind::ISize:
+    return true;
+  case TypeKind::Float:
+  case TypeKind::Bool:
+  case TypeKind::Char:
+  case TypeKind::Closure:
+  case TypeKind::Function:
+  case TypeKind::Inferred:
+  case TypeKind::Never:
+  case TypeKind::Str:
+  case TypeKind::Tuple:
+  case TypeKind::Parameter:
+  case TypeKind::ADT:
+  case TypeKind::Error:
+    return false;
+  }
+}
+
+bool isFloatLike(TypeKind kind) {
+  switch (kind) {
+  case TypeKind::Float:
+    return true;
+  case TypeKind::Bool:
+  case TypeKind::Char:
+  case TypeKind::Int:
+  case TypeKind::Uint:
+  case TypeKind::USize:
+  case TypeKind::ISize:
+  case TypeKind::Closure:
+  case TypeKind::Function:
+  case TypeKind::Inferred:
+  case TypeKind::Never:
+  case TypeKind::Str:
+  case TypeKind::Tuple:
+  case TypeKind::Parameter:
+  case TypeKind::ADT:
+  case TypeKind::Error:
+    return false;
+  }
+}
+
 } // namespace rust_compiler::tyctx::TyTy

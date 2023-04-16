@@ -59,6 +59,10 @@ public:
   SizeHint getSiizeHint() const { return szhint; }
 };
 
+bool isIntegerLike(TypeKind);
+bool isSignedIntegerLike(TypeKind);
+bool isFloatLike(TypeKind);
+
 class BaseType;
 
 class TypeVariable {
@@ -296,7 +300,7 @@ public:
 };
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.VariantDef.html
-enum class VariantKind { Struct };
+enum class VariantKind { Struct, Tuple };
 
 class VariantDef {
 public:

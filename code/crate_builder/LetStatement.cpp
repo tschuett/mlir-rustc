@@ -15,7 +15,7 @@ namespace rust_compiler::crate_builder {
 
 class Variable {};
 
-[[maybe_unused]]static std::vector<Variable>
+[[maybe_unused]] static std::vector<Variable>
 getVariables(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat) {
   assert(false);
   switch (pat->getKind()) {
@@ -82,9 +82,14 @@ void CrateBuilder::emitLetStatement(ast::LetStatement *stmt) {
       getLocation(stmt->getLocation()), memRef);
 
   allocaTable.insert(stmt->getPattern()->getNodeId(), addr);
+
+  if (stmt->hasInit()) {
+    std::optional<mlir::Value> val = emitExpression(stmt->getInit().get());
+    assert(val.has_value());
+    builder.create<mlir::memref::StoreOp>(getLocation(stmt->getLocation()), *val, addr);
+  }
 }
 
 } // namespace rust_compiler::crate_builder
-
 
 // FIXME always destructuring

@@ -1,13 +1,18 @@
 #include "AST/OperatorExpression.h"
 
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/ComparisonExpression.h"
 #include "CrateBuilder/CrateBuilder.h"
+#include "TyCtx/TyTy.h"
+#include "mlir/IR/BuiltinAttributes.h"
 
 #include <memory>
+#include <mlir/Dialect/Arith/IR/Arith.h>
 #include <optional>
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::tyctx;
+using namespace mlir::arith;
 
 namespace rust_compiler::crate_builder {
 
@@ -31,6 +36,7 @@ CrateBuilder::emitOperatorExpression(ast::OperatorExpression *expr) {
         static_cast<ArithmeticOrLogicalExpression *>(expr));
   }
   case OperatorExpressionKind::ComparisonExpression: {
+    return emitComparisonExpression(static_cast<ComparisonExpression *>(expr));
     break;
   }
   case OperatorExpressionKind::LazyBooleanExpression: {
@@ -118,6 +124,125 @@ mlir::Value CrateBuilder::emitArithmeticOrLogicalExpression(
   }
   }
   assert(false);
+}
+
+mlir::Value
+CrateBuilder::emitComparisonExpression(ast::ComparisonExpression *expr) {
+  // using TypeKind = rust_compiler::tyctx::TyTy::TypeKind;
+
+  std::optional<mlir::Value> lhs = emitExpression(expr->getLHS().get());
+  std::optional<mlir::Value> rhs = emitExpression(expr->getRHS().get());
+
+  if (!lhs.has_value()) {
+    llvm::errs() << "emitExpression in emitComparisonExpression failed"
+                 << "\n";
+    exit(1);
+  }
+  if (!rhs.has_value()) {
+    llvm::errs() << "emitExpression in emitComparisonExpression failed"
+                 << "\n";
+    exit(1);
+  }
+
+  bool isIntegerType = false;
+  bool isFloatType = false;
+  std::optional<tyctx::TyTy::BaseType *> maybeType =
+      tyCtx->lookupType(expr->getNodeId());
+  if (maybeType) {
+    if (isIntegerLike((*maybeType)->getKind()))
+      isIntegerType = true;
+    if (isFloatLike((*maybeType)->getKind()))
+      isFloatType = true;
+  }
+
+  if (!isIntegerType && !isFloatType) {
+    llvm::errs() << "expression is neither integer- nor float-like"
+                 << "\n";
+    exit(1);
+  }
+
+  switch (expr->getKind()) {
+  case ComparisonExpressionKind::Equal: {
+    if (isIntegerType) {
+      return builder.create<mlir::arith::CmpIOp>(
+          getLocation(expr->getLocation()), CmpIPredicate::eq, *lhs, *rhs);
+    } else {
+      return builder.create<mlir::arith::CmpFOp>(
+          getLocation(expr->getLocation()), CmpFPredicate::OEQ, *lhs, *rhs);
+    }
+    assert(false);
+  }
+  case ComparisonExpressionKind::NotEqual: {
+    if (isIntegerType) {
+      return builder.create<mlir::arith::CmpIOp>(
+          getLocation(expr->getLocation()), CmpIPredicate::ne, *lhs, *rhs);
+    } else {
+      return builder.create<mlir::arith::CmpFOp>(
+          getLocation(expr->getLocation()), CmpFPredicate::ONE, *lhs, *rhs);
+    }
+    assert(false);
+  }
+  case ComparisonExpressionKind::GreaterThan: {
+    if (isIntegerType) {
+      if (isSignedIntegerLike((*maybeType)->getKind()))
+        return builder.create<mlir::arith::CmpIOp>(
+            getLocation(expr->getLocation()), CmpIPredicate::sgt, *lhs, *rhs);
+      else
+        return builder.create<mlir::arith::CmpIOp>(
+            getLocation(expr->getLocation()), CmpIPredicate::ugt, *lhs, *rhs);
+
+    } else {
+      return builder.create<mlir::arith::CmpFOp>(
+          getLocation(expr->getLocation()), CmpFPredicate::OGT, *lhs, *rhs);
+    }
+    assert(false);
+  }
+  case ComparisonExpressionKind::LessThan: {
+    if (isIntegerType) {
+      if (isSignedIntegerLike((*maybeType)->getKind()))
+        return builder.create<mlir::arith::CmpIOp>(
+            getLocation(expr->getLocation()), CmpIPredicate::slt, *lhs, *rhs);
+      else
+        return builder.create<mlir::arith::CmpIOp>(
+            getLocation(expr->getLocation()), CmpIPredicate::ult, *lhs, *rhs);
+
+    } else {
+      return builder.create<mlir::arith::CmpFOp>(
+          getLocation(expr->getLocation()), CmpFPredicate::OLT, *lhs, *rhs);
+    }
+    assert(false);
+  }
+  case ComparisonExpressionKind::GreaterThanOrEqualTo: {
+    if (isIntegerType) {
+      if (isSignedIntegerLike((*maybeType)->getKind()))
+        return builder.create<mlir::arith::CmpIOp>(
+            getLocation(expr->getLocation()), CmpIPredicate::sge, *lhs, *rhs);
+      else
+        return builder.create<mlir::arith::CmpIOp>(
+            getLocation(expr->getLocation()), CmpIPredicate::uge, *lhs, *rhs);
+
+    } else {
+      return builder.create<mlir::arith::CmpFOp>(
+          getLocation(expr->getLocation()), CmpFPredicate::OGE, *lhs, *rhs);
+    }
+    assert(false);
+  }
+  case ComparisonExpressionKind::LessThanOrEqualTo: {
+    if (isIntegerType) {
+      if (isSignedIntegerLike((*maybeType)->getKind()))
+        return builder.create<mlir::arith::CmpIOp>(
+            getLocation(expr->getLocation()), CmpIPredicate::sle, *lhs, *rhs);
+      else
+        return builder.create<mlir::arith::CmpIOp>(
+            getLocation(expr->getLocation()), CmpIPredicate::ule, *lhs, *rhs);
+
+    } else {
+      return builder.create<mlir::arith::CmpFOp>(
+          getLocation(expr->getLocation()), CmpFPredicate::OLE, *lhs, *rhs);
+    }
+    assert(false);
+  }
+  }
 }
 
 } // namespace rust_compiler::crate_builder

@@ -4,14 +4,12 @@
 #include "AST/ConstantItem.h"
 #include "AST/Enumeration.h"
 #include "AST/Implementation.h"
+#include "AST/PathExpression.h"
 #include "AST/StaticItem.h"
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
 #include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
-#include "Session/Session.h"
-// #include <mlir/Transforms/Passes.h>
-#include "AST/PathExpression.h"
 #include "Session/Session.h"
 
 #include <llvm/Support/raw_ostream.h>
