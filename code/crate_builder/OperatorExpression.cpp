@@ -57,7 +57,7 @@ CrateBuilder::emitOperatorExpression(ast::OperatorExpression *expr) {
 
 mlir::Value CrateBuilder::emitArithmeticOrLogicalExpression(
     ArithmeticOrLogicalExpression *expr) {
-  using TypeKind = rust_compiler::tyctx::TyTy::TypeKind;
+  // using TypeKind = rust_compiler::tyctx::TyTy::TypeKind;
 
   std::optional<mlir::Value> lhs = emitExpression(expr->getLHS().get());
   std::optional<mlir::Value> rhs = emitExpression(expr->getRHS().get());
@@ -72,54 +72,132 @@ mlir::Value CrateBuilder::emitArithmeticOrLogicalExpression(
                  << "\n";
     exit(1);
   }
+  std::optional<tyctx::TyTy::BaseType *> maybeType =
+      tyCtx->lookupType(expr->getNodeId());
+  bool isIntegerType = false;
+  bool isFloatType = false;
+  if (maybeType) {
+    if (isIntegerLike((*maybeType)->getKind()))
+      isIntegerType = true;
+    if (isFloatLike((*maybeType)->getKind()))
+      isFloatType = true;
+  }
+
+  if (!isIntegerType && !isFloatType) {
+    llvm::errs() << "expression is neither integer- nor float-like"
+                 << "\n";
+    exit(1);
+  }
 
   switch (expr->getKind()) {
   case ArithmeticOrLogicalExpressionKind::Addition: {
-    std::optional<tyctx::TyTy::BaseType *> maybeType =
-        tyCtx->lookupType(expr->getNodeId());
-    if (maybeType) {
-      TyTy::BaseType *type = *maybeType; // convertTyTyToMLIR(*maybeType);
-      if (type->getKind() == TypeKind::Float) {
-        return builder.create<mlir::arith::AddFOp>(
-            getLocation(expr->getLocation()), *lhs, *rhs);
-      } else if ((type->getKind() == TypeKind::Int) or
-                 (type->getKind() == TypeKind::Uint) or
-                 (type->getKind() == TypeKind::USize) or
-                 (type->getKind() == TypeKind::ISize)) {
-        return builder.create<mlir::arith::AddIOp>(
-            getLocation(expr->getLocation()), *lhs, *rhs);
-      } else {
-        assert(false);
-      }
+    if (isFloatType) {
+      return builder.create<mlir::arith::AddFOp>(
+          getLocation(expr->getLocation()), *lhs, *rhs);
+    } else if (isIntegerType) {
+      return builder.create<mlir::arith::AddIOp>(
+          getLocation(expr->getLocation()), *lhs, *rhs);
     }
-
+    assert(false);
     break;
   }
   case ArithmeticOrLogicalExpressionKind::Subtraction: {
+    if (isFloatType) {
+      return builder.create<mlir::arith::SubFOp>(
+          getLocation(expr->getLocation()), *lhs, *rhs);
+    } else if (isIntegerType) {
+      return builder.create<mlir::arith::SubIOp>(
+          getLocation(expr->getLocation()), *lhs, *rhs);
+    }
+    assert(false);
     break;
   }
   case ArithmeticOrLogicalExpressionKind::Multiplication: {
+    if (isFloatType) {
+      return builder.create<mlir::arith::MulFOp>(
+          getLocation(expr->getLocation()), *lhs, *rhs);
+    } else if (isIntegerType) {
+      return builder.create<mlir::arith::MulFOp>(
+          getLocation(expr->getLocation()), *lhs, *rhs);
+    }
+    assert(false);
     break;
   }
   case ArithmeticOrLogicalExpressionKind::Division: {
+    if (isIntegerType) {
+      if (isSignedIntegerLike((*maybeType)->getKind()))
+        return builder.create<mlir::arith::DivSIOp>(
+            getLocation(expr->getLocation()), *lhs, *rhs);
+      else
+        return builder.create<mlir::arith::DivUIOp>(
+            getLocation(expr->getLocation()), *lhs, *rhs);
+
+    } else {
+      return builder.create<mlir::arith::DivFOp>(
+          getLocation(expr->getLocation()), *lhs, *rhs);
+    }
+    assert(false);
     break;
   }
   case ArithmeticOrLogicalExpressionKind::Remainder: {
+    if (isIntegerType) {
+      if (isSignedIntegerLike((*maybeType)->getKind()))
+        return builder.create<mlir::arith::RemSIOp>(
+            getLocation(expr->getLocation()), *lhs, *rhs);
+      else
+        return builder.create<mlir::arith::RemUIOp>(
+            getLocation(expr->getLocation()), *lhs, *rhs);
+
+    } else {
+      return builder.create<mlir::arith::RemFOp>(
+          getLocation(expr->getLocation()), *lhs, *rhs);
+    }
+    assert(false);
     break;
   }
   case ArithmeticOrLogicalExpressionKind::BitwiseAnd: {
+    if (isIntegerType) {
+      return builder.create<mlir::arith::AndIOp>(
+          getLocation(expr->getLocation()), *lhs, *rhs);
+    }
+    assert(false);
     break;
   }
   case ArithmeticOrLogicalExpressionKind::BitwiseOr: {
+    if (isIntegerType) {
+      return builder.create<mlir::arith::OrIOp>(
+          getLocation(expr->getLocation()), *lhs, *rhs);
+    }
+    assert(false);
     break;
   }
   case ArithmeticOrLogicalExpressionKind::BitwiseXor: {
+    if (isIntegerType) {
+      return builder.create<mlir::arith::XOrIOp>(
+          getLocation(expr->getLocation()), *lhs, *rhs);
+    }
+    assert(false);
     break;
   }
   case ArithmeticOrLogicalExpressionKind::LeftShift: {
+    if (isIntegerType) {
+      return builder.create<mlir::arith::ShLIOp>(
+          getLocation(expr->getLocation()), *lhs, *rhs);
+    }
+    assert(false);
     break;
   }
   case ArithmeticOrLogicalExpressionKind::RightShift: {
+    if (isIntegerType) {
+      if (isSignedIntegerLike((*maybeType)->getKind())) {
+        return builder.create<mlir::arith::ShRSIOp>(
+            getLocation(expr->getLocation()), *lhs, *rhs);
+      } else {
+        return builder.create<mlir::arith::ShRUIOp>(
+            getLocation(expr->getLocation()), *lhs, *rhs);
+      }
+    }
+    assert(false);
     break;
   }
   }
