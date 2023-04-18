@@ -415,4 +415,124 @@ def UnitConstantOp : Hir_Op<"unit_constant", [ConstantLike, Pure]> {
   let assemblyFormat = "attr-dict `:` type($output)";
 }
 
+//===----------------------------------------------------------------------===//
+// RangeExprOp
+//===----------------------------------------------------------------------===//
+
+def RangeExprOp : Hir_Op<"range_expr", [Pure]> {
+  let summary = "RangeExpr";
+  let description = [{
+    Represents a range expression from .. to. For example:
+
+    ```mlir
+      %0 = hir.range_expr %0, %1
+    ```
+  }];
+
+  let arguments = (ins AnyScalarObject:$left, AnyScalarObject:$right);
+  let results = (outs AnyType:$output);
+
+  //let assemblyFormat = "$output attr-dict  `:` functional-type(operands, results)";
+}
+
+//===----------------------------------------------------------------------===//
+// RangeFromExprOp
+//===----------------------------------------------------------------------===//
+
+def RangeFromExprOp : Hir_Op<"range_from_expr", [Pure]> {
+  let summary = "RangeFromExpr";
+  let description = [{
+    Represents a range expression  from ... For example:
+
+    ```mlir
+      %0 = hir.range_from_expr %1
+    ```
+  }];
+
+  let arguments = (ins AnyScalarObject:$left);
+  let results = (outs AnyType:$output);
+
+  //let assemblyFormat = "$output attr-dict  `:` functional-type(operands, results)";
+}
+
+//===----------------------------------------------------------------------===//
+// RangeToExprOp
+//===----------------------------------------------------------------------===//
+
+def RangeToExprOp : Hir_Op<"range_to_expr", [Pure]> {
+  let summary = "RangeToExpr";
+  let description = [{
+    Represents a range expression  .. to. For example:
+
+    ```mlir
+      %0 = hir.range_to_expr %1
+    ```
+  }];
+
+  let arguments = (ins AnyScalarObject:$left);
+  let results = (outs AnyType:$output);
+
+  //let assemblyFormat = "$output attr-dict  `:` functional-type(operands, results)";
+}
+
+//===----------------------------------------------------------------------===//
+// RangeFullExprOp
+//===----------------------------------------------------------------------===//
+
+def RangeFullExprOp : Hir_Op<"range_full_expr", [ConstantLike, Pure]> {
+  let summary = "RangeFullExpr";
+  let description = [{
+    Represents a range expression  .. . For example:
+
+    ```mlir
+      %0 = hir.range_full_expr
+    ```
+  }];
+
+  //let arguments = (ins AnyScalarObject:$left);
+  let results = (outs AnyType:$output);
+
+  //let assemblyFormat = "$output attr-dict  `:` functional-type(operands, results)";
+}
+
+//===----------------------------------------------------------------------===//
+// RangeInclusiveExprOp
+//===----------------------------------------------------------------------===//
+
+def RangeInclusiveExprOp : Hir_Op<"range_inclusive_expr", [Pure]> {
+  let summary = "RangeInclusiveExpr";
+  let description = [{
+    Represents a range expression  from ..= to . For example:
+
+    ```mlir
+      %0 = hir.range_inclusive_expr %1, %2
+    ```
+  }];
+
+  let arguments = (ins AnyScalarObject:$left, AnyScalarObject:$right);
+  let results = (outs AnyType:$output);
+
+  //let assemblyFormat = "$output attr-dict  `:` functional-type(operands, results)";
+}
+
+//===----------------------------------------------------------------------===//
+// RangeToInclusiveExprOp
+//===----------------------------------------------------------------------===//
+
+def RangeToInclusiveExprOp : Hir_Op<"range_to_inclusive_expr", [Pure]> {
+  let summary = "RangeToInclusiveExpr";
+  let description = [{
+    Represents a range expression   ..= to . For example:
+
+    ```mlir
+      %0 = hir.range_to_inclusive_expr %2
+    ```
+  }];
+
+  let arguments = (ins AnyScalarObject:$right);
+  let results = (outs AnyType:$output);
+
+  //let assemblyFormat = "$output attr-dict  `:` functional-type(operands, results)";
+}
+
 #endif

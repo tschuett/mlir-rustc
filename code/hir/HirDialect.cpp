@@ -5,11 +5,13 @@
 #include "Hir/HirOps.h"
 #include "Hir/HirString.h"
 #include "Hir/HirStruct.h"
+#include "mlir/Support/LLVM.h"
 
 #include <llvm/Support/Debug.h>
 #include <llvm/Support/WithColor.h>
 #include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/ControlFlow/IR/ControlFlow.h>
+#include <mlir/Dialect/MemRef/IR/MemRef.h>
 #include <mlir/IR/BlockAndValueMapping.h>
 #include <mlir/IR/Builders.h>
 #include <mlir/IR/BuiltinTypes.h>
@@ -26,6 +28,14 @@ using namespace mlir;
 #include "Hir/HirDialect.cpp.inc"
 
 namespace rust_compiler::hir {
+
+bool isScalarObject(mlir::Type type) {
+  if (mlir::IntegerType integer = mlir::dyn_cast<mlir::IntegerType>(type))
+    return true;
+  if (mlir::FloatType floatTy = mlir::dyn_cast<mlir::FloatType>(type))
+    return true;
+  return false;
+}
 
 void HirDialect::initialize() {
   addOperations<

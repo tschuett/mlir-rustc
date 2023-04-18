@@ -31,7 +31,8 @@ def Hir_Dialect : Dialect {
   let dependentDialects = [
                            "mlir::cf::ControlFlowDialect",
                            "mlir::func::FuncDialect",
-                           "mlir::arith::ArithDialect"
+                           "mlir::arith::ArithDialect",
+                           "mlir::memref::MemRefDialect"
                           ];
 }
 

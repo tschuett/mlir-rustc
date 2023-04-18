@@ -1,6 +1,6 @@
 #pragma once
 
-//#include <mlir/Dialect/Func/IR/FuncOps.h>
+// #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/IR/BuiltinTypes.h>
 #include <mlir/IR/Dialect.h>
@@ -11,7 +11,10 @@
 #include <mlir/Interfaces/SideEffectInterfaces.h>
 #include <optional>
 
+namespace rust_compiler::hir {
 
-namespace rust_compiler::hir {}
+bool isScalarObject(mlir::Type);
+
+}
 
 #include "HirDialect.h.inc"
