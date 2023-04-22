@@ -4,6 +4,7 @@
 #include "AST/StructField.h"
 #include "AST/VisItem.h"
 #include "TyCtx/Substitutions.h"
+#include "TyCtx/TyTy.h"
 #include "TyCtx/TypeIdentity.h"
 #include "TypeChecking.h"
 
@@ -12,6 +13,7 @@
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::tyctx;
+using namespace rust_compiler::adt;
 
 namespace rust_compiler::sema::type_checking {
 
@@ -72,14 +74,13 @@ void TypeResolver::checkStruct(ast::Struct *s) {
     break;
   }
   case StructKind::TupleStruct2: {
-    assert(false);
+    checkTupleStruct(static_cast<TupleStruct *>(s));
+    break;
   }
   }
 }
 
 void TypeResolver::checkStructStruct(ast::StructStruct *s) {
-  assert(false);
-
   std::vector<tyctx::TyTy::SubstitutionParamMapping> substitutions;
 
   if (s->hasGenerics())
@@ -90,13 +91,15 @@ void TypeResolver::checkStructStruct(ast::StructStruct *s) {
 
   std::vector<TyTy::StructFieldType *> fields;
 
-  for (StructField &field : s->getFields().getFields()) {
-    TyTy::BaseType *fieldType = checkType(field.getType());
-    TyTy::StructFieldType *strField =
-        new TyTy::StructFieldType(field.getNodeId(), field.getIdentifier(),
-                                  fieldType, field.getLocation());
-    fields.push_back(strField);
-    tcx->insertType(field.getIdentity(), fieldType);
+  if (s->hasStructFields()) {
+    for (StructField &field : s->getFields().getFields()) {
+      TyTy::BaseType *fieldType = checkType(field.getType());
+      TyTy::StructFieldType *strField =
+          new TyTy::StructFieldType(field.getNodeId(), field.getIdentifier(),
+                                    fieldType, field.getLocation());
+      fields.push_back(strField);
+      tcx->insertType(field.getIdentity(), fieldType);
+    }
   }
 
   std::optional<adt::CanonicalPath> path =
@@ -106,14 +109,55 @@ void TypeResolver::checkStructStruct(ast::StructStruct *s) {
 
   std::vector<TyTy::VariantDef *> variants;
 
-  variants.push_back(new TyTy::VariantDef(
-      s->getNodeId(), s->getIdentifier(), ident,
-      TyTy::VariantKind::Struct, fields));
+  variants.push_back(new TyTy::VariantDef(s->getNodeId(), s->getIdentifier(),
+                                          ident, TyTy::VariantKind::Struct,
+                                          fields));
 
   // parse #[repr(X)]
-  TyTy::BaseType *type = new TyTy::ADTType(
-      s->getNodeId(), s->getIdentifier(), ident,
-      TyTy::ADTKind::StructStruct, variants, substitutions);
+  TyTy::BaseType *type =
+      new TyTy::ADTType(s->getNodeId(), s->getIdentifier(), ident,
+                        TyTy::ADTKind::StructStruct, variants, substitutions);
+
+  tcx->insertType(s->getIdentity(), type);
+}
+
+void TypeResolver::checkTupleStruct(ast::TupleStruct *s) {
+  std::vector<tyctx::TyTy::SubstitutionParamMapping> substitutions;
+
+  if (s->hasGenerics())
+    checkGenericParams(s->getGenericParams(), substitutions);
+
+  if (s->hasWhereClause())
+    checkWhereClause(s->getWhereClause());
+
+  std::vector<TyTy::StructFieldType *> fields;
+
+  size_t idx = 0;
+  if (s->hasTupleFields()) {
+    for (TupleField &field : s->getTupleFields().getFields()) {
+      TyTy::BaseType *fieldType = checkType(field.getType());
+      TyTy::StructFieldType *fiel =
+          new TyTy::StructFieldType(field.getNodeId(), std::to_string(idx),
+                                    fieldType, field.getLocation());
+      fields.push_back(fiel);
+      tcx->insertType(field.getIdentity(), fieldType);
+      ++idx;
+    }
+  }
+
+  std::optional<CanonicalPath> path = tcx->lookupCanonicalPath(s->getNodeId());
+  assert(path.has_value());
+  tyctx::TypeIdentity ident = {*path, s->getLocation()};
+
+  std::vector<TyTy::VariantDef *> variants;
+  variants.push_back(new TyTy::VariantDef(s->getNodeId(), s->getName(), ident,
+                                          TyTy::VariantKind::Tuple, fields));
+
+  // parse #[rept(X)]
+
+  TyTy::BaseType *type =
+      new TyTy::ADTType(s->getNodeId(), s->getName(), ident,
+                        TyTy::ADTKind::TupleStruct, variants, substitutions);
 
   tcx->insertType(s->getIdentity(), type);
 }

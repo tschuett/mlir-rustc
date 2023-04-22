@@ -319,6 +319,8 @@ class StructFieldType {
 public:
   StructFieldType(basic::NodeId, const adt::Identifier &, TyTy::BaseType *,
                   Location loc);
+  StructFieldType(basic::NodeId, std::string_view, TyTy::BaseType *,
+                  Location loc);
 };
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.VariantDef.html
@@ -330,7 +332,7 @@ public:
              std::vector<TyTy::StructFieldType *>);
 };
 
-enum class ADTKind { StructStruct };
+enum class ADTKind { StructStruct, TupleStruct };
 
 class ADTType : public BaseType {
 public:

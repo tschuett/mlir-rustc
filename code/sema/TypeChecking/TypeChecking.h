@@ -27,6 +27,7 @@
 #include "AST/Patterns/RangePattern.h"
 #include "AST/ReturnExpression.h"
 #include "AST/StructStruct.h"
+#include "AST/TupleStruct.h"
 #include "AST/Types/NeverType.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypePath.h"
@@ -83,6 +84,7 @@ private:
   void checkFunction(std::shared_ptr<ast::Function> f);
   void checkStruct(ast::Struct *s);
   void checkStructStruct(ast::StructStruct *s);
+  void checkTupleStruct(ast::TupleStruct *s);
   TyTy::BaseType *checkType(std::shared_ptr<ast::types::TypeExpression>);
   void checkWhereClause(const ast::WhereClause &);
   TyTy::BaseType *checkExpression(std::shared_ptr<ast::Expression>);

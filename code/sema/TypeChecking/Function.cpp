@@ -22,7 +22,7 @@ namespace rust_compiler::sema::type_checking {
 
 void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
-  
+
   // generics
   if (f->hasGenericParams())
     checkGenericParams(f->getGenericParams(), substitutions);
