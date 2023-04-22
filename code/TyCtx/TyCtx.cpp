@@ -202,6 +202,25 @@ void TyCtx::insertAutoderefMapping(NodeId id,
   autoderefMappings.emplace(id, std::move(ad));
 }
 
+void TyCtx::insertClosureCapture(basic::NodeId closureExpr,
+                                 basic::NodeId capturedItem) {
+  auto it = closureCaptureMappings.find(closureExpr);
+  if (it == closureCaptureMappings.end()) {
+    std::set<NodeId> captures;
+    captures.insert(capturedItem);
+    closureCaptureMappings.insert({closureExpr, captures});
+  } else {
+    it->second.insert(capturedItem);
+  }
+}
+
+std::set<basic::NodeId> TyCtx::getCaptures(NodeId closureExpr) {
+  auto it = closureCaptureMappings.find(closureExpr);
+  if (it == closureCaptureMappings.end())
+    return std::set<NodeId>();
+  return it->second;
+}
+
 void TyCtx::generateBuiltins() {
   // unsigned integer
   u8 = std::make_unique<TyTy::UintType>(getNextNodeId(), TyTy::UintKind::U8);
