@@ -1,11 +1,10 @@
 #include "TypeChecking.h"
 
 #include "AST/MacroItem.h"
+#include "Session/Session.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TyTy.h"
-
-#include "Session/Session.h"
 
 #include <cassert>
 
@@ -135,9 +134,15 @@ void TypeResolver::pushReturnType(TypeCheckContextItem item,
   assert(returnType != nullptr);
   returnTypeStack.push_back({std::move(item), returnType});
 }
+
 void TypeResolver::popReturnType() {
   assert(!returnTypeStack.empty());
   returnTypeStack.pop_back();
+}
+
+TypeCheckContextItem &TypeResolver::peekContext() {
+  assert(!returnTypeStack.empty());
+  return returnTypeStack.back().first;
 }
 
 } // namespace rust_compiler::sema::type_checking

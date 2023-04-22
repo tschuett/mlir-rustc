@@ -121,6 +121,10 @@ public:
     return builtins;
   }
 
+  void insertClosureCapture(basic::NodeId closureExpr,
+                            basic::NodeId capturedItem);
+
+  std::set<basic::NodeId> getCaptures(NodeId);
 private:
   void generateBuiltins();
 
@@ -189,6 +193,9 @@ private:
   std::vector<std::pair<std::string, ast::types::TypeExpression *>> builtins;
 
   ast::types::TupleType *emptyTupleType;
+
+  // closure captures
+  std::map<basic::NodeId, std::set<basic::NodeId>> closureCaptureMappings;
 };
 
 } // namespace rust_compiler::tyctx

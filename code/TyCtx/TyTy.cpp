@@ -10,6 +10,7 @@
 #include "TyCtx/TypeIdentity.h"
 
 #include <llvm/Support/raw_ostream.h>
+#include <sstream>
 
 using namespace rust_compiler::adt;
 using namespace rust_compiler::tyctx;
@@ -141,6 +142,12 @@ bool StrType::needsGenericSubstitutions() const { return false; }
 std::string StrType::toString() const { return "str"; }
 
 unsigned StrType::getNumberOfSpecifiedBounds() { return 0; }
+
+TupleType::TupleType(basic::NodeId id, Location loc,
+                     std::span<TyTy::TypeVariable> parameterTyps)
+    : BaseType(id, id, TypeKind::Tuple, TypeIdentity::from(loc)) {
+  fields = {parameterTyps.begin(), parameterTyps.end()};
+}
 
 TupleType::TupleType(basic::NodeId id, Location loc)
     : BaseType(id, id, TypeKind::Tuple, TypeIdentity::from(loc)) {}
@@ -302,5 +309,17 @@ bool isFloatLike(TypeKind kind) {
     return false;
   }
 }
+
+bool ClosureType::needsGenericSubstitutions() const { return false; }
+
+std::string ClosureType::toString() const {
+  std::stringstream s;
+  s << "|" << parameters->toString() << "| {"
+    << resultType.getType()->toString() << "}";
+
+  return s.str();
+}
+
+unsigned ClosureType::getNumberOfSpecifiedBounds() { return 0; }
 
 } // namespace rust_compiler::tyctx::TyTy

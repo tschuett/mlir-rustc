@@ -5,6 +5,7 @@
 #include "AST/Patterns/IdentifierPattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/PatternWithoutRange.h"
+#include "Basic/Ids.h"
 #include "Resolver.h"
 
 #include <memory>
@@ -18,7 +19,7 @@ namespace rust_compiler::sema::resolver {
 void Resolver::resolvePatternDeclaration(
     std::shared_ptr<ast::patterns::PatternNoTopAlt> pattern, RibKind kind) {
   std::vector<PatternBinding> bindings = {
-      PatternBinding(PatternBoundCtx::Product, std::set<std::string>())};
+      PatternBinding(PatternBoundCtx::Product, std::set<basic::NodeId>())};
 
   resolvePatternDeclarationWithBindings(pattern, kind, bindings);
 }

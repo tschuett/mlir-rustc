@@ -6,7 +6,6 @@
 #include "Resolver.h"
 
 #include <llvm/Support/FormatVariadic.h>
-
 #include <memory>
 
 using namespace rust_compiler::ast::patterns;
@@ -74,19 +73,19 @@ void PatternDeclaration::resolvePatternWithoutRange(
 void PatternDeclaration::resolveIdentifierPattern(
     std::shared_ptr<ast::patterns::IdentifierPattern> id) {
   Mutability mut = id->hasMut() ? Mutability::Mutable : Mutability::Immutable;
-  addNewBinding(id->getIdentifier().toString(), id->getNodeId(),
+  addNewBinding(id->getIdentifier(), id->getNodeId(),
                 BindingTypeInfo(mut, id->hasRef(), id->getLocation()));
 }
 
-void PatternDeclaration::addNewBinding(std::string_view name, basic::NodeId id,
-                                       BindingTypeInfo bind) {
+void PatternDeclaration::addNewBinding(const lexer::Identifier &name,
+                                       basic::NodeId id, BindingTypeInfo bind) {
   assert(bindings.size() > 0);
 
   bool identifierOrBound = false;
   bool identifierProductBound = false;
 
   for (auto binding : bindings) {
-    if (binding.idents.find(std::string(name)) != binding.idents.end()) {
+    if (binding.idents.find(id) != binding.idents.end()) {
       identifierProductBound |= binding.ctx == PatternBoundCtx::Product;
       identifierOrBound |= binding.ctx == PatternBoundCtx::Or;
     }
@@ -97,26 +96,26 @@ void PatternDeclaration::addNewBinding(std::string_view name, basic::NodeId id,
       // report error
       llvm::errs() << llvm::formatv("identifier {0} is bound more than once in "
                                     "the same parameter list",
-                                    name)
+                                    name.toString())
                           .str()
                    << "\n";
     } else {
       // report error
       llvm::errs() << llvm::formatv("identifier {0} is bound more than once in "
                                     "the same pattern",
-                                    name)
+                                    name.toString())
                           .str()
                    << "\n";
     }
   }
 
   if (!identifierOrBound) {
-    bindings.back().idents.insert(std::string(name));
+    bindings.back().idents.insert(id);
     resolver->getNameScope().insert(adt::CanonicalPath::newSegment(id, name),
                                     id, bind.getLocation(), rib);
   }
 
-  bindingInfoMap.insert({std::string(name), bind});
+  bindingInfoMap.insert({name, bind});
 }
 
 } // namespace rust_compiler::sema::resolver

@@ -363,8 +363,7 @@ void Resolver::insertResolvedName(NodeId ref, NodeId def) {
   resolvedNames[ref] = def;
   getNameScope().appendReferenceForDef(ref, def);
   insertCapturedItem(def);
-  rust_compiler::session::session->getTypeContext()->insertResolvedName(ref,
-                                                                        def);
+  tyCtx->insertResolvedName(ref, def);
 }
 
 std::optional<basic::NodeId> Scope::lookup(const adt::CanonicalPath &p) {
@@ -436,8 +435,10 @@ void Resolver::insertCapturedItem(basic::NodeId id) {
     }
 
     auto it = closureCaptureMappings.find(closureExprId);
-    if (it != closureCaptureMappings.end())
+    if (it != closureCaptureMappings.end()) {
       it->second.insert(id);
+      tyCtx->insertClosureCapture(closureExprId, id);
+    }
   }
 }
 
@@ -504,6 +505,19 @@ void Resolver::insertBuiltinTypes(Rib *r) {
     r->insertName(builtinPath, builtin.second->getNodeId(),
                   Location::getBuiltinLocation(), false, RibKind::Type);
   }
+}
+
+void Resolver::pushClosureContext(basic::NodeId id) {
+  auto it = closureCaptureMappings.find(id);
+  assert(it == closureCaptureMappings.end());
+
+  closureCaptureMappings.insert({id, {}});
+  closureContext.push_back(id);
+}
+
+void Resolver::popClosureContext() {
+  assert(!closureContext.empty());
+  closureContext.pop_back();
 }
 
 // std::vector<std::pair<std::string, ast::types::TypeExpression *>> &

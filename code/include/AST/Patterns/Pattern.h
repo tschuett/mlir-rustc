@@ -21,6 +21,11 @@ public:
   void addPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat) {
     patterns.push_back(pat);
   }
+
+  std::vector<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
+  getPatterns() const {
+    return patterns;
+  }
 };
 
 } // namespace rust_compiler::ast::patterns

@@ -14,7 +14,9 @@ public:
 
   bool isTrailingComma() const { return trailingComma; }
 
-  void addParam(const ClosureParam& cp) { parameters.push_back(cp); }
+  void addParam(const ClosureParam &cp) { parameters.push_back(cp); }
+
+  std::vector<ClosureParam> getParameters() const { return parameters; }
 };
 
 } // namespace rust_compiler::ast

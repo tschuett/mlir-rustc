@@ -49,9 +49,6 @@
 #include "Location.h"
 #include "TyCtx/TyCtx.h"
 
-// #include "../TypeChecking/TyTy.h"
-//  #include "../TypeChecking/TypeChecking.h"
-
 #include <cassert>
 #include <map>
 #include <optional>
@@ -73,9 +70,9 @@ enum class PatternBoundCtx {
 
 struct PatternBinding {
   PatternBoundCtx ctx;
-  std::set<std::string> idents;
+  std::set<basic::NodeId> idents;
 
-  PatternBinding(PatternBoundCtx ctx, std::set<std::string> idents)
+  PatternBinding(PatternBoundCtx ctx, std::set<basic::NodeId> idents)
       : ctx(ctx), idents(idents) {}
 };
 
@@ -307,6 +304,8 @@ private:
   void resolveIndexExpression(std::shared_ptr<ast::IndexExpression>,
                               const adt::CanonicalPath &prefix,
                               const adt::CanonicalPath &canonicalPrefix);
+  void resolveClosureParameter(ast::ClosureParam &param,
+                               std::vector<PatternBinding> &bindings);
 
   // types
   std::optional<basic::NodeId>
@@ -320,14 +319,10 @@ private:
   std::optional<adt::CanonicalPath>
   resolveTypeToCanonicalPath(ast::types::TypeExpression *);
 
-  std::string
-  resolveTypeToString(ast::types::TypeExpression *);
-  std::string
-  resolveTypeNoBoundsToString(ast::types::TypeNoBounds *);
-  std::string
-  resolveImplTraitTypeToString(ast::types::ImplTraitType *);
-  std::string
-  resolveTraitObjectTypeToString(ast::types::TraitObjectType *);
+  std::string resolveTypeToString(ast::types::TypeExpression *);
+  std::string resolveTypeNoBoundsToString(ast::types::TypeNoBounds *);
+  std::string resolveImplTraitTypeToString(ast::types::ImplTraitType *);
+  std::string resolveTraitObjectTypeToString(ast::types::TraitObjectType *);
 
   // checks
   void resolveVisibility(std::optional<ast::Visibility>);
@@ -460,6 +455,10 @@ private:
   std::map<basic::NodeId, basic::NodeId> resolvedTypes;
   std::map<basic::NodeId, basic::NodeId> resolvedLabels;
   std::map<basic::NodeId, basic::NodeId> resolvedMacros;
+
+  // closures
+  void pushClosureContext(basic::NodeId);
+  void popClosureContext();
 };
 
 } // namespace rust_compiler::sema::resolver

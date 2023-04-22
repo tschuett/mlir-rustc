@@ -98,8 +98,7 @@ void ReturnExpressionSearcher::visitArrayExpression(ast::ArrayExpression *arr) {
 
 void ReturnExpressionSearcher::visitClosureExpression(
     ast::ClosureExpression *closure) {
-  if (closure->hasBody())
-    visitExpression(closure->getBody().get());
+  visitExpression(closure->getBody().get());
 }
 
 void ReturnExpressionSearcher::visitIteratorLoopExpression(
@@ -394,8 +393,8 @@ bool ReturnExpressionSearcher::containsReturnExpression(
 bool containsReturnExpression(ast::BlockExpression *block) {
   ReturnExpressionSearcher searcher;
 
-//  llvm::outs() << "containsReturnExpression: "
-//               << searcher.containsReturnExpression(block) << "\n";
+  //  llvm::outs() << "containsReturnExpression: "
+  //               << searcher.containsReturnExpression(block) << "\n";
   return searcher.containsReturnExpression(block);
 }
 

@@ -9,6 +9,7 @@
 #include "AST/LiteralExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/PathExpression.h"
+#include "AST/Scrutinee.h"
 #include "AST/Statement.h"
 #include "Coercion.h"
 #include "TyCtx/TyTy.h"
@@ -60,11 +61,12 @@ TyTy::BaseType *TypeResolver::checkExpressionWithBlock(
     assert(false && "to be implemented");
   }
   case ast::ExpressionWithBlockKind::IfExpression: {
-    assert(false && "to be implemented");
     return checkIfExpression(std::static_pointer_cast<IfExpression>(withBlock));
   }
   case ast::ExpressionWithBlockKind::IfLetExpression: {
     assert(false && "to be implemented");
+    return checkIfLetExpression(
+        std::static_pointer_cast<IfLetExpression>(withBlock));
   }
   case ast::ExpressionWithBlockKind::MatchExpression: {
     assert(false && "to be implemented");
@@ -410,6 +412,29 @@ TyTy::BaseType *TypeResolver::checkComparisonExpression(
     return *bo;
 
   assert(false);
+}
+
+TyTy::BaseType *TypeResolver::checkIfLetExpression(
+    std::shared_ptr<ast::IfLetExpression> ifLet) {
+  assert(false);
+
+  Scrutinee scrut = ifLet->getScrutinee();
+  TyTy::BaseType *scrutineeType = checkExpression(scrut.getExpression());
+
+  std::shared_ptr<ast::patterns::Pattern> pattern = ifLet->getPatterns();
+
+  for (auto pat : pattern->getPatterns()) {
+    TyTy::BaseType *armType = checkPattern(pat, scrutineeType);
+
+    unifyWithSite(ifLet->getNodeId(), TyTy::WithLocation(scrutineeType),
+                  TyTy::WithLocation(armType, pat->getLocation()),
+                  ifLet->getLocation());
+  }
+
+  [[maybe_unused]] TyTy::BaseType *ifletBlock =
+      checkExpression(ifLet->getIfLet());
+
+  assert(false && "incomplete");
 }
 
 } // namespace rust_compiler::sema::type_checking

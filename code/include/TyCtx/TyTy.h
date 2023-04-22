@@ -70,6 +70,8 @@ public:
   TypeVariable(basic::NodeId id);
   TyTy::BaseType *getType() const;
 
+  static TypeVariable getImplicitInferVariable(Location);
+
 private:
   basic::NodeId id;
 };
@@ -205,6 +207,8 @@ public:
 /// (.., .., ..)
 class TupleType : public BaseType {
 public:
+  TupleType(basic::NodeId, Location loc,
+            std::span<TyTy::TypeVariable> parameterTypes);
   TupleType(basic::NodeId, Location loc);
 
   bool needsGenericSubstitutions() const override;
@@ -238,6 +242,12 @@ public:
 
   basic::NodeId getId() const { return id; }
 
+  Identifier getIdentifier() const { return name; }
+
+  std::vector<SubstitutionParamMapping> getSubstitutions() const {
+    return substitutions;
+  }
+
 private:
   basic::NodeId id;
   lexer::Identifier name;
@@ -252,7 +262,19 @@ private:
 
 class ClosureType : public BaseType {
 public:
-  ClosureType(basic::NodeId, Location loc);
+  ClosureType(basic::NodeId, Location loc, TypeIdentity, TupleType *closureArgs,
+              TypeVariable resultType,
+              std::span<SubstitutionParamMapping> substitutions,
+              std::set<basic::NodeId> captures);
+
+  bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
+  unsigned getNumberOfSpecifiedBounds() override;
+
+private:
+  TyTy::TupleType *parameters;
+  TyTy::TypeVariable resultType;
+  std::set<basic::NodeId> captures;
 };
 
 class InferType : public BaseType {

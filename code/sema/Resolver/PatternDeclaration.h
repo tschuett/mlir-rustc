@@ -2,6 +2,7 @@
 
 #include "AST/Patterns/IdentifierPattern.h"
 #include "Basic/Ids.h"
+#include "Lexer/Identifier.h"
 #include "Location.h"
 #include "Resolver.h"
 
@@ -30,7 +31,7 @@ public:
 
   bool isReference() const { return isRef; }
 
-  Mutability getMutability() const { return mut;}
+  Mutability getMutability() const { return mut; }
 };
 
 class PatternDeclaration {
@@ -52,12 +53,12 @@ private:
   void resolveIdentifierPattern(
       std::shared_ptr<ast::patterns::IdentifierPattern>);
 
-  void addNewBinding(std::string_view name, basic::NodeId id,
+  void addNewBinding(const lexer::Identifier& name, basic::NodeId id,
                      BindingTypeInfo bind);
 
   Resolver *resolver;
 
-  std::map<std::string, BindingTypeInfo> bindingInfoMap;
+  std::map<lexer::Identifier, BindingTypeInfo> bindingInfoMap;
 };
 
 } // namespace rust_compiler::sema::resolver

@@ -1,6 +1,8 @@
 #include "AST/FunctionParameters.h"
 #include "Resolver.h"
-#include "llvm/Support/raw_ostream.h"
+
+#include <llvm/Support/raw_ostream.h>
+#include <set>
 
 using namespace rust_compiler::adt;
 using namespace rust_compiler::ast;
@@ -42,7 +44,7 @@ void Resolver::resolveFunction(std::shared_ptr<ast::Function> fun,
   assert(!params.hasSelfParam() && "to be implemented");
 
   std::vector<PatternBinding> bindings = {
-      PatternBinding(PatternBoundCtx::Product, std::set<std::string>())};
+      PatternBinding(PatternBoundCtx::Product, std::set<NodeId>())};
 
   for (auto &parm : params.getParams()) {
     switch (parm.getKind()) {

@@ -5,12 +5,13 @@
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "Coercion.h"
 #include "Location.h"
-#include "TyCtx/Substitutions.h"
 #include "TyCtx/NodeIdentity.h"
+#include "TyCtx/Substitutions.h"
 #include "TyCtx/TyTy.h"
+#include "TyCtx/TypeIdentity.h"
 #include "TypeChecking.h"
-#include <llvm/Support/raw_ostream.h>
 
+#include <llvm/Support/raw_ostream.h>
 #include <optional>
 #include <utility>
 #include <vector>
@@ -21,7 +22,7 @@ namespace rust_compiler::sema::type_checking {
 
 void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
-
+  
   // generics
   if (f->hasGenericParams())
     checkGenericParams(f->getGenericParams(), substitutions);

@@ -55,6 +55,12 @@ public:
   std::shared_ptr<ast::Expression> getIfLet() const { return trailingIfLet; }
 
   std::shared_ptr<ast::Expression> getBlock() const { return block; }
+
+  Scrutinee getScrutinee() const { return scrutinee; }
+
+  std::shared_ptr<ast::patterns::Pattern> getPatterns() const {
+    return pattern;
+  }
 };
 
 } // namespace rust_compiler::ast

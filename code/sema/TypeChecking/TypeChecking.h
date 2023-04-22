@@ -12,6 +12,7 @@
 #include "AST/Function.h"
 #include "AST/GenericParams.h"
 #include "AST/IfExpression.h"
+#include "AST/IfLetExpression.h"
 #include "AST/Implementation.h"
 #include "AST/Item.h"
 #include "AST/LetStatement.h"
@@ -56,6 +57,7 @@ public:
   TypeCheckContextItem(ast::Function *f) : fun(f) {}
 
   ast::Function *getFunction() const { return fun; }
+  TyTy::FunctionType *getContextType();
 
 private:
   ast::Function *fun;
@@ -108,6 +110,7 @@ private:
   TyTy::BaseType *
       checkExpressionStatement(std::shared_ptr<ast::ExpressionStatement>);
   TyTy::BaseType *checkIfExpression(std::shared_ptr<ast::IfExpression>);
+  TyTy::BaseType *checkIfLetExpression(std::shared_ptr<ast::IfLetExpression>);
   TyTy::BaseType *
       checkAssignmentExpression(std::shared_ptr<ast::AssignmentExpression>);
 
@@ -160,6 +163,8 @@ private:
   TyTy::BaseType *peekReturnType();
   void pushReturnType(TypeCheckContextItem item, TyTy::BaseType *returnRype);
   void popReturnType();
+
+  TypeCheckContextItem &peekContext();
 
   std::vector<std::pair<TypeCheckContextItem, TyTy::BaseType *>>
       returnTypeStack;

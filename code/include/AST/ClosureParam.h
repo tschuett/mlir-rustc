@@ -29,6 +29,13 @@ public:
   }
 
   void setType(std::shared_ptr<types::TypeExpression> t) { type = t; }
+
+  bool hasType() const { return type.has_value(); }
+  std::shared_ptr<types::TypeExpression> getType() const { return *type; }
+
+  std::shared_ptr<patterns::PatternNoTopAlt> getPattern() const {
+    return pattern;
+  }
 };
 
 } // namespace rust_compiler::ast
