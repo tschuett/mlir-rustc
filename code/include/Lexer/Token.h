@@ -140,6 +140,9 @@ public:
   Token(rust_compiler::Location loc, KeyWordKind kw, std::string_view id)
       : loc(loc), kind(TokenKind::Keyword), storage(id), kw(kw){};
 
+  Token(rust_compiler::Location loc, TokenKind tk, adt::Utf8String id)
+      : loc(loc), kind(tk), utf8Storage(id){};
+
   //  Token(rust_compiler::Location loc, IntegerKind ik)
   //      : loc(loc), kind(TokenKind::Integer), ik(ik){};
   //

@@ -1,3 +1,4 @@
+#include "ADT/Utf8String.h"
 #include "Lexer/Lexer.h"
 #include "Lexer/Token.h"
 
@@ -17,13 +18,20 @@ Token Lexer::advanceToken() {
     return Token(getLocation(), TokenKind::Eof);
   }
 
+  // check ASCII
+
   if (next == '/' && peek() == '/')
     lineComment();
   if (next == '/' && peek() == '*')
     blockComment();
 
-  if (isWhiteSpace())
+  if (isWhiteSpace(next))
     skipWhiteSpace();
+
+  if (next == '_' && isIdStart(1))
+    return lexIdentifierOrKeyWord();
+  if (isIdStart(0))
+    return lexIdentifierOrKeyWord();
 
   switch (next) {
 
@@ -204,6 +212,38 @@ Token Lexer::lexNumericalLiteral() {
 // Token Lexer::lexRawIdentifier() {}
 
 Token Lexer::lexIdentifierOrKeyWord() {
+  UChar32 next = getUchar();
+
+  adt::Utf8String identifier;
+
+  // location!!!!!
+  if (next == '_') {
+    identifier.append(next);
+    skip();
+
+    next = getUchar();
+
+    // _ XID_Continue +
+    if (!u_hasBinaryProperty(next, UCHAR_XID_CONTINUE)) {
+      // report error
+    }
+
+    identifier.append(next);
+    skip();
+    next = getUchar();
+
+    while (u_hasBinaryProperty(next, UCHAR_XID_CONTINUE)) {
+      identifier.append(next);
+      skip();
+      next = getUchar();
+    } // report EOF!!!
+
+    return Token(getLocation(), TokenKind::Identifier, identifier);
+  } else if (isIdStart()) {
+  } else {
+    // report error
+  }
+
   if (peek() == '_') {
   } else {
     UChar32 next = getUchar();
@@ -235,6 +275,32 @@ void Lexer::lex(std::string_view fileName) {
   u_fclose(file);
 
   offset = 0;
+}
+
+bool Lexer::isWhiteSpace(UChar32 next) {
+  return u_hasBinaryProperty(next, UCHAR_PATTERN_WHITE_SPACE);
+}
+
+void Lexer::skipWhiteSpace() {
+  UChar32 current = getUchar();
+
+  while (u_hasBinaryProperty(current, UCHAR_PATTERN_WHITE_SPACE)) {
+    skip();
+    current = getUchar();
+  }
+}
+
+void Lexer::skip() {
+  UChar32 current = getUchar();
+
+  if (u_hasBinaryProperty(current, UCHAR_LINE_BREAK)) {
+    ++offset;
+    ++lineNumber;
+    columnNumber = 0;
+  } else {
+    ++offset;
+    ++columnNumber;
+  }
 }
 
 } // namespace rust_compiler::lexer

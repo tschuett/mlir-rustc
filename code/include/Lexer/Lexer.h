@@ -62,7 +62,7 @@ private:
   void lineComment();
   void blockComment();
 
-  bool isWhiteSpace();
+  bool isWhiteSpace(UChar32);
   void skipWhiteSpace();
 
   bool isASCII();
@@ -73,6 +73,9 @@ private:
   UChar32 getUchar(int i = 0);
   void skip();
   UChar32 peek(int i = 0);
+
+  unsigned lineNumber;
+  unsigned columnNumber;
 };
 
 } // namespace rust_compiler::lexer
