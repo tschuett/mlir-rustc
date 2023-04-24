@@ -137,6 +137,7 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
     // enum?
 
     assert(false && "to be implemented");
+
   }
   assert(false && "to be implemented");
 }

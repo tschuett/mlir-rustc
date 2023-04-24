@@ -176,6 +176,9 @@ private:
   // data
   tyctx::TyCtx *tcx;
   resolver::Resolver *resolver;
+
+  TyTy::BaseType *applySubstitutions(TyTy::BaseType *, Location,
+                                     const GenericArgs &);
 };
 
 } // namespace rust_compiler::sema::type_checking

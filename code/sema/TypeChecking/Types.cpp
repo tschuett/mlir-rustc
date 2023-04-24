@@ -235,6 +235,11 @@ TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
     //  lookup = InferStubs(lookup);
     //}
 
+    if (segs[i].hasGenerics()) {
+      lookup = applySubstitutions(lookup, path->getLocation(), segs[i].getGenericArgs());
+    } else if (lookup->needsGenericSubstitutions()) {
+    }
+
     *resolvedNodeId = refNodeId;
     *offset = *offset + 1;
     rootType = lookup;
