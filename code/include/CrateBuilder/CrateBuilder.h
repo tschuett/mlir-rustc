@@ -15,6 +15,7 @@
 #include "AST/LoopExpression.h"
 #include "AST/MethodCallExpression.h"
 #include "AST/OperatorExpression.h"
+#include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
@@ -141,6 +142,10 @@ private:
                                                ast::Expression *expr);
   mlir::Value emitComparePatternWithOperatorExpression(ast::patterns::Pattern *pattern,
                                                ast::OperatorExpression *expr);
+  mlir::Value emitMatchIfLetPattern(ast::patterns::Pattern *pattern,
+                                               ast::Expression *expr);
+  mlir::Value emitMatchIfLetNoTopAlt(ast::patterns::PatternNoTopAlt *pattern,
+                                               ast::Expression *expr);
 
   mlir::FunctionType getFunctionType(ast::Function *);
 

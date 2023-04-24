@@ -6,16 +6,28 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::crate_builder {
 
-mlir::Value
-CrateBuilder::emitComparePatternWithExpression(ast::patterns::Pattern *pattern,
-                                               ast::Expression *expr) {
+mlir::Value CrateBuilder::emitMatchIfLetPattern(ast::patterns::Pattern *pattern,
+                                                ast::Expression *scrutinee) {
   assert(false && "to be implemented");
-  if (expr->getExpressionKind() == ast::ExpressionKind::ExpressionWithBlock) {
+  std::vector<mlir::Value> patResults;
+  std::vector<std::shared_ptr<ast::patterns::PatternNoTopAlt>> patterns =
+      pattern->getPatterns();
+
+  for (auto pat : patterns)
+    patResults.push_back(emitMatchIfLetNoTopAlt(pat.get(), scrutinee));
+}
+
+mlir::Value
+CrateBuilder::emitMatchIfLetNoTopAlt(ast::patterns::PatternNoTopAlt *pattern,
+                                     ast::Expression *scrutinee) {
+  assert(false && "to be implemented");
+  if (scrutinee->getExpressionKind() ==
+      ast::ExpressionKind::ExpressionWithBlock) {
     assert(false && "to be implemented");
   }
 
   ast::ExpressionWithoutBlock *woBlock =
-      static_cast<ast::ExpressionWithoutBlock *>(expr);
+      static_cast<ast::ExpressionWithoutBlock *>(scrutinee);
 
   switch (woBlock->getWithoutBlockKind()) {
   case ExpressionWithoutBlockKind::LiteralExpression: {
@@ -25,8 +37,7 @@ CrateBuilder::emitComparePatternWithExpression(ast::patterns::Pattern *pattern,
     assert(false && "to be implemented");
   }
   case ExpressionWithoutBlockKind::OperatorExpression: {
-    return emitComparePatternWithOperatorExpression(
-        pattern, static_cast<OperatorExpression *>(expr));
+    assert(false && "to be implemented");
   }
   case ExpressionWithoutBlockKind::GroupedExpression: {
     assert(false && "to be implemented");
@@ -85,13 +96,4 @@ CrateBuilder::emitComparePatternWithExpression(ast::patterns::Pattern *pattern,
   }
 }
 
-mlir::Value CrateBuilder::emitComparePatternWithOperatorExpression(
-    ast::patterns::Pattern *pattern, ast::OperatorExpression *expr) {
-  assert(false && "to be implemented");
-}
-
 } // namespace rust_compiler::crate_builder
-
-
-
-// FIXME can bound variables

@@ -259,6 +259,7 @@ bool isSignedIntegerLike(TypeKind kind) {
   case TypeKind::Tuple:
   case TypeKind::Parameter:
   case TypeKind::ADT:
+  case TypeKind::StructField:
   case TypeKind::Error:
     return false;
   }
@@ -282,6 +283,7 @@ bool isIntegerLike(TypeKind kind) {
   case TypeKind::Tuple:
   case TypeKind::Parameter:
   case TypeKind::ADT:
+  case TypeKind::StructField:
   case TypeKind::Error:
     return false;
   }
@@ -305,6 +307,7 @@ bool isFloatLike(TypeKind kind) {
   case TypeKind::Tuple:
   case TypeKind::Parameter:
   case TypeKind::ADT:
+  case TypeKind::StructField:
   case TypeKind::Error:
     return false;
   }
@@ -321,5 +324,69 @@ std::string ClosureType::toString() const {
 }
 
 unsigned ClosureType::getNumberOfSpecifiedBounds() { return 0; }
+
+StructFieldType::StructFieldType(basic::NodeId ref, const adt::Identifier &id,
+                                 TyTy::BaseType *type, Location loc)
+    : BaseType(ref, ref, TypeKind::StructField, TypeIdentity::empty()),
+      type(type), loc(loc), id(id) {}
+
+StructFieldType::StructFieldType(basic::NodeId ref, std::string_view id,
+                                 TyTy::BaseType *type, Location loc)
+    : BaseType(ref, ref, TypeKind::StructField, TypeIdentity::empty()),
+      type(type), loc(loc), idStr(id) {}
+
+bool StructFieldType::needsGenericSubstitutions() const { return false; }
+
+std::string StructFieldType::toString() const {
+  // FIXME: name maybe UTF-8
+  return "name: " + type->toString();
+}
+unsigned StructFieldType::getNumberOfSpecifiedBounds() { return 0; }
+
+VariantDef::VariantDef(basic::NodeId id, const adt::Identifier &identifier,
+                       TypeIdentity ident, VariantKind kind,
+                       std::span<TyTy::StructFieldType *> f)
+    : id(id), identifier(identifier), ident(ident), kind(kind) {
+  fields = {f.begin(), f.end()};
+}
+
+ADTType::ADTType(basic::NodeId id, const adt::Identifier &identifier,
+                 TypeIdentity ident, ADTKind kind,
+                 std::span<VariantDef *> variant,
+                 std::span<SubstitutionParamMapping> sub)
+    : BaseType(id, id, TypeKind::ADT, ident), identifier(identifier),
+      kind(kind) {
+  variants = {variant.begin(), variant.end()};
+  substitutions = {sub.begin(), sub.end()};
+}
+
+bool ADTType::needsGenericSubstitutions() const { return false; }
+
+std::string ADTType::toString() const {
+  std::string variantsBuffer;
+  for (size_t i = 0; i < variants.size(); ++i) {
+    [[maybe_unused]] TyTy::VariantDef *variant = variants[i];
+    // FIXME: variantsBuffer += variant->toString();
+    if ((i + 1) < variants.size())
+      variantsBuffer += ", ";
+  }
+
+  return /*identifier*/ substToString() + "{" + variantsBuffer + "}";
+}
+
+std::string ADTType::substToString() const {
+  std::string buffer;
+  for (size_t i = 0; i < substitutions.size(); i++) {
+    const SubstitutionParamMapping &sub = substitutions[i];
+    buffer += sub.toString();
+
+    if ((i + 1) < substitutions.size())
+      buffer += ", ";
+  }
+
+  return buffer.empty() ? "" : "<" + buffer + ">";
+}
+
+unsigned ADTType::getNumberOfSpecifiedBounds() { return 0; }
 
 } // namespace rust_compiler::tyctx::TyTy

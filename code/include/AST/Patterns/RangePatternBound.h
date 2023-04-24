@@ -14,7 +14,7 @@ enum class RangePatternBoundKind {
   ByteLiteral,
   MinusIntegerLiteral,
   IntegerLiteral,
-  MinusFloatLitera,
+  MinusFloatLiteral,
   FloatLiteral,
   PathExpression
 };
@@ -31,6 +31,8 @@ public:
   void setKind(RangePatternBoundKind k) { kind = k; }
   void setStorage(std::string_view s) { storage = s; }
   void setPath(std::shared_ptr<ast::Expression> p) { path = p; }
+
+  RangePatternBoundKind getKind() const { return kind; }
 };
 
 } // namespace rust_compiler::ast::patterns

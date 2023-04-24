@@ -152,6 +152,9 @@ mlir::Type CrateBuilder::convertTyTyToMLIR(TyTy::BaseType *type) {
   case TypeKind::ADT: {
     assert(false && "to be implemented");
   }
+  case TypeKind::StructField: {
+    assert(false && "to be implemented");
+  }
   case TypeKind::Error: {
     assert(false && "to be implemented");
   }

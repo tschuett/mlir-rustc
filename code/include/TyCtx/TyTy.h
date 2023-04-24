@@ -37,6 +37,7 @@ enum class TypeKind {
   Tuple,
   Parameter,
   ADT,
+  StructField,
 
   Error
 };
@@ -315,12 +316,24 @@ private:
   Location loc;
 };
 
-class StructFieldType {
+class StructFieldType : public BaseType {
 public:
   StructFieldType(basic::NodeId, const adt::Identifier &, TyTy::BaseType *,
                   Location loc);
   StructFieldType(basic::NodeId, std::string_view, TyTy::BaseType *,
                   Location loc);
+
+  TyTy::BaseType *getFieldType() const { return type; }
+
+  bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
+  unsigned getNumberOfSpecifiedBounds() override;
+
+private:
+  TyTy::BaseType *type;
+  Location loc;
+  std::optional<adt::Identifier> id;
+  std::optional<std::string> idStr;
 };
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.VariantDef.html
@@ -329,7 +342,17 @@ enum class VariantKind { Struct, Tuple };
 class VariantDef {
 public:
   VariantDef(basic::NodeId, const adt::Identifier &, TypeIdentity, VariantKind,
-             std::vector<TyTy::StructFieldType *>);
+             std::span<TyTy::StructFieldType *>);
+
+  VariantKind getKind() const { return kind; }
+  basic::NodeId getId() const { return id; }
+
+private:
+  basic::NodeId id;
+  adt::Identifier identifier;
+  TypeIdentity ident;
+  VariantKind kind;
+  std::vector<TyTy::StructFieldType *> fields;
 };
 
 enum class ADTKind { StructStruct, TupleStruct };
@@ -337,11 +360,26 @@ enum class ADTKind { StructStruct, TupleStruct };
 class ADTType : public BaseType {
 public:
   ADTType(basic::NodeId, const adt::Identifier &, TypeIdentity, ADTKind,
-          std::vector<VariantDef *>, std::vector<SubstitutionParamMapping>);
+          std::span<VariantDef *>, std::span<SubstitutionParamMapping>);
 
   bool needsGenericSubstitutions() const override;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
+
+  ADTKind getKind() const { return kind; }
+
+private:
+  std::string substToString() const;
+
+  adt::Identifier identifier;
+  ADTKind kind;
+  std::vector<VariantDef *> variants;
+  std::vector<SubstitutionParamMapping> substitutions;
+};
+
+class ParamType : public BaseType {
+public:
+  std::string toString() const override;
 };
 
 } // namespace rust_compiler::tyctx::TyTy

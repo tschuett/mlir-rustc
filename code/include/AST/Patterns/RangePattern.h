@@ -8,8 +8,9 @@
 namespace rust_compiler::ast::patterns {
 
 enum class RangePatternKind {
-  InclusiveRangePattern,
-  HalfOpenRangePattern,
+  RangeInclusivePattern,
+  RangeFromPattern,
+  RangeToInclusivePattern,
   ObsoleteRangePattern
 };
 

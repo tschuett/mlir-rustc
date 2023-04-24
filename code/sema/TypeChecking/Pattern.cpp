@@ -88,10 +88,13 @@ TypeResolver::checkRangePattern(std::shared_ptr<ast::patterns::RangePattern> pt,
                                 TyTy::BaseType *t) {
   assert(false && "to be implemented");
   switch (pt->getRangeKind()) {
-  case RangePatternKind::InclusiveRangePattern: {
+  case RangePatternKind::RangeInclusivePattern: {
     assert(false && "to be implemented");
   }
-  case RangePatternKind::HalfOpenRangePattern: {
+  case RangePatternKind::RangeFromPattern: {
+    assert(false && "to be implemented");
+  }
+  case RangePatternKind::RangeToInclusivePattern: {
     assert(false && "to be implemented");
   }
   case RangePatternKind::ObsoleteRangePattern: {
