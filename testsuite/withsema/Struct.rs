@@ -1,5 +1,5 @@
 struct SmallVector<const N: usize> {
-    //    data: [i32: N]
+    data: [i32; N],
 }
 
 fn foo() {

@@ -575,9 +575,6 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseArrayOrSliceType() {
   Location loc = getLocation();
 
-  llvm::errs() << "parseArrayOrSliceType"
-               << "\n";
-
   if (!check(TokenKind::SquareOpen)) {
     return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
         "failed to parse array or slice type");

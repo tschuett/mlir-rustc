@@ -258,8 +258,8 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path,
   NodeId moduleScopeId = peekCurrentModuleScope();
   NodeId previousResolvedNodeId = moduleScopeId;
 
-  llvm::errs() << "resolve PathInExpression"
-               << "\n";
+  //  llvm::errs() << "resolve PathInExpression"
+  //             << "\n";
 
   std::vector<PathExprSegment> segments = path->getSegments();
 

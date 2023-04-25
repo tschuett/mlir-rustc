@@ -658,7 +658,7 @@ Result<ast::ConstParam, std::string> Parser::parseConstParam() {
 
   if (check(TokenKind::Identifier)) {
     Token tok = getToken();
-    param.setIdentifier(tok.getIdentifier().toString());
+    param.setIdentifier(tok.getIdentifier());
     assert(eat(TokenKind::Identifier));
   } else {
     return Result<ast::ConstParam, std::string>(
@@ -697,7 +697,7 @@ Result<ast::ConstParam, std::string> Parser::parseConstParam() {
       param.setBlock(block.getValue());
     } else if (check(TokenKind::Identifier)) {
       Token tok = getToken();
-      param.setInit(tok.getIdentifier().toString());
+      param.setInit(tok.getIdentifier());
       assert(check(TokenKind::Identifier));
     } else if (check(TokenKind::Minus)) {
       assert(check(TokenKind::Minus));

@@ -382,4 +382,9 @@ public:
   std::string toString() const override;
 };
 
+class TypeBoundPredicate {
+public:
+  bool isError() const;
+};
+
 } // namespace rust_compiler::tyctx::TyTy

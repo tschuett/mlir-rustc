@@ -51,6 +51,11 @@ void Resolver::resolveConstParam(const GenericParam &p,
     resolveExpression(co.getBlock(), prefix, canonicalPrefix);
   else if (co.hasLiteral())
     resolveExpression(co.getLiteral(), prefix, canonicalPrefix);
+
+  CanonicalPath segment = CanonicalPath::newSegment(co.getNodeId(), co.getIdentifier());
+  getTypeScope().insert(segment, co.getNodeId(), co.getLocation(), RibKind::Type);
+
+  tyCtx->insertCanonicalPath(co.getNodeId(), segment);
 }
 
 void Resolver::resolveTypeParam(const GenericParam &p,

@@ -22,9 +22,15 @@ public:
   void setHasParenthesis() { hasParenthesis = true; }
   void setHasQuestionMark() { hasQuestionMark = true; }
 
-  void setTypePath(std::shared_ptr<ast::types::TypeExpression> p) { typePath = p; }
+  void setTypePath(std::shared_ptr<ast::types::TypeExpression> p) {
+    typePath = p;
+  }
   void setForLifetimes(const ast::types::ForLifetimes &forL) {
     forLifetime = forL;
+  }
+
+  std::shared_ptr<ast::types::TypeExpression> getPath() const {
+    return typePath;
   }
 };
 

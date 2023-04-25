@@ -323,9 +323,6 @@ Parser::parseStructStruct(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   class StructStruct str = {loc, vis};
 
-  llvm::errs() << "parseStructStruct"
-               << "\n";
-
   if (!checkKeyWord(KeyWordKind::KW_STRUCT))
     return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse struct struct");

@@ -203,9 +203,6 @@ Parser::parseLetStatement(std::span<ast::OuterAttribute> outer,
 
   LetStatement let = {loc};
 
-  llvm::errs() << "parse let statement"
-               << "\n";
-
   let.setOuterAttributes(outer);
 
   if (!checkKeyWord(KeyWordKind::KW_LET)) {

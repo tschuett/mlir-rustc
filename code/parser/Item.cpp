@@ -795,9 +795,6 @@ StringResult<std::shared_ptr<ast::Item>>
 Parser::parseStruct(std::optional<ast::Visibility> vis) {
   CheckPoint cp = getCheckPoint();
 
-  llvm::errs() << "parseStruct"
-               << "\n";
-
   if (!checkKeyWord(KeyWordKind::KW_STRUCT))
     return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse struct keyword in struct");

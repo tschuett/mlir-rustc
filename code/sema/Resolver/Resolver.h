@@ -36,6 +36,7 @@
 #include "AST/Trait.h"
 #include "AST/TraitImpl.h"
 #include "AST/TupleStruct.h"
+#include "AST/Types/ArrayType.h"
 #include "AST/Types/ImplTraitType.h"
 #include "AST/Types/TraitObjectType.h"
 #include "AST/Types/TupleType.h"
@@ -326,6 +327,10 @@ private:
                           const adt::CanonicalPath &prefix,
                           const adt::CanonicalPath &canonicalPrefix);
   void resolveTypePathFunction(const ast::types::TypePathFn &);
+  std::optional<basic::NodeId>
+  resolveArrayType(std::shared_ptr<ast::types::ArrayType>,
+                   const adt::CanonicalPath &prefix,
+                   const adt::CanonicalPath &canonicalPrefix);
 
   std::optional<adt::CanonicalPath>
   resolveTypeToCanonicalPath(ast::types::TypeExpression *);

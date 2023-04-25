@@ -67,7 +67,8 @@ std::optional<NodeId> Resolver::resolveTypeNoBounds(
     assert(false && "to be handled later");
   }
   case TypeNoBoundsKind::ArrayType: {
-    assert(false && "to be handled later");
+    return resolveArrayType(std::static_pointer_cast<ArrayType>(noBounds),
+                            prefix, canonicalPrefix);
   }
   case TypeNoBoundsKind::SliceType: {
     assert(false && "to be handled later");
@@ -233,6 +234,15 @@ void Resolver::resolveTypePathFunction(const ast::types::TypePathFn &) {
 std::optional<adt::CanonicalPath>
 Resolver::resolveTypeToCanonicalPath(ast::types::TypeExpression *) {
   assert(false && "to be handled later");
+}
+
+std::optional<basic::NodeId>
+Resolver::resolveArrayType(std::shared_ptr<ast::types::ArrayType> arr,
+                           const adt::CanonicalPath &prefix,
+                           const adt::CanonicalPath &canonicalPrefix) {
+  resolveExpression(arr->getExpression(), adt::CanonicalPath::createEmpty(),
+                    adt::CanonicalPath::createEmpty());
+  return resolveType(arr->getType(), prefix, canonicalPrefix);
 }
 
 } // namespace rust_compiler::sema::resolver

@@ -1,16 +1,18 @@
 #include "AST/Enumeration.h"
+#include "AST/Types/TraitBound.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
+#include "AST/Types/TypeParamBound.h"
 #include "AST/Types/TypePath.h"
 #include "Basic/Ids.h"
 #include "PathProbing.h"
 #include "TyCtx/Substitutions.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
-#include <llvm/Support/raw_ostream.h>
 
 #include "../Resolver/Resolver.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
 #include <tuple>
@@ -52,8 +54,45 @@ void TypeResolver::checkWhereClause(const ast::WhereClause &) {
 }
 
 void TypeResolver::checkGenericParams(
-    const GenericParams &, std::vector<TyTy::SubstitutionParamMapping> &) {
+    const GenericParams &pa,
+    std::vector<TyTy::SubstitutionParamMapping> &subst) {
   assert(false && "to be implemented");
+  std::vector<TyTy::TypeBoundPredicate> specifiedBounds;
+  for (GenericParam &param : pa.getGenericParams()) {
+    switch (param.getKind()) {
+    case GenericParamKind::LifetimeParam: {
+      break;
+    }
+    case GenericParamKind::TypeParam: {
+      TypeParam pa = param.getTypeParam();
+      if (pa.hasType())
+        checkType(pa.getType());
+      if (pa.hasTypeParamBounds()) {
+        types::TypeParamBounds bounds = pa.getBounds();
+        for (std::shared_ptr<TypeParamBound> b : bounds.getBounds()) {
+          switch (b->getKind()) {
+          case TypeParamBoundKind::Lifetime: {
+            break;
+          }
+          case TypeParamBoundKind::TraitBound: {
+            std::shared_ptr<types::TraitBound> tb =
+                std::static_pointer_cast<TraitBound>(b);
+            TyTy::TypeBoundPredicate predicate =
+                getPredicateFromBound(tb->getPath());
+            if (!predicate.isError())
+              specifiedBounds.push_back(predicate);
+            break;
+          }
+          }
+        }
+      }
+      break;
+    }
+    case GenericParamKind::ConstParam: {
+      break;
+    }
+    }
+  }
 }
 
 TyTy::BaseType *
@@ -147,8 +186,8 @@ TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
   if (segs.size() == 1)
     if (auto t = tcx->lookupBuiltin(segs[0].getSegment().toString())) {
       *offset = 1;
-//      llvm::errs() << path->getNodeId() << " -> " << t->toString() << "\n";
-//      llvm::errs() << (void*)t << "\n";
+      //      llvm::errs() << path->getNodeId() << " -> " << t->toString() <<
+      //      "\n"; llvm::errs() << (void*)t << "\n";
       return t;
     }
 
@@ -236,7 +275,8 @@ TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
     //}
 
     if (segs[i].hasGenerics()) {
-      lookup = applySubstitutions(lookup, path->getLocation(), segs[i].getGenericArgs());
+      lookup = applySubstitutions(lookup, path->getLocation(),
+                                  segs[i].getGenericArgs());
     } else if (lookup->needsGenericSubstitutions()) {
     }
 
@@ -297,6 +337,11 @@ TypeResolver::checkNeverType(std::shared_ptr<ast::types::NeverType>) {
   if (never)
     return *never;
   return nullptr;
+}
+
+TyTy::TypeBoundPredicate TypeResolver::getPredicateFromBound(
+    std::shared_ptr<ast::types::TypeExpression>) {
+  assert(false);
 }
 
 } // namespace rust_compiler::sema::type_checking

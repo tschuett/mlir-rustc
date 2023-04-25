@@ -179,6 +179,8 @@ private:
 
   TyTy::BaseType *applySubstitutions(TyTy::BaseType *, Location,
                                      const GenericArgs &);
+
+  TyTy::TypeBoundPredicate getPredicateFromBound(std::shared_ptr<ast::types::TypeExpression>);
 };
 
 } // namespace rust_compiler::sema::type_checking
