@@ -93,7 +93,8 @@ void Resolver::resolveExpressionWithoutBlock(
     break;
   }
   case ExpressionWithoutBlockKind::PathExpression: {
-    resolvePathExpression(std::static_pointer_cast<PathExpression>(woBlock));
+    resolvePathExpression(std::static_pointer_cast<PathExpression>(woBlock),
+                          prefix, canonicalPrefix);
     break;
   }
   case ExpressionWithoutBlockKind::OperatorExpression: {
@@ -231,11 +232,13 @@ void Resolver::resolveOperatorExpression(
 }
 
 void Resolver::resolvePathExpression(
-    std::shared_ptr<ast::PathExpression> path) {
+    std::shared_ptr<ast::PathExpression> path, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
   switch (path->getPathExpressionKind()) {
   case PathExpressionKind::PathInExpression: {
     auto result = resolvePathInExpression(
-        std::static_pointer_cast<PathInExpression>(path));
+        std::static_pointer_cast<PathInExpression>(path), prefix,
+        canonicalPrefix);
     assert(result.has_value());
     break;
   }
@@ -248,7 +251,9 @@ void Resolver::resolvePathExpression(
 }
 
 std::optional<NodeId>
-Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
+Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path,
+                                  const adt::CanonicalPath &prefix,
+                                  const adt::CanonicalPath &canonicalPrefix) {
   NodeId resolvedNodeId = UNKNOWN_NODEID;
   NodeId moduleScopeId = peekCurrentModuleScope();
   NodeId previousResolvedNodeId = moduleScopeId;
@@ -290,7 +295,7 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path) {
     }
 
     if (seg.hasGenerics())
-      resolveGenericArgs(seg.getGenerics());
+      resolveGenericArgs(seg.getGenerics(), prefix, canonicalPrefix);
 
     if (i == 0) {
       // name first

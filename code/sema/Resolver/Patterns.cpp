@@ -17,21 +17,25 @@ using namespace rust_compiler::ast;
 namespace rust_compiler::sema::resolver {
 
 void Resolver::resolvePatternDeclaration(
-    std::shared_ptr<ast::patterns::PatternNoTopAlt> pattern, RibKind kind) {
+    std::shared_ptr<ast::patterns::PatternNoTopAlt> pattern, RibKind kind,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
   std::vector<PatternBinding> bindings = {
       PatternBinding(PatternBoundCtx::Product, std::set<basic::NodeId>())};
 
-  resolvePatternDeclarationWithBindings(pattern, kind, bindings);
+  resolvePatternDeclarationWithBindings(pattern, kind, bindings, prefix,
+                                        canonicalPrefix);
 }
 
 void Resolver::resolvePatternDeclarationWithBindings(
     std::shared_ptr<ast::patterns::PatternNoTopAlt> noTopAlt, RibKind ribKind,
-    std::vector<PatternBinding> &bindings) {
+    std::vector<PatternBinding> &bindings, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
   switch (noTopAlt->getKind()) {
   case PatternNoTopAltKind::PatternWithoutRange: {
     resolvePatternDeclarationWithoutRange(
         std::static_pointer_cast<PatternWithoutRange>(noTopAlt), ribKind,
-        bindings);
+        bindings, prefix, canonicalPrefix);
     break;
   }
   case PatternNoTopAltKind::RangePattern: {
@@ -42,7 +46,8 @@ void Resolver::resolvePatternDeclarationWithBindings(
 
 void Resolver::resolvePatternDeclarationWithoutRange(
     std::shared_ptr<ast::patterns::PatternWithoutRange> pat, RibKind rib,
-    std::vector<PatternBinding> &bindings) {
+    std::vector<PatternBinding> &bindings, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
   switch (pat->getWithoutRangeKind()) {
   case PatternWithoutRangeKind::LiteralPattern: {
     assert(false && "to be handled later");
@@ -82,7 +87,7 @@ void Resolver::resolvePatternDeclarationWithoutRange(
   }
   case PatternWithoutRangeKind::PathPattern: {
     resolvePathPatternDeclaration(std::static_pointer_cast<PathPattern>(pat),
-                                  rib);
+                                  rib, prefix, canonicalPrefix);
     break;
   }
   case PatternWithoutRangeKind::MacroInvocation: {
@@ -92,14 +97,17 @@ void Resolver::resolvePatternDeclarationWithoutRange(
 }
 
 void Resolver::resolvePathPatternDeclaration(
-    std::shared_ptr<ast::patterns::PathPattern> pat, RibKind rib) {
+    std::shared_ptr<ast::patterns::PathPattern> pat, RibKind rib,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
   std::shared_ptr<ast::PathExpression> path =
       std::static_pointer_cast<PathExpression>(pat->getPath());
 
   switch (path->getPathExpressionKind()) {
   case PathExpressionKind::PathInExpression: {
     resolvePathInExpression(
-        std::static_pointer_cast<ast::PathInExpression>(path));
+        std::static_pointer_cast<ast::PathInExpression>(path), prefix,
+        canonicalPrefix);
     break;
   }
   case PathExpressionKind::QualifiedPathInExpression: {

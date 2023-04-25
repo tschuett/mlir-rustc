@@ -21,6 +21,8 @@ public:
 
   void setIdentifier(const Identifier &i) { identifier = i; }
   void setType(std::shared_ptr<types::TypeExpression> e) { type = e; }
+
+  std::shared_ptr<types::TypeExpression> getType() const { return type; }
 };
 
 } // namespace rust_compiler::ast

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "AST/AST.h"
-#include "AST/Types/TypeExpression.h"
 #include "AST/Expression.h"
+#include "AST/Types/TypeExpression.h"
 
 #include <memory>
 #include <optional>
@@ -26,6 +26,14 @@ public:
   void setInit(std::string_view i) { init = i; }
   void setBlock(std::shared_ptr<ast::Expression> b) { block = b; }
   void setInitLiteral(std::shared_ptr<ast::Expression> lit) { literal = lit; }
+
+  std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
+
+  bool hasLiteral() const { return literal.has_value(); }
+  bool hasBlock() const { return block.has_value(); }
+
+  std::shared_ptr<ast::Expression> getBlock() const { return *block; }
+  std::shared_ptr<ast::Expression> getLiteral() const { return *literal; }
 };
 
 } // namespace rust_compiler::ast

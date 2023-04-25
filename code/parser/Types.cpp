@@ -735,9 +735,6 @@ Parser::parseGenericArg(std::optional<GenericArgKind> last) {
   Location loc = getLocation();
   GenericArg arg = {loc};
 
-  llvm::errs() << "parseGenericArg"
-               << "\n";
-
   if (checkLifetime()) {
     // lifetime
     StringResult<ast::Lifetime> life = parseLifetimeAsLifetime();

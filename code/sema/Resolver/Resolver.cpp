@@ -286,7 +286,7 @@ void Resolver::resolveInherentImpl(std::shared_ptr<ast::InherentImpl> implBlock,
     resolveWhereClause(wh);
   }
 
-  resolveType(implBlock->getType());
+  resolveType(implBlock->getType(), prefix, canonicalPrefix);
 
   // setup canonical paths
 

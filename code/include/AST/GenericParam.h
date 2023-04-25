@@ -7,6 +7,7 @@
 #include "AST/TypeParam.h"
 
 #include <optional>
+#include <span>
 
 namespace rust_compiler::ast {
 
@@ -24,8 +25,8 @@ public:
 
   GenericParamKind getKind() const { return kind; };
 
-  void setOuterAttributes(std::vector<ast::OuterAttribute> &outer) {
-    outerAttributes = outer;
+  void setOuterAttributes(std::span<ast::OuterAttribute> outer) {
+    outerAttributes = {outer.begin(), outer.end()};
   }
 
   void setConstParam(const ConstParam &cp) {
@@ -42,6 +43,9 @@ public:
     kind = GenericParamKind::LifetimeParam;
     lifetimeParam = tp;
   }
+
+  TypeParam getTypeParam() const { return *typeParam; }
+  ConstParam getConstParam() const { return *constParam; }
 };
 
 } // namespace rust_compiler::ast

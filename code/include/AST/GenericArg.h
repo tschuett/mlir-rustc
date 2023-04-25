@@ -41,6 +41,10 @@ public:
   }
 
   GenericArgKind getKind() const { return kind; }
+
+  std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
+  GenericArgsBinding getBinding() const { return *binding; }
+  GenericArgsConst getConst() const { return *argsConst; }
 };
 
 } // namespace rust_compiler::ast

@@ -30,7 +30,7 @@ void Resolver::resolveStaticItem(std::shared_ptr<ast::StaticItem> stat,
 
   tyCtx->insertCanonicalPath(stat->getNodeId(), cpath);
 
-  resolveType(stat->getType());
+  resolveType(stat->getType(), prefix, canonicalPrefix);
   if (stat->hasInit())
     resolveExpression(stat->getInit(), path, cpath);
 }
@@ -48,7 +48,7 @@ void Resolver::resolveConstantItem(std::shared_ptr<ast::ConstantItem> cons,
 
   resolveVisibility(cons->getVisibility());
 
-  resolveType(cons->getType());
+  resolveType(cons->getType(), prefix, canonicalPrefix);
   if (cons->hasInit())
     resolveExpression(cons->getInit(), path, cpath);
 }
@@ -113,7 +113,7 @@ void Resolver::resolveEnumItem(std::shared_ptr<ast::EnumItem> enuIt,
     if (str.hasFields()) {
       std::vector<StructField> fields = str.getFields().getFields();
       for (const StructField &field : fields)
-        resolveType(field.getType());
+        resolveType(field.getType(), prefix, canonicalPrefix);
     }
     break;
   }
@@ -127,7 +127,7 @@ void Resolver::resolveEnumItem(std::shared_ptr<ast::EnumItem> enuIt,
     if (tup.hasTupleFiels()) {
       std::vector<TupleField> fields = tup.getTupleFields().getFields();
       for (const TupleField &tup : fields)
-        resolveType(tup.getType());
+        resolveType(tup.getType(), prefix, canonicalPrefix);
     }
     break;
   }

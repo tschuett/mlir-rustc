@@ -53,7 +53,7 @@ void Resolver::resolveStructStructItem(
 
       resolveVisibility(field.getVisibility());
 
-      resolveType(field.getType());
+      resolveType(field.getType(), prefix, canonicalPrefix);
     }
 
     getTypeScope().pop();
@@ -87,7 +87,7 @@ void Resolver::resolveTupleStructItem(
 
       resolveVisibility(field.getVisibility());
 
-      resolveType(field.getType());
+      resolveType(field.getType(), prefix, canonicalPrefix);
     }
   }
 

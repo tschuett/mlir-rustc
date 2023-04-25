@@ -16,6 +16,8 @@ public:
 
   void addArg(const GenericArg &arg) { args.push_back(arg); }
   void setTrailingSemi() { trailingComma = true; }
+
+  std::vector<GenericArg> getArgs() const { return args; }
 };
 
 } // namespace rust_compiler::ast

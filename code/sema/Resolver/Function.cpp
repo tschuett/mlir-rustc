@@ -38,7 +38,7 @@ void Resolver::resolveFunction(std::shared_ptr<ast::Function> fun,
     resolveWhereClause(fun->getWhereClause());
 
   if (fun->hasReturnType())
-    resolveType(fun->getReturnType());
+    resolveType(fun->getReturnType(), prefix, canonicalPrefix);
 
   FunctionParameters params = fun->getParams();
   assert(!params.hasSelfParam() && "to be implemented");
@@ -51,9 +51,10 @@ void Resolver::resolveFunction(std::shared_ptr<ast::Function> fun,
     case FunctionParamKind::Pattern: {
       FunctionParamPattern pattern = parm.getPattern();
       if (pattern.hasType()) {
-        resolveType(pattern.getType());
+        resolveType(pattern.getType(), prefix, canonicalPrefix);
         resolvePatternDeclarationWithBindings(pattern.getPattern(),
-                                              RibKind::Parameter, bindings);
+                                              RibKind::Parameter, bindings,
+                                              prefix, canonicalPrefix);
       } else {
         assert(false && "to be implemented");
       }
@@ -67,9 +68,6 @@ void Resolver::resolveFunction(std::shared_ptr<ast::Function> fun,
     }
     }
   }
-
-  llvm::errs() << "resolve block epxression"
-               << "\n";
 
   resolveExpression(fun->getBody(), prefix, canonicalPrefix);
 

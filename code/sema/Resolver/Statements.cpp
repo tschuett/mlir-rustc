@@ -48,10 +48,11 @@ void Resolver::resolveLetStatement(std::shared_ptr<ast::LetStatement> let,
   if (let->hasInit())
     resolveExpression(let->getInit(), prefix, canonicalPrefix);
 
-  resolvePatternDeclaration(let->getPattern(), RibKind::Variable);
+  resolvePatternDeclaration(let->getPattern(), RibKind::Variable, prefix,
+                            canonicalPrefix);
 
   if (let->hasType())
-    resolveType(let->getType());
+    resolveType(let->getType(), prefix, canonicalPrefix);
 
   if (let->hasElse())
     resolveBlockExpression(

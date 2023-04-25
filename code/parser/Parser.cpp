@@ -804,7 +804,7 @@ StringResult<ast::TypeParam> Parser::parseTypeParam() {
         "failed to parse identifier token in type param");
 
   Token tok = getToken();
-  param.setIdentifier(tok.getIdentifier().toString());
+  param.setIdentifier(tok.getIdentifier());
   assert(eat(TokenKind::Identifier));
 
   if (check(TokenKind::Colon) && check(TokenKind::Eq, 1)) {

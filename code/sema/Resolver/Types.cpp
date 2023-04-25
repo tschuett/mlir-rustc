@@ -16,7 +16,9 @@ using namespace rust_compiler::basic;
 namespace rust_compiler::sema::resolver {
 
 std::optional<NodeId>
-Resolver::resolveType(std::shared_ptr<ast::types::TypeExpression> type) {
+Resolver::resolveType(std::shared_ptr<ast::types::TypeExpression> type,
+                      const adt::CanonicalPath &prefix,
+                      const adt::CanonicalPath &canonicalPrefix) {
   switch (type->getKind()) {
   case TypeExpressionKind::ImplTraitType: {
     assert(false && "to be handled later");
@@ -25,13 +27,16 @@ Resolver::resolveType(std::shared_ptr<ast::types::TypeExpression> type) {
     assert(false && "to be handled later");
   }
   case TypeExpressionKind::TypeNoBounds: {
-    return resolveTypeNoBounds(std::static_pointer_cast<TypeNoBounds>(type));
+    return resolveTypeNoBounds(std::static_pointer_cast<TypeNoBounds>(type),
+                               prefix, canonicalPrefix);
   }
   }
 }
 
 std::optional<NodeId> Resolver::resolveTypeNoBounds(
-    std::shared_ptr<ast::types::TypeNoBounds> noBounds) {
+    std::shared_ptr<ast::types::TypeNoBounds> noBounds,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
   switch (noBounds->getKind()) {
   case TypeNoBoundsKind::ParenthesizedType: {
     assert(false && "to be handled later");
@@ -46,8 +51,8 @@ std::optional<NodeId> Resolver::resolveTypeNoBounds(
     assert(false && "to be handled later");
   }
   case TypeNoBoundsKind::TypePath: {
-    return resolveRelativeTypePath(
-        std::static_pointer_cast<TypePath>(noBounds));
+    return resolveRelativeTypePath(std::static_pointer_cast<TypePath>(noBounds),
+                                   prefix, canonicalPrefix);
   }
   case TypeNoBoundsKind::TupleType: {
     assert(false && "to be handled later");
@@ -84,7 +89,9 @@ std::optional<NodeId> Resolver::resolveTypeNoBounds(
 
 /// Note that there is no leading ::
 std::optional<NodeId> Resolver::resolveRelativeTypePath(
-    std::shared_ptr<ast::types::TypePath> typePath) {
+    std::shared_ptr<ast::types::TypePath> typePath,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
 
   NodeId moduleScopeId = peekCurrentModuleScope();
   NodeId previousResolveNodeId = moduleScopeId;
@@ -101,7 +108,7 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
     NodeId crateScopeId = peekCrateModuleScope();
 
     if (segment.hasGenerics())
-      resolveGenericArgs(segment.getGenericArgs());
+      resolveGenericArgs(segment.getGenericArgs(), prefix, canonicalPrefix);
 
     if (segment.hasTypeFunction())
       resolveTypePathFunction(segment.getTypePathFn());

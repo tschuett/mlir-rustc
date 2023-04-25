@@ -23,6 +23,10 @@ public:
   bool isTrailingPlus() const { return trailingPlus; }
 
   void setTrailingPlus() { trailingPlus = true; }
+
+  std::vector<std::shared_ptr<TypeParamBound>> getBounds() const {
+    return typeParamBounds;
+  }
 };
 
 } // namespace rust_compiler::ast::types

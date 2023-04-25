@@ -41,6 +41,7 @@
 #include "AST/Types/TupleType.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
+#include "AST/Types/TypeParamBound.h"
 #include "AST/Types/TypePathFn.h"
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
@@ -269,7 +270,9 @@ private:
   void resolveIfExpression(std::shared_ptr<ast::IfExpression>,
                            const adt::CanonicalPath &prefix,
                            const adt::CanonicalPath &canonicalPrefix);
-  void resolvePathExpression(std::shared_ptr<ast::PathExpression>);
+  void resolvePathExpression(std::shared_ptr<ast::PathExpression>,
+                             const adt::CanonicalPath &prefix,
+                             const adt::CanonicalPath &canonicalPrefix);
   void resolveBlockExpression(std::shared_ptr<ast::BlockExpression>,
                               const adt::CanonicalPath &prefix,
                               const adt::CanonicalPath &canonicalPrefix);
@@ -305,15 +308,23 @@ private:
                               const adt::CanonicalPath &prefix,
                               const adt::CanonicalPath &canonicalPrefix);
   void resolveClosureParameter(ast::ClosureParam &param,
-                               std::vector<PatternBinding> &bindings);
+                               std::vector<PatternBinding> &bindings,
+                               const adt::CanonicalPath &prefix,
+                               const adt::CanonicalPath &canonicalPrefix);
 
   // types
   std::optional<basic::NodeId>
-      resolveType(std::shared_ptr<ast::types::TypeExpression>);
+  resolveType(std::shared_ptr<ast::types::TypeExpression>,
+              const adt::CanonicalPath &prefix,
+              const adt::CanonicalPath &canonicalPrefix);
   std::optional<basic::NodeId>
-      resolveTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>);
+  resolveTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>,
+                      const adt::CanonicalPath &prefix,
+                      const adt::CanonicalPath &canonicalPrefix);
   std::optional<basic::NodeId>
-      resolveRelativeTypePath(std::shared_ptr<ast::types::TypePath>);
+  resolveRelativeTypePath(std::shared_ptr<ast::types::TypePath>,
+                          const adt::CanonicalPath &prefix,
+                          const adt::CanonicalPath &canonicalPrefix);
   void resolveTypePathFunction(const ast::types::TypePathFn &);
 
   std::optional<adt::CanonicalPath>
@@ -332,21 +343,27 @@ private:
   void resolveGenericParams(const ast::GenericParams &,
                             const adt::CanonicalPath &prefix,
                             const adt::CanonicalPath &canonicalPrefix);
-  void resolveGenericArgs(const ast::GenericArgs &);
+  void resolveGenericArgs(const ast::GenericArgs &,
+                          const adt::CanonicalPath &prefix,
+                          const adt::CanonicalPath &canonicalPrefix);
 
   // patterns
   void resolvePatternDeclarationWithBindings(
       std::shared_ptr<ast::patterns::PatternNoTopAlt>, RibKind,
-      std::vector<PatternBinding> &bindings);
+      std::vector<PatternBinding> &bindings, const adt::CanonicalPath &prefix,
+      const adt::CanonicalPath &canonicalPrefix);
   void
-      resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
-                                RibKind);
+  resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
+                            RibKind, const adt::CanonicalPath &prefix,
+                            const adt::CanonicalPath &canonicalPrefix);
   void resolvePatternDeclarationWithoutRange(
       std::shared_ptr<ast::patterns::PatternWithoutRange>, RibKind,
-      std::vector<PatternBinding> &bindings);
+      std::vector<PatternBinding> &bindings, const adt::CanonicalPath &prefix,
+      const adt::CanonicalPath &canonicalPrefix);
   void
-      resolvePathPatternDeclaration(std::shared_ptr<ast::patterns::PathPattern>,
-                                    RibKind);
+  resolvePathPatternDeclaration(std::shared_ptr<ast::patterns::PathPattern>,
+                                RibKind, const adt::CanonicalPath &prefix,
+                                const adt::CanonicalPath &canonicalPrefix);
 
   // statements
   void resolveStatement(std::shared_ptr<ast::Statement>,
@@ -366,9 +383,19 @@ private:
                                    const adt::CanonicalPath &prefix,
                                    const adt::CanonicalPath &canonicalPrefix);
 
+  void resolveConstParam(const ast::GenericParam &p,
+                         const adt::CanonicalPath &prefix,
+                         const adt::CanonicalPath &canonicalPrefix);
+  void resolveTypeParam(const ast::GenericParam &p,
+                        const adt::CanonicalPath &prefix,
+                        const adt::CanonicalPath &canonicalPrefix);
+  void resolveTypeParamBound(std::shared_ptr<ast::types::TypeParamBound> bound);
+
   std::optional<basic::NodeId> resolveSimplePath(const ast::SimplePath &path);
   std::optional<basic::NodeId>
-      resolvePathInExpression(std::shared_ptr<ast::PathInExpression>);
+  resolvePathInExpression(std::shared_ptr<ast::PathInExpression>,
+                          const adt::CanonicalPath &prefix,
+                          const adt::CanonicalPath &canonicalPrefix);
 
   void verifyAssignee(std::shared_ptr<ast::Expression>);
   std::map<basic::NodeId, std::shared_ptr<ast::UseDeclaration>> useDeclarations;

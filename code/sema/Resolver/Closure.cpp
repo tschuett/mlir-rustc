@@ -38,11 +38,11 @@ void Resolver::resolveClosureExpression(
   if (closure->hasParameters()) {
     ClosureParameters params = closure->getParameters();
     for (ClosureParam &pa : params.getParameters())
-      resolveClosureParameter(pa, bindings);
+      resolveClosureParameter(pa, bindings, prefix, canonicalPrefix);
   }
 
   if (closure->hasReturnType())
-    resolveType(closure->getReturnType());
+    resolveType(closure->getReturnType(), prefix, canonicalPrefix);
 
   pushClosureContext(closure->getNodeId());
 
@@ -55,14 +55,16 @@ void Resolver::resolveClosureExpression(
   getLabelScope().pop();
 }
 
-void Resolver::resolveClosureParameter(ClosureParam &param,
-                                       std::vector<PatternBinding> &bindings) {
+void Resolver::resolveClosureParameter(
+    ClosureParam &param, std::vector<PatternBinding> &bindings,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
 
   resolvePatternDeclarationWithBindings(param.getPattern(), RibKind::Parameter,
-                                        bindings);
+                                        bindings, prefix, canonicalPrefix);
 
   if (param.hasType())
-    resolveType(param.getType());
+    resolveType(param.getType(), prefix, canonicalPrefix);
 }
 
 } // namespace rust_compiler::sema::resolver

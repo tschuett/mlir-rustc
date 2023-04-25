@@ -36,8 +36,8 @@ void TypeResolver::checkVisItem(std::shared_ptr<ast::VisItem> v) {
     assert(false && "to be implemented");
   }
   case VisItemKind::Struct: {
-    assert(false && "to be implemented");
     checkStruct(static_cast<ast::Struct *>(v.get()));
+    break;
   }
   case VisItemKind::Enumeration: {
     assert(false && "to be implemented");
