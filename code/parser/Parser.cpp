@@ -653,9 +653,8 @@ Result<ast::ConstParam, std::string> Parser::parseConstParam() {
   if (!checkKeyWord(KeyWordKind::KW_CONST)) {
     return Result<ast::ConstParam, std::string>(
         "failed to parse const keyword in const param");
-
-    assert(eatKeyWord(KeyWordKind::KW_CONST));
   }
+  assert(eatKeyWord(KeyWordKind::KW_CONST));
 
   if (check(TokenKind::Identifier)) {
     Token tok = getToken();
@@ -665,6 +664,13 @@ Result<ast::ConstParam, std::string> Parser::parseConstParam() {
     return Result<ast::ConstParam, std::string>(
         "failed to parse identifier token in const param");
   }
+
+  if (!check(TokenKind::Colon)) {
+    return Result<ast::ConstParam, std::string>(
+        "failed to parse : token in const param");
+  }
+
+  assert(eat(TokenKind::Colon));
 
   Result<std::shared_ptr<ast::types::TypeExpression>, std::string> type =
       parseType();

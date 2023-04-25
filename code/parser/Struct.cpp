@@ -366,6 +366,11 @@ Parser::parseStructStruct(std::optional<ast::Visibility> vis) {
         std::make_shared<class StructStruct>(str));
   } else if (check(TokenKind::BraceOpen)) {
     assert(eat(TokenKind::BraceOpen));
+    if (check(TokenKind::BraceClose)) {
+      assert(eat(TokenKind::BraceClose));
+      return StringResult<std::shared_ptr<ast::Item>>(
+          std::make_shared<class StructStruct>(str));
+    }
     StringResult<ast::StructFields> fields = parseStructFields();
     if (!fields) {
       llvm::errs() << "failed to parse struct fields in struct struct: "

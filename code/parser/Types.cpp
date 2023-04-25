@@ -191,6 +191,7 @@ StringResult<ast::GenericArgsConst> Parser::parseGenericArgsConst() {
       exit(EXIT_FAILURE);
     }
     cons.setBlock(block.getValue());
+    return StringResult<ast::GenericArgsConst>(cons);
   } else if (checkLiteral()) {
     // literal
     StringResult<std::shared_ptr<ast::Expression>> literal =
@@ -199,10 +200,16 @@ StringResult<ast::GenericArgsConst> Parser::parseGenericArgsConst() {
       llvm::errs()
           << "failed to parse literal expression in generic args const: "
           << literal.getError() << "\n";
-      printFunctionStack();
-      exit(EXIT_FAILURE);
+      // printFunctionStack();
+      return StringResult<ast::GenericArgsConst>(
+          llvm::formatv(
+              "{} {}",
+              "failed to parse literal expression in generic args const: ",
+              literal.getError())
+              .str());
     }
     cons.setLiteral(literal.getValue());
+    return StringResult<ast::GenericArgsConst>(cons);
   } else if (check(TokenKind::Minus) && checkLiteral(1)) {
     assert(eat(TokenKind::Minus));
     // minus literal
@@ -217,6 +224,7 @@ StringResult<ast::GenericArgsConst> Parser::parseGenericArgsConst() {
       exit(EXIT_FAILURE);
     }
     cons.setLiteral(literal.getValue());
+    return StringResult<ast::GenericArgsConst>(cons);
   } else if (checkSimplePathSegment()) {
     // simple path segment
     StringResult<ast::SimplePathSegment> seg = parseSimplePathSegment();
@@ -228,6 +236,7 @@ StringResult<ast::GenericArgsConst> Parser::parseGenericArgsConst() {
       exit(EXIT_FAILURE);
     }
     cons.setSegment(seg.getValue());
+    return StringResult<ast::GenericArgsConst>(cons);
   }
   return StringResult<ast::GenericArgsConst>(
       "failed to parse generic args const");
@@ -675,9 +684,6 @@ StringResult<ast::GenericArgs> Parser::parseGenericArgs() {
   Location loc = getLocation();
   GenericArgs args = {loc};
 
-  llvm::errs() << "parseGenericArgs"
-               << "\n";
-
   if (!check(TokenKind::Lt)) {
     return StringResult<ast::GenericArgs>(
         "failed to parse < token in generic args");
@@ -965,7 +971,8 @@ PathKind Parser::testTypePathOrSimplePath() {
     } else if (checkKeyWord(KeyWordKind::KW_CRATE)) {
       assert(eatKeyWord(KeyWordKind::KW_CRATE));
       continue;
-    } else if (check(TokenKind::Dollar) && checkKeyWord(KeyWordKind::KW_CRATE)) {
+    } else if (check(TokenKind::Dollar) &&
+               checkKeyWord(KeyWordKind::KW_CRATE)) {
       assert(eat(TokenKind::Dollar));
       assert(eatKeyWord(KeyWordKind::KW_CRATE));
       continue;
@@ -1055,7 +1062,8 @@ PathKind Parser::testTypePathOrSimplePath() {
 
 StringResult<std::shared_ptr<ast::types::TypeExpression>> Parser::parseType() {
 
-  //  llvm::errs() << "parseType: " << Token2String(getToken().getKind()) << "\n";
+  //  llvm::errs() << "parseType: " << Token2String(getToken().getKind()) <<
+  //  "\n";
 
   if (checkKeyWord(KeyWordKind::KW_IMPL))
     return parseImplType();

@@ -41,7 +41,7 @@ StringResult<RangePatternBound> Parser::parseRangePatternBound() {
     bound.setStorage(getToken().getStorage());
     assert(eat(getToken().getKind()));
   } else if (check(TokenKind::Minus) && check(TokenKind::FLOAT_LITERAL, 1)) {
-    bound.setKind(RangePatternBoundKind::MinusFloatLitera);
+    bound.setKind(RangePatternBoundKind::MinusFloatLiteral);
     bound.setStorage(getToken().getStorage());
     assert(eat(getToken().getKind()));
     assert(eat(getToken().getKind()));
@@ -89,7 +89,7 @@ Parser::parseRangePattern() {
       return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(s);
     }
     pattern.setUpper(upper.getValue());
-    pattern.setKind(RangePatternKind::HalfOpenRangePattern);
+    pattern.setKind(RangePatternKind::RangeToInclusivePattern);
     return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
         std::make_shared<RangePattern>(pattern));
   } else { // start with lower bound
@@ -125,14 +125,14 @@ Parser::parseRangePattern() {
                 .str();
         return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(s);
       }
-      pattern.setKind(RangePatternKind::InclusiveRangePattern);
+      pattern.setKind(RangePatternKind::RangeInclusivePattern);
       pattern.setUpper(upper.getValue());
       return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
           std::make_shared<RangePattern>(pattern));
     } else if (check(TokenKind::DotDot)) {
       assert(eat(TokenKind::DotDot));
       // done
-      pattern.setKind(RangePatternKind::HalfOpenRangePattern);
+      pattern.setKind(RangePatternKind::RangeFromPattern);
       return StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>(
           std::make_shared<RangePattern>(pattern));
     } else if (check(TokenKind::DotDotDot)) {
