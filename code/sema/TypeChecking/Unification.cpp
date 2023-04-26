@@ -68,6 +68,9 @@ TyTy::BaseType *Unification::unify(TyTy::WithLocation lhs,
   case TyTy::TypeKind::StructField: {
     assert(false);
   }
+  case TyTy::TypeKind::Array: {
+    assert(false);
+  }
   case TyTy::TypeKind::Error: {
     assert(false);
   }
@@ -126,6 +129,9 @@ TyTy::BaseType *Unification::expectIntType(TyTy::IntType *left,
     assert(false);
   }
   case TyTy::TypeKind::StructField: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Array: {
     assert(false);
   }
   case TyTy::TypeKind::Error: {

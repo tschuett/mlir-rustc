@@ -4,6 +4,10 @@
 
 #include <memory>
 
+namespace rust_compiler::ast {
+class Struct;
+}
+
 namespace rust_compiler::sema::attribute_checker {
 
 using namespace rust_compiler::ast;
@@ -18,6 +22,7 @@ private:
   void checkItem(Item *item);
   void checkVisItem(VisItem *item);
   void checkFunction(Function *item);
+  void checkStruct(Struct *item);
 };
 
 } // namespace rust_compiler::sema::attribute_checker

@@ -4,11 +4,11 @@
 #include "Basic/Ids.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
-#include "llvm/Support/raw_ostream.h"
 
 #include "../Resolver/Resolver.h"
 
 #include <cstddef>
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 
 using namespace rust_compiler::ast;
@@ -33,7 +33,7 @@ TypeResolver::checkPathExpression(std::shared_ptr<ast::PathExpression> path) {
 TyTy::BaseType *TypeResolver::checkPathInExpression(
     std::shared_ptr<ast::PathInExpression> path) {
 
-  size_t offset = -11;
+  size_t offset = -1;
   NodeId resolvedNodeId = UNKNOWN_NODEID;
 
   TyTy::BaseType *typeSegment =
@@ -64,15 +64,17 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
   NodeId refNodeId = UNKNOWN_NODEID;
 
   if (auto name = resolver->lookupResolvedName(path->getNodeId())) {
+    llvm::errs() << "resolve root path: it is a name" << "\n";
     refNodeId = *name;
   } else if (auto type = resolver->lookupResolvedType(path->getNodeId())) {
+    llvm::errs() << "resolve root path: it is a type" << "\n";
     refNodeId = *type;
   }
 
   if (refNodeId != UNKNOWN_NODEID) {
     std::optional<TyTy::BaseType *> lookup = queryType(refNodeId);
     if (!lookup) {
-      llvm::errs() << "failed to resolve root path: "
+      llvm::errs() << "failed to resolve root path3: "
                    << path->getLocation().toString() << "\n";
       return new TyTy::ErrorType(path->getNodeId());
     }
@@ -87,7 +89,7 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
   //   }
 
   for (unsigned i = 0; i < segs.size(); ++i) {
-    PathExprSegment &seg = segs[0];
+    PathExprSegment &seg = segs[i];
     bool isRoot = *offset == 0;
     bool haveMoreSegments = segs.size() - 1 != i;
     // NodeId astNodeId = seg.getNodeId();
@@ -104,7 +106,7 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
       if (rootType != nullptr && *offset > 0)
         return rootType;
 
-      llvm::errs() << "failed to resolve root segment: "
+      llvm::errs() << "failed to resolve root segment1: "
                    << seg.getLocation().toString() << "\n";
       llvm::errs() << seg.getNodeId() << "\n";
       return new TyTy::ErrorType(path->getNodeId());
@@ -126,7 +128,7 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
     std::optional<TyTy::BaseType *> lookup = queryType(seg.getNodeId());
     if (!lookup) {
       if (isRoot) {
-        llvm::errs() << "failed to resolve root segment: "
+        llvm::errs() << "failed to resolve root segment2: "
                      << seg.getLocation().toString() << "\n";
         return new TyTy::ErrorType(path->getNodeId());
       }
@@ -137,7 +139,6 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
     // enum?
 
     assert(false && "to be implemented");
-
   }
   assert(false && "to be implemented");
 }

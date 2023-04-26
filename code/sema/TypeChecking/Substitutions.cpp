@@ -24,6 +24,7 @@ TyTy::BaseType *TypeResolver::applySubstitutions(TyTy::BaseType *type, Location,
   case TypeKind::Str:
   case TypeKind::Tuple:
   case TypeKind::Parameter:
+  case TypeKind::Array:
   case TypeKind::StructField:
     return type;
   case TypeKind::ADT: {

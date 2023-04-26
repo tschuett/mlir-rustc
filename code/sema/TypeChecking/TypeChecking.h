@@ -32,6 +32,7 @@
 #include "AST/Types/NeverType.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypePath.h"
+#include "AST/Types/ArrayType.h"
 #include "AST/WhereClause.h"
 #include "Basic/Ids.h"
 #include "TyCtx/NodeIdentity.h"
@@ -135,6 +136,7 @@ private:
   TyTy::BaseType *checkTypePath(std::shared_ptr<ast::types::TypePath>);
   TyTy::BaseType *
       checkComparisonExpression(std::shared_ptr<ast::ComparisonExpression>);
+  TyTy::BaseType *checkArrayType(std::shared_ptr<ast::types::ArrayType>);
 
   TyTy::BaseType *
   resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
@@ -181,8 +183,9 @@ private:
   TyTy::BaseType *applySubstitutions(TyTy::BaseType *, Location,
                                      const GenericArgs &);
 
-  TyTy::TypeBoundPredicate getPredicateFromBound(std::shared_ptr<ast::types::TypeExpression>);
-  TyTy::ParamType *checkTypeParam(const GenericParam&);
+  TyTy::TypeBoundPredicate
+      getPredicateFromBound(std::shared_ptr<ast::types::TypeExpression>);
+  TyTy::ParamType *checkTypeParam(const GenericParam &);
 };
 
 } // namespace rust_compiler::sema::type_checking

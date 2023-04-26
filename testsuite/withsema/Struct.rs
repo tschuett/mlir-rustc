@@ -5,3 +5,7 @@ struct SmallVector<const N: usize> {
 fn foo() {
     let x: SmallVector<8>;
 }
+
+fn main() {
+    foo()
+}

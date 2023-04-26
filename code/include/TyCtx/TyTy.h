@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AST/Expression.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
@@ -38,6 +39,7 @@ enum class TypeKind {
   Parameter,
   ADT,
   StructField,
+  Array,
 
   Error
 };
@@ -385,6 +387,25 @@ public:
 class TypeBoundPredicate {
 public:
   bool isError() const;
+};
+
+class ArrayType : public BaseType {
+public:
+  ArrayType(basic::NodeId id, Location loc,
+            std::shared_ptr<ast::Expression> expr, TypeVariable type)
+      : BaseType(id, id, TypeKind::Array, TypeIdentity::empty()), loc(loc),
+        expr(expr), type(type) {}
+
+  bool needsGenericSubstitutions() const override;
+  std::string toString() const override;
+  unsigned getNumberOfSpecifiedBounds() override;
+
+private:
+  Location loc;
+  std::shared_ptr<ast::Expression> expr;
+  TypeVariable type;
+
+  TyTy::BaseType *getElementType() const;
 };
 
 } // namespace rust_compiler::tyctx::TyTy

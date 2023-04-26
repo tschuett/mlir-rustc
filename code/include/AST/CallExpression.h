@@ -17,10 +17,13 @@ public:
       : ExpressionWithoutBlock(loc,
                                ExpressionWithoutBlockKind::CallExpression) {}
 
-  std::shared_ptr<Expression> getFunction() const;
+  std::shared_ptr<Expression> getFunction() const { return function; }
 
   void setFunction(std::shared_ptr<Expression> f) { function = f; }
   void setParams(const CallParams &p) { callParameter = p; }
+
+  bool hasParameters() const { return callParameter.has_value(); }
+  CallParams getParameters() const { return *callParameter; }
 };
 
 } // namespace rust_compiler::ast

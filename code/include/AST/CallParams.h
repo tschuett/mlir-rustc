@@ -15,6 +15,7 @@ public:
   CallParams(Location loc) : Node(loc) {}
 
   void addParam(std::shared_ptr<Expression> pa) { params.push_back(pa); }
+  std::vector<std::shared_ptr<Expression>> getParams() const { return params; }
 };
 
 } // namespace rust_compiler::ast

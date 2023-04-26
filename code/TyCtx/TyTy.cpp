@@ -261,6 +261,7 @@ bool isSignedIntegerLike(TypeKind kind) {
   case TypeKind::ADT:
   case TypeKind::StructField:
   case TypeKind::Error:
+  case TypeKind::Array:
     return false;
   }
 }
@@ -285,6 +286,7 @@ bool isIntegerLike(TypeKind kind) {
   case TypeKind::ADT:
   case TypeKind::StructField:
   case TypeKind::Error:
+  case TypeKind::Array:
     return false;
   }
 }
@@ -309,6 +311,7 @@ bool isFloatLike(TypeKind kind) {
   case TypeKind::ADT:
   case TypeKind::StructField:
   case TypeKind::Error:
+  case TypeKind::Array:
     return false;
   }
 }
@@ -388,5 +391,15 @@ std::string ADTType::substToString() const {
 }
 
 unsigned ADTType::getNumberOfSpecifiedBounds() { return 0; }
+
+bool ArrayType::needsGenericSubstitutions() const { return false; }
+
+std::string ArrayType::toString() const {
+  return "[" + getElementType()->toString() + ":" + "CAPACITY" + "]";
+}
+
+unsigned ArrayType::getNumberOfSpecifiedBounds() { return 0; }
+
+TyTy::BaseType *ArrayType::getElementType() const { return type.getType(); }
 
 } // namespace rust_compiler::tyctx::TyTy

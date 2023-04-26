@@ -2,6 +2,7 @@
 
 #include "AST/InnerAttribute.h"
 #include "AST/VisItem.h"
+#include "AST/Struct.h"
 
 using namespace rust_compiler::ast;
 
@@ -54,7 +55,8 @@ void AttributeChecker::checkVisItem(VisItem *item) {
     assert(false);
   }
   case VisItemKind::Struct: {
-    assert(false);
+    checkStruct(static_cast<Struct*>(item));
+    break;
   }
   case VisItemKind::Enumeration: {
     assert(false);

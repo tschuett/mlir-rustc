@@ -32,6 +32,7 @@
 #include "AST/Statement.h"
 #include "AST/StaticItem.h"
 #include "AST/Struct.h"
+#include "AST/CallExpression.h"
 #include "AST/StructStruct.h"
 #include "AST/Trait.h"
 #include "AST/TraitImpl.h"
@@ -312,6 +313,9 @@ private:
                                std::vector<PatternBinding> &bindings,
                                const adt::CanonicalPath &prefix,
                                const adt::CanonicalPath &canonicalPrefix);
+  void resolveCallExpression(std::shared_ptr<ast::CallExpression>,
+                              const adt::CanonicalPath &prefix,
+                              const adt::CanonicalPath &canonicalPrefix);
 
   // types
   std::optional<basic::NodeId>

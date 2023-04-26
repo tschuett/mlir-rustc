@@ -93,7 +93,8 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
           return StringResult<std::shared_ptr<ast::Expression>>(
               path.getValue());
         }
-        return parseStructExpressionTuplePratt(path.getValue(), outer);
+        //return parseStructExpressionTuplePratt(path.getValue(), outer);
+        return parseCallExpression(path.getValue(), outer, restrictions);
       }
       default: {
         return StringResult<std::shared_ptr<ast::Expression>>(path.getValue());

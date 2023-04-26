@@ -129,7 +129,9 @@ void Resolver::resolveExpressionWithoutBlock(
     assert(false && "to be handled later");
   }
   case ExpressionWithoutBlockKind::CallExpression: {
-    assert(false && "to be handled later");
+    resolveCallExpression(std::static_pointer_cast<CallExpression>(woBlock),
+                          prefix, canonicalPrefix);
+    break;
   }
   case ExpressionWithoutBlockKind::MethodCallExpression: {
     assert(false && "to be handled later");
@@ -476,6 +478,19 @@ void Resolver::resolveIndexExpression(
     const adt::CanonicalPath &canonicalPrefix) {
   resolveExpression(indx->getArray(), prefix, canonicalPrefix);
   resolveExpression(indx->getIndex(), prefix, canonicalPrefix);
+}
+
+void Resolver::resolveCallExpression(
+    std::shared_ptr<ast::CallExpression> call, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  resolveExpression(call->getFunction(), prefix, canonicalPrefix);
+
+  if (call->hasParameters()) {
+    CallParams params = call->getParameters();
+    std::vector<std::shared_ptr<Expression>> pars = params.getParams();
+    for (std::shared_ptr<Expression> p: pars)
+      resolveExpression(p, prefix, canonicalPrefix);
+  }
 }
 
 } // namespace rust_compiler::sema::resolver

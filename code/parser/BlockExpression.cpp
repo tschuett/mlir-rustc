@@ -437,8 +437,6 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
   Statements stmts = {loc};
 
   while (getToken().getKind() != TokenKind::BraceClose) {
-    llvm::errs() << "block expr: " << Token2String(getToken().getKind())
-                 << "\n";
     adt::StringResult<ExpressionOrStatement> expr =
         parseStatementOrExpressionWithoutBlock();
     if (!expr) {

@@ -1,5 +1,6 @@
 #include "AST/ConstParam.h"
 #include "AST/Enumeration.h"
+#include "AST/Types/ArrayType.h"
 #include "AST/Types/TraitBound.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
@@ -11,6 +12,7 @@
 #include "TyCtx/Substitutions.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
+#include "Unification.h"
 
 #include "../Resolver/Resolver.h"
 
@@ -122,7 +124,7 @@ TypeResolver::checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds> no) {
     assert(false && "to be implemented");
   }
   case TypeNoBoundsKind::ArrayType: {
-    assert(false && "to be implemented");
+    return checkArrayType(std::static_pointer_cast<ast::types::ArrayType>(no));
   }
   case TypeNoBoundsKind::SliceType: {
     assert(false && "to be implemented");
@@ -342,6 +344,27 @@ TyTy::TypeBoundPredicate TypeResolver::getPredicateFromBound(
 
 TyTy::ParamType *TypeResolver::checkTypeParam(const GenericParam &) {
   assert(false);
+}
+
+TyTy::BaseType *
+TypeResolver::checkArrayType(std::shared_ptr<ast::types::ArrayType> arr) {
+  TyTy::BaseType *capacityType = checkExpression(arr->getExpression());
+  assert(capacityType->getKind() != TyTy::TypeKind::Error);
+
+  std::optional<TyTy::BaseType *> usizeType = tcx->lookupBuiltin("usize");
+  assert(usizeType.has_value());
+  tcx->insertType(arr->getExpression()->getIdentity(), *usizeType);
+
+  unifyWithSite(
+      arr->getExpression()->getNodeId(), TyTy::WithLocation(*usizeType),
+      TyTy::WithLocation(capacityType, arr->getExpression()->getLocation()),
+      arr->getExpression()->getLocation());
+
+  TyTy::BaseType *base = checkType(arr->getType());
+
+  return new TyTy::ArrayType(arr->getNodeId(), arr->getLocation(),
+                             arr->getExpression(),
+                             TyTy::TypeVariable(base->getReference()));
 }
 
 } // namespace rust_compiler::sema::type_checking

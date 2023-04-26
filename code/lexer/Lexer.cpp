@@ -385,7 +385,7 @@ std::optional<std::string> tryLexChar(std::string_view code) {
 TokenStream lex(std::string_view _code, std::string_view fileName) {
   TokenStream ts;
   std::string_view code = _code;
-  unsigned lineNumber = 0;
+  unsigned lineNumber = 1;
   unsigned columnNumber = 0;
 
   while (code.size() > 0) {
