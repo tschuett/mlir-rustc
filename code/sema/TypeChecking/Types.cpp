@@ -1,3 +1,4 @@
+#include "AST/ConstParam.h"
 #include "AST/Enumeration.h"
 #include "AST/Types/TraitBound.h"
 #include "AST/Types/TypeExpression.h"
@@ -5,6 +6,7 @@
 #include "AST/Types/TypeParamBound.h"
 #include "AST/Types/TypePath.h"
 #include "Basic/Ids.h"
+#include "Coercion.h"
 #include "PathProbing.h"
 #include "TyCtx/Substitutions.h"
 #include "TyCtx/TyTy.h"
@@ -56,7 +58,6 @@ void TypeResolver::checkWhereClause(const ast::WhereClause &) {
 void TypeResolver::checkGenericParams(
     const GenericParams &pa,
     std::vector<TyTy::SubstitutionParamMapping> &subst) {
-  assert(false && "to be implemented");
   std::vector<TyTy::TypeBoundPredicate> specifiedBounds;
   for (GenericParam &param : pa.getGenericParams()) {
     switch (param.getKind()) {
@@ -65,30 +66,25 @@ void TypeResolver::checkGenericParams(
     }
     case GenericParamKind::TypeParam: {
       TypeParam pa = param.getTypeParam();
-      if (pa.hasType())
-        checkType(pa.getType());
-      if (pa.hasTypeParamBounds()) {
-        types::TypeParamBounds bounds = pa.getBounds();
-        for (std::shared_ptr<TypeParamBound> b : bounds.getBounds()) {
-          switch (b->getKind()) {
-          case TypeParamBoundKind::Lifetime: {
-            break;
-          }
-          case TypeParamBoundKind::TraitBound: {
-            std::shared_ptr<types::TraitBound> tb =
-                std::static_pointer_cast<TraitBound>(b);
-            TyTy::TypeBoundPredicate predicate =
-                getPredicateFromBound(tb->getPath());
-            if (!predicate.isError())
-              specifiedBounds.push_back(predicate);
-            break;
-          }
-          }
-        }
-      }
+      TyTy::ParamType *paramType = checkTypeParam(param);
+      tcx->insertType(param.getIdentity(), paramType);
+      subst.push_back(TyTy::SubstitutionParamMapping(pa, paramType));
       break;
     }
     case GenericParamKind::ConstParam: {
+      ConstParam cp = param.getConstParam();
+      TyTy::BaseType *specifiedType = checkType(cp.getType());
+      if (cp.hasLiteral() or cp.hasBlock()) {
+        TyTy::BaseType *expressionType = nullptr;
+        if (cp.hasLiteral())
+          expressionType = checkExpression(cp.getLiteral());
+        else if (cp.hasBlock())
+          expressionType = checkExpression(cp.getBlock());
+        coercionWithSite(pa.getNodeId(), TyTy::WithLocation(specifiedType),
+                         TyTy::WithLocation(expressionType, cp.getLocation()),
+                         pa.getLocation());
+      }
+      tcx->insertType(param.getIdentity(), specifiedType);
       break;
     }
     }
@@ -341,6 +337,10 @@ TypeResolver::checkNeverType(std::shared_ptr<ast::types::NeverType>) {
 
 TyTy::TypeBoundPredicate TypeResolver::getPredicateFromBound(
     std::shared_ptr<ast::types::TypeExpression>) {
+  assert(false);
+}
+
+TyTy::ParamType *TypeResolver::checkTypeParam(const GenericParam &) {
   assert(false);
 }
 

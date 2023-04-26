@@ -2,6 +2,7 @@
 
 #include "AST/AST.h"
 #include "AST/Types/TypeParamBounds.h"
+#include "AST/Types/TypeExpression.h"
 #include "Lexer/Identifier.h"
 
 #include <optional>

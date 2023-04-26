@@ -28,6 +28,7 @@
 #include "AST/ReturnExpression.h"
 #include "AST/StructStruct.h"
 #include "AST/TupleStruct.h"
+#include "AST/TypeParam.h"
 #include "AST/Types/NeverType.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypePath.h"
@@ -181,6 +182,7 @@ private:
                                      const GenericArgs &);
 
   TyTy::TypeBoundPredicate getPredicateFromBound(std::shared_ptr<ast::types::TypeExpression>);
+  TyTy::ParamType *checkTypeParam(const GenericParam&);
 };
 
 } // namespace rust_compiler::sema::type_checking
