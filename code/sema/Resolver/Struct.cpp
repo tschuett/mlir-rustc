@@ -36,6 +36,10 @@ void Resolver::resolveStructStructItem(
 
   tyCtx->insertCanonicalPath(str->getNodeId(), cpath);
 
+  // FIXME: experiment
+  getTypeScope().insert(segment, str->getNodeId(), str->getLocation(),
+                        RibKind::Type);
+
   resolveVisibility(str->getVisibility());
 
   NodeId scopeNodeId = str->getNodeId();
