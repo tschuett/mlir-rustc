@@ -31,11 +31,11 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
                              Restrictions restrictions) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
 
-  llvm::errs() << "parseUnaryExpression:: "
-               << Token2String(getToken().getKind()) << "\n";
-  if (getToken().isIdentifier()) {
-    llvm::errs() << getToken().getIdentifier().toString() << "\n";
-  }
+//  llvm::errs() << "parseUnaryExpression:: "
+//               << Token2String(getToken().getKind()) << "\n";
+//  if (getToken().isIdentifier()) {
+//    llvm::errs() << getToken().getIdentifier().toString() << "\n";
+//  }
 
   Token tok = getToken();
 

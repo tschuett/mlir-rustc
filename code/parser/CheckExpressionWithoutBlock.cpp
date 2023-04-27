@@ -62,8 +62,8 @@ bool Parser::checkPathOrStructOrMacro() {
 }
 
 bool Parser::checkExpressionWithoutBlock() {
-  llvm::errs() << "checkExpressionWithoutBlock"
-               << "\n";
+//  llvm::errs() << "checkExpressionWithoutBlock"
+//               << "\n";
   if (checkOuterAttribute()) {
     StringResult<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
@@ -125,7 +125,7 @@ bool Parser::checkExpressionWithoutBlock() {
   if (checkPathOrStructOrMacro())
     return true;
 
-  llvm::errs() << Token2String(getToken().getKind()) << "\n";
+  //llvm::errs() << Token2String(getToken().getKind()) << "\n";
 
   Restrictions restritions;
   StringResult<std::shared_ptr<ast::Expression>> left =

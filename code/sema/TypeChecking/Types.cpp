@@ -86,7 +86,7 @@ void TypeResolver::checkGenericParams(
                          TyTy::WithLocation(expressionType, cp.getLocation()),
                          pa.getLocation());
       }
-      tcx->insertType(param.getIdentity(), specifiedType);
+      tcx->insertType(cp.getIdentity(), specifiedType);
       break;
     }
     }
@@ -153,6 +153,8 @@ TypeResolver::checkTypePath(std::shared_ptr<ast::types::TypePath> tp) {
   NodeId resolvedNodeId = UNKNOWN_NODEID;
   TyTy::BaseType *root = resolveRootPathType(tp, &offset, &resolvedNodeId);
   if (root->getKind() == TyTy::TypeKind::Error) {
+    llvm::errs() << "resolve root path type failed: " << tp->getLocation().toString()
+                 << "\n";
     assert(false);
     return new TyTy::ErrorType(tp->getNodeId());
   }

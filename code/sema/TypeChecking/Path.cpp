@@ -64,10 +64,10 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
   NodeId refNodeId = UNKNOWN_NODEID;
 
   if (auto name = resolver->lookupResolvedName(path->getNodeId())) {
-    llvm::errs() << "resolve root path: it is a name" << "\n";
+    //llvm::errs() << "resolve root path: it is a name" << "\n";
     refNodeId = *name;
   } else if (auto type = resolver->lookupResolvedType(path->getNodeId())) {
-    llvm::errs() << "resolve root path: it is a type" << "\n";
+    //llvm::errs() << "resolve root path: it is a type" << "\n";
     refNodeId = *type;
   }
 

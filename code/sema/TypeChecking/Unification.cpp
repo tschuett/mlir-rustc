@@ -33,7 +33,7 @@ TyTy::BaseType *Unification::unify(TyTy::WithLocation lhs,
     assert(false);
   }
   case TyTy::TypeKind::USize: {
-    assert(false);
+    return expectUSizeType(static_cast<TyTy::USizeType *>(leftType), rightType);
   }
   case TyTy::TypeKind::ISize: {
     assert(false);
@@ -97,6 +97,71 @@ TyTy::BaseType *Unification::expectIntType(TyTy::IntType *left,
   }
   case TyTy::TypeKind::USize: {
     assert(false);
+  }
+  case TyTy::TypeKind::ISize: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Float: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Closure: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Function: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Inferred: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Never: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Str: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Tuple: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Parameter: {
+    assert(false);
+  }
+  case TyTy::TypeKind::ADT: {
+    assert(false);
+  }
+  case TyTy::TypeKind::StructField: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Array: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Error: {
+    assert(false);
+  }
+  }
+  assert(false);
+}
+
+TyTy::BaseType *Unification::expectUSizeType(TyTy::USizeType *left,
+                                             TyTy::BaseType *right) {
+  switch (right->getKind()) {
+  case TyTy::TypeKind::Bool: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Char: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Int: {
+    //    TyTy::IntType *rightInt = static_cast<TyTy::IntType *>(right);
+    //    if (rightInt->getIntKind() == left->getIntKind())
+    //      return new TyTy::IntType(left->getTypeReference(),
+    //      left->getIntKind());
+    assert(false);
+  }
+  case TyTy::TypeKind::Uint: {
+    assert(false);
+  }
+  case TyTy::TypeKind::USize: {
+    return right;
   }
   case TyTy::TypeKind::ISize: {
     assert(false);

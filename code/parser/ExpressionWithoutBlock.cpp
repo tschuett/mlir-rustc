@@ -16,11 +16,11 @@ namespace rust_compiler::parser {
 adt::Result<std::shared_ptr<ast::Expression>, std::string>
 Parser::parseExpressionWithoutBlock(std::span<ast::OuterAttribute> outer,
                                     Restrictions restrictions) {
-  llvm::errs() << "parseExpressionWithoutBlock"
-               << "\n";
-
-  llvm::errs() << Token2String(getToken().getKind()) << "\n";
-  llvm::errs() << getToken().isKeyWord() << "\n";
+//  llvm::errs() << "parseExpressionWithoutBlock"
+//               << "\n";
+//
+//  llvm::errs() << Token2String(getToken().getKind()) << "\n";
+//  llvm::errs() << getToken().isKeyWord() << "\n";
 
   bool isKeyWord = getToken().isKeyWord();
 

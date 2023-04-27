@@ -21,6 +21,7 @@ public:
 
 private:
   TyTy::BaseType *expectIntType(TyTy::IntType *left, TyTy::BaseType *right);
+  TyTy::BaseType *expectUSizeType(TyTy::USizeType *left, TyTy::BaseType *right);
 };
 
 TyTy::BaseType *unify(basic::NodeId, TyTy::WithLocation lhs,
