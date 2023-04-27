@@ -5,6 +5,7 @@
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
 #include "AST/Types/TypeParamBound.h"
+#include "AST/Types/TypeParamBounds.h"
 #include "AST/Types/TypePath.h"
 #include "Basic/Ids.h"
 #include "Coercion.h"
@@ -68,7 +69,7 @@ void TypeResolver::checkGenericParams(
     }
     case GenericParamKind::TypeParam: {
       TypeParam pa = param.getTypeParam();
-      TyTy::ParamType *paramType = checkTypeParam(param);
+      TyTy::ParamType *paramType = checkTypeParam(pa);
       tcx->insertType(param.getIdentity(), paramType);
       subst.push_back(TyTy::SubstitutionParamMapping(pa, paramType));
       break;
@@ -153,8 +154,8 @@ TypeResolver::checkTypePath(std::shared_ptr<ast::types::TypePath> tp) {
   NodeId resolvedNodeId = UNKNOWN_NODEID;
   TyTy::BaseType *root = resolveRootPathType(tp, &offset, &resolvedNodeId);
   if (root->getKind() == TyTy::TypeKind::Error) {
-    llvm::errs() << "resolve root path type failed: " << tp->getLocation().toString()
-                 << "\n";
+    llvm::errs() << "resolve root path type failed: "
+                 << tp->getLocation().toString() << "\n";
     assert(false);
     return new TyTy::ErrorType(tp->getNodeId());
   }
@@ -340,11 +341,46 @@ TypeResolver::checkNeverType(std::shared_ptr<ast::types::NeverType>) {
 }
 
 TyTy::TypeBoundPredicate TypeResolver::getPredicateFromBound(
-    std::shared_ptr<ast::types::TypeExpression>) {
+    std::shared_ptr<ast::types::TypeExpression> path) {
+  std::shared_ptr<ast::types::TypePath> typePath =
+      std::static_pointer_cast<TypePath>(path);
+  std::optional<TyTy::TypeBoundPredicate> lookup =
+      tcx->lookupPredicate(path->getNodeId());
+  if (lookup)
+    return *lookup;
+
+  [[maybe_unused]] TraitReference *trait = resolveTraitPath(typePath);
+
   assert(false);
 }
 
-TyTy::ParamType *TypeResolver::checkTypeParam(const GenericParam &) {
+TyTy::ParamType *TypeResolver::checkTypeParam(const TypeParam &type) {
+  if (type.hasType())
+    checkType(type.getType());
+
+  std::vector<TyTy::TypeBoundPredicate> specifiedBounds;
+  if (type.hasTypeParamBounds()) {
+    for (std::shared_ptr<TypeParamBound> bound : type.getBounds().getBounds()) {
+      switch (bound->getKind()) {
+      case TypeParamBoundKind::Lifetime: {
+        break;
+      }
+      case TypeParamBoundKind::TraitBound: {
+        std::shared_ptr<TraitBound> b =
+            std::static_pointer_cast<TraitBound>(bound);
+        TyTy::TypeBoundPredicate predicate =
+            getPredicateFromBound(b->getPath());
+        if (!predicate.isError())
+          specifiedBounds.push_back(predicate);
+        break;
+      }
+      }
+    }
+  }
+
+  return new TyTy::ParamType(type.getIdentifier(), type.getLocation(),
+                             type.getNodeId(), type, specifiedBounds);
+
   assert(false);
 }
 

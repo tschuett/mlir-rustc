@@ -29,14 +29,15 @@
 #include "AST/StructStruct.h"
 #include "AST/TupleStruct.h"
 #include "AST/TypeParam.h"
+#include "AST/Types/ArrayType.h"
 #include "AST/Types/NeverType.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypePath.h"
-#include "AST/Types/ArrayType.h"
 #include "AST/WhereClause.h"
 #include "Basic/Ids.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/Substitutions.h"
+#include "TyCtx/TraitReference.h"
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TyTy.h"
 
@@ -185,7 +186,9 @@ private:
 
   TyTy::TypeBoundPredicate
       getPredicateFromBound(std::shared_ptr<ast::types::TypeExpression>);
-  TyTy::ParamType *checkTypeParam(const GenericParam &);
+  TyTy::ParamType *checkTypeParam(const TypeParam &);
+
+  TraitReference *resolveTraitPath(std::shared_ptr<ast::types::TypePath>);
 };
 
 } // namespace rust_compiler::sema::type_checking

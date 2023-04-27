@@ -15,6 +15,7 @@ add_library(TypeChecking
             PathProbing.cpp
             Pointer.cpp
             Substitutions.cpp
+            Traits.cpp
            )
 
 target_include_directories(TypeChecking PRIVATE  ../../include)

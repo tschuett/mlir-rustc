@@ -379,14 +379,34 @@ private:
   std::vector<SubstitutionParamMapping> substitutions;
 };
 
-class ParamType : public BaseType {
-public:
-  std::string toString() const override;
-};
-
 class TypeBoundPredicate {
 public:
-  bool isError() const;
+  bool isError() const { return error; }
+
+private:
+  bool error = false;
+};
+
+class ParamType : public BaseType {
+public:
+  ParamType(const Identifier &identifier, Location loc, basic::NodeId id,
+            const ast::TypeParam &tpe,
+            std::span<TyTy::TypeBoundPredicate> preds)
+      : BaseType(id, id, TypeKind::Parameter, TypeIdentity::empty()),
+        identifier(identifier), loc(loc), type(tpe) {
+    bounds = {preds.begin(), preds.end()};
+  }
+
+  std::string toString() const override;
+
+  bool needsGenericSubstitutions() const override;
+  unsigned getNumberOfSpecifiedBounds() override;
+
+private:
+  Identifier identifier;
+  Location loc;
+  ast::TypeParam type;
+  std::vector<TyTy::TypeBoundPredicate> bounds;
 };
 
 class ArrayType : public BaseType {

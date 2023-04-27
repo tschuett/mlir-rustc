@@ -8,6 +8,7 @@
 #include "Sema/Autoderef.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyTy.h"
+#include "TyCtx/TraitReference.h"
 
 #include <map>
 #include <optional>
@@ -120,6 +121,8 @@ public:
   getBuiltinTypes() {
     return builtins;
   }
+
+  std::optional<TyTy::TypeBoundPredicate> lookupPredicate(NodeId);
 
   void insertClosureCapture(basic::NodeId closureExpr,
                             basic::NodeId capturedItem);

@@ -402,4 +402,7 @@ unsigned ArrayType::getNumberOfSpecifiedBounds() { return 0; }
 
 TyTy::BaseType *ArrayType::getElementType() const { return type.getType(); }
 
+bool ParamType::needsGenericSubstitutions() const { return bounds.size() > 0; }
+unsigned ParamType::getNumberOfSpecifiedBounds() { return bounds.size(); }
+
 } // namespace rust_compiler::tyctx::TyTy

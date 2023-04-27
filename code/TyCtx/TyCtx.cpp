@@ -56,6 +56,10 @@ std::optional<NodeId> TyCtx::lookupName(NodeId ref) {
   return it->second;
 }
 
+std::optional<TyTy::TypeBoundPredicate> TyCtx::lookupPredicate(NodeId) {
+  assert(false);
+}
+
 void TyCtx::insertModule(ast::Module *mod) { assert(false); }
 
 ast::Module *TyCtx::lookupModule(basic::NodeId id) {
