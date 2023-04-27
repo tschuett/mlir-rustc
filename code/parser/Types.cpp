@@ -706,6 +706,9 @@ StringResult<ast::GenericArgs> Parser::parseGenericArgs() {
       assert(eat(TokenKind::Gt));
       args.setTrailingSemi();
       return StringResult<ast::GenericArgs>(args);
+    } else if (check(TokenKind::Comma) && !check(TokenKind::Gt, 1)) {
+      // separating comma
+      assert(eat(TokenKind::Comma));
     } else {
       StringResult<ast::GenericArg> arg = parseGenericArg(last);
       if (!arg) {

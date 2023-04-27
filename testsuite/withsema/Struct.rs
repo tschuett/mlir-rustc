@@ -1,9 +1,9 @@
-struct SmallVector<const N: usize> {
-    data: [i32; N],
+struct SmallVector<T, const N: usize> {
+    data: [T; N],
 }
 
 fn foo() {
-    let x: SmallVector<8>;
+    let x: SmallVector<i32, 8>;
 }
 
 fn main() {

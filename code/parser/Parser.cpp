@@ -945,6 +945,9 @@ StringResult<ast::GenericParams> Parser::parseGenericParams() {
         assert(eat(TokenKind::Gt));
         params.setTrailingComma();
         return StringResult<ast::GenericParams>(params);
+      } else if (check(TokenKind::Comma) && !check(TokenKind::Gt, 1)) {
+        // seperating comma
+        assert(eat(TokenKind::Comma));
       } else {
         StringResult<ast::GenericParam> generic = parseGenericParam();
         if (!generic) {

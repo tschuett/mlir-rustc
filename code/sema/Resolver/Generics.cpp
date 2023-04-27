@@ -80,7 +80,6 @@ void Resolver::resolveTypeParam(const GenericParam &p,
                         RibKind::Type);
 
   tyCtx->insertCanonicalPath(pa.getNodeId(), segment);
-  assert(false);
 }
 
 void Resolver::resolveTypeParamBound(
