@@ -5,7 +5,7 @@ using namespace rust_compiler::tyctx::TyTy;
 
 namespace rust_compiler::sema::type_checking {
 
-TyTy::BaseType *TypeResolver::applySubstitutions(TyTy::BaseType *type, Location,
+TyTy::BaseType *TypeResolver::applyGenericArgs(TyTy::BaseType *type, Location,
                                                  const GenericArgs &) {
   assert(false);
 
@@ -25,15 +25,31 @@ TyTy::BaseType *TypeResolver::applySubstitutions(TyTy::BaseType *type, Location,
   case TypeKind::Tuple:
   case TypeKind::Parameter:
   case TypeKind::Array:
-  case TypeKind::StructField:
+  case TypeKind::RawPointer:
+  case TypeKind::Slice:
+  case TypeKind::Dynamic:
+  case TypeKind::FunctionPointer:
+  case TypeKind::Reference:
     return type;
   case TypeKind::ADT: {
+    assert(false);
+  }
+  case TypeKind::Projection: {
     assert(false);
   }
   case TypeKind::Function: {
     assert(false);
   }
+  case TypeKind::PlaceHolder: {
+    assert(false);
   }
+  }
+}
+
+TyTy::BaseType *
+TypeResolver::applySubstitutionMappings(TyTy::BaseType *,
+                                 const TyTy::SubstitutionArgumentMappings &) {
+  assert(false);
 }
 
 } // namespace rust_compiler::sema::type_checking

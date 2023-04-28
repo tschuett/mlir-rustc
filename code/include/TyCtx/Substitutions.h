@@ -14,8 +14,10 @@ class SubstitutionParamMapping {
 public:
   SubstitutionParamMapping(const ast::TypeParam &generic, ParamType *param)
       : param(param), generic(generic) {}
-  
+
   std::string toString() const;
+
+  bool needsSubstitution() const;
 
 private:
   ParamType *param;
@@ -25,6 +27,15 @@ private:
 class SubstitutionArgumentMappings {
 public:
   std::string toString();
+
+  static SubstitutionArgumentMappings error() {
+    SubstitutionArgumentMappings mappings;
+    mappings.errorFlag = true;
+    return mappings;
+  }
+
+private:
+  bool errorFlag = false;
 };
 
 SubstitutionArgumentMappings getUsedSubstitutionArguments(TyTy::BaseType *);

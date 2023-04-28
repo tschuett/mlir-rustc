@@ -181,14 +181,20 @@ private:
   tyctx::TyCtx *tcx;
   resolver::Resolver *resolver;
 
-  TyTy::BaseType *applySubstitutions(TyTy::BaseType *, Location,
-                                     const GenericArgs &);
+  TyTy::BaseType *applyGenericArgs(TyTy::BaseType *, Location,
+                                   const GenericArgs &);
+  TyTy::BaseType *
+  applySubstitutionMappings(TyTy::BaseType *,
+                             const TyTy::SubstitutionArgumentMappings &);
 
   TyTy::TypeBoundPredicate
       getPredicateFromBound(std::shared_ptr<ast::types::TypeExpression>);
   TyTy::ParamType *checkTypeParam(const TypeParam &);
 
   TraitReference *resolveTraitPath(std::shared_ptr<ast::types::TypePath>);
+
+  TyTy::SubstitutionArgumentMappings
+  getUsesSubstitutionArguments(TyTy::BaseType *);
 };
 
 } // namespace rust_compiler::sema::type_checking

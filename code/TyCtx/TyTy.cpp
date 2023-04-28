@@ -17,6 +17,44 @@ using namespace rust_compiler::tyctx;
 
 namespace rust_compiler::tyctx::TyTy {
 
+bool BaseType::needsGenericSubstitutions() const {
+  switch (getKind()) {
+  case TypeKind::Bool:
+  case TypeKind::Char:
+  case TypeKind::Int:
+  case TypeKind::Uint:
+  case TypeKind::USize:
+  case TypeKind::ISize:
+  case TypeKind::Float:
+  case TypeKind::Inferred:
+  case TypeKind::Never:
+  case TypeKind::Str:
+  case TypeKind::Tuple:
+  case TypeKind::Parameter:
+  case TypeKind::Array:
+  case TypeKind::Error:
+  case TypeKind::Dynamic:
+  case TypeKind::PlaceHolder:
+  case TypeKind::FunctionPointer:
+  case TypeKind::RawPointer:
+  case TypeKind::Slice:
+  case TypeKind::Reference:
+    return false;
+  case TypeKind::Projection: {
+    assert(false);
+  }
+  case TypeKind::Function: {
+    return static_cast<const FunctionType *>(this)->needsSubstitution();
+  }
+  case TypeKind::ADT: {
+    return static_cast<const ADTType *>(this)->needsSubstitution();
+  }
+  case TypeKind::Closure: {
+    return static_cast<const ClosureType *>(this)->needsSubstitution();
+  }
+  }
+}
+
 TypeVariable::TypeVariable(basic::NodeId id) : id(id) {
   TyCtx *context = rust_compiler::session::session->getTypeContext();
   if (!context->lookupType(id))
@@ -46,14 +84,10 @@ void BaseType::appendReference(basic::NodeId ref) { combined.insert(ref); }
 BoolType::BoolType(basic::NodeId reference)
     : BaseType(reference, reference, TypeKind::Bool, TypeIdentity::empty()) {}
 
-bool BoolType::needsGenericSubstitutions() const { return false; }
-
 std::string BoolType::toString() const { return "bool"; }
 
 CharType::CharType(basic::NodeId reference)
     : BaseType(reference, reference, TypeKind::Char, TypeIdentity::empty()) {}
-
-bool CharType::needsGenericSubstitutions() const { return false; }
 
 std::string CharType::toString() const { return "char"; }
 
@@ -71,12 +105,8 @@ std::string FloatType::toString() const {
 
 IntKind IntType::getIntKind() const { return kind; }
 
-bool FloatType::needsGenericSubstitutions() const { return false; }
-
 IntType::IntType(basic::NodeId id, IntKind kind)
     : BaseType(id, id, TypeKind::Int, TypeIdentity::empty()), kind(kind) {}
-
-bool IntType::needsGenericSubstitutions() const { return false; }
 
 std::string IntType::toString() const {
   switch (kind) {
@@ -96,21 +126,15 @@ std::string IntType::toString() const {
 ISizeType::ISizeType(basic::NodeId id)
     : BaseType(id, id, TypeKind::ISize, TypeIdentity::empty()) {}
 
-bool ISizeType::needsGenericSubstitutions() const { return false; }
-
 std::string ISizeType::toString() const { return "isize"; }
 
 NeverType::NeverType(basic::NodeId id)
     : BaseType(id, id, TypeKind::Never, TypeIdentity::empty()) {}
 
-bool NeverType::needsGenericSubstitutions() const { return false; }
-
 std::string NeverType::toString() const { return "!"; }
 
 UintType::UintType(basic::NodeId id, UintKind kind)
     : BaseType(id, id, TypeKind::Uint, TypeIdentity::empty()), kind(kind) {}
-
-bool UintType::needsGenericSubstitutions() const { return false; }
 
 std::string UintType::toString() const {
   switch (kind) {
@@ -130,14 +154,10 @@ std::string UintType::toString() const {
 USizeType::USizeType(basic::NodeId id)
     : BaseType(id, id, TypeKind::USize, TypeIdentity::empty()) {}
 
-bool USizeType::needsGenericSubstitutions() const { return false; }
-
 std::string USizeType::toString() const { return "usize"; }
 
 StrType::StrType(basic::NodeId reference)
     : BaseType(reference, reference, TypeKind::Str, TypeIdentity::empty()) {}
-
-bool StrType::needsGenericSubstitutions() const { return false; }
 
 std::string StrType::toString() const { return "str"; }
 
@@ -151,8 +171,6 @@ TupleType::TupleType(basic::NodeId id, Location loc,
 
 TupleType::TupleType(basic::NodeId id, Location loc)
     : BaseType(id, id, TypeKind::Tuple, TypeIdentity::from(loc)) {}
-
-bool TupleType::needsGenericSubstitutions() const { return false; }
 
 TupleType *TupleType::getUnitType(basic::NodeId id) {
   return new TupleType(id, Location::getBuiltinLocation());
@@ -178,8 +196,6 @@ std::string TupleType::toString() const {
 ErrorType::ErrorType(basic::NodeId id)
     : BaseType(id, id, TypeKind::Error, TypeIdentity::empty()) {}
 
-bool ErrorType::needsGenericSubstitutions() const { return false; }
-
 std::string ErrorType::toString() const { return "error"; }
 
 FunctionType::FunctionType(
@@ -196,7 +212,6 @@ FunctionType::FunctionType(
       returnType(returnType), substitutions(substitutions) {}
 
 TyTy::BaseType *FunctionType::getReturnType() const { return returnType; }
-bool FunctionType::needsGenericSubstitutions() const { return true; }
 
 std::string FunctionType::toString() const { assert(false); }
 
@@ -239,8 +254,6 @@ std::string InferType::toString() const {
   }
 }
 
-bool InferType::needsGenericSubstitutions() const { return false; }
-
 bool isSignedIntegerLike(TypeKind kind) {
   switch (kind) {
   case TypeKind::Int:
@@ -259,9 +272,15 @@ bool isSignedIntegerLike(TypeKind kind) {
   case TypeKind::Tuple:
   case TypeKind::Parameter:
   case TypeKind::ADT:
-  case TypeKind::StructField:
   case TypeKind::Error:
   case TypeKind::Array:
+  case TypeKind::Projection:
+  case TypeKind::Dynamic:
+  case TypeKind::FunctionPointer:
+  case TypeKind::PlaceHolder:
+  case TypeKind::Slice:
+  case TypeKind::RawPointer:
+  case TypeKind::Reference:
     return false;
   }
 }
@@ -284,9 +303,15 @@ bool isIntegerLike(TypeKind kind) {
   case TypeKind::Tuple:
   case TypeKind::Parameter:
   case TypeKind::ADT:
-  case TypeKind::StructField:
   case TypeKind::Error:
   case TypeKind::Array:
+  case TypeKind::Projection:
+  case TypeKind::Dynamic:
+  case TypeKind::FunctionPointer:
+  case TypeKind::PlaceHolder:
+  case TypeKind::Slice:
+  case TypeKind::RawPointer:
+  case TypeKind::Reference:
     return false;
   }
 }
@@ -309,14 +334,18 @@ bool isFloatLike(TypeKind kind) {
   case TypeKind::Tuple:
   case TypeKind::Parameter:
   case TypeKind::ADT:
-  case TypeKind::StructField:
   case TypeKind::Error:
   case TypeKind::Array:
+  case TypeKind::Projection:
+  case TypeKind::FunctionPointer:
+  case TypeKind::Dynamic:
+  case TypeKind::PlaceHolder:
+  case TypeKind::Slice:
+  case TypeKind::RawPointer:
+  case TypeKind::Reference:
     return false;
   }
 }
-
-bool ClosureType::needsGenericSubstitutions() const { return false; }
 
 std::string ClosureType::toString() const {
   std::stringstream s;
@@ -330,21 +359,11 @@ unsigned ClosureType::getNumberOfSpecifiedBounds() { return 0; }
 
 StructFieldType::StructFieldType(basic::NodeId ref, const adt::Identifier &id,
                                  TyTy::BaseType *type, Location loc)
-    : BaseType(ref, ref, TypeKind::StructField, TypeIdentity::empty()),
-      type(type), loc(loc), id(id) {}
+    : ref(ref), type(type), loc(loc), id(id) {}
 
 StructFieldType::StructFieldType(basic::NodeId ref, std::string_view id,
                                  TyTy::BaseType *type, Location loc)
-    : BaseType(ref, ref, TypeKind::StructField, TypeIdentity::empty()),
-      type(type), loc(loc), idStr(id) {}
-
-bool StructFieldType::needsGenericSubstitutions() const { return false; }
-
-std::string StructFieldType::toString() const {
-  // FIXME: name maybe UTF-8
-  return "name: " + type->toString();
-}
-unsigned StructFieldType::getNumberOfSpecifiedBounds() { return 0; }
+    : ref(ref), type(type), loc(loc), id(id) {}
 
 VariantDef::VariantDef(basic::NodeId id, const adt::Identifier &identifier,
                        TypeIdentity ident, VariantKind kind,
@@ -362,8 +381,6 @@ ADTType::ADTType(basic::NodeId id, const adt::Identifier &identifier,
   variants = {variant.begin(), variant.end()};
   substitutions = {sub.begin(), sub.end()};
 }
-
-bool ADTType::needsGenericSubstitutions() const { return false; }
 
 std::string ADTType::toString() const {
   std::string variantsBuffer;
@@ -392,8 +409,6 @@ std::string ADTType::substToString() const {
 
 unsigned ADTType::getNumberOfSpecifiedBounds() { return 0; }
 
-bool ArrayType::needsGenericSubstitutions() const { return false; }
-
 std::string ArrayType::toString() const {
   return "[" + getElementType()->toString() + ":" + "CAPACITY" + "]";
 }
@@ -402,7 +417,121 @@ unsigned ArrayType::getNumberOfSpecifiedBounds() { return 0; }
 
 TyTy::BaseType *ArrayType::getElementType() const { return type.getType(); }
 
-bool ParamType::needsGenericSubstitutions() const { return bounds.size() > 0; }
 unsigned ParamType::getNumberOfSpecifiedBounds() { return bounds.size(); }
+
+std::string ParamType::toString() const {
+  assert(false && "to be implemented");
+}
+
+SubstitutionArgumentMappings &FunctionType::getSubstitutionArguments() {
+  return usedArguments;
+}
+
+bool ClosureType::needsSubstitution() const {
+  for (auto &sub : substitutions)
+    if (sub.needsSubstitution())
+      return true;
+  return false;
+}
+
+bool FunctionType::needsSubstitution() const {
+  for (auto &sub : substitutions)
+    if (sub.needsSubstitution())
+      return true;
+  return false;
+}
+
+bool ADTType::needsSubstitution() const {
+  for (auto &sub : substitutions)
+    if (sub.needsSubstitution())
+      return true;
+  return false;
+}
+
+bool BaseType::isConcrete() const {
+  assert(false);
+
+  switch (getKind()) {
+  case TypeKind::Parameter:
+  case TypeKind::Projection:
+    return false;
+  case TypeKind::PlaceHolder:
+    return true;
+  case TypeKind::Function: {
+    const FunctionType *fun = static_cast<const FunctionType *>(this);
+    for (const auto &param : fun->getParameters())
+      if (!param.second->isConcrete())
+        return false;
+    return fun->getReturnType()->isConcrete();
+  }
+  case TypeKind::FunctionPointer: {
+    const FunctionPointerType *fun =
+        static_cast<const FunctionPointerType *>(this);
+    for (const auto &param : fun->getParameters()) {
+      const BaseType *p = param.getType();
+      if (!p->isConcrete())
+        return false;
+    }
+    return fun->getReturnType()->isConcrete();
+  }
+  case TypeKind::ADT: {
+    const ADTType *adt = static_cast<const ADTType *>(this);
+    if (adt->isUnit())
+      return !adt->needsSubstitution();
+    for (auto &variant : adt->getVariants()) {
+      if (variant->getKind() == VariantKind::Enum)
+        continue;
+      for (auto &field : variant->getFields()) {
+        const BaseType *fieldType = field->getFieldType();
+        if (!fieldType->isConcrete())
+          return false;
+      }
+    }
+    return true;
+  }
+  case TypeKind::Array: {
+    const ArrayType *array = static_cast<const ArrayType *>(this);
+    return array->getElementType()->isConcrete();
+  }
+  case TypeKind::Slice: {
+    const SliceType *slice = static_cast<const SliceType *>(this);
+    return slice->getElementType()->isConcrete();
+  }
+  case TypeKind::RawPointer: {
+    const RawPointerType *raw = static_cast<const RawPointerType *>(this);
+    return raw->getBase()->isConcrete();
+  }
+  case TypeKind::Closure: {
+    const ClosureType *clos = static_cast<const ClosureType *>(this);
+    if (clos->getParameters()->isConcrete())
+      return false;
+    return clos->getResultType()->isConcrete();
+  }
+  case TypeKind::Tuple: {
+    const TupleType *tuple = static_cast<const TupleType *>(this);
+    for (size_t i = 0; i < tuple->getNumberOfFields(); ++i)
+      if (!tuple->getField(i)->isConcrete())
+        return false;
+    return true;
+  }
+  case TypeKind::Reference: {
+    const ReferenceType *ref = static_cast<const ReferenceType *>(this);
+    return ref->getBase()->isConcrete();
+  }
+  case TypeKind::Inferred:
+  case TypeKind::Bool:
+  case TypeKind::Char:
+  case TypeKind::Int:
+  case TypeKind::Uint:
+  case TypeKind::Float:
+  case TypeKind::USize:
+  case TypeKind::ISize:
+  case TypeKind::Never:
+  case TypeKind::Str:
+  case TypeKind::Dynamic:
+  case TypeKind::Error:
+    return true;
+  }
+}
 
 } // namespace rust_compiler::tyctx::TyTy

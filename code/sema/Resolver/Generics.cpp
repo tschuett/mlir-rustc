@@ -69,13 +69,12 @@ void Resolver::resolveTypeParam(const GenericParam &p,
   if (pa.hasTypeParamBounds()) {
     std::vector<std::shared_ptr<ast::types::TypeParamBound>> bounds =
         pa.getBounds().getBounds();
-    for (std::shared_ptr<ast::types::TypeParamBound> bound : bounds) {
+    for (std::shared_ptr<ast::types::TypeParamBound> bound : bounds)
       resolveTypeParamBound(bound);
-    }
   }
 
   CanonicalPath segment =
-      CanonicalPath::newSegment(p.getNodeId(), pa.getIdentifier());
+      CanonicalPath::newSegment(pa.getNodeId(), pa.getIdentifier());
   getTypeScope().insert(segment, pa.getNodeId(), pa.getLocation(),
                         RibKind::Type);
 
@@ -119,6 +118,7 @@ void Resolver::resolveGenericArgs(const ast::GenericArgs &ga,
       break;
     }
     case GenericArgKind::Binding: {
+      // FIXME Identifier?
       GenericArgsBinding binding = a.getBinding();
       resolveType(binding.getType(), prefix, canonicalPrefix);
       break;

@@ -65,13 +65,31 @@ TyTy::BaseType *Unification::unify(TyTy::WithLocation lhs,
   case TyTy::TypeKind::ADT: {
     assert(false);
   }
-  case TyTy::TypeKind::StructField: {
-    assert(false);
-  }
   case TyTy::TypeKind::Array: {
     assert(false);
   }
+  case TyTy::TypeKind::Projection: {
+    assert(false);
+  }
   case TyTy::TypeKind::Error: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Slice: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Dynamic: {
+    assert(false);
+  }
+  case TyTy::TypeKind::PlaceHolder: {
+    assert(false);
+  }
+  case TyTy::TypeKind::FunctionPointer: {
+    assert(false);
+  }
+  case TyTy::TypeKind::RawPointer: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Reference: {
     assert(false);
   }
   }
@@ -128,10 +146,28 @@ TyTy::BaseType *Unification::expectIntType(TyTy::IntType *left,
   case TyTy::TypeKind::ADT: {
     assert(false);
   }
-  case TyTy::TypeKind::StructField: {
+  case TyTy::TypeKind::Array: {
     assert(false);
   }
-  case TyTy::TypeKind::Array: {
+  case TyTy::TypeKind::Projection: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Slice: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Dynamic: {
+    assert(false);
+  }
+  case TyTy::TypeKind::PlaceHolder: {
+    assert(false);
+  }
+  case TyTy::TypeKind::FunctionPointer: {
+    assert(false);
+  }
+  case TyTy::TypeKind::RawPointer: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Reference: {
     assert(false);
   }
   case TyTy::TypeKind::Error: {
@@ -193,10 +229,28 @@ TyTy::BaseType *Unification::expectUSizeType(TyTy::USizeType *left,
   case TyTy::TypeKind::ADT: {
     assert(false);
   }
-  case TyTy::TypeKind::StructField: {
+  case TyTy::TypeKind::Array: {
     assert(false);
   }
-  case TyTy::TypeKind::Array: {
+  case TyTy::TypeKind::Projection: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Slice: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Dynamic: {
+    assert(false);
+  }
+  case TyTy::TypeKind::PlaceHolder: {
+    assert(false);
+  }
+  case TyTy::TypeKind::FunctionPointer: {
+    assert(false);
+  }
+  case TyTy::TypeKind::RawPointer: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Reference: {
     assert(false);
   }
   case TyTy::TypeKind::Error: {

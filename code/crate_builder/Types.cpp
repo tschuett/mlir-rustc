@@ -152,13 +152,31 @@ mlir::Type CrateBuilder::convertTyTyToMLIR(TyTy::BaseType *type) {
   case TypeKind::ADT: {
     assert(false && "to be implemented");
   }
-  case TypeKind::StructField: {
+  case TypeKind::Projection: {
     assert(false && "to be implemented");
   }
   case TypeKind::Array: {
     assert(false && "to be implemented");
   }
   case TypeKind::Error: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::Dynamic: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::Slice: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::PlaceHolder: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::FunctionPointer: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::RawPointer: {
+    assert(false && "to be implemented");
+  }
+  case TypeKind::Reference: {
     assert(false && "to be implemented");
   }
   }

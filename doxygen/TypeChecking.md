@@ -20,10 +20,26 @@ The rust compiler performs type checking in the [rustc_hir_analysis](https://doc
 [TyCtx](https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/context/struct.TyCtxt.html)
 [ty](https://rustc-dev-guide.rust-lang.org/ty.html)
 
+# Generics
+
+Note that the type of T in the data array is unknown until the
+instantiation of SmallVector.
+
+```
+struct SmallVector<T, const N: usize> {
+    data: [T; N],
+}
+
+fn foo() {
+    let x: SmallVector<i32, 8>;
+}
+```
 
 # Unification
 
 # Coercion
+
+[Type coercions](https://doc.rust-lang.org/reference/type-coercions.html)
 
 For example, &mut 42 is coerced to have type &i8 in the following:
 ```c

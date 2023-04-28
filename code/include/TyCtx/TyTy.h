@@ -17,8 +17,8 @@ namespace rust_compiler::tyctx::TyTy {
 using namespace rust_compiler::adt;
 
 /// https://doc.rust-lang.org/reference/types.html
-// https://rustc-dev-guide.rust-lang.org/type-inference.html#inference-variables
-// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_type_ir/sty/enum.TyKind.html
+/// https://rustc-dev-guide.rust-lang.org/type-inference.html#inference-variables
+/// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_type_ir/sty/enum.TyKind.html
 
 enum class InferKind { Integral, Float, General };
 
@@ -30,16 +30,34 @@ enum class TypeKind {
   USize,
   ISize,
   Float,
+  /// The anonymous type of closure.
   Closure,
   Function,
   Inferred,
+  /// The never type !.
   Never,
   Str,
+  /// A tuple type.
   Tuple,
+  /// A type parameter.
   Parameter,
+  /// Algebraic data types: struct, enum, and union
   ADT,
-  StructField,
+  /// An array with a given length.
   Array,
+  /// The pointee of an array slice. Written as [T].
+  Slice,
+  Projection,
+  /// A trait object
+  Dynamic,
+  PlaceHolder,
+  /// A pointer to a function
+  FunctionPointer,
+  /// A raw pointer. Written as *mut T or *const T.
+  RawPointer,
+  /// A reference. A pointer with an associated lifetime. Written as &'a mut T
+  /// or &'a T.
+  Reference,
 
   Error
 };
@@ -75,6 +93,8 @@ public:
 
   static TypeVariable getImplicitInferVariable(Location);
 
+  bool isConcrete() const;
+
 private:
   basic::NodeId id;
 };
@@ -91,10 +111,12 @@ public:
 
   TypeKind getKind() const { return kind; }
 
-  virtual bool needsGenericSubstitutions() const = 0;
+  bool needsGenericSubstitutions() const;
   virtual std::string toString() const = 0;
 
   virtual unsigned getNumberOfSpecifiedBounds() = 0;
+
+  bool isConcrete() const;
 
 protected:
   BaseType(basic::NodeId ref, basic::NodeId ty_ref, TypeKind kind,
@@ -113,7 +135,6 @@ class IntType : public BaseType {
 public:
   IntType(basic::NodeId, IntKind);
 
-  bool needsGenericSubstitutions() const override;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 
@@ -127,7 +148,6 @@ class UintType : public BaseType {
 public:
   UintType(basic::NodeId, UintKind);
 
-  bool needsGenericSubstitutions() const override;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 
@@ -139,7 +159,6 @@ class USizeType : public BaseType {
 public:
   USizeType(basic::NodeId);
 
-  bool needsGenericSubstitutions() const override;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 };
@@ -148,7 +167,6 @@ class ISizeType : public BaseType {
 public:
   ISizeType(basic::NodeId);
 
-  bool needsGenericSubstitutions() const override;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 };
@@ -157,7 +175,6 @@ class FloatType : public BaseType {
 public:
   FloatType(basic::NodeId, FloatKind);
 
-  bool needsGenericSubstitutions() const override;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 
@@ -170,7 +187,6 @@ class BoolType : public BaseType {
 public:
   BoolType(basic::NodeId);
 
-  bool needsGenericSubstitutions() const override;
   std::string toString() const override;
 
   unsigned getNumberOfSpecifiedBounds() override;
@@ -180,7 +196,6 @@ class CharType : public BaseType {
 public:
   CharType(basic::NodeId);
 
-  bool needsGenericSubstitutions() const override;
   std::string toString() const override;
 
   unsigned getNumberOfSpecifiedBounds() override;
@@ -190,7 +205,6 @@ class StrType : public BaseType {
 public:
   StrType(basic::NodeId);
 
-  bool needsGenericSubstitutions() const override;
   std::string toString() const override;
 
   unsigned getNumberOfSpecifiedBounds() override;
@@ -201,7 +215,6 @@ class NeverType : public BaseType {
 public:
   NeverType(basic::NodeId);
 
-  bool needsGenericSubstitutions() const override;
   std::string toString() const override;
 
   unsigned getNumberOfSpecifiedBounds() override;
@@ -214,11 +227,13 @@ public:
             std::span<TyTy::TypeVariable> parameterTypes);
   TupleType(basic::NodeId, Location loc);
 
-  bool needsGenericSubstitutions() const override;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 
   static TupleType *getUnitType(basic::NodeId);
+
+  size_t getNumberOfFields() const { return fields.size(); }
+  BaseType *getField(size_t i) const { return fields[i].getType(); }
 
 private:
   std::vector<TypeVariable> fields;
@@ -239,7 +254,7 @@ public:
 
   TyTy::BaseType *getReturnType() const;
 
-  bool needsGenericSubstitutions() const override;
+  bool needsSubstitution() const;
 
   unsigned getNumberOfSpecifiedBounds() override;
 
@@ -251,6 +266,13 @@ public:
     return substitutions;
   }
 
+  SubstitutionArgumentMappings &getSubstitutionArguments();
+
+  std::vector<
+      std::pair<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
+                TyTy::BaseType *>>
+  getParameters() const;
+
 private:
   basic::NodeId id;
   lexer::Identifier name;
@@ -261,23 +283,39 @@ private:
       parameters;
   TyTy::BaseType *returnType = nullptr;
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  SubstitutionArgumentMappings usedArguments =
+      SubstitutionArgumentMappings::error();
 };
 
 class ClosureType : public BaseType {
 public:
-  ClosureType(basic::NodeId, Location loc, TypeIdentity, TupleType *closureArgs,
-              TypeVariable resultType,
+  ClosureType(basic::NodeId id, Location loc, TypeIdentity ident,
+              TupleType *closureArgs, TypeVariable resultType,
               std::span<SubstitutionParamMapping> substitutions,
-              std::set<basic::NodeId> captures);
+              std::set<basic::NodeId> captures)
+      : BaseType(id, id, TypeKind::Closure, ident), parameters(closureArgs),
+        resultType(resultType), captures(captures) {
+    substitutions = {substitutions.begin(), substitutions.end()};
+  }
 
-  bool needsGenericSubstitutions() const override;
+  bool needsSubstitution() const;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
+
+  SubstitutionArgumentMappings &getSubstitutionArguments() {
+    return usedArguments;
+  }
+
+  TyTy::TupleType *getParameters() const { return parameters; }
+  TyTy::BaseType *getResultType() const { return resultType.getType(); }
 
 private:
   TyTy::TupleType *parameters;
   TyTy::TypeVariable resultType;
   std::set<basic::NodeId> captures;
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  SubstitutionArgumentMappings usedArguments =
+      SubstitutionArgumentMappings::error();
 };
 
 class InferType : public BaseType {
@@ -286,7 +324,7 @@ public:
 
   InferKind getInferredKind() const { return inferKind; }
 
-  bool needsGenericSubstitutions() const override;
+  bool needsSubstitution() const;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 
@@ -298,7 +336,6 @@ class ErrorType : public BaseType {
 public:
   ErrorType(basic::NodeId);
 
-  bool needsGenericSubstitutions() const override;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 };
@@ -318,7 +355,7 @@ private:
   Location loc;
 };
 
-class StructFieldType : public BaseType {
+class StructFieldType {
 public:
   StructFieldType(basic::NodeId, const adt::Identifier &, TyTy::BaseType *,
                   Location loc);
@@ -327,11 +364,11 @@ public:
 
   TyTy::BaseType *getFieldType() const { return type; }
 
-  bool needsGenericSubstitutions() const override;
-  std::string toString() const override;
-  unsigned getNumberOfSpecifiedBounds() override;
+  //  std::string toString() const override;
+  //  unsigned getNumberOfSpecifiedBounds() override;
 
 private:
+  [[maybe_unused]] basic::NodeId ref;
   TyTy::BaseType *type;
   Location loc;
   std::optional<adt::Identifier> id;
@@ -339,7 +376,7 @@ private:
 };
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.VariantDef.html
-enum class VariantKind { Struct, Tuple };
+enum class VariantKind { Enum, Struct, Tuple };
 
 class VariantDef {
 public:
@@ -348,6 +385,8 @@ public:
 
   VariantKind getKind() const { return kind; }
   basic::NodeId getId() const { return id; }
+
+  std::vector<TyTy::StructFieldType *> getFields() const;
 
 private:
   basic::NodeId id;
@@ -364,11 +403,18 @@ public:
   ADTType(basic::NodeId, const adt::Identifier &, TypeIdentity, ADTKind,
           std::span<VariantDef *>, std::span<SubstitutionParamMapping>);
 
-  bool needsGenericSubstitutions() const override;
+  bool needsSubstitution() const;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
+  SubstitutionArgumentMappings getSubstitutionArguments() const {
+    return usedArguments;
+  }
 
   ADTKind getKind() const { return kind; }
+
+  bool isUnit() const;
+
+  std::vector<VariantDef *> getVariants() const;
 
 private:
   std::string substToString() const;
@@ -377,6 +423,7 @@ private:
   ADTKind kind;
   std::vector<VariantDef *> variants;
   std::vector<SubstitutionParamMapping> substitutions;
+  SubstitutionArgumentMappings usedArguments;
 };
 
 class TypeBoundPredicate {
@@ -399,7 +446,6 @@ public:
 
   std::string toString() const override;
 
-  bool needsGenericSubstitutions() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 
 private:
@@ -416,16 +462,48 @@ public:
       : BaseType(id, id, TypeKind::Array, TypeIdentity::empty()), loc(loc),
         expr(expr), type(type) {}
 
-  bool needsGenericSubstitutions() const override;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
+  TyTy::BaseType *getElementType() const;
 
 private:
   Location loc;
   std::shared_ptr<ast::Expression> expr;
   TypeVariable type;
+};
 
-  TyTy::BaseType *getElementType() const;
+class RawPointerType : public BaseType {
+public:
+  BaseType *getBase() const { return base.getType(); }
+
+private:
+  TypeVariable base;
+};
+
+class FunctionPointerType : public BaseType {
+public:
+  TyTy::BaseType *getReturnType() const;
+  std::vector<TypeVariable> getParameters() const;
+
+private:
+  std::vector<TypeVariable> parameters;
+  TypeVariable resultType;
+};
+
+class SliceType : public BaseType {
+public:
+  TyTy::BaseType *getElementType() const { return elementType.getType(); }
+
+private:
+  TypeVariable elementType;
+};
+
+class ReferenceType : public BaseType {
+public:
+  BaseType *getBase() const { return base.getType(); }
+
+private:
+  TypeVariable base;
 };
 
 } // namespace rust_compiler::tyctx::TyTy

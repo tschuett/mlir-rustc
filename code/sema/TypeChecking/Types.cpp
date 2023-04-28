@@ -1,3 +1,5 @@
+#include "AST/Types/Types.h"
+
 #include "AST/ConstParam.h"
 #include "AST/Enumeration.h"
 #include "AST/Types/ArrayType.h"
@@ -70,7 +72,7 @@ void TypeResolver::checkGenericParams(
     case GenericParamKind::TypeParam: {
       TypeParam pa = param.getTypeParam();
       TyTy::ParamType *paramType = checkTypeParam(pa);
-      tcx->insertType(param.getIdentity(), paramType);
+      tcx->insertType(pa.getIdentity(), paramType);
       subst.push_back(TyTy::SubstitutionParamMapping(pa, paramType));
       break;
     }
@@ -83,9 +85,9 @@ void TypeResolver::checkGenericParams(
           expressionType = checkExpression(cp.getLiteral());
         else if (cp.hasBlock())
           expressionType = checkExpression(cp.getBlock());
-        coercionWithSite(pa.getNodeId(), TyTy::WithLocation(specifiedType),
+        coercionWithSite(cp.getNodeId(), TyTy::WithLocation(specifiedType),
                          TyTy::WithLocation(expressionType, cp.getLocation()),
-                         pa.getLocation());
+                         cp.getLocation());
       }
       tcx->insertType(cp.getIdentity(), specifiedType);
       break;
@@ -195,11 +197,15 @@ TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
   NodeId refNodeId = UNKNOWN_NODEID;
   for (unsigned i = 0; i < segs.size(); ++i) {
     bool haveMoreSegments = i != (segs.size() - 1);
-    NodeId astNodeId = segs[i].getNodeId();
+    // NodeId astNodeId = segs[i].getNodeId();
 
     if (auto name = resolver->lookupResolvedName(segs[i].getNodeId())) {
+      llvm::errs() << "resolve root path: it is a name"
+                   << "\n";
       refNodeId = *name;
     } else if (auto type = resolver->lookupResolvedType(segs[i].getNodeId())) {
+      llvm::errs() << "resolve root path: it is a type"
+                   << "\n";
       refNodeId = *type;
     }
 
@@ -230,8 +236,7 @@ TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
       return new TyTy::ErrorType(path->getNodeId());
     }
 
-    TyTy::BaseType *lookup = nullptr;
-    std::optional<TyTy::BaseType *> result = queryType(astNodeId);
+    std::optional<TyTy::BaseType *> result = queryType(refNodeId); // astNodeId
     if (!result) {
       if (*offset == 0) { // root
         // report error
@@ -241,44 +246,26 @@ TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
       }
       return rootType;
     }
+    TyTy::BaseType *lookup = *result;
 
-    //    // enum item?
-    //    if (auto enumItem = tcx->lookupEnumItem(refNodeId)) {
-    //      tcx->insertVariantDefinition(path->getNodeId(),
-    //                                   enumItem->second->getNodeId());
-    //    }
-
-    // if (rootType != nullptr) {
-    //   if (lookup->needsGenericSubstitutions()) {
-    //     if (!rootType->needsGenericSubstitutions()) {
-    //       TyTy::SubstitutionArgumentMappings usedArgs =
-    //           TyTy::getUsedSubstitutionArguments(rootType);
-    //       lookup = (lookup, usedArgs);
-    //       xxx;
-    //     }
-    //   }
-    // }
-    //
-    //// FIXME
-    //
-    // if (segs[i].hasGenerics()) {
-    //  if (!lookup->hasSubstitutionsDefined()) {
-    //    // report error
-    //    return new TyTy::ErrorType(path->getNodeId());
-    //  }
-    //
-    //  lookup = xxFn(lookup, segs[i].getGenericArgs());
-    //
-    //  if (lookup->getKind() == TyTy::TypeKind::Error)
-    //    return new TyTy::ErrorType(path->getNodeId());
-    //} else if (lookup->needsGenericSubstitutions()) {
-    //  lookup = InferStubs(lookup);
-    //}
+    if (rootType != nullptr) {
+      if (lookup->needsGenericSubstitutions()) {
+        if (!rootType->needsGenericSubstitutions()) {
+          TyTy::SubstitutionArgumentMappings args =
+              TyTy::getUsedSubstitutionArguments(rootType);
+          lookup = applySubstitutionMappings(lookup, args);
+        }
+      }
+    }
 
     if (segs[i].hasGenerics()) {
-      lookup = applySubstitutions(lookup, path->getLocation(),
-                                  segs[i].getGenericArgs());
+      lookup = applyGenericArgs(lookup, path->getLocation(),
+                                segs[i].getGenericArgs());
+      if (lookup->getKind() == TyTy::TypeKind::Error)
+        return new TyTy::ErrorType(segs[i].getNodeId());
     } else if (lookup->needsGenericSubstitutions()) {
+      lookup =
+          applyGenericArgs(lookup, path->getLocation(), GenericArgs::empty());
     }
 
     *resolvedNodeId = refNodeId;
@@ -302,7 +289,7 @@ TypeResolver::resolveSegmentsType(basic::NodeId rootResolvedNodeId,
   std::vector<TypePathSegment> segs = tp->getSegments();
 
   for (unsigned i = offset; i < segs.size(); ++i) {
-    segs[i];
+    // segs[i];
 
     bool receiverIsGeneric =
         prevSegment->getKind() == TyTy::TypeKind::Parameter;
@@ -403,6 +390,18 @@ TypeResolver::checkArrayType(std::shared_ptr<ast::types::ArrayType> arr) {
   return new TyTy::ArrayType(arr->getNodeId(), arr->getLocation(),
                              arr->getExpression(),
                              TyTy::TypeVariable(base->getReference()));
+}
+
+TyTy::SubstitutionArgumentMappings
+TypeResolver::getUsesSubstitutionArguments(TyTy::BaseType *type) {
+  if (type->getKind() == TyTy::TypeKind::Function)
+    return static_cast<TyTy::FunctionType *>(type)->getSubstitutionArguments();
+  if (type->getKind() == TyTy::TypeKind::ADT)
+    return static_cast<TyTy::ADTType *>(type)->getSubstitutionArguments();
+  if (type->getKind() == TyTy::TypeKind::Closure)
+    return static_cast<TyTy::ClosureType *>(type)->getSubstitutionArguments();
+
+  return TyTy::SubstitutionArgumentMappings{};
 }
 
 } // namespace rust_compiler::sema::type_checking
