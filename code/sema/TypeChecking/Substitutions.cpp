@@ -54,7 +54,7 @@ TyTy::BaseType *TypeResolver::applyGenericArgsToADT(TyTy::ADTType *type,
     return static_cast<TyTy::ADTType *>(substs);
   } else {
     TyTy::SubstitutionArgumentMappings mappings =
-        type->getMappingsFromGenericArgs(args);
+        type->getMappingsFromGenericArgs(args, this);
     // if (mappings.isError())
     //   return
     return type->handleSubstitutions(mappings);

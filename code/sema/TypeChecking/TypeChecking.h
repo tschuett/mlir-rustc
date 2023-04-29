@@ -81,6 +81,9 @@ public:
   TyTy::BaseType *checkAssociatedItemPointer(ast::AssociatedItem *,
                                              ast::Implementation *);
 
+  // needed by substitutins.cpp in TyCtx
+  TyTy::BaseType *checkType(std::shared_ptr<ast::types::TypeExpression>);
+
 private:
   void checkVisItem(std::shared_ptr<ast::VisItem> v);
   void checkMacroItem(std::shared_ptr<ast::MacroItem> v);
@@ -88,7 +91,6 @@ private:
   void checkStruct(ast::Struct *s);
   void checkStructStruct(ast::StructStruct *s);
   void checkTupleStruct(ast::TupleStruct *s);
-  TyTy::BaseType *checkType(std::shared_ptr<ast::types::TypeExpression>);
   void checkWhereClause(const ast::WhereClause &);
   TyTy::BaseType *checkExpression(std::shared_ptr<ast::Expression>);
   TyTy::BaseType *
@@ -184,10 +186,10 @@ private:
   TyTy::BaseType *applyGenericArgs(TyTy::BaseType *, Location,
                                    const GenericArgs &);
   TyTy::BaseType *applyGenericArgsToADT(TyTy::ADTType *, Location,
-                                   const GenericArgs &);
+                                        const GenericArgs &);
   TyTy::BaseType *
   applySubstitutionMappings(TyTy::BaseType *,
-                             const TyTy::SubstitutionArgumentMappings &);
+                            const TyTy::SubstitutionArgumentMappings &);
 
   TyTy::TypeBoundPredicate
       getPredicateFromBound(std::shared_ptr<ast::types::TypeExpression>);

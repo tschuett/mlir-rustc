@@ -70,6 +70,9 @@ void TypeResolver::checkGenericParams(
       break;
     }
     case GenericParamKind::TypeParam: {
+      // We cannot type check TypeParam locally. The actually type
+      // will only be known during instantiation, i.e, TypePath with
+      // GenericArgs
       TypeParam pa = param.getTypeParam();
       TyTy::ParamType *paramType = checkTypeParam(pa);
       tcx->insertType(pa.getIdentity(), paramType);
@@ -77,6 +80,7 @@ void TypeResolver::checkGenericParams(
       break;
     }
     case GenericParamKind::ConstParam: {
+      // can type check ConstParam locally
       ConstParam cp = param.getConstParam();
       TyTy::BaseType *specifiedType = checkType(cp.getType());
       if (cp.hasLiteral() or cp.hasBlock()) {

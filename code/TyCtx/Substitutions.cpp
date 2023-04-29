@@ -1,8 +1,12 @@
 #include "TyCtx/Substitutions.h"
 
+#include "AST/GenericArgsBinding.h"
 #include "TyCtx/TyTy.h"
+#include "../sema/TypeChecking/TypeChecking.h"
 
 #include <map>
+
+using namespace rust_compiler::ast;
 
 namespace rust_compiler::tyctx::TyTy {
 
@@ -25,15 +29,76 @@ BaseType *SubstitutionsReference::inferSubstitutions(Location) {
   assert(false);
 }
 
-SubstitutionArgumentMappings SubstitutionsReference::getMappingsFromGenericArgs(
-    const ast::GenericArgs &args) {
-  assert(false);
-  std::map<std::string, BaseType *> bindingArguments;
+size_t
+SubstitutionsReference::getNumberOfTypeParams(const ast::GenericArgs &args) {
+  size_t types = 0;
+  for (const GenericArg &arg : args.getArgs()) {
+    switch (arg.getKind()) {
+    case GenericArgKind::Lifetime: {
+      break;
+    }
+    case GenericArgKind::Type: {
+      ++types;
+      break;
+    }
+    case GenericArgKind::Const: {
+      break;
+    }
+    case GenericArgKind::Binding: {
+      break;
+    }
+    }
+  }
+  return types;
+}
 
-  size_t offset = usedArguments.getSize();
-//  if (args.getNumberOfArgs() + offs > substitutions.size()) {
-//    // report error
-//  }
+SubstitutionArgumentMappings
+SubstitutionsReference::getMappingsFromGenericArgs(const ast::GenericArgs &args,
+                                                   TypeResolver *resolver) {
+  assert(false);
+  std::map<Identifier, BaseType *> bindingArguments;
+
+  // FIXME detect misbehaviour
+
+  // size_t types = getNumberOfTypeParams(args);
+  //  size_t offset = usedArguments.getSize();
+  if (args.getNumberOfArgs() == substitutions.size()) {
+    // FIXME
+    // report error
+  }
+
+  // We can now type check based on GenericArgs. They were not
+  // available when we type check based on GenericParams.
+  size_t offset = 0;
+  std::vector<SubstitutionArg> mappings;
+  for (const GenericArg &arg : args.getArgs()) {
+    switch (arg.getKind()) {
+    case GenericArgKind::Lifetime: {
+      // We don't type check lifetimes
+      break;
+    }
+    case GenericArgKind::Type: {
+      BaseType *type = resolver->checkType(arg.getType());
+      assert(type != nullptr);
+      assert(type->getKind() != TypeKind::Error);
+      SubstitutionArg substArg(&substitutions[offset], type);
+      mappings.push_back(substArg);
+      ++offset;
+      break;
+    }
+    case GenericArgKind::Const: {
+      break;
+    }
+    case GenericArgKind::Binding: {
+      GenericArgsBinding bind = arg.getBinding();
+      BaseType *type = resolver->checkType(bind.getType());
+      assert(type == nullptr);
+      assert(type->getKind() != TypeKind::Error);
+      bindingArguments[bind.getIdentifier()] = type;
+      break;
+    }
+    }
+  }
 }
 
 BaseType *

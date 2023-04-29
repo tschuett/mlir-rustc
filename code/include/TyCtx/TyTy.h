@@ -288,7 +288,6 @@ public:
         SubstitutionsReference(substitutions), parameters(closureArgs),
         resultType(resultType), captures(captures){};
 
-  bool needsSubstitution() const;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 
