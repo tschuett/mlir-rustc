@@ -5,10 +5,9 @@ using namespace rust_compiler::tyctx::TyTy;
 
 namespace rust_compiler::sema::type_checking {
 
-TyTy::BaseType *TypeResolver::applyGenericArgs(TyTy::BaseType *type, Location,
-                                                 const GenericArgs &) {
-  assert(false);
-
+TyTy::BaseType *TypeResolver::applyGenericArgs(TyTy::BaseType *type,
+                                               Location loc,
+                                               const GenericArgs &args) {
   switch (type->getKind()) {
   case TypeKind::Bool:
   case TypeKind::Char:
@@ -32,7 +31,7 @@ TyTy::BaseType *TypeResolver::applyGenericArgs(TyTy::BaseType *type, Location,
   case TypeKind::Reference:
     return type;
   case TypeKind::ADT: {
-    assert(false);
+    return applyGenericArgsToADT(static_cast<TyTy::ADTType *>(type), loc, args);
   }
   case TypeKind::Projection: {
     assert(false);
@@ -46,9 +45,24 @@ TyTy::BaseType *TypeResolver::applyGenericArgs(TyTy::BaseType *type, Location,
   }
 }
 
-TyTy::BaseType *
-TypeResolver::applySubstitutionMappings(TyTy::BaseType *,
-                                 const TyTy::SubstitutionArgumentMappings &) {
+TyTy::BaseType *TypeResolver::applyGenericArgsToADT(TyTy::ADTType *type,
+                                                    Location loc,
+                                                    const GenericArgs &args) {
+  if (args.getNumberOfArgs() == 0) {
+    TyTy::BaseType *substs = type->inferSubstitutions(loc);
+    assert(substs->getKind() == TypeKind::ADT);
+    return static_cast<TyTy::ADTType *>(substs);
+  } else {
+    TyTy::SubstitutionArgumentMappings mappings =
+        type->getMappingsFromGenericArgs(args);
+    // if (mappings.isError())
+    //   return
+    return type->handleSubstitutions(mappings);
+  }
+}
+
+TyTy::BaseType *TypeResolver::applySubstitutionMappings(
+    TyTy::BaseType *, const TyTy::SubstitutionArgumentMappings &) {
   assert(false);
 }
 

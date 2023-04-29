@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/Expression.h"
+#include "AST/GenericArgs.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
@@ -22,6 +23,7 @@ using namespace rust_compiler::adt;
 
 enum class InferKind { Integral, Float, General };
 
+/// Defines the kinds of types used by the type system.
 enum class TypeKind {
   Bool,
   Char,
@@ -239,7 +241,7 @@ private:
   std::vector<TypeVariable> fields;
 };
 
-class FunctionType : public BaseType {
+class FunctionType : public BaseType, public SubstitutionsReference {
 public:
   FunctionType(
       basic::NodeId, lexer::Identifier name, tyctx::ItemIdentity,
@@ -254,19 +256,11 @@ public:
 
   TyTy::BaseType *getReturnType() const;
 
-  bool needsSubstitution() const;
-
   unsigned getNumberOfSpecifiedBounds() override;
 
   basic::NodeId getId() const { return id; }
 
   Identifier getIdentifier() const { return name; }
-
-  std::vector<SubstitutionParamMapping> getSubstitutions() const {
-    return substitutions;
-  }
-
-  SubstitutionArgumentMappings &getSubstitutionArguments();
 
   std::vector<
       std::pair<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
@@ -282,29 +276,21 @@ private:
                 TyTy::BaseType *>>
       parameters;
   TyTy::BaseType *returnType = nullptr;
-  std::vector<TyTy::SubstitutionParamMapping> substitutions;
-  SubstitutionArgumentMappings usedArguments =
-      SubstitutionArgumentMappings::error();
 };
 
-class ClosureType : public BaseType {
+class ClosureType : public BaseType, public SubstitutionsReference {
 public:
   ClosureType(basic::NodeId id, Location loc, TypeIdentity ident,
               TupleType *closureArgs, TypeVariable resultType,
-              std::span<SubstitutionParamMapping> substitutions,
+              std::vector<SubstitutionParamMapping> substitutions,
               std::set<basic::NodeId> captures)
-      : BaseType(id, id, TypeKind::Closure, ident), parameters(closureArgs),
-        resultType(resultType), captures(captures) {
-    substitutions = {substitutions.begin(), substitutions.end()};
-  }
+      : BaseType(id, id, TypeKind::Closure, ident),
+        SubstitutionsReference(substitutions), parameters(closureArgs),
+        resultType(resultType), captures(captures){};
 
   bool needsSubstitution() const;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
-
-  SubstitutionArgumentMappings &getSubstitutionArguments() {
-    return usedArguments;
-  }
 
   TyTy::TupleType *getParameters() const { return parameters; }
   TyTy::BaseType *getResultType() const { return resultType.getType(); }
@@ -313,9 +299,6 @@ private:
   TyTy::TupleType *parameters;
   TyTy::TypeVariable resultType;
   std::set<basic::NodeId> captures;
-  std::vector<TyTy::SubstitutionParamMapping> substitutions;
-  SubstitutionArgumentMappings usedArguments =
-      SubstitutionArgumentMappings::error();
 };
 
 class InferType : public BaseType {
@@ -398,17 +381,13 @@ private:
 
 enum class ADTKind { StructStruct, TupleStruct };
 
-class ADTType : public BaseType {
+class ADTType : public BaseType, public SubstitutionsReference {
 public:
   ADTType(basic::NodeId, const adt::Identifier &, TypeIdentity, ADTKind,
-          std::span<VariantDef *>, std::span<SubstitutionParamMapping>);
+          std::span<VariantDef *>, std::vector<SubstitutionParamMapping>);
 
-  bool needsSubstitution() const;
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
-  SubstitutionArgumentMappings getSubstitutionArguments() const {
-    return usedArguments;
-  }
 
   ADTKind getKind() const { return kind; }
 
@@ -417,13 +396,10 @@ public:
   std::vector<VariantDef *> getVariants() const;
 
 private:
-  std::string substToString() const;
 
   adt::Identifier identifier;
   ADTKind kind;
   std::vector<VariantDef *> variants;
-  std::vector<SubstitutionParamMapping> substitutions;
-  SubstitutionArgumentMappings usedArguments;
 };
 
 class TypeBoundPredicate {

@@ -183,6 +183,8 @@ private:
 
   TyTy::BaseType *applyGenericArgs(TyTy::BaseType *, Location,
                                    const GenericArgs &);
+  TyTy::BaseType *applyGenericArgsToADT(TyTy::ADTType *, Location,
+                                   const GenericArgs &);
   TyTy::BaseType *
   applySubstitutionMappings(TyTy::BaseType *,
                              const TyTy::SubstitutionArgumentMappings &);

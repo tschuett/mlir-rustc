@@ -6,6 +6,7 @@
 #include "Location.h"
 #include "Session/Session.h"
 #include "TyCtx/NodeIdentity.h"
+#include "TyCtx/Substitutions.h"
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TypeIdentity.h"
 
@@ -44,13 +45,18 @@ bool BaseType::needsGenericSubstitutions() const {
     assert(false);
   }
   case TypeKind::Function: {
-    return static_cast<const FunctionType *>(this)->needsSubstitution();
+    const FunctionType *fun = static_cast<const FunctionType *>(this);
+    return static_cast<const SubstitutionsReference *>(fun)
+        ->needsSubstitution();
   }
   case TypeKind::ADT: {
-    return static_cast<const ADTType *>(this)->needsSubstitution();
+    const ADTType *adt = static_cast<const ADTType *>(this);
+    return static_cast<const SubstitutionsReference *>(adt)
+        ->needsSubstitution();
   }
   case TypeKind::Closure: {
-    return static_cast<const ClosureType *>(this)->needsSubstitution();
+    const ClosureType *clos = static_cast<const ClosureType *>(this);
+    return static_cast<const ClosureType *>(clos)->needsSubstitution();
   }
   }
 }
@@ -208,8 +214,8 @@ FunctionType::FunctionType(
     std::vector<TyTy::SubstitutionParamMapping> substitutions)
     : BaseType(id, id, TypeKind::Function,
                TypeIdentity(ident.getPath(), ident.getLocation())),
-      id(id), name(name), ident(ident), parameters(parameters),
-      returnType(returnType), substitutions(substitutions) {}
+      SubstitutionsReference(substitutions), id(id), name(name), ident(ident),
+      parameters(parameters), returnType(returnType) {}
 
 TyTy::BaseType *FunctionType::getReturnType() const { return returnType; }
 
@@ -375,11 +381,10 @@ VariantDef::VariantDef(basic::NodeId id, const adt::Identifier &identifier,
 ADTType::ADTType(basic::NodeId id, const adt::Identifier &identifier,
                  TypeIdentity ident, ADTKind kind,
                  std::span<VariantDef *> variant,
-                 std::span<SubstitutionParamMapping> sub)
-    : BaseType(id, id, TypeKind::ADT, ident), identifier(identifier),
-      kind(kind) {
+                 std::vector<SubstitutionParamMapping> sub)
+    : BaseType(id, id, TypeKind::ADT, ident), SubstitutionsReference(sub),
+      identifier(identifier), kind(kind) {
   variants = {variant.begin(), variant.end()};
-  substitutions = {sub.begin(), sub.end()};
 }
 
 std::string ADTType::toString() const {
@@ -392,19 +397,6 @@ std::string ADTType::toString() const {
   }
 
   return /*identifier*/ substToString() + "{" + variantsBuffer + "}";
-}
-
-std::string ADTType::substToString() const {
-  std::string buffer;
-  for (size_t i = 0; i < substitutions.size(); i++) {
-    const SubstitutionParamMapping &sub = substitutions[i];
-    buffer += sub.toString();
-
-    if ((i + 1) < substitutions.size())
-      buffer += ", ";
-  }
-
-  return buffer.empty() ? "" : "<" + buffer + ">";
 }
 
 unsigned ADTType::getNumberOfSpecifiedBounds() { return 0; }
@@ -423,30 +415,9 @@ std::string ParamType::toString() const {
   assert(false && "to be implemented");
 }
 
-SubstitutionArgumentMappings &FunctionType::getSubstitutionArguments() {
-  return usedArguments;
-}
-
-bool ClosureType::needsSubstitution() const {
-  for (auto &sub : substitutions)
-    if (sub.needsSubstitution())
-      return true;
-  return false;
-}
-
-bool FunctionType::needsSubstitution() const {
-  for (auto &sub : substitutions)
-    if (sub.needsSubstitution())
-      return true;
-  return false;
-}
-
-bool ADTType::needsSubstitution() const {
-  for (auto &sub : substitutions)
-    if (sub.needsSubstitution())
-      return true;
-  return false;
-}
+// SubstitutionArgumentMappings &FunctionType::getSubstitutionArguments() {
+//   return usedArguments;
+// }
 
 bool BaseType::isConcrete() const {
   assert(false);

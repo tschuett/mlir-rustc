@@ -23,6 +23,10 @@ public:
   }
 
   std::vector<GenericArg> getArgs() const { return args; }
+
+  size_t getNumberOfArgs() const { return args.size(); }
+
+  bool isEmpty() const { return args.size() == 0; }
 };
 
 } // namespace rust_compiler::ast
