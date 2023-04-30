@@ -23,9 +23,12 @@ namespace rust_compiler::sema::type_checking {
 void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
 
+  std::optional<GenericParams> genericParams;
   // generics
-  if (f->hasGenericParams())
+  if (f->hasGenericParams()) {
     checkGenericParams(f->getGenericParams(), substitutions);
+    genericParams = f->getGenericParams();
+  }
 
   if (f->hasWhereClause())
     checkWhereClause(f->getWhereClause());
@@ -84,8 +87,9 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
 
   assert(retType != nullptr);
 
-  TyTy::FunctionType *funType = new TyTy::FunctionType(
-      f->getNodeId(), f->getName(), identity, params, retType, substitutions);
+  TyTy::FunctionType *funType =
+      new TyTy::FunctionType(f->getNodeId(), f->getName(), identity, params,
+                             retType, substitutions, genericParams);
 
   tcx->insertType(f->getIdentity(), funType);
 

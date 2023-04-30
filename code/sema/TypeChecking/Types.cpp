@@ -67,6 +67,7 @@ void TypeResolver::checkGenericParams(
   for (GenericParam &param : pa.getGenericParams()) {
     switch (param.getKind()) {
     case GenericParamKind::LifetimeParam: {
+      // We do not type check lifetimes
       break;
     }
     case GenericParamKind::TypeParam: {
@@ -76,6 +77,7 @@ void TypeResolver::checkGenericParams(
       TypeParam pa = param.getTypeParam();
       TyTy::ParamType *paramType = checkTypeParam(pa);
       tcx->insertType(pa.getIdentity(), paramType);
+      // for every TypeParam, we add one Maping
       subst.push_back(TyTy::SubstitutionParamMapping(pa, paramType));
       break;
     }
@@ -204,12 +206,12 @@ TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
     // NodeId astNodeId = segs[i].getNodeId();
 
     if (auto name = resolver->lookupResolvedName(segs[i].getNodeId())) {
-      llvm::errs() << "resolve root path: it is a name"
-                   << "\n";
+      //      llvm::errs() << "resolve root path: it is a name"
+      //                   << "\n";
       refNodeId = *name;
     } else if (auto type = resolver->lookupResolvedType(segs[i].getNodeId())) {
-      llvm::errs() << "resolve root path: it is a type"
-                   << "\n";
+      //      llvm::errs() << "resolve root path: it is a type"
+      //                   << "\n";
       refNodeId = *type;
     }
 
@@ -223,8 +225,6 @@ TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
       }
       return rootType;
     }
-
-    // There is no hir
 
     bool segIsModule = nullptr != tcx->lookupModule(refNodeId);
     bool segIsCrate = tcx->isCrate(refNodeId);

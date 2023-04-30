@@ -1,5 +1,9 @@
+#include "TyCtx/Substitutions.h"
+
+#include "AST/GenericParam.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
+#include "Unification.h"
 
 using namespace rust_compiler::tyctx::TyTy;
 
@@ -48,10 +52,20 @@ TyTy::BaseType *TypeResolver::applyGenericArgs(TyTy::BaseType *type,
 TyTy::BaseType *TypeResolver::applyGenericArgsToADT(TyTy::ADTType *type,
                                                     Location loc,
                                                     const GenericArgs &args) {
+  SubstitutionsReference *ref = static_cast<SubstitutionsReference *>(type);
+  std::optional<ast::GenericParams> genericParams = ref->getGenericParams();
+
+  if (genericParams) {
+    if ((*genericParams).getNumberOfParams() != args.getNumberOfArgs()) {
+      // report error
+    }
+  } else { // no genericParams
+    if (args.getNumberOfArgs() != 0) {
+      // report error
+    }
+  }
   if (args.getNumberOfArgs() == 0) {
-    TyTy::BaseType *substs = type->inferSubstitutions(loc);
-    assert(substs->getKind() == TypeKind::ADT);
-    return static_cast<TyTy::ADTType *>(substs);
+    return type;
   } else {
     TyTy::SubstitutionArgumentMappings mappings =
         type->getMappingsFromGenericArgs(args, this);
@@ -64,6 +78,89 @@ TyTy::BaseType *TypeResolver::applyGenericArgsToADT(TyTy::ADTType *type,
 TyTy::BaseType *TypeResolver::applySubstitutionMappings(
     TyTy::BaseType *, const TyTy::SubstitutionArgumentMappings &) {
   assert(false);
+}
+
+bool TypeResolver::checkGenericParamsAndArgs(const ast::GenericParams &params,
+                                             const ast::GenericArgs &args) {
+  std::vector<GenericParam> gps = params.getGenericParams();
+  std::vector<GenericArg> gas = args.getArgs();
+
+  for (unsigned i = 0; i < gps.size(); ++i) {
+    switch (gas[i].getKind()) {
+    case GenericArgKind::Lifetime: {
+      switch (gps[i].getKind()) {
+      case ast::GenericParamKind::LifetimeParam: {
+        break;
+      }
+      case ast::GenericParamKind::TypeParam: {
+        // report error
+        break;
+      }
+      case ast::GenericParamKind::ConstParam: {
+        // report error
+        break;
+      }
+      }
+      break;
+    }
+    case GenericArgKind::Type: {
+      switch (gps[i].getKind()) {
+      case ast::GenericParamKind::LifetimeParam: {
+        // report error
+        break;
+      }
+      case ast::GenericParamKind::TypeParam: {
+        TypeParam tp = gps[i].getTypeParam();
+        checkType(gas[i].getType());
+        if (tp.hasType()) {
+          // unifyWithSite();
+        }
+        break;
+      }
+      case ast::GenericParamKind::ConstParam: {
+        // report error
+        break;
+      }
+      }
+      break;
+    }
+    case GenericArgKind::Const: {
+      switch (gps[i].getKind()) {
+      case ast::GenericParamKind::LifetimeParam: {
+        // report error
+        break;
+      }
+      case ast::GenericParamKind::TypeParam: {
+        // report error
+        break;
+      }
+      case ast::GenericParamKind::ConstParam: {
+        // TODO type matches expression
+        break;
+      }
+      }
+      break;
+    }
+    case GenericArgKind::Binding: {
+      switch (gps[i].getKind()) {
+      case ast::GenericParamKind::LifetimeParam: {
+        // report error
+        break;
+      }
+      case ast::GenericParamKind::TypeParam: {
+        // Binding: Identifier = Type
+        break;
+      }
+      case ast::GenericParamKind::ConstParam: {
+        // report error
+        break;
+      }
+      }
+      break;
+    }
+    }
+  }
+  return false;
 }
 
 } // namespace rust_compiler::sema::type_checking

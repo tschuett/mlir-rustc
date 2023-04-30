@@ -78,6 +78,7 @@ SubstitutionsReference::getMappingsFromGenericArgs(const ast::GenericArgs &args,
       break;
     }
     case GenericArgKind::Type: {
+      // hack
       BaseType *type = resolver->checkType(arg.getType());
       assert(type != nullptr);
       assert(type->getKind() != TypeKind::Error);
@@ -91,6 +92,7 @@ SubstitutionsReference::getMappingsFromGenericArgs(const ast::GenericArgs &args,
     }
     case GenericArgKind::Binding: {
       GenericArgsBinding bind = arg.getBinding();
+      // hack
       BaseType *type = resolver->checkType(bind.getType());
       assert(type == nullptr);
       assert(type->getKind() != TypeKind::Error);

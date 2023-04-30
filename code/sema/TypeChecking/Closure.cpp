@@ -6,6 +6,7 @@
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
 
+#include <optional>
 #include <set>
 #include <vector>
 
@@ -81,7 +82,7 @@ TyTy::BaseType *TypeResolver::checkClosureExpression(
 
   return new TyTy::ClosureType(closure->getNodeId(), closure->getLocation(),
                                ident, closureArgs, resultType, substitutions,
-                               captures);
+                               std::nullopt, captures);
 
   // FIXME
 }

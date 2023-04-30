@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/GenericArgs.h"
+#include "AST/GenericParams.h"
 #include "AST/TypeParam.h"
 #include "Lexer/Identifier.h"
 
@@ -62,8 +63,9 @@ private:
 class SubstitutionsReference {
 public:
   SubstitutionsReference(
-      const std::vector<TyTy::SubstitutionParamMapping> &substitutions)
-      : substitutions(substitutions) {}
+      const std::vector<TyTy::SubstitutionParamMapping> &substitutions,
+      std::optional<ast::GenericParams> genericParams)
+      : substitutions(substitutions), genericParams(genericParams) {}
 
   std::vector<SubstitutionParamMapping> getSubstitutions() const {
     return substitutions;
@@ -81,13 +83,17 @@ public:
 
   bool needsSubstitution() const;
 
+  std::optional<ast::GenericParams> getGenericParams() const {
+    return genericParams;
+  }
+
 protected:
   std::string substToString() const;
 
 private:
   std::vector<SubstitutionParamMapping> substitutions;
   SubstitutionArgumentMappings usedArguments;
-
+  std::optional<ast::GenericParams> genericParams;
   size_t getNumberOfTypeParams(const ast::GenericArgs &args);
 };
 

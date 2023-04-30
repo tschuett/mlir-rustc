@@ -4,16 +4,15 @@
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::tyctx;
+using namespace rust_compiler::tyctx::TyTy;
 
 namespace rust_compiler::sema::type_checking {
 
 TyTy::BaseType *
 TypeResolver::checkLiteral(std::shared_ptr<ast::LiteralExpression> lit) {
-  assert(false && "to be implemented");
-
   switch (lit->getLiteralKind()) {
   case ast::LiteralExpressionKind::CharLiteral: {
-    TyTy::BaseType * builtin = tcx->lookupBuiltin("char");
+    TyTy::BaseType *builtin = tcx->lookupBuiltin("char");
     return builtin;
   }
   case ast::LiteralExpressionKind::StringLiteral: {
@@ -32,14 +31,15 @@ TypeResolver::checkLiteral(std::shared_ptr<ast::LiteralExpression> lit) {
     assert(false && "to be implemented");
   }
   case ast::LiteralExpressionKind::IntegerLiteral: {
-    assert(false && "to be implemented");
+    return new TyTy::InferType(lit->getNodeId(), TyTy::InferKind::Integral,
+                               TypeHint::unknown(), lit->getLocation());
   }
   case ast::LiteralExpressionKind::FloatLiteral: {
     assert(false && "to be implemented");
   }
   case ast::LiteralExpressionKind::True:
   case ast::LiteralExpressionKind::False:
-    TyTy::BaseType * builtin = tcx->lookupBuiltin("bool");
+    TyTy::BaseType *builtin = tcx->lookupBuiltin("bool");
     return builtin;
   }
   assert(false);

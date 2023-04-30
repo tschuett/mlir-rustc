@@ -74,12 +74,17 @@ enum class SignedHint { Signed, Unsigned, Unkown };
 enum class SizeHint { S8, S16, S32, S64, S128, Unknown };
 
 class TypeHint {
-  SignedHint shint;
-  SizeHint szhint;
-
 public:
-  SignedHint getSignedHint() const { return shint; }
-  SizeHint getSiizeHint() const { return szhint; }
+  TypeKind kind;
+  SignedHint signHint;
+  SizeHint sizeHint;
+
+  SignedHint getSignedHint() const { return signHint; }
+  SizeHint getSizeHint() const { return sizeHint; }
+
+  static TypeHint unknown() {
+    return TypeHint{TypeKind::Error, SignedHint::Unkown, SizeHint::Unknown};
+  }
 };
 
 bool isIntegerLike(TypeKind);
@@ -153,6 +158,8 @@ public:
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 
+  UintKind getUintKind() const { return kind; }
+
 private:
   UintKind kind;
 };
@@ -173,12 +180,15 @@ public:
   unsigned getNumberOfSpecifiedBounds() override;
 };
 
+/// F32 or F64
 class FloatType : public BaseType {
 public:
   FloatType(basic::NodeId, FloatKind);
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
+
+  FloatKind getFloatKind() const { return kind; }
 
 private:
   FloatKind kind;
@@ -250,7 +260,8 @@ public:
           TyTy::BaseType *>>
           parameters,
       TyTy::BaseType *returnType,
-      std::vector<TyTy::SubstitutionParamMapping> substitutions);
+      std::vector<TyTy::SubstitutionParamMapping> substitutions,
+      std::optional<ast::GenericParams> genericParams);
 
   std::string toString() const override;
 
@@ -278,15 +289,18 @@ private:
   TyTy::BaseType *returnType = nullptr;
 };
 
+/// ClosureSubsts
+/// https://doc.rust-lang.org/stable/nightly-rustc/rustc_middle/ty/struct.ClosureSubsts.html
 class ClosureType : public BaseType, public SubstitutionsReference {
 public:
   ClosureType(basic::NodeId id, Location loc, TypeIdentity ident,
               TupleType *closureArgs, TypeVariable resultType,
               std::vector<SubstitutionParamMapping> substitutions,
+              std::optional<ast::GenericParams> genericParams,
               std::set<basic::NodeId> captures)
       : BaseType(id, id, TypeKind::Closure, ident),
-        SubstitutionsReference(substitutions), parameters(closureArgs),
-        resultType(resultType), captures(captures){};
+        SubstitutionsReference(substitutions, genericParams),
+        parameters(closureArgs), resultType(resultType), captures(captures){};
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
@@ -302,7 +316,7 @@ private:
 
 class InferType : public BaseType {
 public:
-  InferType(basic::NodeId, InferKind kind, Location loc);
+  InferType(basic::NodeId, InferKind kind, TypeHint hint, Location loc);
 
   InferKind getInferredKind() const { return inferKind; }
 
@@ -310,8 +324,11 @@ public:
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 
+  void applyScalarTypeHint(const BaseType &hint);
+
 private:
   InferKind inferKind;
+  TypeHint defaultHint;
 };
 
 class ErrorType : public BaseType {
@@ -383,7 +400,8 @@ enum class ADTKind { StructStruct, TupleStruct };
 class ADTType : public BaseType, public SubstitutionsReference {
 public:
   ADTType(basic::NodeId, const adt::Identifier &, TypeIdentity, ADTKind,
-          std::span<VariantDef *>, std::vector<SubstitutionParamMapping>);
+          std::span<VariantDef *>, std::vector<SubstitutionParamMapping>,
+          std::optional<ast::GenericParams>);
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
@@ -395,7 +413,6 @@ public:
   std::vector<VariantDef *> getVariants() const;
 
 private:
-
   adt::Identifier identifier;
   ADTKind kind;
   std::vector<VariantDef *> variants;

@@ -10,6 +10,7 @@
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::tyctx;
+using namespace rust_compiler::tyctx::TyTy;
 
 namespace rust_compiler::sema::type_checking {
 
@@ -104,8 +105,9 @@ TypeResolver::checkLetStatement(std::shared_ptr<ast::LetStatement> let) {
       checkPattern(pattern, initExprType);
     } else {
       // let x;
-      TyTy::BaseType *inferType = new TyTy::InferType(
-          let->getNodeId(), TyTy::InferKind::General, let->getLocation());
+      TyTy::BaseType *inferType =
+          new TyTy::InferType(let->getNodeId(), TyTy::InferKind::General,
+                              TypeHint::unknown(), let->getLocation());
       checkPattern(pattern, inferType);
     }
   }

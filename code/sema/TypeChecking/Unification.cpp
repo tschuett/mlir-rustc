@@ -212,6 +212,11 @@ TyTy::BaseType *Unification::expectUSizeType(TyTy::USizeType *left,
     assert(false);
   }
   case TyTy::TypeKind::Inferred: {
+    TyTy::InferType *infer = static_cast<TyTy::InferType *>(right);
+    if (infer->getInferredKind() != TyTy::InferKind::Float) {
+      infer->applyScalarTypeHint(*left);
+      return infer;
+    }
     assert(false);
   }
   case TyTy::TypeKind::Never: {

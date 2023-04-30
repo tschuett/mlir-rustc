@@ -211,11 +211,12 @@ FunctionType::FunctionType(
         TyTy::BaseType *>>
         parameters,
     TyTy::BaseType *returnType,
-    std::vector<TyTy::SubstitutionParamMapping> substitutions)
+    std::vector<TyTy::SubstitutionParamMapping> substitutions,
+    std::optional<ast::GenericParams> genericParams)
     : BaseType(id, id, TypeKind::Function,
                TypeIdentity(ident.getPath(), ident.getLocation())),
-      SubstitutionsReference(substitutions), id(id), name(name), ident(ident),
-      parameters(parameters), returnType(returnType) {}
+      SubstitutionsReference(substitutions, genericParams), id(id), name(name),
+      ident(ident), parameters(parameters), returnType(returnType) {}
 
 TyTy::BaseType *FunctionType::getReturnType() const { return returnType; }
 
@@ -245,9 +246,10 @@ unsigned ErrorType::getNumberOfSpecifiedBounds() { return 0; }
 
 unsigned InferType::getNumberOfSpecifiedBounds() { return 0; }
 
-InferType::InferType(basic::NodeId ref, InferKind kind, Location loc)
+InferType::InferType(basic::NodeId ref, InferKind kind, TypeHint hint,
+                     Location loc)
     : BaseType(ref, ref, TypeKind::Inferred, TypeIdentity::from(loc)),
-      inferKind(kind) {}
+      inferKind(kind), defaultHint(hint) {}
 
 std::string InferType::toString() const {
   switch (inferKind) {
@@ -381,9 +383,11 @@ VariantDef::VariantDef(basic::NodeId id, const adt::Identifier &identifier,
 ADTType::ADTType(basic::NodeId id, const adt::Identifier &identifier,
                  TypeIdentity ident, ADTKind kind,
                  std::span<VariantDef *> variant,
-                 std::vector<SubstitutionParamMapping> sub)
-    : BaseType(id, id, TypeKind::ADT, ident), SubstitutionsReference(sub),
-      identifier(identifier), kind(kind) {
+                 std::vector<SubstitutionParamMapping> sub,
+                 std::optional<ast::GenericParams> genericParams)
+    : BaseType(id, id, TypeKind::ADT, ident),
+      SubstitutionsReference(sub, genericParams), identifier(identifier),
+      kind(kind) {
   variants = {variant.begin(), variant.end()};
 }
 
@@ -502,6 +506,81 @@ bool BaseType::isConcrete() const {
   case TypeKind::Dynamic:
   case TypeKind::Error:
     return true;
+  }
+}
+
+void InferType::applyScalarTypeHint(const BaseType &hint) {
+  switch (hint.getKind()) {
+  case TypeKind::USize:
+  case TypeKind::ISize:
+    inferKind = InferKind::Integral;
+    defaultHint.kind = hint.getKind();
+    break;
+  case TypeKind::Int: {
+    inferKind = InferKind::Integral;
+    defaultHint.kind = hint.getKind();
+    defaultHint.signHint = SignedHint::Signed;
+    const IntType &i = static_cast<const IntType &>(hint);
+    switch (i.getIntKind()) {
+    case IntKind::I8:
+      defaultHint.sizeHint = SizeHint::S8;
+      break;
+    case IntKind::I16:
+      defaultHint.sizeHint = SizeHint::S16;
+      break;
+    case IntKind::I32:
+      defaultHint.sizeHint = SizeHint::S32;
+      break;
+    case IntKind::I64:
+      defaultHint.sizeHint = SizeHint::S64;
+      break;
+    case IntKind::I128:
+      defaultHint.sizeHint = SizeHint::S128;
+      break;
+    }
+    break;
+  }
+  case TypeKind::Uint: {
+    inferKind = InferKind::Integral;
+    defaultHint.kind = hint.getKind();
+    defaultHint.signHint = SignedHint::Unsigned;
+    const UintType &ui = static_cast<const UintType &>(hint);
+    switch (ui.getUintKind()) {
+    case UintKind::U8:
+      defaultHint.sizeHint = SizeHint::S8;
+      break;
+    case UintKind::U16:
+      defaultHint.sizeHint = SizeHint::S16;
+      break;
+    case UintKind::U32:
+      defaultHint.sizeHint = SizeHint::S32;
+      break;
+    case UintKind::U64:
+      defaultHint.sizeHint = SizeHint::S64;
+      break;
+    case UintKind::U128:
+      defaultHint.sizeHint = SizeHint::S128;
+      break;
+    }
+    break;
+  }
+  case TypeKind::Float: {
+    inferKind = InferKind::Float;
+    defaultHint.signHint = SignedHint::Signed;
+    defaultHint.kind = hint.getKind();
+    const FloatType &fl = static_cast<const FloatType &>(hint);
+    switch (fl.getFloatKind()) {
+    case FloatKind::F32:
+      defaultHint.sizeHint = SizeHint::S32;
+      break;
+    case FloatKind::F64:
+      defaultHint.sizeHint = SizeHint::S64;
+      break;
+    }
+    break;
+  }
+  default:
+    break;
   }
 }
 

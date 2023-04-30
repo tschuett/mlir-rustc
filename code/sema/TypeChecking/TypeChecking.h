@@ -10,6 +10,7 @@
 #include "AST/ExpressionStatement.h"
 #include "AST/ExternalItem.h"
 #include "AST/Function.h"
+#include "AST/GenericArgs.h"
 #include "AST/GenericParams.h"
 #include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
@@ -199,6 +200,9 @@ private:
 
   TyTy::SubstitutionArgumentMappings
   getUsesSubstitutionArguments(TyTy::BaseType *);
+
+  bool checkGenericParamsAndArgs(const ast::GenericParams &,
+                                 const ast::GenericArgs &);
 };
 
 } // namespace rust_compiler::sema::type_checking
