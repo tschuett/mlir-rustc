@@ -4,7 +4,6 @@
 #include "AST/Struct.h"
 #include "AST/StructField.h"
 #include "AST/VisItem.h"
-#include "TyCtx/Substitutions.h"
 #include "TyCtx/TyTy.h"
 #include "TyCtx/TypeIdentity.h"
 #include "TypeChecking.h"
@@ -83,12 +82,11 @@ void TypeResolver::checkStruct(ast::Struct *s) {
 }
 
 void TypeResolver::checkStructStruct(ast::StructStruct *s) {
-  std::vector<tyctx::TyTy::SubstitutionParamMapping> substitutions;
 
   std::optional<GenericParams> genericParams;
   if (s->hasGenerics()) {
     genericParams = s->getGenericParams();
-    checkGenericParams(s->getGenericParams(), substitutions);
+    checkGenericParams(s->getGenericParams());
   }
 
   if (s->hasWhereClause())
@@ -119,20 +117,18 @@ void TypeResolver::checkStructStruct(ast::StructStruct *s) {
                                           fields));
 
   // parse #[repr(X)]
-  TyTy::BaseType *type = new TyTy::ADTType(
-      s->getNodeId(), s->getIdentifier(), ident, TyTy::ADTKind::StructStruct,
-      variants, substitutions, genericParams);
+  TyTy::BaseType *type =
+      new TyTy::ADTType(s->getNodeId(), s->getIdentifier(), ident,
+                        TyTy::ADTKind::StructStruct, variants, genericParams);
 
   tcx->insertType(s->getIdentity(), type);
 }
 
 void TypeResolver::checkTupleStruct(ast::TupleStruct *s) {
-  std::vector<tyctx::TyTy::SubstitutionParamMapping> substitutions;
-
   std::optional<GenericParams> genericParams;
   if (s->hasGenerics()) {
     genericParams = s->getGenericParams();
-    checkGenericParams(s->getGenericParams(), substitutions);
+    checkGenericParams(s->getGenericParams());
   }
 
   if (s->hasWhereClause())
@@ -163,9 +159,9 @@ void TypeResolver::checkTupleStruct(ast::TupleStruct *s) {
 
   // parse #[rept(X)]
 
-  TyTy::BaseType *type = new TyTy::ADTType(s->getNodeId(), s->getName(), ident,
-                                           TyTy::ADTKind::TupleStruct, variants,
-                                           substitutions, genericParams);
+  TyTy::BaseType *type =
+      new TyTy::ADTType(s->getNodeId(), s->getName(), ident,
+                        TyTy::ADTKind::TupleStruct, variants, genericParams);
 
   tcx->insertType(s->getIdentity(), type);
 }

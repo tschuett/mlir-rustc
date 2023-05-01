@@ -6,7 +6,6 @@
 #include "Location.h"
 #include "Session/Session.h"
 #include "TyCtx/NodeIdentity.h"
-#include "TyCtx/Substitutions.h"
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TypeIdentity.h"
 
@@ -46,13 +45,11 @@ bool BaseType::needsGenericSubstitutions() const {
   }
   case TypeKind::Function: {
     const FunctionType *fun = static_cast<const FunctionType *>(this);
-    return static_cast<const SubstitutionsReference *>(fun)
-        ->needsSubstitution();
+    return static_cast<const GenericParameters *>(fun)->needsSubstitution();
   }
   case TypeKind::ADT: {
     const ADTType *adt = static_cast<const ADTType *>(this);
-    return static_cast<const SubstitutionsReference *>(adt)
-        ->needsSubstitution();
+    return static_cast<const GenericParameters *>(adt)->needsSubstitution();
   }
   case TypeKind::Closure: {
     const ClosureType *clos = static_cast<const ClosureType *>(this);
@@ -210,13 +207,11 @@ FunctionType::FunctionType(
         std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
         TyTy::BaseType *>>
         parameters,
-    TyTy::BaseType *returnType,
-    std::vector<TyTy::SubstitutionParamMapping> substitutions,
-    std::optional<ast::GenericParams> genericParams)
+    TyTy::BaseType *returnType, std::optional<ast::GenericParams> genericParams)
     : BaseType(id, id, TypeKind::Function,
                TypeIdentity(ident.getPath(), ident.getLocation())),
-      SubstitutionsReference(substitutions, genericParams), id(id), name(name),
-      ident(ident), parameters(parameters), returnType(returnType) {}
+      GenericParameters(genericParams), id(id), name(name), ident(ident),
+      parameters(parameters), returnType(returnType) {}
 
 TyTy::BaseType *FunctionType::getReturnType() const { return returnType; }
 
@@ -383,11 +378,9 @@ VariantDef::VariantDef(basic::NodeId id, const adt::Identifier &identifier,
 ADTType::ADTType(basic::NodeId id, const adt::Identifier &identifier,
                  TypeIdentity ident, ADTKind kind,
                  std::span<VariantDef *> variant,
-                 std::vector<SubstitutionParamMapping> sub,
                  std::optional<ast::GenericParams> genericParams)
-    : BaseType(id, id, TypeKind::ADT, ident),
-      SubstitutionsReference(sub, genericParams), identifier(identifier),
-      kind(kind) {
+    : BaseType(id, id, TypeKind::ADT, ident), GenericParameters(genericParams),
+      identifier(identifier), kind(kind) {
   variants = {variant.begin(), variant.end()};
 }
 
@@ -582,6 +575,10 @@ void InferType::applyScalarTypeHint(const BaseType &hint) {
   default:
     break;
   }
+}
+
+bool GenericParameters::needsSubstitution() const {
+  return genericParams.has_value();
 }
 
 } // namespace rust_compiler::tyctx::TyTy

@@ -2,11 +2,12 @@
 
 #include "AST/Expression.h"
 #include "AST/GenericArgs.h"
+#include "AST/GenericParams.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
 #include "Location.h"
-#include "Substitutions.h"
+// #include "Substitutions.h"
 #include "TyCtx/ItemIdentity.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TypeIdentity.h"
@@ -17,27 +18,58 @@ namespace rust_compiler::tyctx::TyTy {
 
 using namespace rust_compiler::adt;
 
+/// https://rustc-dev-guide.rust-lang.org/generics.html
+class GenericParameters {
+public:
+  GenericParameters(std::optional<ast::GenericParams> genericParams)
+      : genericParams(genericParams) {}
+
+  bool needsSubstitution() const;
+
+  std::optional<ast::GenericParams> getGenericParams() const {
+    return genericParams;
+  }
+
+protected:
+  std::string substToString() const;
+
+private:
+  std::optional<ast::GenericParams> genericParams;
+};
+
+  /// https://rustc-dev-guide.rust-lang.org/ty.html
 /// https://doc.rust-lang.org/reference/types.html
 /// https://rustc-dev-guide.rust-lang.org/type-inference.html#inference-variables
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_type_ir/sty/enum.TyKind.html
+/// https://rustc-dev-guide.rust-lang.org/ty.html?highlight=adt#adts-representation
 
 enum class InferKind { Integral, Float, General };
 
 /// Defines the kinds of types used by the type system.
 enum class TypeKind {
+  /// The primitive boolean type. Written as bool.
   Bool,
+  /// The primitive character type; holds a Unicode scalar value (a
+  /// non-surrogate code point). Written as char.
   Char,
+  /// A primitive signed integer type.
   Int,
+  /// A primitive unsigned integer type.
   Uint,
   USize,
   ISize,
+  /// A primitive floating-point type.
   Float,
   /// The anonymous type of closure.
   Closure,
+  /// The anonymous type of a function declaration/definition. Each
+  /// function has a unique type.
   Function,
+  /// A type variable used during type checking.
   Inferred,
   /// The never type !.
   Never,
+  /// The pointee of a string slice. Written as str.
   Str,
   /// A tuple type.
   Tuple,
@@ -251,7 +283,7 @@ private:
   std::vector<TypeVariable> fields;
 };
 
-class FunctionType : public BaseType, public SubstitutionsReference {
+class FunctionType : public BaseType, public GenericParameters {
 public:
   FunctionType(
       basic::NodeId, lexer::Identifier name, tyctx::ItemIdentity,
@@ -260,7 +292,6 @@ public:
           TyTy::BaseType *>>
           parameters,
       TyTy::BaseType *returnType,
-      std::vector<TyTy::SubstitutionParamMapping> substitutions,
       std::optional<ast::GenericParams> genericParams);
 
   std::string toString() const override;
@@ -291,16 +322,15 @@ private:
 
 /// ClosureSubsts
 /// https://doc.rust-lang.org/stable/nightly-rustc/rustc_middle/ty/struct.ClosureSubsts.html
-class ClosureType : public BaseType, public SubstitutionsReference {
+class ClosureType : public BaseType, public GenericParameters {
 public:
   ClosureType(basic::NodeId id, Location loc, TypeIdentity ident,
               TupleType *closureArgs, TypeVariable resultType,
-              std::vector<SubstitutionParamMapping> substitutions,
               std::optional<ast::GenericParams> genericParams,
               std::set<basic::NodeId> captures)
       : BaseType(id, id, TypeKind::Closure, ident),
-        SubstitutionsReference(substitutions, genericParams),
-        parameters(closureArgs), resultType(resultType), captures(captures){};
+        GenericParameters(genericParams), parameters(closureArgs),
+        resultType(resultType), captures(captures){};
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
@@ -397,11 +427,10 @@ private:
 
 enum class ADTKind { StructStruct, TupleStruct };
 
-class ADTType : public BaseType, public SubstitutionsReference {
+class ADTType : public BaseType, public GenericParameters {
 public:
   ADTType(basic::NodeId, const adt::Identifier &, TypeIdentity, ADTKind,
-          std::span<VariantDef *>, std::vector<SubstitutionParamMapping>,
-          std::optional<ast::GenericParams>);
+          std::span<VariantDef *>, std::optional<ast::GenericParams>);
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;

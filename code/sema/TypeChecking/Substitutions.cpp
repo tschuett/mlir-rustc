@@ -1,5 +1,3 @@
-#include "TyCtx/Substitutions.h"
-
 #include "AST/GenericParam.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
@@ -52,8 +50,8 @@ TyTy::BaseType *TypeResolver::applyGenericArgs(TyTy::BaseType *type,
 TyTy::BaseType *TypeResolver::applyGenericArgsToADT(TyTy::ADTType *type,
                                                     Location loc,
                                                     const GenericArgs &args) {
-  SubstitutionsReference *ref = static_cast<SubstitutionsReference *>(type);
-  std::optional<ast::GenericParams> genericParams = ref->getGenericParams();
+  GenericParameters *gps = static_cast<GenericParameters *>(type);
+  std::optional<ast::GenericParams> genericParams = gps->getGenericParams();
 
   if (genericParams) {
     if ((*genericParams).getNumberOfParams() != args.getNumberOfArgs()) {
@@ -67,18 +65,20 @@ TyTy::BaseType *TypeResolver::applyGenericArgsToADT(TyTy::ADTType *type,
   if (args.getNumberOfArgs() == 0) {
     return type;
   } else {
-    TyTy::SubstitutionArgumentMappings mappings =
-        type->getMappingsFromGenericArgs(args, this);
-    // if (mappings.isError())
-    //   return
-    return type->handleSubstitutions(mappings);
+    //    TyTy::SubstitutionArgumentMappings mappings =
+    //        type->getMappingsFromGenericArgs(args, this);
+    //    // if (mappings.isError())
+    //    //   return
+    //    return type->handleSubstitutions(mappings);
   }
+  assert(false);
+  // TODO
 }
 
-TyTy::BaseType *TypeResolver::applySubstitutionMappings(
-    TyTy::BaseType *, const TyTy::SubstitutionArgumentMappings &) {
-  assert(false);
-}
+// TyTy::BaseType *TypeResolver::applySubstitutionMappings(
+//     TyTy::BaseType *, const TyTy::SubstitutionArgumentMappings &) {
+//   assert(false);
+// }
 
 bool TypeResolver::checkGenericParamsAndArgs(const ast::GenericParams &params,
                                              const ast::GenericArgs &args) {

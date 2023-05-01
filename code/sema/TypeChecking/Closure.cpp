@@ -23,8 +23,8 @@ TyTy::BaseType *TypeResolver::checkClosureExpression(
   TypeCheckContextItem &currentContext = peekContext();
   TyTy::FunctionType *currentFunction = currentContext.getContextType();
 
-  std::vector<TyTy::SubstitutionParamMapping> substitutions =
-      currentFunction->getSubstitutions();
+  std::optional<GenericParams> genericParams =
+      currentFunction->getGenericParams();
 
   tyctx::TypeIdentity ident = {
       adt::CanonicalPath::newSegment(closure->getNodeId(),
@@ -81,8 +81,8 @@ TyTy::BaseType *TypeResolver::checkClosureExpression(
   std::set<NodeId> captures = tcx->getCaptures(closure->getNodeId());
 
   return new TyTy::ClosureType(closure->getNodeId(), closure->getLocation(),
-                               ident, closureArgs, resultType, substitutions,
-                               std::nullopt, captures);
+                               ident, closureArgs, resultType,
+                               genericParams, captures);
 
   // FIXME
 }

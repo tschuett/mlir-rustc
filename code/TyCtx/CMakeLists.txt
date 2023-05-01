@@ -1,7 +1,6 @@
 add_library(TyCtx
            TyCtx.cpp
            TyTy.cpp
-           Substitutions.cpp
            )
 
 target_include_directories(TyCtx PRIVATE  ../include)

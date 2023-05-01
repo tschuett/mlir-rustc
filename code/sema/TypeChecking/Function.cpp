@@ -6,7 +6,6 @@
 #include "Coercion.h"
 #include "Location.h"
 #include "TyCtx/NodeIdentity.h"
-#include "TyCtx/Substitutions.h"
 #include "TyCtx/TyTy.h"
 #include "TyCtx/TypeIdentity.h"
 #include "TypeChecking.h"
@@ -21,12 +20,10 @@ using namespace rust_compiler::ast;
 namespace rust_compiler::sema::type_checking {
 
 void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
-  std::vector<TyTy::SubstitutionParamMapping> substitutions;
-
   std::optional<GenericParams> genericParams;
   // generics
   if (f->hasGenericParams()) {
-    checkGenericParams(f->getGenericParams(), substitutions);
+    checkGenericParams(f->getGenericParams());
     genericParams = f->getGenericParams();
   }
 
@@ -89,7 +86,7 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
 
   TyTy::FunctionType *funType =
       new TyTy::FunctionType(f->getNodeId(), f->getName(), identity, params,
-                             retType, substitutions, genericParams);
+                             retType, genericParams);
 
   tcx->insertType(f->getIdentity(), funType);
 

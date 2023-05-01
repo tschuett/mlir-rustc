@@ -37,7 +37,6 @@
 #include "AST/WhereClause.h"
 #include "Basic/Ids.h"
 #include "TyCtx/NodeIdentity.h"
-#include "TyCtx/Substitutions.h"
 #include "TyCtx/TraitReference.h"
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TyTy.h"
@@ -106,8 +105,7 @@ private:
       std::shared_ptr<ast::ArithmeticOrLogicalExpression>);
   TyTy::BaseType *checkReturnExpression(std::shared_ptr<ast::ReturnExpression>);
   TyTy::BaseType *checkMatchExpression(std::shared_ptr<ast::MatchExpression>);
-  void checkGenericParams(const ast::GenericParams &,
-                          std::vector<TyTy::SubstitutionParamMapping> &);
+  void checkGenericParams(const ast::GenericParams &);
   TyTy::BaseType *
       checkClosureExpression(std::shared_ptr<ast::ClosureExpression>);
   TyTy::BaseType *checkStatement(std::shared_ptr<ast::Statement>);
@@ -188,9 +186,9 @@ private:
                                    const GenericArgs &);
   TyTy::BaseType *applyGenericArgsToADT(TyTy::ADTType *, Location,
                                         const GenericArgs &);
-  TyTy::BaseType *
-  applySubstitutionMappings(TyTy::BaseType *,
-                            const TyTy::SubstitutionArgumentMappings &);
+//  TyTy::BaseType *
+//  applySubstitutionMappings(TyTy::BaseType *,
+//                            const TyTy::SubstitutionArgumentMappings &);
 
   TyTy::TypeBoundPredicate
       getPredicateFromBound(std::shared_ptr<ast::types::TypeExpression>);
@@ -198,8 +196,8 @@ private:
 
   TraitReference *resolveTraitPath(std::shared_ptr<ast::types::TypePath>);
 
-  TyTy::SubstitutionArgumentMappings
-  getUsesSubstitutionArguments(TyTy::BaseType *);
+//  TyTy::SubstitutionArgumentMappings
+//  getUsesSubstitutionArguments(TyTy::BaseType *);
 
   bool checkGenericParamsAndArgs(const ast::GenericParams &,
                                  const ast::GenericArgs &);
