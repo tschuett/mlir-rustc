@@ -256,11 +256,10 @@ TyTy::BaseType *TypeResolver::checkArithmeticOrLogicalExpression(
     assert(false && "to be implemented");
   }
   default: {
-    return unifyWithSite(
-        arith->getNodeId(),
+    return Unification::unifyWithSite(
         TyTy::WithLocation(lhs, arith->getLHS()->getLocation()),
         TyTy::WithLocation(lhs, arith->getLHS()->getLocation()),
-        arith->getLocation());
+        arith->getLocation(), tcx);
   }
   }
 }
@@ -281,9 +280,9 @@ TyTy::BaseType *TypeResolver::checkReturnExpression(
     ty = TyTy::TupleType::getUnitType(ret->getNodeId());
   }
 
-  [[maybe_unused]] TyTy::BaseType *infered =
-      unify(ret->getNodeId(), TyTy::WithLocation(functionReturnTye),
-            TyTy::WithLocation(ty, loc), ret->getLocation());
+  [[maybe_unused]] TyTy::BaseType *infered = Unification::unifyWithSite(
+      TyTy::WithLocation(functionReturnTye), TyTy::WithLocation(ty, loc),
+      ret->getLocation(), tcx);
 
   return new TyTy::NeverType(ret->getNodeId());
 }
@@ -375,11 +374,10 @@ TypeResolver::checkIfExpression(std::shared_ptr<ast::IfExpression> ifExpr) {
     if (elseBlk->getKind() == TyTy::TypeKind::Never)
       return blk;
 
-    return unifyWithSite(
-        ifExpr->getNodeId(),
+    return Unification::unifyWithSite(
         TyTy::WithLocation(blk, ifExpr->getBlock()->getLocation()),
         TyTy::WithLocation(elseBlk, ifExpr->getTrailing()->getLocation()),
-        ifExpr->getLocation());
+        ifExpr->getLocation(), tcx);
   }
 
   return TyTy::TupleType::getUnitType(ifExpr->getNodeId());
@@ -393,7 +391,7 @@ TyTy::BaseType *TypeResolver::checkAssignmentExpression(
   coercionWithSite(ass->getNodeId(),
                    TyTy::WithLocation(lhs, ass->getLHS()->getLocation()),
                    TyTy::WithLocation(rhs, ass->getRHS()->getLocation()),
-                   ass->getLocation());
+                   ass->getLocation(), tcx);
 
   return TyTy::TupleType::getUnitType(ass->getNodeId());
 }
@@ -403,9 +401,10 @@ TyTy::BaseType *TypeResolver::checkComparisonExpression(
   TyTy::BaseType *l = checkExpression(cmp->getLHS());
   TyTy::BaseType *r = checkExpression(cmp->getRHS());
 
-  unifyWithSite(
-      cmp->getNodeId(), TyTy::WithLocation(l, cmp->getLHS()->getLocation()),
-      TyTy::WithLocation(r, cmp->getRHS()->getLocation()), cmp->getLocation());
+  Unification::unifyWithSite(
+      TyTy::WithLocation(l, cmp->getLHS()->getLocation()),
+      TyTy::WithLocation(r, cmp->getRHS()->getLocation()), cmp->getLocation(),
+      tcx);
 
   std::optional<TyTy::BaseType *> bo = tcx->lookupBuiltin("bool");
   if (bo)
@@ -426,9 +425,9 @@ TyTy::BaseType *TypeResolver::checkIfLetExpression(
   for (auto pat : pattern->getPatterns()) {
     TyTy::BaseType *armType = checkPattern(pat, scrutineeType);
 
-    unifyWithSite(ifLet->getNodeId(), TyTy::WithLocation(scrutineeType),
-                  TyTy::WithLocation(armType, pat->getLocation()),
-                  ifLet->getLocation());
+    Unification::unifyWithSite(TyTy::WithLocation(scrutineeType),
+                               TyTy::WithLocation(armType, pat->getLocation()),
+                               ifLet->getLocation(), tcx);
   }
 
   [[maybe_unused]] TyTy::BaseType *ifletBlock =

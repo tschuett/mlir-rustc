@@ -96,7 +96,7 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
   assert(bodyType);
 
   coercionWithSite(f->getNodeId(), TyTy::WithLocation(retType, returnTypeLoc),
-                   TyTy::WithLocation(bodyType), f->getLocation());
+                   TyTy::WithLocation(bodyType), f->getLocation(), tcx);
 
   popReturnType();
 }

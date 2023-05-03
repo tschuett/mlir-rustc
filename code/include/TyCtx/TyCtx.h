@@ -7,8 +7,8 @@
 #include "Basic/Ids.h"
 #include "Sema/Autoderef.h"
 #include "TyCtx/NodeIdentity.h"
-#include "TyCtx/TyTy.h"
 #include "TyCtx/TraitReference.h"
+#include "TyCtx/TyTy.h"
 
 #include <map>
 #include <optional>
@@ -113,6 +113,8 @@ public:
   std::optional<ast::Implementation *> lookupImplementation(basic::NodeId);
   std::optional<ast::AssociatedItem *> lookupAssociatedItem(basic::NodeId);
 
+  std::optional<NodeId> lookupAssociatedTypeMapping(NodeId id);
+
   [[nodiscard]] std::optional<basic::NodeId> lookupName(basic::NodeId);
 
   void insertResolvedName(basic::NodeId ref, basic::NodeId def);
@@ -128,6 +130,7 @@ public:
                             basic::NodeId capturedItem);
 
   std::set<basic::NodeId> getCaptures(NodeId);
+
 private:
   void generateBuiltins();
 
@@ -199,6 +202,8 @@ private:
 
   // closure captures
   std::map<basic::NodeId, std::set<basic::NodeId>> closureCaptureMappings;
+
+  std::map<NodeId, NodeId> associatedTypeMappings;
 };
 
 } // namespace rust_compiler::tyctx

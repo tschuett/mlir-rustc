@@ -186,9 +186,9 @@ private:
                                    const GenericArgs &);
   TyTy::BaseType *applyGenericArgsToADT(TyTy::ADTType *, Location,
                                         const GenericArgs &);
-//  TyTy::BaseType *
-//  applySubstitutionMappings(TyTy::BaseType *,
-//                            const TyTy::SubstitutionArgumentMappings &);
+  //  TyTy::BaseType *
+  //  applySubstitutionMappings(TyTy::BaseType *,
+  //                            const TyTy::SubstitutionArgumentMappings &);
 
   TyTy::TypeBoundPredicate
       getPredicateFromBound(std::shared_ptr<ast::types::TypeExpression>);
@@ -196,8 +196,10 @@ private:
 
   TraitReference *resolveTraitPath(std::shared_ptr<ast::types::TypePath>);
 
-//  TyTy::SubstitutionArgumentMappings
-//  getUsesSubstitutionArguments(TyTy::BaseType *);
+  //  TyTy::SubstitutionArgumentMappings
+  //  getUsesSubstitutionArguments(TyTy::BaseType *);
+
+  bool checkGenericParamsAndArgs(const TyTy::BaseType *, const ast::GenericArgs &);
 
   bool checkGenericParamsAndArgs(const ast::GenericParams &,
                                  const ast::GenericArgs &);

@@ -37,7 +37,7 @@ private:
   std::optional<ast::GenericParams> genericParams;
 };
 
-  /// https://rustc-dev-guide.rust-lang.org/ty.html
+/// https://rustc-dev-guide.rust-lang.org/ty.html
 /// https://doc.rust-lang.org/reference/types.html
 /// https://rustc-dev-guide.rust-lang.org/type-inference.html#inference-variables
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_type_ir/sty/enum.TyKind.html
@@ -146,7 +146,9 @@ public:
   basic::NodeId getTypeReference() const;
 
   void setReference(basic::NodeId);
-  void appendReference(basic::NodeId);
+
+  std::set<basic::NodeId> getCombinedReferences() const { return combined; }
+  void appendReference(basic::NodeId id);
 
   TypeKind getKind() const { return kind; }
 
@@ -157,6 +159,9 @@ public:
 
   bool isConcrete() const;
 
+  const BaseType *destructure() const;
+  BaseType *destructure();
+
 protected:
   BaseType(basic::NodeId ref, basic::NodeId ty_ref, TypeKind kind,
            TypeIdentity ident);
@@ -166,7 +171,6 @@ private:
   basic::NodeId typeReference;
   TypeKind kind;
   TypeIdentity identity;
-
   std::set<basic::NodeId> combined;
 };
 
@@ -469,6 +473,9 @@ public:
 
   unsigned getNumberOfSpecifiedBounds() override;
 
+  bool canResolve() const { return getReference() == getTypeReference(); }
+  BaseType *resolve() const;
+
 private:
   Identifier identifier;
   Location loc;
@@ -525,6 +532,24 @@ public:
 
 private:
   TypeVariable base;
+};
+
+class PlaceholderType : public BaseType {
+public:
+  bool canResolve() const;
+
+  BaseType *resolve() const;
+
+private:
+};
+
+class ProjectionType : public BaseType {
+public:
+  const BaseType *get() const { return base; }
+  BaseType *get() { return base; }
+
+private:
+  BaseType *base;
 };
 
 } // namespace rust_compiler::tyctx::TyTy

@@ -76,7 +76,7 @@ TyTy::BaseType *TypeResolver::checkClosureExpression(
       closure->getNodeId(),
       TyTy::WithLocation(resultType.getType(), resultTypeLocation),
       TyTy::WithLocation(closureType, closure->getBody()->getLocation()),
-      closure->getLocation());
+      closure->getLocation(), tcx);
 
   std::set<NodeId> captures = tcx->getCaptures(closure->getNodeId());
 

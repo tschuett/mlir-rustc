@@ -93,7 +93,7 @@ TypeResolver::checkLetStatement(std::shared_ptr<ast::LetStatement> let) {
     coercion(let->getNodeId(),
              TyTy::WithLocation(specifiedType, specifiedTypeLocation),
              TyTy::WithLocation(initExprType, initExprTypeLocation),
-             let->getLocation());
+             let->getLocation(), tcx);
 
     checkPattern(pattern, specifiedType);
   } else {

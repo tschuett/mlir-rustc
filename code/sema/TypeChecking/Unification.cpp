@@ -2,23 +2,76 @@
 
 #include "TyCtx/TyTy.h"
 
+#include <vector>
+
+using namespace rust_compiler::tyctx;
+using namespace rust_compiler::tyctx::TyTy;
+
 namespace rust_compiler::sema::type_checking {
 
 using namespace rust_compiler::tyctx;
 
-TyTy::BaseType *Unification::unify(TyTy::WithLocation lhs,
-                                   TyTy::WithLocation rhs, Location loc,
-                                   bool commit, bool emitErrors, bool inference,
-                                   std::vector<CommitSite> &commits,
-                                   std::vector<InferenceSite> &infers) {
+TyTy::BaseType *Unification::unify(bool forceCommit_, bool errors, bool infer) {
 
   TyTy::BaseType *leftType = lhs.getType();
   TyTy::BaseType *rightType = rhs.getType();
+  inference = infer;
+  emitErrors = errors;
+  forceCommit = forceCommit_;
 
   assert(leftType->getNumberOfSpecifiedBounds() == 0);
 
   assert(inference == false);
 
+  if (inference)
+    handleInference();
+
+  TyTy::BaseType *result = expect(leftType, rightType);
+
+  commits.push_back(CommitSite{leftType, rightType, result});
+
+  if (forceCommit)
+    commit(leftType, rightType, result);
+
+  if (result->getKind() == TypeKind::Error && emitErrors)
+    emitFailedUnification();
+
+  return result;
+}
+
+void Unification::handleInference() {
+  assert(false);
+  infers;
+}
+
+void Unification::emitFailedUnification() { assert(false); }
+
+void Unification::commit(TyTy::BaseType *leftType, TyTy::BaseType *rightType,
+                         TyTy::BaseType *result) {
+
+
+  // FIXME destructure
+  
+  result->appendReference(leftType->getReference());
+  result->appendReference(rightType->getReference());
+
+  for (auto ref : leftType->getCombinedReferences())
+    result->appendReference(ref);
+
+  for (auto ref : rightType->getCombinedReferences())
+    result->appendReference(ref);
+
+  leftType->appendReference(result->getReference());
+  leftType->appendReference(rightType->getReference());
+  rightType->appendReference(result->getReference());
+  rightType->appendReference(leftType->getReference());
+
+  
+  assert(false);
+}
+
+TyTy::BaseType *Unification::expect(TyTy::BaseType *leftType,
+                                    TyTy::BaseType *rightType) {
   switch (leftType->getKind()) {
   case TyTy::TypeKind::Bool: {
     assert(false);
@@ -57,7 +110,7 @@ TyTy::BaseType *Unification::unify(TyTy::WithLocation lhs,
     assert(false);
   }
   case TyTy::TypeKind::Tuple: {
-    assert(false);
+    return expectTuple(static_cast<TyTy::TupleType *>(leftType), rightType);
   }
   case TyTy::TypeKind::Parameter: {
     assert(false);
@@ -265,30 +318,70 @@ TyTy::BaseType *Unification::expectUSizeType(TyTy::USizeType *left,
   assert(false);
 }
 
-TyTy::BaseType *unify(basic::NodeId, TyTy::WithLocation lhs,
-                      TyTy::WithLocation rhs, Location unify) {
-  // assert(false && "to be implemented");
+TyTy::BaseType *Unification::expectTuple(TyTy::TupleType *left,
+                                         TyTy::BaseType *right) {
+  switch (right->getKind()) {
+  case TyTy::TypeKind::Bool:
+  case TyTy::TypeKind::Char:
+  case TyTy::TypeKind::Int:
+  case TyTy::TypeKind::Uint:
+  case TyTy::TypeKind::USize:
+  case TyTy::TypeKind::ISize:
+  case TyTy::TypeKind::Float:
+  case TyTy::TypeKind::Closure:
+  case TyTy::TypeKind::Function:
+  case TyTy::TypeKind::Never:
+  case TyTy::TypeKind::Str:
+  case TyTy::TypeKind::Parameter:
+  case TyTy::TypeKind::ADT:
+  case TyTy::TypeKind::Slice:
+  case TyTy::TypeKind::Projection:
+  case TyTy::TypeKind::Dynamic:
+  case TyTy::TypeKind::Array:
+  case TyTy::TypeKind::PlaceHolder:
+  case TyTy::TypeKind::FunctionPointer:
+  case TyTy::TypeKind::RawPointer:
+  case TyTy::TypeKind::Reference:
+  case TyTy::TypeKind::Error:
+    return new TyTy::ErrorType(0);
+  case TyTy::TypeKind::Inferred: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Tuple: {
+    TyTy::TupleType *tuple = static_cast<TyTy::TupleType *>(right);
+    if (left->getNumberOfFields() != tuple->getNumberOfFields())
+      return new TyTy::ErrorType(0);
+    // FIXME
+    assert(false);
+    std::vector<TyTy::TypeVariable> fields;
+    for (size_t i = 0; i < left->getNumberOfFields(); ++i) {
+      TyTy::BaseType *lel = left->getField(i);
+      TyTy::BaseType *rel = tuple->getField(i);
 
-  std::vector<CommitSite> commits;
-  std::vector<InferenceSite> infers;
+      TyTy::BaseType *unifiedType = Unification::unifyWithSite(
+          TyTy::WithLocation(lel), TyTy::WithLocation(rel), location, context);
+      if (unifiedType->getKind() == TypeKind::Error)
+        return new TyTy::ErrorType(0);
 
-  Unification uni;
-  return uni.unify(lhs, rhs, unify, true /*commit*/, true /*emit error*/,
-                   false
-                   /*infer*/,
-                   commits, infers);
+      fields.push_back(TypeVariable(unifiedType->getReference()));
+    }
+
+    return new TupleType(tuple->getReference(), Location::getEmptyLocation(),
+                         fields);
+  }
+  }
 }
 
-TyTy::BaseType *unifyWithSite(basic::NodeId, TyTy::WithLocation lhs,
-                              TyTy::WithLocation rhs, Location unify) {
+TyTy::BaseType *Unification::unifyWithSite(TyTy::WithLocation lhs,
+                                           TyTy::WithLocation rhs,
+                                           Location unify, TyCtx *context) {
+
   std::vector<CommitSite> commits;
   std::vector<InferenceSite> infers;
 
-  Unification uni;
-  return uni.unify(lhs, rhs, unify, true /*commit*/, true /*emit error*/,
-                   false
-                   /*infer*/,
-                   commits, infers);
+  Unification uni = {commits, infers, unify, lhs, rhs, context};
+
+  return uni.unify(true /*commit*/, true /*emitError*/, false /*infer*/);
 }
 
 } // namespace rust_compiler::sema::type_checking

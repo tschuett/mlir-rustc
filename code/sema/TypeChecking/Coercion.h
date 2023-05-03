@@ -2,6 +2,7 @@
 
 #include "Location.h"
 #include "Sema/Autoderef.h"
+#include "TyCtx/TyCtx.h"
 #include "TyCtx/TyTy.h"
 
 #include <vector>
@@ -10,8 +11,8 @@ namespace rust_compiler::sema::type_checking {
 
 /// https://doc.rust-lang.org/reference/type-coercions.html
 
-  using namespace rust_compiler::tyctx;
-  
+using namespace rust_compiler::tyctx;
+
 class CoercionResult {
   std::vector<Adjustment> adjustments;
   TyTy::BaseType *type = nullptr;
@@ -32,8 +33,11 @@ public:
 
 class Coercion {
   CoercionResult result;
+  TyCtx *context;
 
 public:
+  Coercion(TyCtx *context) : context(context) {}
+
   CoercionResult coercion(TyTy::BaseType *receiver, TyTy::BaseType *expected,
                           Location loc, bool allowAutoderef);
 
@@ -42,9 +46,11 @@ private:
 };
 
 TyTy::BaseType *coercion(basic::NodeId, TyTy::WithLocation lhs,
-                         TyTy::WithLocation rhs, Location unify);
+                         TyTy::WithLocation rhs, Location unify,
+                         TyCtx *context);
 
 TyTy::BaseType *coercionWithSite(basic::NodeId, TyTy::WithLocation lhs,
-                                 TyTy::WithLocation rhs, Location unify);
+                                 TyTy::WithLocation rhs, Location unify,
+                                 TyCtx *context);
 
 } // namespace rust_compiler::sema::type_checking

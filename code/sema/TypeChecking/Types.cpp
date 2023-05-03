@@ -59,8 +59,7 @@ void TypeResolver::checkWhereClause(const ast::WhereClause &) {
   assert(false && "to be implemented");
 }
 
-void TypeResolver::checkGenericParams(
-    const GenericParams &pa) {
+void TypeResolver::checkGenericParams(const GenericParams &pa) {
   std::vector<TyTy::TypeBoundPredicate> specifiedBounds;
   for (GenericParam &param : pa.getGenericParams()) {
     switch (param.getKind()) {
@@ -76,7 +75,7 @@ void TypeResolver::checkGenericParams(
       TyTy::ParamType *paramType = checkTypeParam(pa);
       tcx->insertType(pa.getIdentity(), paramType);
       // for every TypeParam, we add one Maping
-      //subst.push_back(TyTy::SubstitutionParamMapping(pa, paramType));
+      // subst.push_back(TyTy::SubstitutionParamMapping(pa, paramType));
       break;
     }
     case GenericParamKind::ConstParam: {
@@ -91,7 +90,7 @@ void TypeResolver::checkGenericParams(
           expressionType = checkExpression(cp.getBlock());
         coercionWithSite(cp.getNodeId(), TyTy::WithLocation(specifiedType),
                          TyTy::WithLocation(expressionType, cp.getLocation()),
-                         cp.getLocation());
+                         cp.getLocation(), tcx);
       }
       tcx->insertType(cp.getIdentity(), specifiedType);
       break;
@@ -250,25 +249,36 @@ TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
     }
     TyTy::BaseType *lookup = *result;
 
-//    if (rootType != nullptr) {
-//      if (lookup->needsGenericSubstitutions()) {
-//        if (!rootType->needsGenericSubstitutions()) {
-//          TyTy::SubstitutionArgumentMappings args =
-//              TyTy::getUsedSubstitutionArguments(rootType);
-//          lookup = applySubstitutionMappings(lookup, args);
-//        }
-//      }
-//    }
+    //    if (rootType != nullptr) {
+    //      such as: GenericStruct::<_>::new(123, 456)
+    //      if (lookup->needsGenericSubstitutions()) {
+    //        if (!rootType->needsGenericSubstitutions()) {
+    //          TyTy::SubstitutionArgumentMappings args =
+    //              TyTy::getUsedSubstitutionArguments(rootType);
+    //          lookup = applySubstitutionMappings(lookup, args);
+    //        }
+    //      }
+    //    }
 
+    // turbo-fish segment path::<ty>
     if (segs[i].hasGenerics()) {
-      lookup = applyGenericArgs(lookup, path->getLocation(),
-                                segs[i].getGenericArgs());
-      if (lookup->getKind() == TyTy::TypeKind::Error)
-        return new TyTy::ErrorType(segs[i].getNodeId());
+      if (lookup->needsGenericSubstitutions()) {
+        checkGenericParamsAndArgs(lookup, segs[i].getGenericArgs());
+      }
     } else if (lookup->needsGenericSubstitutions()) {
-      lookup =
-          applyGenericArgs(lookup, path->getLocation(), GenericArgs::empty());
+      // FIXME
     }
+
+    // if (segs[i].hasGenerics()) {
+    //   lookup = applyGenericArgs(lookup, path->getLocation(),
+    //                             segs[i].getGenericArgs());
+    //   if (lookup->getKind() == TyTy::TypeKind::Error)
+    //     return new TyTy::ErrorType(segs[i].getNodeId());
+    // } else if (lookup->needsGenericSubstitutions()) {
+    //   lookup =
+    //       applyGenericArgs(lookup, path->getLocation(),
+    //       GenericArgs::empty());
+    // }
 
     *resolvedNodeId = refNodeId;
     *offset = *offset + 1;
@@ -382,10 +392,10 @@ TypeResolver::checkArrayType(std::shared_ptr<ast::types::ArrayType> arr) {
   assert(usizeType.has_value());
   tcx->insertType(arr->getExpression()->getIdentity(), *usizeType);
 
-  unifyWithSite(
-      arr->getExpression()->getNodeId(), TyTy::WithLocation(*usizeType),
+  Unification::unifyWithSite(
+      TyTy::WithLocation(*usizeType),
       TyTy::WithLocation(capacityType, arr->getExpression()->getLocation()),
-      arr->getExpression()->getLocation());
+      arr->getExpression()->getLocation(), tcx);
 
   TyTy::BaseType *base = checkType(arr->getType());
 
@@ -394,16 +404,18 @@ TypeResolver::checkArrayType(std::shared_ptr<ast::types::ArrayType> arr) {
                              TyTy::TypeVariable(base->getReference()));
 }
 
-//TyTy::SubstitutionArgumentMappings
-//TypeResolver::getUsesSubstitutionArguments(TyTy::BaseType *type) {
-//  if (type->getKind() == TyTy::TypeKind::Function)
-//    return static_cast<TyTy::FunctionType *>(type)->getSubstitutionArguments();
-//  if (type->getKind() == TyTy::TypeKind::ADT)
-//    return static_cast<TyTy::ADTType *>(type)->getSubstitutionArguments();
-//  if (type->getKind() == TyTy::TypeKind::Closure)
-//    return static_cast<TyTy::ClosureType *>(type)->getSubstitutionArguments();
+// TyTy::SubstitutionArgumentMappings
+// TypeResolver::getUsesSubstitutionArguments(TyTy::BaseType *type) {
+//   if (type->getKind() == TyTy::TypeKind::Function)
+//     return static_cast<TyTy::FunctionType
+//     *>(type)->getSubstitutionArguments();
+//   if (type->getKind() == TyTy::TypeKind::ADT)
+//     return static_cast<TyTy::ADTType *>(type)->getSubstitutionArguments();
+//   if (type->getKind() == TyTy::TypeKind::Closure)
+//     return static_cast<TyTy::ClosureType
+//     *>(type)->getSubstitutionArguments();
 //
-//  return TyTy::SubstitutionArgumentMappings{};
-//}
+//   return TyTy::SubstitutionArgumentMappings{};
+// }
 
 } // namespace rust_compiler::sema::type_checking

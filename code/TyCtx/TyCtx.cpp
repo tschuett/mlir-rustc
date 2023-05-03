@@ -200,6 +200,14 @@ TyCtx::lookupAssociatedItem(basic::NodeId implId) {
   assert(false);
 }
 
+std::optional<NodeId> TyCtx::lookupAssociatedTypeMapping(NodeId id) {
+  auto it = associatedTypeMappings.find(id);
+  if (it == associatedTypeMappings.end())
+    return std::nullopt;
+
+  return it->second;
+}
+
 void TyCtx::insertAutoderefMapping(NodeId id,
                                    std::vector<sema::Adjustment> ad) {
   assert(autoderefMappings.find(id) == autoderefMappings.end());

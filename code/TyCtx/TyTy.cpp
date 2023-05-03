@@ -17,6 +17,8 @@ using namespace rust_compiler::tyctx;
 
 namespace rust_compiler::tyctx::TyTy {
 
+static constexpr uint32_t MAX_RECURSION_DEPTH = 1024 * 16;
+
 bool BaseType::needsGenericSubstitutions() const {
   switch (getKind()) {
   case TypeKind::Bool:
@@ -579,6 +581,138 @@ void InferType::applyScalarTypeHint(const BaseType &hint) {
 
 bool GenericParameters::needsSubstitution() const {
   return genericParams.has_value();
+}
+
+std::string GenericParameters::substToString() const {
+  if (genericParams) {
+    std::string buffer;
+    std::vector<ast::GenericParam> gps = (*genericParams).getGenericParams();
+    for (size_t i = 0; i < gps.size(); ++i) {
+      [[maybe_unused]] const ast::GenericParam &gp = gps[i];
+      // buffer += sub.toString();
+      //
+      // if ((i + 1) < substitutions.size())
+      //   buffer += ", ";
+    }
+
+    return buffer.empty() ? "" : "<" + buffer + ">";
+  }
+
+  return "empty";
+}
+
+const BaseType *BaseType::destructure() const {
+  uint32_t steps = 0;
+  const BaseType *x = this;
+
+  while (true) {
+    if (steps >= MAX_RECURSION_DEPTH) {
+      // report error
+      return new ErrorType(getReference());
+    }
+    switch (x->getKind()) {
+    case TypeKind::Parameter: {
+      const ParamType *p = static_cast<const ParamType *>(x);
+      BaseType *pr = p->resolve();
+      if (pr == x)
+        return pr;
+      x = pr;
+      break;
+    }
+    case TypeKind::PlaceHolder: {
+      const PlaceholderType *p = static_cast<const PlaceholderType *>(x);
+      if (!p->canResolve())
+        return p;
+
+      x = p->resolve();
+      break;
+    }
+    case TypeKind::Projection: {
+      const ProjectionType *p = static_cast<const ProjectionType *>(x);
+      x = p->get();
+      break;
+    }
+    default:
+      return x;
+    }
+  }
+}
+
+BaseType *BaseType::destructure() {
+  uint32_t steps = 0;
+  BaseType *x = this;
+
+  while (true) {
+    if (steps++ >= MAX_RECURSION_DEPTH) {
+      // report error
+      return new ErrorType(getReference());
+    }
+    switch (x->getKind()) {
+    case TypeKind::Parameter: {
+      ParamType *p = static_cast<ParamType *>(x);
+      BaseType *pr = p->resolve();
+      if (pr == x)
+        return pr;
+      x = pr;
+      break;
+    }
+    case TypeKind::PlaceHolder: {
+      PlaceholderType *p = static_cast<PlaceholderType *>(x);
+      if (!p->canResolve())
+        return p;
+
+      x = p->resolve();
+      break;
+    }
+    case TypeKind::Projection: {
+      ProjectionType *p = static_cast<ProjectionType *>(x);
+      x = p->get();
+      break;
+    }
+    default:
+      return x;
+    }
+  }
+}
+
+bool PlaceholderType::canResolve() const {
+  TyCtx *context = rust_compiler::session::session->getTypeContext();
+  return context->lookupAssociatedTypeMapping(getTypeReference()).has_value();
+}
+
+BaseType *PlaceholderType::resolve() const {
+  TyCtx *context = rust_compiler::session::session->getTypeContext();
+  std::optional<NodeId> result =
+      context->lookupAssociatedTypeMapping(getTypeReference());
+  assert(result.has_value());
+
+  return TypeVariable(*result).getType();
+}
+
+BaseType *ParamType::resolve() const {
+  TypeVariable var = {getTypeReference()};
+  BaseType *r = var.getType();
+
+  while (r->getKind() == TypeKind::Parameter) {
+    ParamType *rr = static_cast<ParamType *>(r);
+    if (!rr->canResolve())
+      break;
+
+    TypeVariable v(rr->getTypeReference());
+    BaseType *n = v.getType();
+
+    // fix infinite loop
+    if (r == n)
+      break;
+
+    r = n;
+  }
+
+  if (r->getKind() == TypeKind::Parameter &&
+      (r->getReference() == r->getTypeReference()))
+    return TypeVariable(r->getTypeReference()).getType();
+
+  return r;
 }
 
 } // namespace rust_compiler::tyctx::TyTy
