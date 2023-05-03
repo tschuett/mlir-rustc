@@ -18,6 +18,39 @@ namespace rust_compiler::tyctx::TyTy {
 
 using namespace rust_compiler::adt;
 
+enum class Mutability { Imm, Mut };
+
+class TypeBoundPredicate {
+public:
+  bool isError() const { return error; }
+
+  basic::NodeId getId() const { return id; }
+
+private:
+  basic::NodeId id;
+  bool error = false;
+};
+
+class TypeBoundsMappings {
+public:
+  std::vector<TypeBoundPredicate> &getSpecifiedBounds() {
+    return specifiedBounds;
+  }
+
+  const std::vector<TypeBoundPredicate> &getSpecifiedBounds() const {
+    return specifiedBounds;
+  }
+
+protected:
+  TypeBoundsMappings(std::vector<TypeBoundPredicate> specifiedBounds)
+      : specifiedBounds(specifiedBounds) {}
+
+  void addBound(const TypeBoundPredicate &predicate);
+
+private:
+  std::vector<TypeBoundPredicate> specifiedBounds;
+};
+
 /// https://rustc-dev-guide.rust-lang.org/generics.html
 class GenericParameters {
 public:
@@ -134,11 +167,13 @@ public:
 
   bool isConcrete() const;
 
+  TypeVariable clone() const;
+
 private:
   basic::NodeId id;
 };
 
-class BaseType {
+class BaseType : public TypeBoundsMappings {
 public:
   virtual ~BaseType() = default;
 
@@ -162,9 +197,20 @@ public:
   const BaseType *destructure() const;
   BaseType *destructure();
 
+  virtual BaseType *clone() const = 0;
+
+  void inheritBounds(std::span<TyTy::TypeBoundPredicate> specifiedBounds);
+
+  TypeIdentity getTypeIdentity() const { return identity; }
+
 protected:
-  BaseType(basic::NodeId ref, basic::NodeId ty_ref, TypeKind kind,
-           TypeIdentity ident);
+  BaseType(basic::NodeId ref, basic::NodeId typeRef, TypeKind kind,
+           TypeIdentity ident,
+           std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+
+  BaseType(basic::NodeId ref, basic::NodeId typeRef, TypeKind kind,
+           TypeIdentity ident, std::vector<TypeBoundPredicate> specifiedBounds,
+           std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
 private:
   basic::NodeId reference;
@@ -176,12 +222,17 @@ private:
 
 class IntType : public BaseType {
 public:
-  IntType(basic::NodeId, IntKind);
+  IntType(basic::NodeId, IntKind,
+          std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+  IntType(basic::NodeId, basic::NodeId, IntKind,
+          std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 
   IntKind getIntKind() const;
+
+  BaseType *clone() const final override;
 
 private:
   IntKind kind;
@@ -189,12 +240,17 @@ private:
 
 class UintType : public BaseType {
 public:
-  UintType(basic::NodeId, UintKind);
+  UintType(basic::NodeId, UintKind,
+           std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+  UintType(basic::NodeId, basic::NodeId, UintKind,
+           std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 
   UintKind getUintKind() const { return kind; }
+
+  BaseType *clone() const final override;
 
 private:
   UintKind kind;
@@ -202,29 +258,44 @@ private:
 
 class USizeType : public BaseType {
 public:
-  USizeType(basic::NodeId);
+  USizeType(basic::NodeId,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+  USizeType(basic::NodeId, basic::NodeId,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
+
+  BaseType *clone() const final override;
 };
 
 class ISizeType : public BaseType {
 public:
-  ISizeType(basic::NodeId);
+  ISizeType(basic::NodeId,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+  ISizeType(basic::NodeId, basic::NodeId,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
+
+  BaseType *clone() const final override;
 };
 
 /// F32 or F64
 class FloatType : public BaseType {
 public:
-  FloatType(basic::NodeId, FloatKind);
+  FloatType(basic::NodeId, FloatKind,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+  FloatType(basic::NodeId ref, basic::NodeId type, FloatKind,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 
   FloatKind getFloatKind() const { return kind; }
+
+  BaseType *clone() const final override;
 
 private:
   FloatKind kind;
@@ -233,47 +304,72 @@ private:
 /// false or true
 class BoolType : public BaseType {
 public:
-  BoolType(basic::NodeId);
+  BoolType(basic::NodeId,
+           std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+  BoolType(basic::NodeId, basic::NodeId,
+           std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
 
   unsigned getNumberOfSpecifiedBounds() override;
+
+  BaseType *clone() const final override;
 };
 
 class CharType : public BaseType {
 public:
-  CharType(basic::NodeId);
+  CharType(basic::NodeId,
+           std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+  CharType(basic::NodeId, basic::NodeId,
+           std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
 
   unsigned getNumberOfSpecifiedBounds() override;
+
+  BaseType *clone() const final override;
 };
 
 class StrType : public BaseType {
 public:
-  StrType(basic::NodeId);
+  StrType(basic::NodeId,
+          std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+  StrType(basic::NodeId, basic::NodeId,
+          std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
 
   unsigned getNumberOfSpecifiedBounds() override;
+
+  BaseType *clone() const final override;
 };
 
 /// !
 class NeverType : public BaseType {
 public:
-  NeverType(basic::NodeId);
+  NeverType(basic::NodeId,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+  NeverType(basic::NodeId, basic::NodeId,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
 
   unsigned getNumberOfSpecifiedBounds() override;
+
+  BaseType *clone() const final override;
 };
 
 /// (.., .., ..)
 class TupleType : public BaseType {
 public:
   TupleType(basic::NodeId, Location loc,
-            std::span<TyTy::TypeVariable> parameterTypes);
-  TupleType(basic::NodeId, Location loc);
+            std::vector<TyTy::TypeVariable> parameterTypes =
+                std::vector<TyTy::TypeVariable>(),
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+  TupleType(basic::NodeId, basic::NodeId, Location loc,
+            std::vector<TyTy::TypeVariable> parameterTypes =
+                std::vector<TyTy::TypeVariable>(),
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
@@ -282,6 +378,8 @@ public:
 
   size_t getNumberOfFields() const { return fields.size(); }
   BaseType *getField(size_t i) const { return fields[i].getType(); }
+
+  BaseType *clone() const final override;
 
 private:
   std::vector<TypeVariable> fields;
@@ -296,7 +394,18 @@ public:
           TyTy::BaseType *>>
           parameters,
       TyTy::BaseType *returnType,
-      std::optional<ast::GenericParams> genericParams);
+      std::optional<ast::GenericParams> genericParams,
+      std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+
+  FunctionType(
+      basic::NodeId, basic::NodeId, lexer::Identifier name, tyctx::ItemIdentity,
+      std::vector<std::pair<
+          std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
+          TyTy::BaseType *>>
+          parameters,
+      TyTy::BaseType *returnType,
+      std::optional<ast::GenericParams> genericParams,
+      std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
 
@@ -313,6 +422,8 @@ public:
                 TyTy::BaseType *>>
   getParameters() const;
 
+  BaseType *clone() const final override;
+
 private:
   basic::NodeId id;
   lexer::Identifier name;
@@ -328,19 +439,39 @@ private:
 /// https://doc.rust-lang.org/stable/nightly-rustc/rustc_middle/ty/struct.ClosureSubsts.html
 class ClosureType : public BaseType, public GenericParameters {
 public:
-  ClosureType(basic::NodeId id, Location loc, TypeIdentity ident,
-              TupleType *closureArgs, TypeVariable resultType,
+  ClosureType(basic::NodeId id, TypeIdentity ident, TupleType *closureArgs,
+              TypeVariable resultType,
               std::optional<ast::GenericParams> genericParams,
-              std::set<basic::NodeId> captures)
+              std::set<basic::NodeId> captures,
+              std::set<basic::NodeId> refs = std::set<basic::NodeId>(),
+              std::vector<TypeBoundPredicate> specifiedBounds =
+                  std::vector<TypeBoundPredicate>())
       : BaseType(id, id, TypeKind::Closure, ident),
         GenericParameters(genericParams), parameters(closureArgs),
-        resultType(resultType), captures(captures){};
+        resultType(resultType), captures(captures) {
+    inheritBounds(specifiedBounds);
+  };
+
+  ClosureType(basic::NodeId id, basic::NodeId type, TypeIdentity ident,
+              TupleType *closureArgs, TypeVariable resultType,
+              std::optional<ast::GenericParams> genericParams,
+              std::set<basic::NodeId> captures,
+              std::set<basic::NodeId> refs = std::set<basic::NodeId>(),
+              std::vector<TypeBoundPredicate> specifiedBounds =
+                  std::vector<TypeBoundPredicate>())
+      : BaseType(id, type, TypeKind::Closure, ident),
+        GenericParameters(genericParams), parameters(closureArgs),
+        resultType(resultType), captures(captures) {
+    inheritBounds(specifiedBounds);
+  };
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
 
   TyTy::TupleType *getParameters() const { return parameters; }
   TyTy::BaseType *getResultType() const { return resultType.getType(); }
+
+  BaseType *clone() const final override;
 
 private:
   TyTy::TupleType *parameters;
@@ -350,7 +481,12 @@ private:
 
 class InferType : public BaseType {
 public:
-  InferType(basic::NodeId, InferKind kind, TypeHint hint, Location loc);
+  InferType(basic::NodeId, InferKind kind, TypeHint hint, Location loc,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+
+  InferType(basic::NodeId, basic::NodeId, InferKind kind, TypeHint hint,
+            Location loc,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   InferKind getInferredKind() const { return inferKind; }
 
@@ -360,6 +496,8 @@ public:
 
   void applyScalarTypeHint(const BaseType &hint);
 
+  BaseType *clone() const final override;
+
 private:
   InferKind inferKind;
   TypeHint defaultHint;
@@ -367,10 +505,15 @@ private:
 
 class ErrorType : public BaseType {
 public:
-  ErrorType(basic::NodeId);
+  ErrorType(basic::NodeId,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+  ErrorType(basic::NodeId, basic::NodeId,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
+
+  BaseType *clone() const final override;
 };
 
 class WithLocation {
@@ -392,20 +535,21 @@ class StructFieldType {
 public:
   StructFieldType(basic::NodeId, const adt::Identifier &, TyTy::BaseType *,
                   Location loc);
-  StructFieldType(basic::NodeId, std::string_view, TyTy::BaseType *,
-                  Location loc);
+//  StructFieldType(basic::NodeId, std::string_view, TyTy::BaseType *,
+//                  Location loc);
 
   TyTy::BaseType *getFieldType() const { return type; }
 
   //  std::string toString() const override;
   //  unsigned getNumberOfSpecifiedBounds() override;
 
+  StructFieldType *clone() const;
+
 private:
-  [[maybe_unused]] basic::NodeId ref;
+  basic::NodeId ref;
   TyTy::BaseType *type;
   Location loc;
-  std::optional<adt::Identifier> id;
-  std::optional<std::string> idStr;
+  adt::Identifier identifier;
 };
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.VariantDef.html
@@ -414,12 +558,14 @@ enum class VariantKind { Enum, Struct, Tuple };
 class VariantDef {
 public:
   VariantDef(basic::NodeId, const adt::Identifier &, TypeIdentity, VariantKind,
-             std::span<TyTy::StructFieldType *>);
+             const std::vector<TyTy::StructFieldType *>&);
 
   VariantKind getKind() const { return kind; }
   basic::NodeId getId() const { return id; }
 
   std::vector<TyTy::StructFieldType *> getFields() const;
+
+  VariantDef *clone() const;
 
 private:
   basic::NodeId id;
@@ -434,7 +580,11 @@ enum class ADTKind { StructStruct, TupleStruct };
 class ADTType : public BaseType, public GenericParameters {
 public:
   ADTType(basic::NodeId, const adt::Identifier &, TypeIdentity, ADTKind,
-          std::span<VariantDef *>, std::optional<ast::GenericParams>);
+          std::span<VariantDef *>, std::optional<ast::GenericParams>,
+          std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+  ADTType(basic::NodeId, basic::NodeId, const adt::Identifier &, TypeIdentity,
+          ADTKind, std::span<VariantDef *>, std::optional<ast::GenericParams>,
+          std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
@@ -445,29 +595,28 @@ public:
 
   std::vector<VariantDef *> getVariants() const;
 
+  BaseType *clone() const final override;
+
 private:
   adt::Identifier identifier;
   ADTKind kind;
   std::vector<VariantDef *> variants;
 };
 
-class TypeBoundPredicate {
-public:
-  bool isError() const { return error; }
-
-private:
-  bool error = false;
-};
-
 class ParamType : public BaseType {
 public:
   ParamType(const Identifier &identifier, Location loc, basic::NodeId id,
             const ast::TypeParam &tpe,
-            std::span<TyTy::TypeBoundPredicate> preds)
-      : BaseType(id, id, TypeKind::Parameter, TypeIdentity::empty()),
-        identifier(identifier), loc(loc), type(tpe) {
-    bounds = {preds.begin(), preds.end()};
-  }
+            std::vector<TyTy::TypeBoundPredicate> preds,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(id, id, TypeKind::Parameter, TypeIdentity::empty(), refs),
+        identifier(identifier), loc(loc), type(tpe), bounds(preds) {}
+  ParamType(const Identifier &identifier, Location loc, basic::NodeId id,
+            basic::NodeId typeId, const ast::TypeParam &tpe,
+            std::vector<TyTy::TypeBoundPredicate> preds,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(id, typeId, TypeKind::Parameter, TypeIdentity::empty(), refs),
+        identifier(identifier), loc(loc), type(tpe), bounds(preds) {}
 
   std::string toString() const override;
 
@@ -475,6 +624,8 @@ public:
 
   bool canResolve() const { return getReference() == getTypeReference(); }
   BaseType *resolve() const;
+
+  BaseType *clone() const final override;
 
 private:
   Identifier identifier;
@@ -486,13 +637,21 @@ private:
 class ArrayType : public BaseType {
 public:
   ArrayType(basic::NodeId id, Location loc,
-            std::shared_ptr<ast::Expression> expr, TypeVariable type)
-      : BaseType(id, id, TypeKind::Array, TypeIdentity::empty()), loc(loc),
-        expr(expr), type(type) {}
+            std::shared_ptr<ast::Expression> expr, TypeVariable type,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(id, id, TypeKind::Array, TypeIdentity::empty(), refs),
+        loc(loc), expr(expr), type(type) {}
+  ArrayType(basic::NodeId id, basic::NodeId typeId, Location loc,
+            std::shared_ptr<ast::Expression> expr, TypeVariable type,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(id, typeId, TypeKind::Array, TypeIdentity::empty(), refs),
+        loc(loc), expr(expr), type(type) {}
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
   TyTy::BaseType *getElementType() const;
+
+  BaseType *clone() const final override;
 
 private:
   Location loc;
@@ -502,16 +661,45 @@ private:
 
 class RawPointerType : public BaseType {
 public:
+  RawPointerType(basic::NodeId id, TypeVariable type, Mutability mut,
+                 std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(id, id, TypeKind::RawPointer, TypeIdentity::empty(), refs),
+        base(type), mut(mut){};
+
+  RawPointerType(basic::NodeId id, basic::NodeId typeId, TypeVariable type,
+                 Mutability mut,
+                 std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(id, typeId, TypeKind::RawPointer, TypeIdentity::empty(), refs),
+        base(type), mut(mut){};
+
   BaseType *getBase() const { return base.getType(); }
+
+  BaseType *clone() const final override;
 
 private:
   TypeVariable base;
+  Mutability mut;
 };
 
 class FunctionPointerType : public BaseType {
 public:
+  FunctionPointerType(basic::NodeId ref, Location loc,
+                      std::vector<TypeVariable> params, TypeVariable resultType,
+                      std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(ref, ref, TypeKind::FunctionPointer, TypeIdentity::empty(),
+                 refs),
+        parameters(params), resultType(resultType) {}
+  FunctionPointerType(basic::NodeId ref, basic::NodeId typeRef, Location loc,
+                      std::vector<TypeVariable> params, TypeVariable resultType,
+                      std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(ref, typeRef, TypeKind::FunctionPointer, TypeIdentity::empty(),
+                 refs),
+        parameters(params), resultType(resultType) {}
+
   TyTy::BaseType *getReturnType() const;
   std::vector<TypeVariable> getParameters() const;
+
+  BaseType *clone() const final override;
 
 private:
   std::vector<TypeVariable> parameters;
@@ -520,7 +708,19 @@ private:
 
 class SliceType : public BaseType {
 public:
+  SliceType(basic::NodeId ref, Location loc, TypeVariable base,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(ref, ref, TypeKind::Slice, TypeIdentity::empty(), refs),
+        elementType(base) {}
+  SliceType(basic::NodeId ref, basic::NodeId typeRef, Location loc,
+            TypeVariable base,
+            std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(ref, typeRef, TypeKind::Slice, TypeIdentity::empty(), refs),
+        elementType(base) {}
+
   TyTy::BaseType *getElementType() const { return elementType.getType(); }
+
+  BaseType *clone() const final override;
 
 private:
   TypeVariable elementType;
@@ -528,25 +728,55 @@ private:
 
 class ReferenceType : public BaseType {
 public:
+  ReferenceType(basic::NodeId ref, TypeVariable base, Mutability mut,
+                std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(ref, ref, TypeKind::Reference, TypeIdentity::empty(), refs),
+        base(base), mut(mut) {}
+  ReferenceType(basic::NodeId ref, basic::NodeId typeRef, TypeVariable base,
+                Mutability mut,
+                std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(ref, typeRef, TypeKind::Reference, TypeIdentity::empty(),
+                 refs),
+        base(base), mut(mut) {}
+
   BaseType *getBase() const { return base.getType(); }
+
+  BaseType *clone() const final override;
 
 private:
   TypeVariable base;
+  Mutability mut;
 };
 
 class PlaceholderType : public BaseType {
 public:
+  PlaceholderType(const Identifier &id, basic::NodeId ref,
+                  std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(ref, ref, TypeKind::PlaceHolder, TypeIdentity::empty(), refs),
+        id(id) {}
+  PlaceholderType(const Identifier &id, basic::NodeId ref,
+                  basic::NodeId typeRef,
+                  std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(ref, typeRef, TypeKind::PlaceHolder, TypeIdentity::empty(),
+                 refs),
+        id(id) {}
+
   bool canResolve() const;
 
   BaseType *resolve() const;
 
+  BaseType *clone() const final override;
+
 private:
+  Identifier id;
 };
 
 class ProjectionType : public BaseType {
 public:
   const BaseType *get() const { return base; }
   BaseType *get() { return base; }
+
+  BaseType *clone() const final override;
 
 private:
   BaseType *base;

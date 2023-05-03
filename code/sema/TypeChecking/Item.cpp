@@ -140,9 +140,9 @@ void TypeResolver::checkTupleStruct(ast::TupleStruct *s) {
   if (s->hasTupleFields()) {
     for (TupleField &field : s->getTupleFields().getFields()) {
       TyTy::BaseType *fieldType = checkType(field.getType());
-      TyTy::StructFieldType *fiel =
-          new TyTy::StructFieldType(field.getNodeId(), std::to_string(idx),
-                                    fieldType, field.getLocation());
+      TyTy::StructFieldType *fiel = new TyTy::StructFieldType(
+          field.getNodeId(), Identifier(std::to_string(idx)), fieldType,
+          field.getLocation());
       fields.push_back(fiel);
       tcx->insertType(field.getIdentity(), fieldType);
       ++idx;

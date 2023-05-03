@@ -80,7 +80,7 @@ TyTy::BaseType *TypeResolver::checkClosureExpression(
 
   std::set<NodeId> captures = tcx->getCaptures(closure->getNodeId());
 
-  return new TyTy::ClosureType(closure->getNodeId(), closure->getLocation(),
+  return new TyTy::ClosureType(closure->getNodeId(),
                                ident, closureArgs, resultType,
                                genericParams, captures);
 

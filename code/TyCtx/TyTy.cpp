@@ -1,6 +1,7 @@
 #include "TyCtx/TyTy.h"
 
 #include "ADT/CanonicalPath.h"
+#include "AST/Patterns/Patterns.h"
 #include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
 #include "Location.h"
@@ -73,10 +74,17 @@ TyTy::BaseType *TypeVariable::getType() const {
   assert(false);
 }
 
-BaseType::BaseType(basic::NodeId ref, basic::NodeId typeReference,
-                   TypeKind kind, TypeIdentity ident)
-    : reference(ref), typeReference(typeReference), kind(kind),
-      identity(ident) {}
+BaseType::BaseType(basic::NodeId ref, basic::NodeId ty_ref, TypeKind kind,
+                   TypeIdentity ident, std::set<basic::NodeId> refs)
+    : TypeBoundsMappings({}), reference(ref), typeReference(ty_ref), kind(kind),
+      identity(ident), combined(refs) {}
+
+BaseType::BaseType(basic::NodeId ref, basic::NodeId ty_ref, TypeKind kind,
+                   TypeIdentity ident,
+                   std::vector<TypeBoundPredicate> specified_bounds,
+                   std::set<basic::NodeId> refs)
+    : TypeBoundsMappings(specified_bounds), reference(ref),
+      typeReference(ty_ref), kind(kind), identity(ident), combined(refs) {}
 
 basic::NodeId BaseType::getReference() const { return reference; }
 
@@ -86,18 +94,36 @@ void BaseType::setReference(basic::NodeId ref) { reference = ref; }
 
 void BaseType::appendReference(basic::NodeId ref) { combined.insert(ref); }
 
-BoolType::BoolType(basic::NodeId reference)
-    : BaseType(reference, reference, TypeKind::Bool, TypeIdentity::empty()) {}
+BoolType::BoolType(basic::NodeId reference, std::set<basic::NodeId> refs)
+    : BaseType(reference, reference, TypeKind::Bool, TypeIdentity::empty(),
+               refs) {}
+
+BoolType::BoolType(basic::NodeId reference, basic::NodeId typeRef,
+                   std::set<basic::NodeId> refs)
+    : BaseType(reference, typeRef, TypeKind::Bool, TypeIdentity::empty(),
+               refs) {}
 
 std::string BoolType::toString() const { return "bool"; }
 
-CharType::CharType(basic::NodeId reference)
-    : BaseType(reference, reference, TypeKind::Char, TypeIdentity::empty()) {}
+CharType::CharType(basic::NodeId reference, std::set<basic::NodeId> refs)
+    : BaseType(reference, reference, TypeKind::Char, TypeIdentity::empty(),
+               refs) {}
+
+CharType::CharType(basic::NodeId reference, basic::NodeId type,
+                   std::set<basic::NodeId> refs)
+    : BaseType(reference, type, TypeKind::Char, TypeIdentity::empty(), refs) {}
 
 std::string CharType::toString() const { return "char"; }
 
-FloatType::FloatType(basic::NodeId id, FloatKind kind)
-    : BaseType(id, id, TypeKind::Float, TypeIdentity::empty()), kind(kind) {}
+FloatType::FloatType(basic::NodeId id, FloatKind kind,
+                     std::set<basic::NodeId> refs)
+    : BaseType(id, id, TypeKind::Float, TypeIdentity::empty(), refs),
+      kind(kind) {}
+
+FloatType::FloatType(basic::NodeId id, basic::NodeId type, FloatKind kind,
+                     std::set<basic::NodeId> refs)
+    : BaseType(id, type, TypeKind::Float, TypeIdentity::empty(), refs),
+      kind(kind) {}
 
 std::string FloatType::toString() const {
   switch (kind) {
@@ -110,8 +136,14 @@ std::string FloatType::toString() const {
 
 IntKind IntType::getIntKind() const { return kind; }
 
-IntType::IntType(basic::NodeId id, IntKind kind)
-    : BaseType(id, id, TypeKind::Int, TypeIdentity::empty()), kind(kind) {}
+IntType::IntType(basic::NodeId id, IntKind kind, std::set<basic::NodeId> refs)
+    : BaseType(id, id, TypeKind::Int, TypeIdentity::empty(), refs), kind(kind) {
+}
+
+IntType::IntType(basic::NodeId id, basic::NodeId type, IntKind kind,
+                 std::set<basic::NodeId> refs)
+    : BaseType(id, type, TypeKind::Int, TypeIdentity::empty(), refs),
+      kind(kind) {}
 
 std::string IntType::toString() const {
   switch (kind) {
@@ -128,18 +160,33 @@ std::string IntType::toString() const {
   }
 }
 
-ISizeType::ISizeType(basic::NodeId id)
-    : BaseType(id, id, TypeKind::ISize, TypeIdentity::empty()) {}
+ISizeType::ISizeType(basic::NodeId id, std::set<basic::NodeId> refs)
+    : BaseType(id, id, TypeKind::ISize, TypeIdentity::empty(), refs) {}
+
+ISizeType::ISizeType(basic::NodeId id, basic::NodeId type,
+                     std::set<basic::NodeId> refs)
+    : BaseType(id, type, TypeKind::ISize, TypeIdentity::empty(), refs) {}
 
 std::string ISizeType::toString() const { return "isize"; }
 
-NeverType::NeverType(basic::NodeId id)
-    : BaseType(id, id, TypeKind::Never, TypeIdentity::empty()) {}
+NeverType::NeverType(basic::NodeId id, std::set<basic::NodeId> refs)
+    : BaseType(id, id, TypeKind::Never, TypeIdentity::empty(), refs) {}
+
+NeverType::NeverType(basic::NodeId id, basic::NodeId type,
+                     std::set<basic::NodeId> refs)
+    : BaseType(id, type, TypeKind::Never, TypeIdentity::empty(), refs) {}
 
 std::string NeverType::toString() const { return "!"; }
 
-UintType::UintType(basic::NodeId id, UintKind kind)
-    : BaseType(id, id, TypeKind::Uint, TypeIdentity::empty()), kind(kind) {}
+UintType::UintType(basic::NodeId id, UintKind kind,
+                   std::set<basic::NodeId> refs)
+    : BaseType(id, id, TypeKind::Uint, TypeIdentity::empty(), refs),
+      kind(kind) {}
+
+UintType::UintType(basic::NodeId id, basic::NodeId type, UintKind kind,
+                   std::set<basic::NodeId> refs)
+    : BaseType(id, type, TypeKind::Uint, TypeIdentity::empty(), refs),
+      kind(kind) {}
 
 std::string UintType::toString() const {
   switch (kind) {
@@ -156,26 +203,37 @@ std::string UintType::toString() const {
   }
 }
 
-USizeType::USizeType(basic::NodeId id)
-    : BaseType(id, id, TypeKind::USize, TypeIdentity::empty()) {}
+USizeType::USizeType(basic::NodeId id, std::set<basic::NodeId> refs)
+    : BaseType(id, id, TypeKind::USize, TypeIdentity::empty(), refs) {}
+
+USizeType::USizeType(basic::NodeId id, basic::NodeId type,
+                     std::set<basic::NodeId> refs)
+    : BaseType(id, type, TypeKind::USize, TypeIdentity::empty(), refs) {}
 
 std::string USizeType::toString() const { return "usize"; }
 
-StrType::StrType(basic::NodeId reference)
-    : BaseType(reference, reference, TypeKind::Str, TypeIdentity::empty()) {}
+StrType::StrType(basic::NodeId reference, std::set<basic::NodeId> refs)
+    : BaseType(reference, reference, TypeKind::Str, TypeIdentity::empty(),
+               refs) {}
+
+StrType::StrType(basic::NodeId reference, basic::NodeId type,
+                 std::set<basic::NodeId> refs)
+    : BaseType(reference, type, TypeKind::Str, TypeIdentity::empty(), refs) {}
 
 std::string StrType::toString() const { return "str"; }
 
 unsigned StrType::getNumberOfSpecifiedBounds() { return 0; }
 
 TupleType::TupleType(basic::NodeId id, Location loc,
-                     std::span<TyTy::TypeVariable> parameterTyps)
-    : BaseType(id, id, TypeKind::Tuple, TypeIdentity::from(loc)) {
-  fields = {parameterTyps.begin(), parameterTyps.end()};
-}
-
-TupleType::TupleType(basic::NodeId id, Location loc)
-    : BaseType(id, id, TypeKind::Tuple, TypeIdentity::from(loc)) {}
+                     std::vector<TyTy::TypeVariable> parameterTyps,
+                     std::set<basic::NodeId> refs)
+    : BaseType(id, id, TypeKind::Tuple, TypeIdentity::from(loc), refs),
+      fields(parameterTyps) {}
+TupleType::TupleType(basic::NodeId id, basic::NodeId type, Location loc,
+                     std::vector<TyTy::TypeVariable> parameterTyps,
+                     std::set<basic::NodeId> refs)
+    : BaseType(id, type, TypeKind::Tuple, TypeIdentity::from(loc), refs),
+      fields(parameterTyps) {}
 
 TupleType *TupleType::getUnitType(basic::NodeId id) {
   return new TupleType(id, Location::getBuiltinLocation());
@@ -198,8 +256,12 @@ std::string TupleType::toString() const {
   return stream.str();
 }
 
-ErrorType::ErrorType(basic::NodeId id)
-    : BaseType(id, id, TypeKind::Error, TypeIdentity::empty()) {}
+ErrorType::ErrorType(basic::NodeId id, std::set<basic::NodeId> refs)
+    : BaseType(id, id, TypeKind::Error, TypeIdentity::empty(), refs) {}
+
+ErrorType::ErrorType(basic::NodeId id, basic::NodeId type,
+                     std::set<basic::NodeId> refs)
+    : BaseType(id, type, TypeKind::Error, TypeIdentity::empty(), refs) {}
 
 std::string ErrorType::toString() const { return "error"; }
 
@@ -209,9 +271,24 @@ FunctionType::FunctionType(
         std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
         TyTy::BaseType *>>
         parameters,
-    TyTy::BaseType *returnType, std::optional<ast::GenericParams> genericParams)
+    TyTy::BaseType *returnType, std::optional<ast::GenericParams> genericParams,
+    std::set<basic::NodeId> refs)
     : BaseType(id, id, TypeKind::Function,
-               TypeIdentity(ident.getPath(), ident.getLocation())),
+               TypeIdentity(ident.getPath(), ident.getLocation()), refs),
+      GenericParameters(genericParams), id(id), name(name), ident(ident),
+      parameters(parameters), returnType(returnType) {}
+
+FunctionType::FunctionType(
+    basic::NodeId id, basic::NodeId type, lexer::Identifier name,
+    tyctx::ItemIdentity ident,
+    std::vector<std::pair<
+        std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
+        TyTy::BaseType *>>
+        parameters,
+    TyTy::BaseType *returnType, std::optional<ast::GenericParams> genericParams,
+    std::set<basic::NodeId> refs)
+    : BaseType(id, type, TypeKind::Function,
+               TypeIdentity(ident.getPath(), ident.getLocation()), refs),
       GenericParameters(genericParams), id(id), name(name), ident(ident),
       parameters(parameters), returnType(returnType) {}
 
@@ -244,8 +321,12 @@ unsigned ErrorType::getNumberOfSpecifiedBounds() { return 0; }
 unsigned InferType::getNumberOfSpecifiedBounds() { return 0; }
 
 InferType::InferType(basic::NodeId ref, InferKind kind, TypeHint hint,
-                     Location loc)
-    : BaseType(ref, ref, TypeKind::Inferred, TypeIdentity::from(loc)),
+                     Location loc, std::set<basic::NodeId> refs)
+    : BaseType(ref, ref, TypeKind::Inferred, TypeIdentity::from(loc), refs),
+      inferKind(kind), defaultHint(hint) {}
+InferType::InferType(basic::NodeId ref, basic::NodeId type, InferKind kind,
+                     TypeHint hint, Location loc, std::set<basic::NodeId> refs)
+    : BaseType(ref, type, TypeKind::Inferred, TypeIdentity::from(loc), refs),
       inferKind(kind), defaultHint(hint) {}
 
 std::string InferType::toString() const {
@@ -364,25 +445,30 @@ unsigned ClosureType::getNumberOfSpecifiedBounds() { return 0; }
 
 StructFieldType::StructFieldType(basic::NodeId ref, const adt::Identifier &id,
                                  TyTy::BaseType *type, Location loc)
-    : ref(ref), type(type), loc(loc), id(id) {}
-
-StructFieldType::StructFieldType(basic::NodeId ref, std::string_view id,
-                                 TyTy::BaseType *type, Location loc)
-    : ref(ref), type(type), loc(loc), id(id) {}
+    : ref(ref), type(type), loc(loc), identifier(id) {}
 
 VariantDef::VariantDef(basic::NodeId id, const adt::Identifier &identifier,
                        TypeIdentity ident, VariantKind kind,
-                       std::span<TyTy::StructFieldType *> f)
-    : id(id), identifier(identifier), ident(ident), kind(kind) {
-  fields = {f.begin(), f.end()};
-}
+                       const std::vector<TyTy::StructFieldType *> &f)
+    : id(id), identifier(identifier), ident(ident), kind(kind), fields(f) {}
 
 ADTType::ADTType(basic::NodeId id, const adt::Identifier &identifier,
                  TypeIdentity ident, ADTKind kind,
                  std::span<VariantDef *> variant,
-                 std::optional<ast::GenericParams> genericParams)
-    : BaseType(id, id, TypeKind::ADT, ident), GenericParameters(genericParams),
-      identifier(identifier), kind(kind) {
+                 std::optional<ast::GenericParams> genericParams,
+                 std::set<basic::NodeId> refs)
+    : BaseType(id, id, TypeKind::ADT, ident, refs),
+      GenericParameters(genericParams), identifier(identifier), kind(kind) {
+  variants = {variant.begin(), variant.end()};
+}
+
+ADTType::ADTType(basic::NodeId id, basic::NodeId typeId,
+                 const adt::Identifier &identifier, TypeIdentity ident,
+                 ADTKind kind, std::span<VariantDef *> variant,
+                 std::optional<ast::GenericParams> genericParams,
+                 std::set<basic::NodeId> refs)
+    : BaseType(id, typeId, TypeKind::ADT, ident, refs),
+      GenericParameters(genericParams), identifier(identifier), kind(kind) {
   variants = {variant.begin(), variant.end()};
 }
 
@@ -713,6 +799,138 @@ BaseType *ParamType::resolve() const {
     return TypeVariable(r->getTypeReference()).getType();
 
   return r;
+}
+
+void TypeBoundsMappings::addBound(const TypeBoundPredicate &predicate) {
+  for (TypeBoundPredicate &bound : specifiedBounds) {
+    if (bound.getId() == predicate.getId())
+      return;
+  }
+  specifiedBounds.push_back(predicate);
+}
+
+void BaseType::inheritBounds(
+    std::span<TyTy::TypeBoundPredicate> specifiedBounds) {
+  for (auto &bound : specifiedBounds)
+    addBound(bound);
+}
+
+BaseType *BoolType::clone() const {
+  return new BoolType(getReference(), getTypeReference(),
+                      getCombinedReferences());
+}
+
+BaseType *IntType::clone() const {
+  return new IntType(getReference(), getTypeReference(), getIntKind(),
+                     getCombinedReferences());
+}
+
+BaseType *UintType::clone() const {
+  return new UintType(getReference(), getTypeReference(), getUintKind(),
+                      getCombinedReferences());
+}
+
+BaseType *FloatType::clone() const {
+  return new FloatType(getReference(), getTypeReference(), getFloatKind(),
+                       getCombinedReferences());
+}
+
+BaseType *USizeType::clone() const {
+  return new USizeType(getReference(), getTypeReference(),
+                       getCombinedReferences());
+}
+
+BaseType *ISizeType::clone() const {
+  return new ISizeType(getReference(), getTypeReference(),
+                       getCombinedReferences());
+}
+
+BaseType *CharType::clone() const {
+  return new CharType(getReference(), getTypeReference(),
+                      getCombinedReferences());
+}
+
+BaseType *StrType::clone() const {
+  return new StrType(getReference(), getTypeReference(),
+                     getCombinedReferences());
+}
+
+BaseType *NeverType::clone() const {
+  return new NeverType(getReference(), getTypeReference(),
+                       getCombinedReferences());
+}
+
+BaseType *TupleType::clone() const {
+  std::vector<TypeVariable> clonedFields;
+  for (const auto &f : fields)
+    clonedFields.push_back(f.clone());
+
+  return new TupleType(getReference(), getTypeReference(),
+                       Location::getEmptyLocation(), clonedFields,
+                       getCombinedReferences());
+}
+
+BaseType *FunctionType::clone() const {
+
+  std::vector<
+      std::pair<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
+                BaseType *>>
+      clonedParams;
+  for (auto &p : parameters)
+    clonedParams.push_back({p.first, p.second->clone()});
+
+  return new FunctionType(getReference(), getTypeReference(), getIdentifier(),
+                          ident, clonedParams, getReturnType()->clone(),
+                          getGenericParams(), getCombinedReferences());
+}
+
+BaseType *ClosureType::clone() const {
+  return new ClosureType(getReference(), getTypeReference(), getTypeIdentity(),
+                         (TyTy::TupleType *)parameters->clone(), resultType,
+                         getGenericParams(), captures, getCombinedReferences(),
+                         getSpecifiedBounds());
+}
+
+BaseType *ADTType::clone() const {
+  std::vector<VariantDef *> clonedVariants;
+  for (auto &variant : variants)
+    clonedVariants.push_back(variant->clone());
+
+  return new ADTType(getReference(), getTypeReference(), identifier,
+                     getTypeIdentity(), kind, clonedVariants,
+                     getGenericParams(), getCombinedReferences());
+}
+
+BaseType *ArrayType::clone() const {
+  return new ArrayType(getReference(), getTypeReference(), loc, expr, type,
+                       getCombinedReferences());
+}
+
+BaseType *ParamType::clone() const {
+  return new ParamType(identifier, loc, getReference(), getTypeReference(),
+                       type, bounds, getCombinedReferences());
+}
+
+BaseType *ErrorType::clone() const {
+  return new ErrorType(getReference(), getTypeReference(),
+                       getCombinedReferences());
+}
+
+TypeVariable TypeVariable::clone() const {
+  BaseType *c = getType()->clone();
+  return TypeVariable(c->getReference());
+}
+
+VariantDef *VariantDef::clone() const {
+  std::vector<StructFieldType *> clonedFields;
+  for (auto &f : fields)
+    clonedFields.push_back((StructFieldType *)f->clone());
+
+  return new VariantDef(id, identifier, ident, kind, fields);
+}
+
+StructFieldType *StructFieldType::clone() const {
+  return new StructFieldType(ref, identifier, type->clone(), loc);
 }
 
 } // namespace rust_compiler::tyctx::TyTy

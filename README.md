@@ -145,3 +145,9 @@ https://reviews.llvm.org/D90663
 
 * __builtin_assume_separate_storage
 https://reviews.llvm.org/D136515
+
+* hlfir.forall
+https://reviews.llvm.org/D149734
+
+* assignment mask operations
+https://reviews.llvm.org/D149754

@@ -1,11 +1,14 @@
 #include "Unification.h"
 
+#include "Session/Session.h"
+#include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyTy.h"
 
 #include <vector>
 
 using namespace rust_compiler::tyctx;
 using namespace rust_compiler::tyctx::TyTy;
+using namespace rust_compiler::basic;
 
 namespace rust_compiler::sema::type_checking {
 
@@ -49,24 +52,45 @@ void Unification::emitFailedUnification() { assert(false); }
 void Unification::commit(TyTy::BaseType *leftType, TyTy::BaseType *rightType,
                          TyTy::BaseType *result) {
 
+  BaseType *b = leftType->destructure();
+  BaseType *o = rightType->destructure();
 
-  // FIXME destructure
-  
-  result->appendReference(leftType->getReference());
-  result->appendReference(rightType->getReference());
+  result->appendReference(b->getReference());
+  result->appendReference(o->getReference());
 
-  for (auto ref : leftType->getCombinedReferences())
+  for (auto ref : b->getCombinedReferences())
     result->appendReference(ref);
 
-  for (auto ref : rightType->getCombinedReferences())
+  for (auto ref : o->getCombinedReferences())
     result->appendReference(ref);
 
-  leftType->appendReference(result->getReference());
-  leftType->appendReference(rightType->getReference());
-  rightType->appendReference(result->getReference());
-  rightType->appendReference(leftType->getReference());
+  o->appendReference(result->getReference());
+  o->appendReference(b->getReference());
+  b->appendReference(result->getReference());
+  b->appendReference(o->getReference());
 
-  
+  bool isResolved = result->getKind() != TypeKind::Inferred;
+  bool isInfererenceVariable = result->getKind() == TypeKind::Inferred;
+  bool isScalarInferenceVariable =
+      isInfererenceVariable &&
+      (static_cast<InferType *>(result)->getInferredKind() !=
+       InferKind::General);
+
+  if (isResolved || isScalarInferenceVariable) {
+
+    for (NodeId ref : result->getCombinedReferences()) {
+      std::optional<BaseType *> referenceType = context->lookupType(ref);
+      if (!referenceType)
+        continue;
+
+      if ((*referenceType)->getKind() == TypeKind::Inferred)
+        context->insertType(
+            NodeIdentity(ref,
+                         rust_compiler::session::session->getCurrentCrateNum(),
+                         location),
+            result->clone());
+    }
+  }
   assert(false);
 }
 
