@@ -501,6 +501,7 @@ public:
 private:
   InferKind inferKind;
   TypeHint defaultHint;
+  Location loc;
 };
 
 class ErrorType : public BaseType {
@@ -535,8 +536,8 @@ class StructFieldType {
 public:
   StructFieldType(basic::NodeId, const adt::Identifier &, TyTy::BaseType *,
                   Location loc);
-//  StructFieldType(basic::NodeId, std::string_view, TyTy::BaseType *,
-//                  Location loc);
+  //  StructFieldType(basic::NodeId, std::string_view, TyTy::BaseType *,
+  //                  Location loc);
 
   TyTy::BaseType *getFieldType() const { return type; }
 
@@ -557,8 +558,11 @@ enum class VariantKind { Enum, Struct, Tuple };
 
 class VariantDef {
 public:
+  VariantDef(basic::NodeId, const adt::Identifier &, TypeIdentity,
+             ast::Expression *discriminant);
   VariantDef(basic::NodeId, const adt::Identifier &, TypeIdentity, VariantKind,
-             const std::vector<TyTy::StructFieldType *>&);
+             ast::Expression *discriminant,
+             std::vector<TyTy::StructFieldType *>);
 
   VariantKind getKind() const { return kind; }
   basic::NodeId getId() const { return id; }
@@ -567,15 +571,22 @@ public:
 
   VariantDef *clone() const;
 
+  static VariantDef &getErrorNode() {
+    static VariantDef node = {basic::UNKNOWN_NODEID, lexer::Identifier(""),
+                              TypeIdentity::empty(), nullptr};
+    return node;
+  }
+
 private:
   basic::NodeId id;
   adt::Identifier identifier;
   TypeIdentity ident;
   VariantKind kind;
+  ast::Expression *discriminant;
   std::vector<TyTy::StructFieldType *> fields;
 };
 
-enum class ADTKind { StructStruct, TupleStruct };
+enum class ADTKind { StructStruct, TupleStruct, Enum };
 
 class ADTType : public BaseType, public GenericParameters {
 public:
@@ -593,9 +604,28 @@ public:
 
   bool isUnit() const;
 
-  std::vector<VariantDef *> getVariants() const;
+  bool isEnum() const { return kind == ADTKind::Enum; };
+
+  std::vector<VariantDef *> getVariants() const { return variants; }
 
   BaseType *clone() const final override;
+
+  size_t getNumberOfVariants() const { return variants.size(); }
+
+  bool lookupVariantById(basic::NodeId id, VariantDef **found,
+                         int *index = nullptr) {
+    int i = 0;
+    for (VariantDef *variant : variants) {
+      if (variant->getId() == id) {
+        if (index != nullptr)
+          *index = i;
+        *found = variant;
+        return true;
+      }
+      ++i;
+    }
+    return false;
+  }
 
 private:
   adt::Identifier identifier;
@@ -781,5 +811,7 @@ public:
 private:
   BaseType *base;
 };
+
+class DynamicObjectType : public BaseType {};
 
 } // namespace rust_compiler::tyctx::TyTy

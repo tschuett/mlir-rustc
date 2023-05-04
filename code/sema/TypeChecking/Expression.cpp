@@ -12,6 +12,7 @@
 #include "AST/Scrutinee.h"
 #include "AST/Statement.h"
 #include "Coercion.h"
+#include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
 #include "Unification.h"
@@ -25,6 +26,19 @@ using namespace rust_compiler::ast;
 using namespace rust_compiler::tyctx;
 
 namespace rust_compiler::sema::type_checking {
+
+class Argument {
+public:
+  Argument(NodeIdentity ident, TyTy::BaseType *argumentType, Location loc)
+      : ident(ident), argumentType(argumentType), loc(loc) {}
+
+  TyTy::BaseType *getArgumentType() const { return argumentType; }
+
+private:
+  NodeIdentity ident;
+  TyTy::BaseType *argumentType;
+  Location loc;
+};
 
 TyTy::BaseType *
 TypeResolver::checkExpression(std::shared_ptr<ast::Expression> expr) {
@@ -110,6 +124,7 @@ TyTy::BaseType *TypeResolver::checkExpressionWithoutBlock(
     assert(false && "to be implemented");
   }
   case ExpressionWithoutBlockKind::CallExpression: {
+    return checkCallExpression(static_cast<CallExpression *>(woBlock.get()));
     assert(false && "to be implemented");
   }
   case ExpressionWithoutBlockKind::MethodCallExpression: {
@@ -434,6 +449,106 @@ TyTy::BaseType *TypeResolver::checkIfLetExpression(
       checkExpression(ifLet->getIfLet());
 
   assert(false && "incomplete");
+}
+
+TyTy::BaseType *TypeResolver::checkCallExpression(CallExpression *call) {
+  TyTy::BaseType *functionType = checkExpression(call->getFunction());
+
+  TyTy::VariantDef variant = TyTy::VariantDef::getErrorNode();
+  if (functionType->getKind() == TyTy::TypeKind::ADT) {
+    TyTy::ADTType *adt = static_cast<TyTy::ADTType *>(functionType);
+    if (adt->isEnum()) {
+      std::optional<basic::NodeId> variantId =
+          tcx->lookupVariantDefinition(call->getFunction()->getNodeId());
+      assert(variantId.has_value());
+
+      TyTy::VariantDef *lookupVariant = nullptr;
+      bool ok = adt->lookupVariantById(*variantId, &lookupVariant);
+      assert(ok);
+      variant = *lookupVariant;
+    } else {
+      assert(adt->getNumberOfVariants() == 1);
+      variant = *adt->getVariants()[0];
+    }
+
+    return checkCallExpression(functionType, call, variant);
+  }
+
+  // handle traits
+  std::optional<TyTy::BaseType *> trait =
+      resolveFunctionTraitCall(call, functionType);
+  if (trait)
+    return *trait;
+
+  if ((functionType->getKind() == TyTy::TypeKind::Function) ||
+      (functionType->getKind() == TyTy::TypeKind::FunctionPointer)) {
+    return checkCallExpression(functionType, call, variant);
+  } else {
+    // report error
+    assert(false);
+  }
+}
+
+TyTy::BaseType *TypeResolver::checkCallExpression(TyTy::BaseType *functionType,
+                                                  CallExpression *call,
+                                                  TyTy::VariantDef &variant) {
+
+  std::vector<Argument> arguments;
+
+  if (call->hasParameters()) {
+    CallParams params = call->getParameters();
+    for (auto &arg : params.getParams()) {
+      TyTy::BaseType *argumentExpressionType = checkExpression(arg);
+      if (argumentExpressionType->getKind() == TyTy::TypeKind::Error) {
+        assert(false);
+      }
+
+      Argument a = {arg->getIdentity(), argumentExpressionType,
+                    arg->getLocation()};
+      arguments.push_back(a);
+    }
+  }
+
+  switch (functionType->getKind()) {
+  case TyTy::TypeKind::ADT: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Function: {
+    assert(false);
+  }
+  case TyTy::TypeKind::FunctionPointer: {
+    assert(false);
+  }
+  case TyTy::TypeKind::Inferred:
+  case TyTy::TypeKind::Tuple:
+  case TyTy::TypeKind::Array:
+  case TyTy::TypeKind::Slice:
+  case TyTy::TypeKind::Bool:
+  case TyTy::TypeKind::Int:
+  case TyTy::TypeKind::Uint:
+  case TyTy::TypeKind::Float:
+  case TyTy::TypeKind::USize:
+  case TyTy::TypeKind::ISize:
+  case TyTy::TypeKind::Error:
+  case TyTy::TypeKind::Char:
+  case TyTy::TypeKind::Reference:
+  case TyTy::TypeKind::RawPointer:
+  case TyTy::TypeKind::Parameter:
+  case TyTy::TypeKind::Str:
+  case TyTy::TypeKind::Never:
+  case TyTy::TypeKind::PlaceHolder:
+  case TyTy::TypeKind::Projection:
+  case TyTy::TypeKind::Dynamic:
+  case TyTy::TypeKind::Closure:
+    return new TyTy::ErrorType(0);
+  }
+  assert(false);
+}
+
+std::optional<TyTy::BaseType *>
+TypeResolver::resolveFunctionTraitCall(CallExpression *,
+                                       TyTy::BaseType *functionType) {
+  assert(false);
 }
 
 } // namespace rust_compiler::sema::type_checking

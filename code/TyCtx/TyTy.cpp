@@ -323,11 +323,11 @@ unsigned InferType::getNumberOfSpecifiedBounds() { return 0; }
 InferType::InferType(basic::NodeId ref, InferKind kind, TypeHint hint,
                      Location loc, std::set<basic::NodeId> refs)
     : BaseType(ref, ref, TypeKind::Inferred, TypeIdentity::from(loc), refs),
-      inferKind(kind), defaultHint(hint) {}
+      inferKind(kind), defaultHint(hint), loc(loc) {}
 InferType::InferType(basic::NodeId ref, basic::NodeId type, InferKind kind,
                      TypeHint hint, Location loc, std::set<basic::NodeId> refs)
     : BaseType(ref, type, TypeKind::Inferred, TypeIdentity::from(loc), refs),
-      inferKind(kind), defaultHint(hint) {}
+      inferKind(kind), defaultHint(hint), loc(loc) {}
 
 std::string InferType::toString() const {
   switch (inferKind) {
@@ -448,9 +448,16 @@ StructFieldType::StructFieldType(basic::NodeId ref, const adt::Identifier &id,
     : ref(ref), type(type), loc(loc), identifier(id) {}
 
 VariantDef::VariantDef(basic::NodeId id, const adt::Identifier &identifier,
+                       TypeIdentity ident, ast::Expression *discriminant)
+    : id(id), identifier(identifier), ident(ident), discriminant(discriminant) {
+}
+
+VariantDef::VariantDef(basic::NodeId id, const adt::Identifier &identifier,
                        TypeIdentity ident, VariantKind kind,
-                       const std::vector<TyTy::StructFieldType *> &f)
-    : id(id), identifier(identifier), ident(ident), kind(kind), fields(f) {}
+                       ast::Expression *discriminant,
+                       std::vector<TyTy::StructFieldType *> fields)
+    : id(id), identifier(identifier), ident(ident), kind(kind),
+      discriminant(discriminant), fields(fields) {}
 
 ADTType::ADTType(basic::NodeId id, const adt::Identifier &identifier,
                  TypeIdentity ident, ADTKind kind,
@@ -926,11 +933,31 @@ VariantDef *VariantDef::clone() const {
   for (auto &f : fields)
     clonedFields.push_back((StructFieldType *)f->clone());
 
-  return new VariantDef(id, identifier, ident, kind, fields);
+  return new VariantDef(id, identifier, ident, kind, discriminant, fields);
 }
 
 StructFieldType *StructFieldType::clone() const {
   return new StructFieldType(ref, identifier, type->clone(), loc);
+}
+
+BaseType *InferType::clone() const {
+  TyCtx *context = rust_compiler::session::session->getTypeContext();
+
+  InferType *cloned =
+      new InferType(rust_compiler::basic::getNextNodeId(), inferKind,
+                    defaultHint, loc, getCombinedReferences());
+
+  context->insertType(
+      NodeIdentity(cloned->getReference(),
+                   rust_compiler::session::session->getCurrentCrateNum(), loc),
+      cloned);
+
+  context->insertLocation(cloned->getReference(),
+                          context->lookupLocation(getReference()));
+
+  cloned->appendReference(getReference());
+
+  return cloned;
 }
 
 } // namespace rust_compiler::tyctx::TyTy

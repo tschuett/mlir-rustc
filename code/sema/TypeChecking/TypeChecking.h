@@ -3,6 +3,7 @@
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/AssignmentExpression.h"
 #include "AST/AssociatedItem.h"
+#include "AST/CallExpression.h"
 #include "AST/ClosureExpression.h"
 #include "AST/ComparisonExpression.h"
 #include "AST/Crate.h"
@@ -81,10 +82,13 @@ public:
   TyTy::BaseType *checkAssociatedItemPointer(ast::AssociatedItem *,
                                              ast::Implementation *);
 
+private:
   // needed by substitutins.cpp in TyCtx
   TyTy::BaseType *checkType(std::shared_ptr<ast::types::TypeExpression>);
 
-private:
+  std::optional<TyTy::BaseType *>
+  resolveFunctionTraitCall(CallExpression *, TyTy::BaseType *functionType);
+
   void checkVisItem(std::shared_ptr<ast::VisItem> v);
   void checkMacroItem(std::shared_ptr<ast::MacroItem> v);
   void checkFunction(std::shared_ptr<ast::Function> f);
@@ -139,6 +143,10 @@ private:
   TyTy::BaseType *
       checkComparisonExpression(std::shared_ptr<ast::ComparisonExpression>);
   TyTy::BaseType *checkArrayType(std::shared_ptr<ast::types::ArrayType>);
+  TyTy::BaseType *checkCallExpression(ast::CallExpression *);
+  TyTy::BaseType *checkCallExpression(TyTy::BaseType *functionType,
+                                      ast::CallExpression *,
+                                      TyTy::VariantDef &);
 
   TyTy::BaseType *
   resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
@@ -199,7 +207,8 @@ private:
   //  TyTy::SubstitutionArgumentMappings
   //  getUsesSubstitutionArguments(TyTy::BaseType *);
 
-  bool checkGenericParamsAndArgs(const TyTy::BaseType *, const ast::GenericArgs &);
+  bool checkGenericParamsAndArgs(const TyTy::BaseType *,
+                                 const ast::GenericArgs &);
 
   bool checkGenericParamsAndArgs(const ast::GenericParams &,
                                  const ast::GenericArgs &);

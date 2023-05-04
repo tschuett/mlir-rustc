@@ -91,7 +91,6 @@ void Unification::commit(TyTy::BaseType *leftType, TyTy::BaseType *rightType,
             result->clone());
     }
   }
-  assert(false);
 }
 
 TyTy::BaseType *Unification::expect(TyTy::BaseType *leftType,
@@ -185,7 +184,7 @@ TyTy::BaseType *Unification::expectIntType(TyTy::IntType *left,
     TyTy::IntType *rightInt = static_cast<TyTy::IntType *>(right);
     if (rightInt->getIntKind() == left->getIntKind())
       return new TyTy::IntType(left->getTypeReference(), left->getIntKind());
-    assert(false);
+    break;
   }
   case TyTy::TypeKind::Uint: {
     assert(false);
@@ -257,89 +256,43 @@ TyTy::BaseType *Unification::expectIntType(TyTy::IntType *left,
 TyTy::BaseType *Unification::expectUSizeType(TyTy::USizeType *left,
                                              TyTy::BaseType *right) {
   switch (right->getKind()) {
-  case TyTy::TypeKind::Bool: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Char: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Int: {
-    //    TyTy::IntType *rightInt = static_cast<TyTy::IntType *>(right);
-    //    if (rightInt->getIntKind() == left->getIntKind())
-    //      return new TyTy::IntType(left->getTypeReference(),
-    //      left->getIntKind());
-    assert(false);
-  }
-  case TyTy::TypeKind::Uint: {
-    assert(false);
-  }
-  case TyTy::TypeKind::USize: {
-    return right;
-  }
-  case TyTy::TypeKind::ISize: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Float: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Closure: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Function: {
-    assert(false);
-  }
   case TyTy::TypeKind::Inferred: {
     TyTy::InferType *infer = static_cast<TyTy::InferType *>(right);
     if (infer->getInferredKind() != TyTy::InferKind::Float) {
       infer->applyScalarTypeHint(*left);
-      return infer;
+      return left->clone();
+      ;
     }
     assert(false);
   }
-  case TyTy::TypeKind::Never: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Str: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Tuple: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Parameter: {
-    assert(false);
-  }
-  case TyTy::TypeKind::ADT: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Array: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Projection: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Slice: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Dynamic: {
-    assert(false);
-  }
-  case TyTy::TypeKind::PlaceHolder: {
-    assert(false);
-  }
-  case TyTy::TypeKind::FunctionPointer: {
-    assert(false);
-  }
-  case TyTy::TypeKind::RawPointer: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Reference: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Error: {
-    assert(false);
+  case TyTy::TypeKind::USize: {
+    return right->clone();
+  case TyTy::TypeKind::Bool:
+  case TyTy::TypeKind::Char:
+  case TyTy::TypeKind::Int:
+  case TyTy::TypeKind::Uint:
+  case TyTy::TypeKind::ISize:
+  case TyTy::TypeKind::Float:
+  case TyTy::TypeKind::Closure:
+  case TyTy::TypeKind::Function:
+  case TyTy::TypeKind::Never:
+  case TyTy::TypeKind::Str:
+  case TyTy::TypeKind::Tuple:
+  case TyTy::TypeKind::Parameter:
+  case TyTy::TypeKind::ADT:
+  case TyTy::TypeKind::Array:
+  case TyTy::TypeKind::Projection:
+  case TyTy::TypeKind::Slice:
+  case TyTy::TypeKind::Dynamic:
+  case TyTy::TypeKind::PlaceHolder:
+  case TyTy::TypeKind::FunctionPointer:
+  case TyTy::TypeKind::RawPointer:
+  case TyTy::TypeKind::Reference:
+  case TyTy::TypeKind::Error:
+    return new ErrorType(0);
   }
   }
-  assert(false);
+  return new ErrorType(0);
 }
 
 TyTy::BaseType *Unification::expectTuple(TyTy::TupleType *left,
@@ -375,23 +328,25 @@ TyTy::BaseType *Unification::expectTuple(TyTy::TupleType *left,
     TyTy::TupleType *tuple = static_cast<TyTy::TupleType *>(right);
     if (left->getNumberOfFields() != tuple->getNumberOfFields())
       return new TyTy::ErrorType(0);
-    // FIXME
-    assert(false);
+
     std::vector<TyTy::TypeVariable> fields;
     for (size_t i = 0; i < left->getNumberOfFields(); ++i) {
-      TyTy::BaseType *lel = left->getField(i);
-      TyTy::BaseType *rel = tuple->getField(i);
+      TyTy::BaseType *bo = left->getField(i);
+      TyTy::BaseType *fo = tuple->getField(i);
 
       TyTy::BaseType *unifiedType = Unification::unifyWithSite(
-          TyTy::WithLocation(lel), TyTy::WithLocation(rel), location, context);
+          TyTy::WithLocation(bo), TyTy::WithLocation(fo), location, context);
+
+      // FIXME: commits, infers
       if (unifiedType->getKind() == TypeKind::Error)
         return new TyTy::ErrorType(0);
 
       fields.push_back(TypeVariable(unifiedType->getReference()));
     }
 
-    return new TupleType(tuple->getReference(), Location::getEmptyLocation(),
-                         fields);
+    return new TupleType(tuple->getReference(), tuple->getTypeReference(),
+                         Location::getEmptyLocation(), fields);
+    break;
   }
   }
 }

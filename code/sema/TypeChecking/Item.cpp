@@ -114,7 +114,7 @@ void TypeResolver::checkStructStruct(ast::StructStruct *s) {
 
   variants.push_back(new TyTy::VariantDef(s->getNodeId(), s->getIdentifier(),
                                           ident, TyTy::VariantKind::Struct,
-                                          fields));
+                                          nullptr, fields));
 
   // parse #[repr(X)]
   TyTy::BaseType *type =
@@ -155,7 +155,7 @@ void TypeResolver::checkTupleStruct(ast::TupleStruct *s) {
 
   std::vector<TyTy::VariantDef *> variants;
   variants.push_back(new TyTy::VariantDef(s->getNodeId(), s->getName(), ident,
-                                          TyTy::VariantKind::Tuple, fields));
+                                          TyTy::VariantKind::Tuple, nullptr, fields));
 
   // parse #[rept(X)]
 

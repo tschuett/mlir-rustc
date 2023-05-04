@@ -12,6 +12,13 @@ class Location {
   unsigned columnNumber;
 
 public:
+  // FIXME: hack for std::map
+  Location() {
+    fileName = "default.constructor.rs";
+    lineNumber = std::numeric_limits<unsigned>::max();
+    columnNumber = std::numeric_limits<unsigned>::max();
+  }
+
   Location(std::string_view fileName, unsigned lineNumber,
            unsigned columnNumber)
       : fileName(fileName), lineNumber(lineNumber), columnNumber(columnNumber) {

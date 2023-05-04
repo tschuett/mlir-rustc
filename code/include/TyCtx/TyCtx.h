@@ -112,7 +112,7 @@ public:
   std::optional<ast::ExternalItem *> lookupExternalItem(basic::NodeId);
   std::optional<ast::Implementation *> lookupImplementation(basic::NodeId);
   std::optional<ast::AssociatedItem *> lookupAssociatedItem(basic::NodeId);
-
+  std::optional<basic::NodeId> lookupVariantDefinition(basic::NodeId);
   std::optional<NodeId> lookupAssociatedTypeMapping(NodeId id);
 
   [[nodiscard]] std::optional<basic::NodeId> lookupName(basic::NodeId);
@@ -130,6 +130,9 @@ public:
                             basic::NodeId capturedItem);
 
   std::set<basic::NodeId> getCaptures(NodeId);
+
+  Location lookupLocation(basic::NodeId);
+  void insertLocation(basic::NodeId, Location);
 
 private:
   void generateBuiltins();
@@ -204,6 +207,9 @@ private:
   std::map<basic::NodeId, std::set<basic::NodeId>> closureCaptureMappings;
 
   std::map<NodeId, NodeId> associatedTypeMappings;
+
+  std::map<NodeId, Location> locations;
+  std::map<basic::NodeId, basic::NodeId> variants;
 };
 
 } // namespace rust_compiler::tyctx

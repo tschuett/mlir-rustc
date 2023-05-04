@@ -7,6 +7,7 @@
 #include "AST/ExternalItem.h"
 #include "AST/Types/TypePath.h"
 #include "Basic/Ids.h"
+#include "Location.h"
 
 // #include "../sema/TypeChecking/TypeChecking.h"
 
@@ -231,6 +232,33 @@ std::set<basic::NodeId> TyCtx::getCaptures(NodeId closureExpr) {
   if (it == closureCaptureMappings.end())
     return std::set<NodeId>();
   return it->second;
+}
+
+Location TyCtx::lookupLocation(basic::NodeId id) {
+  auto it = locations.find(id);
+  if (it == locations.end())
+    return Location::getEmptyLocation();
+
+  return it->second;
+}
+
+void TyCtx::insertLocation(basic::NodeId id, Location loc) {
+  locations[id] = loc;
+}
+
+std::optional<basic::NodeId> TyCtx::lookupVariantDefinition(basic::NodeId id) {
+  auto it = variants.find(id);
+  if (it == variants.end())
+    return std::nullopt;
+
+  return it->second;
+}
+
+void TyCtx::insertVariantDefinition(basic::NodeId id, basic::NodeId variant) {
+  auto it = variants.find(id);
+  assert(it == variants.end());
+
+  variants[id] = variant;
 }
 
 void TyCtx::generateBuiltins() {
