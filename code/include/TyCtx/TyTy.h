@@ -4,12 +4,13 @@
 #include "AST/GenericArgs.h"
 #include "AST/GenericParams.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
+#include "AST/Trait.h"
 #include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
 #include "Location.h"
-// #include "Substitutions.h"
 #include "TyCtx/ItemIdentity.h"
 #include "TyCtx/NodeIdentity.h"
+#include "TyCtx/TraitReference.h"
 #include "TypeIdentity.h"
 
 #include <set>
@@ -19,16 +20,41 @@ namespace rust_compiler::tyctx::TyTy {
 using namespace rust_compiler::adt;
 
 enum class Mutability { Imm, Mut };
+enum class FunctionTrait { FnOnce, Fn, FnMut };
+
+class BaseType;
+
+class Argument {
+public:
+  Argument(NodeIdentity ident, TyTy::BaseType *argumentType, Location loc)
+      : ident(ident), argumentType(argumentType), loc(loc) {}
+
+  TyTy::BaseType *getArgumentType() const { return argumentType; }
+
+private:
+  NodeIdentity ident;
+  TyTy::BaseType *argumentType;
+  Location loc;
+};
 
 class TypeBoundPredicate {
 public:
+  // hack for std::map
+  TypeBoundPredicate() = default;
+  TypeBoundPredicate(TraitReference &ref, Location loc);
+
   bool isError() const { return error; }
 
   basic::NodeId getId() const { return id; }
 
+  lexer::Identifier getIdentifier() const {
+    return trait.getTrait()->getIdentifier();
+  }
+
 private:
   basic::NodeId id;
   bool error = false;
+  TraitReference trait;
 };
 
 class TypeBoundsMappings {
@@ -387,8 +413,13 @@ private:
 
 class FunctionType : public BaseType, public GenericParameters {
 public:
+  static constexpr uint8_t FunctionTypeDefaultFlags = 0x00;
+  static constexpr uint8_t FunctionTypeIsMethod = 0x01;
+  static constexpr uint8_t FunctionTypeIsExtern = 0x02;
+  static constexpr uint8_t FunctionTypeIsVariadic = 0x04;
+
   FunctionType(
-      basic::NodeId, lexer::Identifier name, tyctx::ItemIdentity,
+      basic::NodeId, lexer::Identifier name, tyctx::ItemIdentity, uint8_t flags,
       std::vector<std::pair<
           std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
           TyTy::BaseType *>>
@@ -399,6 +430,7 @@ public:
 
   FunctionType(
       basic::NodeId, basic::NodeId, lexer::Identifier name, tyctx::ItemIdentity,
+      uint8_t flags,
       std::vector<std::pair<
           std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
           TyTy::BaseType *>>
@@ -424,10 +456,17 @@ public:
 
   BaseType *clone() const final override;
 
+  bool isMethod() const {
+    if (parameters.size() == 0)
+      return false;
+    return (flags & FunctionTypeIsMethod) == FunctionTypeIsMethod;
+  }
+
 private:
   basic::NodeId id;
   lexer::Identifier name;
   tyctx::ItemIdentity ident;
+  uint8_t flags;
   std::vector<
       std::pair<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
                 TyTy::BaseType *>>
@@ -472,6 +511,8 @@ public:
   TyTy::BaseType *getResultType() const { return resultType.getType(); }
 
   BaseType *clone() const final override;
+
+  void setupFnOnceOutput() const;
 
 private:
   TyTy::TupleType *parameters;

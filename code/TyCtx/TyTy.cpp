@@ -267,6 +267,7 @@ std::string ErrorType::toString() const { return "error"; }
 
 FunctionType::FunctionType(
     basic::NodeId id, lexer::Identifier name, tyctx::ItemIdentity ident,
+    uint8_t flags,
     std::vector<std::pair<
         std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
         TyTy::BaseType *>>
@@ -276,11 +277,11 @@ FunctionType::FunctionType(
     : BaseType(id, id, TypeKind::Function,
                TypeIdentity(ident.getPath(), ident.getLocation()), refs),
       GenericParameters(genericParams), id(id), name(name), ident(ident),
-      parameters(parameters), returnType(returnType) {}
+      flags(flags), parameters(parameters), returnType(returnType) {}
 
 FunctionType::FunctionType(
     basic::NodeId id, basic::NodeId type, lexer::Identifier name,
-    tyctx::ItemIdentity ident,
+    tyctx::ItemIdentity ident, uint8_t flags,
     std::vector<std::pair<
         std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
         TyTy::BaseType *>>
@@ -290,7 +291,7 @@ FunctionType::FunctionType(
     : BaseType(id, type, TypeKind::Function,
                TypeIdentity(ident.getPath(), ident.getLocation()), refs),
       GenericParameters(genericParams), id(id), name(name), ident(ident),
-      parameters(parameters), returnType(returnType) {}
+      flags(flags), parameters(parameters), returnType(returnType) {}
 
 TyTy::BaseType *FunctionType::getReturnType() const { return returnType; }
 
@@ -887,7 +888,7 @@ BaseType *FunctionType::clone() const {
     clonedParams.push_back({p.first, p.second->clone()});
 
   return new FunctionType(getReference(), getTypeReference(), getIdentifier(),
-                          ident, clonedParams, getReturnType()->clone(),
+                          ident, flags, clonedParams, getReturnType()->clone(),
                           getGenericParams(), getCombinedReferences());
 }
 

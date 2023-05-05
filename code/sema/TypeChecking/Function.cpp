@@ -16,6 +16,8 @@
 #include <vector>
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::tyctx;
+using namespace rust_compiler::tyctx::TyTy;
 
 namespace rust_compiler::sema::type_checking {
 
@@ -84,9 +86,12 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
 
   assert(retType != nullptr);
 
+  uint8_t flags = FunctionType::FunctionTypeDefaultFlags;
+  if (f->getQualifiers().hasExtern())
+    flags |= FunctionType::FunctionTypeIsExtern;
   TyTy::FunctionType *funType =
-      new TyTy::FunctionType(f->getNodeId(), f->getName(), identity, params,
-                             retType, genericParams);
+      new TyTy::FunctionType(f->getNodeId(), f->getName(), identity, flags,
+                             params, retType, genericParams);
 
   tcx->insertType(f->getIdentity(), funType);
 

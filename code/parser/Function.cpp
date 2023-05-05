@@ -87,7 +87,8 @@ StringResult<ast::SelfParam> Parser::parseSelfParam() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
-  llvm::errs() << "parseSelfParam" << "\n";
+  llvm::errs() << "parseSelfParam"
+               << "\n";
 
   SelfParam self = {loc};
 
@@ -442,15 +443,17 @@ StringResult<ast::FunctionQualifiers> Parser::parseFunctionQualifiers() {
 
   if (checkKeyWord(KeyWordKind::KW_EXTERN)) {
     assert(eatKeyWord(KeyWordKind::KW_EXTERN));
-
-    StringResult<ast::Abi> abi = Parser::parseAbi();
-    if (!abi) {
-      llvm::errs() << "failed to parse abi in function qualifiers: "
-                   << abi.getError() << "\n";
-      printFunctionStack();
-      exit(EXIT_FAILURE);
+    qual.setExtern();
+    if (!checkKeyWord(KeyWordKind::KW_FN)) {
+      StringResult<ast::Abi> abi = Parser::parseAbi();
+      if (!abi) {
+        llvm::errs() << "failed to parse abi in function qualifiers: "
+                     << abi.getError() << "\n";
+        printFunctionStack();
+        exit(EXIT_FAILURE);
+      }
+      qual.setAbi(abi.getValue());
     }
-    qual.setAbi(abi.getValue());
   }
 
   return StringResult<ast::FunctionQualifiers>(qual);

@@ -23,6 +23,7 @@ public:
   /// must be ASCII. No UTF-8
   Identifier(std::string_view);
 
+  /// utf8 converter to ascii
   std::string toString() const;
   bool isASCII() const;
   bool isRawIdentifier() const;

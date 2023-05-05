@@ -10,6 +10,7 @@
 #include "AST/ComparisonExpression.h"
 #include "AST/DereferenceExpression.h"
 #include "AST/LoopExpression.h"
+#include "AST/MethodCallExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/PathExprSegment.h"
 #include "AST/PathExpression.h"
@@ -134,7 +135,10 @@ void Resolver::resolveExpressionWithoutBlock(
     break;
   }
   case ExpressionWithoutBlockKind::MethodCallExpression: {
-    assert(false && "to be handled later");
+    resolveMethodCallExpression(
+        std::static_pointer_cast<MethodCallExpression>(woBlock).get(), prefix,
+        canonicalPrefix);
+    break;
   }
   case ExpressionWithoutBlockKind::FieldExpression: {
     assert(false && "to be handled later");
@@ -488,9 +492,25 @@ void Resolver::resolveCallExpression(
   if (call->hasParameters()) {
     CallParams params = call->getParameters();
     std::vector<std::shared_ptr<Expression>> pars = params.getParams();
-    for (std::shared_ptr<Expression> p: pars)
+    for (std::shared_ptr<Expression> p : pars)
       resolveExpression(p, prefix, canonicalPrefix);
   }
+}
+
+void Resolver::resolveMethodCallExpression(
+    ast::MethodCallExpression *method, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  assert(false);
+  resolveExpression(method->getReceiver(), prefix, canonicalPrefix);
+
+  if (method->getMethod().hasGenerics()) {
+    GenericArgs ga = method->getMethod().getGenerics();
+    resolveGenericArgs(ga, prefix, canonicalPrefix);
+  }
+
+  CallParams pa = method->getParams();
+  for (auto &param : pa.getParams())
+    resolveExpression(param, prefix, canonicalPrefix);
 }
 
 } // namespace rust_compiler::sema::resolver

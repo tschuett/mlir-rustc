@@ -18,6 +18,7 @@ class FunctionQualifiers : public Node {
   bool isAsync = false;
   bool isConst = false;
   bool isUnsafe = false;
+  bool isExtern = false;
 
 public:
   FunctionQualifiers(Location loc) : Node(loc){};
@@ -28,6 +29,8 @@ public:
   void setConst();
   void setUnsafe();
   void setAbi(Abi _abi) { abi = _abi; }
+  void setExtern() { isExtern = true; }
+  bool hasExtern() const { return isExtern; }
 };
 
 } // namespace rust_compiler::ast

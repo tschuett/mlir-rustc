@@ -12,8 +12,8 @@ namespace rust_compiler::sema::type_checking {
 CoercionResult Coercion::coercion(TyTy::BaseType *receiver,
                                   TyTy::BaseType *expected, Location loc,
                                   bool allowAutoderef) {
-  llvm::errs() << receiver->toString() << "\n";
-  llvm::errs() << expected->toString() << "\n";
+//  llvm::errs() << receiver->toString() << "\n";
+//  llvm::errs() << expected->toString() << "\n";
 
   bool success = false;
   if (receiver->getKind() == TyTy::TypeKind::Never)

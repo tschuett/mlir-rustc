@@ -47,7 +47,7 @@ public:
 
   void setReturnType(const FunctionReturnType &ret) { returnType = ret; }
 
-  void setIdentifier(const Identifier& id) { identifier = id; }
+  void setIdentifier(const Identifier &id) { identifier = id; }
 
   Identifier getName() const { return identifier; }
 
@@ -65,9 +65,9 @@ public:
 
   WhereClause getWhereClause() const { return whereClause; }
 
-  FunctionParameters getParams() {
-    return functionParameters;
-  }
+  FunctionParameters getParams() { return functionParameters; }
+
+  FunctionQualifiers getQualifiers() const { return qualifiers; }
 };
 
 } // namespace rust_compiler::ast

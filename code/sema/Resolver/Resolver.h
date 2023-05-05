@@ -5,6 +5,7 @@
 #include "AST/ArrayExpression.h"
 #include "AST/AssociatedItem.h"
 #include "AST/BorrowExpression.h"
+#include "AST/CallExpression.h"
 #include "AST/ClosureExpression.h"
 #include "AST/ComparisonExpression.h"
 #include "AST/Crate.h"
@@ -20,6 +21,7 @@
 #include "AST/LoopExpression.h"
 #include "AST/MacroItem.h"
 #include "AST/MatchExpression.h"
+#include "AST/MethodCallExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/PathExpression.h"
 #include "AST/PathInExpression.h"
@@ -32,7 +34,6 @@
 #include "AST/Statement.h"
 #include "AST/StaticItem.h"
 #include "AST/Struct.h"
-#include "AST/CallExpression.h"
 #include "AST/StructStruct.h"
 #include "AST/Trait.h"
 #include "AST/TraitImpl.h"
@@ -59,6 +60,10 @@
 #include <stack>
 #include <string_view>
 #include <vector>
+
+namespace rust_compiler::ast {
+class MethodCallExpression;
+}
 
 namespace rust_compiler::sema::resolver {
 
@@ -314,8 +319,11 @@ private:
                                const adt::CanonicalPath &prefix,
                                const adt::CanonicalPath &canonicalPrefix);
   void resolveCallExpression(std::shared_ptr<ast::CallExpression>,
-                              const adt::CanonicalPath &prefix,
-                              const adt::CanonicalPath &canonicalPrefix);
+                             const adt::CanonicalPath &prefix,
+                             const adt::CanonicalPath &canonicalPrefix);
+  void resolveMethodCallExpression(ast::MethodCallExpression *,
+                                   const adt::CanonicalPath &prefix,
+                                   const adt::CanonicalPath &canonicalPrefix);
 
   // types
   std::optional<basic::NodeId>

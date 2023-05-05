@@ -37,6 +37,7 @@
 #include "AST/Types/TypePath.h"
 #include "AST/WhereClause.h"
 #include "Basic/Ids.h"
+#include "PathProbing.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TraitReference.h"
 #include "TyCtx/TyCtx.h"
@@ -47,6 +48,8 @@
 #include <map>
 #include <memory>
 #include <vector>
+
+namespace rust_compiler::ast {}
 
 namespace rust_compiler::sema::resolver {
 class Resolver;
@@ -87,7 +90,10 @@ private:
   TyTy::BaseType *checkType(std::shared_ptr<ast::types::TypeExpression>);
 
   std::optional<TyTy::BaseType *>
-  resolveFunctionTraitCall(CallExpression *, TyTy::BaseType *functionType);
+  checkFunctionTraitCall(CallExpression *, TyTy::BaseType *functionType);
+  std::optional<tyctx::TyTy::FunctionTrait>
+  checkPossibleFunctionTraitCallMethodName(TyTy::BaseType &receiver,
+                                           TyTy::TypeBoundPredicate *);
 
   void checkVisItem(std::shared_ptr<ast::VisItem> v);
   void checkMacroItem(std::shared_ptr<ast::MacroItem> v);
@@ -165,6 +171,13 @@ private:
                                             tyctx::NodeIdentity, Location);
 
   std::optional<TyTy::BaseType *> queryType(basic::NodeId id);
+
+  std::set<MethodCandidate> resolveMethodProbe(TyTy::BaseType *receiver,
+                                               TyTy::FunctionTrait);
+  TyTy::BaseType *checkMethodCallExpression(TyTy::FunctionType *, NodeIdentity,
+                                            std::vector<TyTy::Argument> &args,
+                                            Location call, Location receiver,
+                                            TyTy::BaseType *adjustedSelf);
 
   bool
   resolveOperatorOverload(ArithmeticOrLogicalExpressionKind,

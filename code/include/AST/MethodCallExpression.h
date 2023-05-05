@@ -23,6 +23,11 @@ public:
   void setReceiver(std::shared_ptr<Expression> re) { receiver = re; }
   void setSegment(const PathExprSegment &seg) { method = seg; }
   void setCallParams(const CallParams &pa) { callParams = pa; }
+
+  std::shared_ptr<Expression> getReceiver() const { return receiver; }
+  PathExprSegment getMethod() const { return method; }
+  bool hasParams() const { return callParams.has_value(); }
+  CallParams getParams() const { return *callParams; }
 };
 
 } // namespace rust_compiler::ast

@@ -24,6 +24,7 @@ add_library(sema
            ModuleTree.cpp
            NormalizeUseTree.cpp
            ReturnExpressionSearcher.cpp
+           Autoderef.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)

@@ -43,6 +43,7 @@ public:
   void insertEnumeration(NodeId, ast::Enumeration *);
   void insertEnumItem(ast::Enumeration *, ast::EnumItem *);
   void insertImplementation(NodeId, ast::Implementation *);
+  void insertReceiver(NodeId, TyTy::BaseType *);
 
   ast::Module *lookupModule(basic::NodeId);
 
@@ -134,6 +135,8 @@ public:
   Location lookupLocation(basic::NodeId);
   void insertLocation(basic::NodeId, Location);
 
+  void insertOperatorOverLoad(basic::NodeId id, TyTy::FunctionType *callSite);
+
 private:
   void generateBuiltins();
 
@@ -210,6 +213,8 @@ private:
 
   std::map<NodeId, Location> locations;
   std::map<basic::NodeId, basic::NodeId> variants;
+  std::map<basic::NodeId, TyTy::BaseType *> receiverContext;
+  std::map<basic::NodeId, TyTy::FunctionType *> operatorOverloads;
 };
 
 } // namespace rust_compiler::tyctx

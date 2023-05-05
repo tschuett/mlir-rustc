@@ -11,7 +11,13 @@
 #include "AST/PathExpression.h"
 #include "AST/Scrutinee.h"
 #include "AST/Statement.h"
+#include "Basic/Ids.h"
 #include "Coercion.h"
+#include "Lexer/Identifier.h"
+#include "Location.h"
+#include "PathProbing.h"
+#include "Sema/Autoderef.h"
+#include "Session/Session.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
@@ -20,25 +26,13 @@
 #include "../ReturnExpressionSearcher.h"
 
 #include <cassert>
+#include <llvm/Support/ErrorHandling.h>
 #include <memory>
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::tyctx;
 
 namespace rust_compiler::sema::type_checking {
-
-class Argument {
-public:
-  Argument(NodeIdentity ident, TyTy::BaseType *argumentType, Location loc)
-      : ident(ident), argumentType(argumentType), loc(loc) {}
-
-  TyTy::BaseType *getArgumentType() const { return argumentType; }
-
-private:
-  NodeIdentity ident;
-  TyTy::BaseType *argumentType;
-  Location loc;
-};
 
 TyTy::BaseType *
 TypeResolver::checkExpression(std::shared_ptr<ast::Expression> expr) {
@@ -476,7 +470,7 @@ TyTy::BaseType *TypeResolver::checkCallExpression(CallExpression *call) {
 
   // handle traits
   std::optional<TyTy::BaseType *> trait =
-      resolveFunctionTraitCall(call, functionType);
+      checkFunctionTraitCall(call, functionType);
   if (trait)
     return *trait;
 
@@ -493,8 +487,7 @@ TyTy::BaseType *TypeResolver::checkCallExpression(TyTy::BaseType *functionType,
                                                   CallExpression *call,
                                                   TyTy::VariantDef &variant) {
 
-  std::vector<Argument> arguments;
-
+  std::vector<TyTy::Argument> arguments;
   if (call->hasParameters()) {
     CallParams params = call->getParameters();
     for (auto &arg : params.getParams()) {
@@ -503,8 +496,8 @@ TyTy::BaseType *TypeResolver::checkCallExpression(TyTy::BaseType *functionType,
         assert(false);
       }
 
-      Argument a = {arg->getIdentity(), argumentExpressionType,
-                    arg->getLocation()};
+      TyTy::Argument a = {arg->getIdentity(), argumentExpressionType,
+                          arg->getLocation()};
       arguments.push_back(a);
     }
   }
@@ -542,12 +535,121 @@ TyTy::BaseType *TypeResolver::checkCallExpression(TyTy::BaseType *functionType,
   case TyTy::TypeKind::Closure:
     return new TyTy::ErrorType(0);
   }
-  assert(false);
+  llvm_unreachable("unknown type kind");
 }
 
 std::optional<TyTy::BaseType *>
-TypeResolver::resolveFunctionTraitCall(CallExpression *,
-                                       TyTy::BaseType *functionType) {
+TypeResolver::checkFunctionTraitCall(CallExpression *expr,
+                                     TyTy::BaseType *functionType) {
+  TyTy::TypeBoundPredicate associatedPredicate;
+  std::optional<TyTy::FunctionTrait> methodTrait =
+      checkPossibleFunctionTraitCallMethodName(*functionType,
+                                               &associatedPredicate);
+  if (!methodTrait)
+    return std::nullopt;
+
+  std::set<MethodCandidate> candidates =
+      resolveMethodProbe(functionType, *methodTrait);
+  if (candidates.empty())
+    return std::nullopt;
+
+  if (candidates.size() > 1) {
+    // report error
+    assert(false);
+  }
+
+  if (functionType->getKind() == TyTy::TypeKind::Closure) {
+    TyTy::ClosureType *clos = static_cast<TyTy::ClosureType *>(functionType);
+    clos->setupFnOnceOutput();
+  }
+
+  MethodCandidate candidate = *candidates.begin();
+
+  Adjuster adj(functionType);
+  TyTy::BaseType *adjustedSelf = adj.adjustType(candidate.getAdjustments());
+
+  tcx->insertAutoderefMapping(expr->getNodeId(), candidate.getAdjustments());
+  tcx->insertReceiver(expr->getNodeId(), functionType);
+
+  PathProbeCandidate resolvedCandidate = candidate.getCandidate();
+  TyTy::BaseType *lookupType = resolvedCandidate.getType();
+  basic::NodeId resolvedNodeId = resolvedCandidate.isImplCandidate()
+                                     ? resolvedCandidate.getImplNodeId()
+                                     : resolvedCandidate.getTraitNodeId();
+
+  if (lookupType->getKind() != TyTy::TypeKind::Function) {
+    // report error
+    assert(false);
+  }
+
+  TyTy::FunctionType *fn = static_cast<TyTy::FunctionType *>(lookupType);
+  if (!fn->isMethod()) {
+    // report error
+    assert(false);
+  }
+
+  std::vector<TyTy::TypeVariable> callArgs;
+  if (expr->hasParameters()) {
+    for (auto &p : expr->getParameters().getParams()) {
+      TyTy::BaseType *a = checkExpression(p);
+      callArgs.push_back(TyTy::TypeVariable(a->getReference()));
+    }
+  }
+
+  basic::NodeId implicitArgId = basic::getNextNodeId();
+  NodeIdentity identity = {
+      implicitArgId, rust_compiler::session::session->getCurrentCrateNum(),
+      Location::getEmptyLocation()};
+
+  TyTy::TupleType *tuple =
+      new TyTy::TupleType(implicitArgId, expr->getLocation(), callArgs);
+  tcx->insertImplicitType(implicitArgId, tuple);
+
+  std::vector<TyTy::Argument> args;
+  TyTy::Argument a = {identity, tuple, expr->getLocation()};
+  args.push_back(a);
+
+  TyTy::BaseType *functionReturnType = checkMethodCallExpression(
+      fn, expr->getIdentity(), args, expr->getLocation(), expr->getLocation(),
+      adjustedSelf);
+
+  if (functionReturnType == nullptr ||
+      functionReturnType->getKind() == TyTy::TypeKind::Error) {
+    // report error
+    assert(false);
+  }
+
+  tcx->insertOperatorOverLoad(expr->getNodeId(), fn);
+  tcx->insertResolvedName(expr->getNodeId(), resolvedNodeId);
+
+  return functionReturnType;
+}
+
+std::optional<TyTy::FunctionTrait>
+TypeResolver::checkPossibleFunctionTraitCallMethodName(
+    TyTy::BaseType &receiver, TyTy::TypeBoundPredicate *associatedPredicate) {
+
+  for (auto &bound : receiver.getSpecifiedBounds()) {
+    if (bound.getIdentifier() == lexer::Identifier("Fn")) {
+      *associatedPredicate = bound;
+      return TyTy::FunctionTrait::Fn;
+    }
+    if (bound.getIdentifier() == lexer::Identifier("FnMut")) {
+      *associatedPredicate = bound;
+      return TyTy::FunctionTrait::FnMut;
+    }
+    if (bound.getIdentifier() == lexer::Identifier("FnOnce")) {
+      *associatedPredicate = bound;
+      return TyTy::FunctionTrait::FnOnce;
+    }
+  }
+
+  return std::nullopt;
+}
+
+TyTy::BaseType *TypeResolver::checkMethodCallExpression(
+    TyTy::FunctionType *, NodeIdentity, std::vector<TyTy::Argument> &args,
+    Location call, Location receiver, TyTy::BaseType *adjustedSelf) {
   assert(false);
 }
 

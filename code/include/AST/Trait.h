@@ -8,6 +8,7 @@
 #include "AST/Types/Types.h"
 #include "AST/VisItem.h"
 #include "AST/WhereClause.h"
+#include "Lexer/Identifier.h"
 #include "Location.h"
 
 #include <memory>
@@ -47,6 +48,8 @@ public:
   void setInner(std::vector<InnerAttribute> &inn) { innerAttributes = inn; }
 
   void addItem(const AssociatedItem &item) { associatedItem.push_back(item); }
+
+  Identifier getIdentifier() const { return identifier; }
 };
 
 } // namespace rust_compiler::ast

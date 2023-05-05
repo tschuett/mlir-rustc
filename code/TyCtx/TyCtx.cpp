@@ -8,6 +8,7 @@
 #include "AST/Types/TypePath.h"
 #include "Basic/Ids.h"
 #include "Location.h"
+#include "TyCtx/TyTy.h"
 
 // #include "../sema/TypeChecking/TypeChecking.h"
 
@@ -259,6 +260,18 @@ void TyCtx::insertVariantDefinition(basic::NodeId id, basic::NodeId variant) {
   assert(it == variants.end());
 
   variants[id] = variant;
+}
+
+void TyCtx::insertReceiver(basic::NodeId id, TyTy::BaseType *receiver) {
+  receiverContext[id] = receiver;
+}
+
+void TyCtx::insertOperatorOverLoad(basic::NodeId id,
+                                   TyTy::FunctionType *callSite) {
+  auto it = operatorOverloads.find(id);
+  assert(it == operatorOverloads.end());
+
+  operatorOverloads[id] = callSite;
 }
 
 void TyCtx::generateBuiltins() {
