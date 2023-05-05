@@ -23,8 +23,8 @@ Parser::parseInherentImpl(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   InherentImpl impl = {loc, vis};
 
-  llvm::errs() << "parseInherentImpl"
-               << "\n";
+  //llvm::errs() << "parseInherentImpl"
+  //             << "\n";
 
   if (!checkKeyWord(KeyWordKind::KW_IMPL)) {
     return StringResult<std::shared_ptr<ast::Item>>(

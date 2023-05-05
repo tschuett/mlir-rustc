@@ -324,7 +324,9 @@ Parser::parseCallExpression(std::shared_ptr<ast::Expression> e,
 }
 
 Result<std::shared_ptr<ast::Expression>, std::string>
-Parser::parseTupleIndexingExpression(std::shared_ptr<ast::Expression> lhs) {
+Parser::parseTupleIndexingExpression(std::shared_ptr<ast::Expression> lhs,
+                                     std::span<OuterAttribute> outer,
+                                     Restrictions restrictions) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   TupleIndexingExpression tuple = {loc};
@@ -349,7 +351,9 @@ Parser::parseTupleIndexingExpression(std::shared_ptr<ast::Expression> lhs) {
 }
 
 StringResult<std::shared_ptr<ast::Expression>>
-Parser::parseFieldExpression(std::shared_ptr<ast::Expression> l) {
+Parser::parseFieldExpression(std::shared_ptr<ast::Expression> l,
+                             std::span<OuterAttribute>,
+                             Restrictions restrictions) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   FieldExpression field = {loc};
@@ -525,8 +529,8 @@ Parser::parseMethodCallExpression(std::shared_ptr<ast::Expression> receiver,
   Location loc = getLocation();
   MethodCallExpression call = {loc};
 
-  llvm::errs() << "parseMethodCallExpression"
-               << "\n";
+//  llvm::errs() << "parseMethodCallExpression"
+//               << "\n";
 
   call.setReceiver(receiver);
 
@@ -935,6 +939,31 @@ Parser::parseErrorPropagationExpression(std::shared_ptr<ast::Expression> er) {
 
 Result<std::shared_ptr<ast::Expression>, std::string>
 Parser::parseAwaitExpression(std::shared_ptr<ast::Expression> e) {
+  ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
+  Location loc = getLocation();
+  AwaitExpression a = {loc};
+
+  if (!check(TokenKind::Dot)) {
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        "failed to parse : token in await expression");
+  }
+  assert(eat(TokenKind::Dot));
+
+  if (!checkKeyWord(KeyWordKind::KW_AWAIT)) {
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        "failed to parse await keyword in await expression");
+  }
+  assert(eatKeyWord(KeyWordKind::KW_AWAIT));
+
+  a.setLhs(e);
+
+  return Result<std::shared_ptr<ast::Expression>, std::string>(
+      std::make_shared<AwaitExpression>(a));
+}
+
+adt::Result<std::shared_ptr<ast::Expression>, std::string>
+Parser::parseAwaitExpression(std::shared_ptr<ast::Expression> e,
+                             std::span<ast::OuterAttribute>) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
   AwaitExpression a = {loc};

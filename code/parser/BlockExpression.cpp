@@ -11,6 +11,7 @@
 #include "Lexer/Token.h"
 #include "Parser/ExpressionOrStatement.h"
 #include "Parser/Parser.h"
+#include "llvm/Support/ErrorHandling.h"
 
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
@@ -272,6 +273,35 @@ Parser::parseStatementOrExpressionWithoutBlock() {
       llvm::errs()
           << "unknown keyword in statement or expression without block: "
           << KeyWord2String(getToken().getKeyWordKind()) << "\n";
+
+      Result<std::shared_ptr<ast::Expression>, std::string> expr =
+          parseExpressionWithoutBlock(outerAttr, restrictions);
+      if (!expr) {
+        llvm::errs()
+            << "failed to parse expression without block in statement or "
+               "expression without block: "
+            << expr.getError() << "\n";
+        // report error
+        std::string s =
+            llvm::formatv(
+                "{0}\n{1}",
+                "failed to parse expression without block in statement or "
+                "expression without block",
+                expr.getError())
+                .str();
+        return StringResult<ExpressionOrStatement>(s);
+      }
+
+      if (getToken().getKind() == TokenKind::Semi) {
+        assert(eat(TokenKind::Semi));
+        // found expression statement
+        ExpressionStatement stmt = {getLocation()};
+        stmt.setExprWoBlock(expr.getValue());
+        stmt.setTrailingSemi();
+        return StringResult<ExpressionOrStatement>(
+            ExpressionOrStatement(std::make_shared<ExpressionStatement>(stmt)));
+      }
+
       break;
     }
     }
@@ -297,11 +327,10 @@ Parser::parseStatementOrExpressionWithoutBlock() {
         stmt.setExprWoBlock(expr.getValue());
         return StringResult<ExpressionOrStatement>(
             ExpressionOrStatement(std::make_shared<ExpressionStatement>(stmt)));
-      } else {
-        // must be expression
-        return StringResult<ExpressionOrStatement>(
-            ExpressionOrStatement(expr.getValue()));
       }
+      // must be expression
+      return StringResult<ExpressionOrStatement>(
+          ExpressionOrStatement(expr.getValue()));
     }
     case TokenKind::BraceOpen: {
       // block expr
@@ -361,42 +390,41 @@ Parser::parseStatementOrExpressionWithoutBlock() {
     default: {
       llvm::errs() << "unknown token in statement or expression without block: "
                    << Token2String(getToken().getKind()) << "\n";
+
+      Result<std::shared_ptr<ast::Expression>, std::string> expr =
+          parseExpressionWithoutBlock(outerAttr, restrictions);
+      if (!expr) {
+        llvm::errs()
+            << "failed to parse expression without block in statement or "
+               "expression without block: "
+            << expr.getError() << "\n";
+        // report error
+        std::string s =
+            llvm::formatv(
+                "{0}\n{1}",
+                "failed to parse expression without block in statement or "
+                "expression without block",
+                expr.getError())
+                .str();
+        return StringResult<ExpressionOrStatement>(s);
+      }
+
+      if (getToken().getKind() == TokenKind::Semi) {
+        assert(eat(TokenKind::Semi));
+        // found expression statement
+        ExpressionStatement stmt = {getLocation()};
+        stmt.setExprWoBlock(expr.getValue());
+        stmt.setTrailingSemi();
+        return StringResult<ExpressionOrStatement>(
+            ExpressionOrStatement(std::make_shared<ExpressionStatement>(stmt)));
+      }
+      // expression
+      return StringResult<ExpressionOrStatement>(
+          ExpressionOrStatement(expr.getValue()));
     }
     }
   }
-
-  Result<std::shared_ptr<ast::Expression>, std::string> expr =
-      parseExpressionWithoutBlock(outerAttr, restrictions);
-  if (!expr) {
-    llvm::errs() << "failed to parse expression without block in statement or "
-                    "expression without block: "
-                 << expr.getError() << "\n";
-    // report error
-    std::string s =
-        llvm::formatv(
-            "{0}\n{1}",
-            "failed to parse expression without block in statement or "
-            "expression without block",
-            expr.getError())
-            .str();
-    return StringResult<ExpressionOrStatement>(s);
-  }
-
-  if (getToken().getKind() == TokenKind::Semi) {
-    assert(eat(TokenKind::Semi));
-    // found expression statement
-    ExpressionStatement stmt = {getLocation()};
-    stmt.setExprWoBlock(expr.getValue());
-    stmt.setTrailingSemi();
-    return StringResult<ExpressionOrStatement>(
-        ExpressionOrStatement(std::make_shared<ExpressionStatement>(stmt)));
-  }
-
-  // expression
-  return StringResult<ExpressionOrStatement>(
-      ExpressionOrStatement(expr.getValue()));
-
-  // FIXME lifetimes
+  llvm_unreachable("either keyword or not");
 }
 
 Result<std::shared_ptr<ast::Expression>, std::string>

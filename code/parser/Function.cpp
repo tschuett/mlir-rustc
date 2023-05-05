@@ -87,8 +87,8 @@ StringResult<ast::SelfParam> Parser::parseSelfParam() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
-  llvm::errs() << "parseSelfParam"
-               << "\n";
+  //llvm::errs() << "parseSelfParam"
+  //             << "\n";
 
   SelfParam self = {loc};
 
@@ -115,6 +115,7 @@ StringResult<ast::SelfParam> Parser::parseSelfParam() {
       exit(EXIT_FAILURE);
     }
     self.setSelf(SelfParamKind::ShorthandSelf, shortA.getValue());
+    return StringResult<ast::SelfParam>(self);
   } else if (checkKeyWord(KeyWordKind::KW_MUT)) {
     if (checkKeyWord(KeyWordKind::KW_SELFVALUE, 1)) {
       if (check(TokenKind::Colon, 2)) {
@@ -126,6 +127,7 @@ StringResult<ast::SelfParam> Parser::parseSelfParam() {
           exit(EXIT_FAILURE);
         }
         self.setSelf(SelfParamKind::TypeSelf, shortA.getValue());
+        return StringResult<ast::SelfParam>(self);
         // TypedSelf
       } else {
         StringResult<std::shared_ptr<ast::SelfParam>> shortA =
@@ -137,6 +139,7 @@ StringResult<ast::SelfParam> Parser::parseSelfParam() {
           exit(EXIT_FAILURE);
         }
         self.setSelf(SelfParamKind::ShorthandSelf, shortA.getValue());
+        return StringResult<ast::SelfParam>(self);
       }
     }
   } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
@@ -149,6 +152,7 @@ StringResult<ast::SelfParam> Parser::parseSelfParam() {
         exit(EXIT_FAILURE);
       }
       self.setSelf(SelfParamKind::TypeSelf, shortA.getValue());
+      return StringResult<ast::SelfParam>(self);
     } else {
       StringResult<std::shared_ptr<ast::SelfParam>> shortA =
           parseShorthandSelf();
@@ -159,6 +163,7 @@ StringResult<ast::SelfParam> Parser::parseSelfParam() {
         exit(EXIT_FAILURE);
       }
       self.setSelf(SelfParamKind::ShorthandSelf, shortA.getValue());
+      return StringResult<ast::SelfParam>(self);
     }
   }
   return StringResult<ast::SelfParam>("failed to parse colonself param");

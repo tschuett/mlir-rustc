@@ -363,10 +363,14 @@ public:
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseAwaitExpression(std::shared_ptr<ast::Expression>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
+      parseAwaitExpression(std::shared_ptr<ast::Expression>,
+                           std::span<ast::OuterAttribute>);
+  adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseIndexExpression(std::shared_ptr<ast::Expression>,
                            std::span<ast::OuterAttribute>, Restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
-      parseFieldExpression(std::shared_ptr<ast::Expression>);
+  parseFieldExpression(std::shared_ptr<ast::Expression>,
+                       std::span<ast::OuterAttribute>, Restrictions restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseRangeExpression(std::shared_ptr<ast::Expression>,
                            std::span<ast::OuterAttribute>, Restrictions);
@@ -392,7 +396,9 @@ public:
                             std::span<ast::OuterAttribute>,
                             Restrictions restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
-      parseTupleIndexingExpression(std::shared_ptr<ast::Expression>);
+  parseTupleIndexingExpression(
+      std::shared_ptr<ast::Expression>, std::span<ast::OuterAttribute>,
+      rust_compiler::parser::Restrictions restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseArrayExpression(std::span<ast::OuterAttribute>);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>

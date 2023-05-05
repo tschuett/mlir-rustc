@@ -1,5 +1,6 @@
 #include "ADT/Result.h"
 #include "AST/ErrorPropagationExpression.h"
+#include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
@@ -25,8 +26,8 @@ adt::StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseExpression(Precedence rightBindingPower,
                         std::span<ast::OuterAttribute> outer,
                         Restrictions restrictions) {
-//  llvm::errs() << "parseExpression"
-//               << "\n";
+  //  llvm::errs() << "parseExpression"
+  //               << "\n";
 
   adt::StringResult<std::shared_ptr<ast::Expression>> expr =
       parseUnaryExpression({}, restrictions);
@@ -103,6 +104,18 @@ Parser::parseInfixExpression(std::shared_ptr<Expression> left,
   }
   case TokenKind::ParenOpen: {
     return parseCallExpression(left, outer, restrictions);
+  }
+  case TokenKind::Dot: {
+    // field expression or method call
+    if (checkKeyWord(KeyWordKind::KW_AWAIT)) {
+      return parseAwaitExpression(left, outer);
+    } else if (check(TokenKind::INTEGER_LITERAL)) {
+      return parseTupleIndexingExpression(left, outer, restrictions);
+    } else if (check(TokenKind::Identifier) &&
+               !check(TokenKind::ParenOpen, 1) && !check(TokenKind::PathSep, 1)) {
+      return parseFieldExpression(left, outer, restrictions);
+    }
+    return parseMethodCallExpression(left, outer, restrictions);
   }
   case TokenKind::Eof: {
     std::string s =
