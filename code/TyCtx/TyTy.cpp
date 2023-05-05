@@ -1,7 +1,10 @@
 #include "TyCtx/TyTy.h"
 
 #include "ADT/CanonicalPath.h"
+#include "AST/Item.h"
 #include "AST/Patterns/Patterns.h"
+#include "AST/Trait.h"
+#include "AST/VisItem.h"
 #include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
 #include "Location.h"
@@ -959,6 +962,19 @@ BaseType *InferType::clone() const {
   cloned->appendReference(getReference());
 
   return cloned;
+}
+
+void ClosureType::setupFnOnceOutput() const {
+  //TyCtx *context = rust_compiler::session::session->getTypeContext();
+
+  assert(false);
+
+//  std::optional<ast::Item *> item = context->lookupItem(traitId);
+//  assert(item.has_value());
+//  assert((*item)->getItemKind() == ItemKind::VisItem);
+//  ast::VisItem *visItem = static_cast<ast::VisItem*>(*item);
+//  assert(visItem->getKind() == VisItemKind::Trait);
+//  ast::Trait *trait = static_cast<ast::Trait*>(visItem);
 }
 
 } // namespace rust_compiler::tyctx::TyTy

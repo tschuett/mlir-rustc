@@ -559,8 +559,9 @@ TypeResolver::checkFunctionTraitCall(CallExpression *expr,
   }
 
   if (functionType->getKind() == TyTy::TypeKind::Closure) {
-    TyTy::ClosureType *clos = static_cast<TyTy::ClosureType *>(functionType);
-    clos->setupFnOnceOutput();
+    [[maybe_unused]]TyTy::ClosureType *clos = static_cast<TyTy::ClosureType *>(functionType);
+    // FIXME: TODO
+    // clos->setupFnOnceOutput();
   }
 
   MethodCandidate candidate = *candidates.begin();
