@@ -24,6 +24,12 @@ public:
 
   bool hasParameters() const { return callParameter.has_value(); }
   CallParams getParameters() const { return *callParameter; }
+
+  size_t getNumberOfParams() const {
+    if (hasParameters())
+      return getParameters().getParams().size();
+    return 0;
+  }
 };
 
 } // namespace rust_compiler::ast

@@ -153,6 +153,9 @@ private:
   TyTy::BaseType *checkCallExpression(TyTy::BaseType *functionType,
                                       ast::CallExpression *,
                                       TyTy::VariantDef &);
+  TyTy::BaseType *checkCallExpressionFn(TyTy::BaseType *functionType,
+                                      ast::CallExpression *,
+                                      TyTy::VariantDef &);
 
   TyTy::BaseType *
   resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,

@@ -462,6 +462,18 @@ public:
     return (flags & FunctionTypeIsMethod) == FunctionTypeIsMethod;
   }
 
+  bool isVaradic() const {
+    return (flags & FunctionTypeIsVariadic) == FunctionTypeIsVariadic;
+  }
+
+  size_t getNumberOfArguments() const { return parameters.size(); }
+
+  std::pair<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
+            TyTy::BaseType *>
+  getParameter(size_t i) const {
+    return parameters[i];
+  }
+
 private:
   basic::NodeId id;
   lexer::Identifier name;

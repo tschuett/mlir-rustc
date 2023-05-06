@@ -507,7 +507,8 @@ TyTy::BaseType *TypeResolver::checkCallExpression(TyTy::BaseType *functionType,
     assert(false);
   }
   case TyTy::TypeKind::Function: {
-    assert(false);
+    return checkCallExpressionFn(functionType, call, variant);
+    break;
   }
   case TyTy::TypeKind::FunctionPointer: {
     assert(false);
@@ -538,6 +539,75 @@ TyTy::BaseType *TypeResolver::checkCallExpression(TyTy::BaseType *functionType,
   llvm_unreachable("unknown type kind");
 }
 
+TyTy::BaseType *
+TypeResolver::checkCallExpressionFn(TyTy::BaseType *functionType,
+                                    ast::CallExpression *call,
+                                    TyTy::VariantDef &variant) {
+  TyTy::FunctionType *fun = static_cast<TyTy::FunctionType *>(functionType);
+
+  // check number of paramters minus variadic
+  if (call->getNumberOfParams() != fun->getNumberOfArguments()) {
+    if (fun->isVaradic()) {
+      if (call->getNumberOfParams() < fun->getNumberOfArguments()) {
+        // report error
+        assert(false);
+      }
+    } else {
+      // report error
+      assert(false);
+    }
+  }
+
+  // call expressions and funtion types must match
+  size_t i = 0;
+  for (auto fp : call->getParameters().getParams()) {
+    TyTy::BaseType *argExprType = checkExpression(fp);
+    if (argExprType->getKind() == TyTy::TypeKind::Error) {
+      // report error
+      assert(false);
+    }
+
+    // variadic?
+    if (i < fun->getNumberOfArguments()) {
+      auto param = fun->getParameter(i);
+      auto pattern = param.first;
+      TyTy::BaseType *paramTy = param.second;
+      basic::NodeId coercionSiteId = fp->getNodeId();
+
+      // FIXME: add more locations
+      TyTy::BaseType *resolvedArgumentType = coercionWithSite(
+          coercionSiteId, TyTy::WithLocation(paramTy),
+          TyTy::WithLocation(argExprType), fp->getLocation(), tcx);
+      if (resolvedArgumentType->getKind() == TyTy::TypeKind::Error) {
+        // report error
+        assert(false);
+      }
+    }
+
+    //    else { // no!
+    //      assert(false);
+    //      // FIXME: todo
+    //      // switch(argExprType->getKind()) {
+    //      // case TypeKind::Error : {
+    //      //  assert(false);
+    //      //}
+    //      // case TypeKind::Int: {
+    //      //}
+    //      //}
+    //    }
+    ++i;
+  }
+
+  // check again
+  if (i < call->getNumberOfParams()) {
+    // report error
+    assert(false);
+  }
+
+  // FIXME
+  return fun->getReturnType()->clone();
+}
+
 std::optional<TyTy::BaseType *>
 TypeResolver::checkFunctionTraitCall(CallExpression *expr,
                                      TyTy::BaseType *functionType) {
@@ -559,7 +629,8 @@ TypeResolver::checkFunctionTraitCall(CallExpression *expr,
   }
 
   if (functionType->getKind() == TyTy::TypeKind::Closure) {
-    [[maybe_unused]]TyTy::ClosureType *clos = static_cast<TyTy::ClosureType *>(functionType);
+    [[maybe_unused]] TyTy::ClosureType *clos =
+        static_cast<TyTy::ClosureType *>(functionType);
     // FIXME: TODO
     // clos->setupFnOnceOutput();
   }
