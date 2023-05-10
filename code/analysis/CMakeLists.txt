@@ -11,6 +11,7 @@ add_library(analysis
            PointsTo.cpp
 #           Cycles.cpp
            ScalarEvolution.cpp
+           AggressiveAliasAnalysis.cpp
            )
 
 target_include_directories(analysis PRIVATE  ../include)

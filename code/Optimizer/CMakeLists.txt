@@ -20,6 +20,7 @@ add_library(optimizer
            DeadArgumentElimination.cpp
            FuncSpecialization.cpp
            LoopPlan.cpp
+           MemoryAnalysis.cpp
            )
 
 target_include_directories(optimizer PRIVATE  ../include)

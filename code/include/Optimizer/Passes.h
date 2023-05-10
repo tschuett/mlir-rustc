@@ -56,6 +56,9 @@ namespace rust_compiler::optimizer {
 #define GEN_PASS_DECL_FUNCSPECIALPASS
 #include "Optimizer/Passes.h.inc"
 
+#define GEN_PASS_DECL_MEMORYANALYSISPASS
+#include "Optimizer/Passes.h.inc"
+
 // declarative passes
 #define GEN_PASS_REGISTRATION
 #include "Optimizer/Passes.h.inc"

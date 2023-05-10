@@ -99,6 +99,11 @@ def FuncSpecialPass : Pass<"FuncSpecial", "mlir::ModuleOp"> {
   let description = "specializes funcs after SCCP";
 }
 
+def MemoryAnalysisPass : Pass<"MemoryAnalysis", "mlir::ModuleOp"> {
+  let summary = "memory analysis";
+  let description = "analyses memrefs";
+}
+
 
 
 // eleminate Mir: how?
