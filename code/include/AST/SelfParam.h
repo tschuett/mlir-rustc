@@ -27,6 +27,10 @@ public:
   void setOuterAttributes(std::span<OuterAttribute> outerAttribute) {
     outerAttributes = {outerAttribute.begin(), outerAttribute.end()};
   }
+
+  SelfParamKind getKind() const { return kind; }
+
+  std::shared_ptr<ast::SelfParam> getSelf() const { return self; }
 };
 
 } // namespace rust_compiler::ast

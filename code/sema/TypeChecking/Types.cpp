@@ -2,7 +2,9 @@
 
 #include "AST/ConstParam.h"
 #include "AST/Enumeration.h"
+#include "AST/GenericArgs.h"
 #include "AST/Types/ArrayType.h"
+#include "AST/Types/ReferenceType.h"
 #include "AST/Types/TraitBound.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
@@ -12,6 +14,8 @@
 #include "Basic/Ids.h"
 #include "Coercion.h"
 #include "PathProbing.h"
+#include "TyCtx/Substitutions.h"
+#include "TyCtx/SubstitutionsMapper.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
 #include "Unification.h"
@@ -59,8 +63,9 @@ void TypeResolver::checkWhereClause(const ast::WhereClause &) {
   assert(false && "to be implemented");
 }
 
-void TypeResolver::checkGenericParams(const GenericParams &pa) {
-  std::vector<TyTy::TypeBoundPredicate> specifiedBounds;
+void TypeResolver::checkGenericParams(
+    const GenericParams &pa,
+    std::vector<TyTy::SubstitutionParamMapping> &substitutions) {
   for (GenericParam &param : pa.getGenericParams()) {
     switch (param.getKind()) {
     case GenericParamKind::LifetimeParam: {
@@ -75,7 +80,7 @@ void TypeResolver::checkGenericParams(const GenericParams &pa) {
       TyTy::ParamType *paramType = checkTypeParam(pa);
       tcx->insertType(pa.getIdentity(), paramType);
       // for every TypeParam, we add one Maping
-      // subst.push_back(TyTy::SubstitutionParamMapping(pa, paramType));
+      substitutions.push_back(TyTy::SubstitutionParamMapping(pa, paramType));
       break;
     }
     case GenericParamKind::ConstParam: {
@@ -112,7 +117,8 @@ TypeResolver::checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds> no) {
     assert(false && "to be implemented");
   }
   case TypeNoBoundsKind::TraitObjectTypeOneBound: {
-    assert(false && "to be implemented");
+    return checkTypeTraitObjectTypeOneBound(
+        std::static_pointer_cast<TraitObjectTypeOneBound>(no));
   }
   case TypeNoBoundsKind::TypePath: {
     return checkTypePath(std::static_pointer_cast<TypePath>(no));
@@ -127,7 +133,8 @@ TypeResolver::checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds> no) {
     assert(false && "to be implemented");
   }
   case TypeNoBoundsKind::ReferenceType: {
-    assert(false && "to be implemented");
+    return checkReferenceType(
+        std::static_pointer_cast<ast::types::ReferenceType>(no));
   }
   case TypeNoBoundsKind::ArrayType: {
     return checkArrayType(std::static_pointer_cast<ast::types::ArrayType>(no));
@@ -165,8 +172,10 @@ TypeResolver::checkTypePath(std::shared_ptr<ast::types::TypePath> tp) {
     return new TyTy::ErrorType(tp->getNodeId());
   }
 
-  root->setReference(tp->getNodeId());
-  tcx->insertImplicitType(tp->getNodeId(), root);
+  TyTy::BaseType *pathType = root->clone();
+
+  pathType->setReference(tp->getNodeId());
+  tcx->insertImplicitType(tp->getNodeId(), pathType);
 
   if (offset >= tp->getSegments().size())
     return root;
@@ -249,36 +258,38 @@ TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
     }
     TyTy::BaseType *lookup = *result;
 
-    //    if (rootType != nullptr) {
-    //      such as: GenericStruct::<_>::new(123, 456)
-    //      if (lookup->needsGenericSubstitutions()) {
-    //        if (!rootType->needsGenericSubstitutions()) {
-    //          TyTy::SubstitutionArgumentMappings args =
-    //              TyTy::getUsedSubstitutionArguments(rootType);
-    //          lookup = applySubstitutionMappings(lookup, args);
-    //        }
-    //      }
-    //    }
-
-    // turbo-fish segment path::<ty>
-    if (segs[i].hasGenerics()) {
+    if (rootType != nullptr) {
+      // such as: GenericStruct::<_>::new(123, 456)
       if (lookup->needsGenericSubstitutions()) {
-        checkGenericParamsAndArgs(lookup, segs[i].getGenericArgs());
+        if (!rootType->needsGenericSubstitutions()) {
+          TyTy::SubstitutionArgumentMappings args =
+              getUsedSubstitutionArguments(rootType);
+          InternalSubstitutionsMapper mapper;
+          lookup = mapper.resolve(lookup, args);
+        }
       }
-    } else if (lookup->needsGenericSubstitutions()) {
-      // FIXME
     }
 
+    // turbo-fish segment path::<ty>
     // if (segs[i].hasGenerics()) {
-    //   lookup = applyGenericArgs(lookup, path->getLocation(),
-    //                             segs[i].getGenericArgs());
-    //   if (lookup->getKind() == TyTy::TypeKind::Error)
-    //     return new TyTy::ErrorType(segs[i].getNodeId());
-    // } else if (lookup->needsGenericSubstitutions()) {
-    //   lookup =
-    //       applyGenericArgs(lookup, path->getLocation(),
-    //       GenericArgs::empty());
-    // }
+    //  if (lookup->needsGenericSubstitutions()) {
+    //    checkGenericParamsAndArgs(lookup, segs[i].getGenericArgs());
+    //  }
+    //} else if (lookup->needsGenericSubstitutions()) {
+    //  // FIXME
+    //}
+
+    if (segs[i].hasGenerics()) {
+      GenericArgs args = segs[i].getGenericArgs();
+      SubstitutionsMapper mapper;
+      lookup = mapper.resolve(lookup, path->getLocation(), &args);
+      if (lookup->getKind() == TyTy::TypeKind::Error)
+        return new TyTy::ErrorType(segs[i].getNodeId());
+    } else if (lookup->needsGenericSubstitutions()) {
+      GenericArgs args = GenericArgs::empty();
+      SubstitutionsMapper mapper;
+      lookup = mapper.resolve(lookup, path->getLocation(), &args);
+    }
 
     *resolvedNodeId = refNodeId;
     *offset = *offset + 1;
@@ -340,7 +351,8 @@ TypeResolver::checkNeverType(std::shared_ptr<ast::types::NeverType>) {
 }
 
 TyTy::TypeBoundPredicate TypeResolver::getPredicateFromBound(
-    std::shared_ptr<ast::types::TypeExpression> path) {
+    std::shared_ptr<ast::types::TypeExpression> path,
+    ast::types::TypeExpression *) {
   std::shared_ptr<ast::types::TypePath> typePath =
       std::static_pointer_cast<TypePath>(path);
   std::optional<TyTy::TypeBoundPredicate> lookup =
@@ -368,7 +380,7 @@ TyTy::ParamType *TypeResolver::checkTypeParam(const TypeParam &type) {
         std::shared_ptr<TraitBound> b =
             std::static_pointer_cast<TraitBound>(bound);
         TyTy::TypeBoundPredicate predicate =
-            getPredicateFromBound(b->getPath());
+            getPredicateFromBound(b->getPath(), nullptr);
         if (!predicate.isError())
           specifiedBounds.push_back(predicate);
         break;
@@ -404,18 +416,29 @@ TypeResolver::checkArrayType(std::shared_ptr<ast::types::ArrayType> arr) {
                              TyTy::TypeVariable(base->getReference()));
 }
 
-// TyTy::SubstitutionArgumentMappings
-// TypeResolver::getUsesSubstitutionArguments(TyTy::BaseType *type) {
-//   if (type->getKind() == TyTy::TypeKind::Function)
-//     return static_cast<TyTy::FunctionType
-//     *>(type)->getSubstitutionArguments();
-//   if (type->getKind() == TyTy::TypeKind::ADT)
-//     return static_cast<TyTy::ADTType *>(type)->getSubstitutionArguments();
-//   if (type->getKind() == TyTy::TypeKind::Closure)
-//     return static_cast<TyTy::ClosureType
-//     *>(type)->getSubstitutionArguments();
-//
-//   return TyTy::SubstitutionArgumentMappings{};
-// }
+TyTy::SubstitutionArgumentMappings
+TypeResolver::getUsedSubstitutionArguments(TyTy::BaseType *type) {
+  if (type->getKind() == TyTy::TypeKind::Function)
+    return static_cast<TyTy::FunctionType *>(type)->getSubstitutionArguments();
+  if (type->getKind() == TyTy::TypeKind::ADT)
+    return static_cast<TyTy::ADTType *>(type)->getSubstitutionArguments();
+  if (type->getKind() == TyTy::TypeKind::Closure)
+    return static_cast<TyTy::ClosureType *>(type)->getSubstitutionArguments();
+
+  return TyTy::SubstitutionArgumentMappings::error();
+}
+
+TyTy::BaseType *TypeResolver::checkReferenceType(
+    std::shared_ptr<ast::types::ReferenceType> ref) {
+  TyTy::BaseType *base = checkType(ref->getReferencedType());
+  return new TyTy::RawPointerType(ref->getNodeId(),
+                                  TyTy::TypeVariable(base->getReference()),
+                                  ref->getMut());
+}
+
+TyTy::BaseType *TypeResolver::checkTypeTraitObjectTypeOneBound(
+    std::shared_ptr<ast::types::TraitObjectTypeOneBound> trait) {
+  assert(false);
+}
 
 } // namespace rust_compiler::sema::type_checking

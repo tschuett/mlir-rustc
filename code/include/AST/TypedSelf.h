@@ -16,7 +16,10 @@ public:
   TypedSelf(Location loc) : SelfParam(loc) {}
 
   void setMut() { mut = true; }
-  void setType(std::shared_ptr<ast::types::TypeExpression> _type) { type = _type; }
+  void setType(std::shared_ptr<ast::types::TypeExpression> _type) {
+    type = _type;
+  }
+  std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
 };
 
 } // namespace rust_compiler::ast

@@ -22,12 +22,10 @@ using namespace rust_compiler::tyctx::TyTy;
 namespace rust_compiler::sema::type_checking {
 
 void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
-  std::optional<GenericParams> genericParams;
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
   // generics
-  if (f->hasGenericParams()) {
-    checkGenericParams(f->getGenericParams());
-    genericParams = f->getGenericParams();
-  }
+  if (f->hasGenericParams())
+    checkGenericParams(f->getGenericParams(), substitutions);
 
   if (f->hasWhereClause())
     checkWhereClause(f->getWhereClause());
@@ -82,7 +80,7 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
       tcx->lookupCanonicalPath(f->getNodeId());
   assert(path.has_value());
 
-  tyctx::ItemIdentity identity = {*path, f->getLocation()};
+  tyctx::TypeIdentity identity = {*path, f->getLocation()};
 
   assert(retType != nullptr);
 
@@ -90,8 +88,8 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
   if (f->getQualifiers().hasExtern())
     flags |= FunctionType::FunctionTypeIsExtern;
   TyTy::FunctionType *funType =
-      new TyTy::FunctionType(f->getNodeId(), f->getName(), identity, flags,
-                             params, retType, genericParams);
+      new TyTy::FunctionType(f->getNodeId(), f->getName(),
+                             identity, flags, params, retType, substitutions);
 
   tcx->insertType(f->getIdentity(), funType);
 

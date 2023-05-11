@@ -16,6 +16,7 @@
 #include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
 #include "AST/Implementation.h"
+#include "AST/InherentImpl.h"
 #include "AST/Item.h"
 #include "AST/LetStatement.h"
 #include "AST/LiteralExpression.h"
@@ -33,6 +34,8 @@
 #include "AST/TypeParam.h"
 #include "AST/Types/ArrayType.h"
 #include "AST/Types/NeverType.h"
+#include "AST/Types/ReferenceType.h"
+#include "AST/Types/TraitObjectTypeOneBound.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypePath.h"
 #include "AST/WhereClause.h"
@@ -49,7 +52,10 @@
 #include <memory>
 #include <vector>
 
-namespace rust_compiler::ast {}
+namespace rust_compiler::ast {
+class InherentImpl;
+class Trait;
+} // namespace rust_compiler::ast
 
 namespace rust_compiler::sema::resolver {
 class Resolver;
@@ -99,6 +105,7 @@ private:
   void checkMacroItem(std::shared_ptr<ast::MacroItem> v);
   void checkFunction(std::shared_ptr<ast::Function> f);
   void checkStruct(ast::Struct *s);
+  TyTy::BaseType *checkTrait(ast::Trait *s);
   void checkStructStruct(ast::StructStruct *s);
   void checkTupleStruct(ast::TupleStruct *s);
   void checkWhereClause(const ast::WhereClause &);
@@ -115,7 +122,8 @@ private:
       std::shared_ptr<ast::ArithmeticOrLogicalExpression>);
   TyTy::BaseType *checkReturnExpression(std::shared_ptr<ast::ReturnExpression>);
   TyTy::BaseType *checkMatchExpression(std::shared_ptr<ast::MatchExpression>);
-  void checkGenericParams(const ast::GenericParams &);
+  void checkGenericParams(const ast::GenericParams &,
+                          std::vector<TyTy::SubstitutionParamMapping> &);
   TyTy::BaseType *
       checkClosureExpression(std::shared_ptr<ast::ClosureExpression>);
   TyTy::BaseType *checkStatement(std::shared_ptr<ast::Statement>);
@@ -123,6 +131,9 @@ private:
   TyTy::BaseType *checkPathInExpression(std::shared_ptr<ast::PathInExpression>);
   TyTy::BaseType *checkLetStatement(std::shared_ptr<ast::LetStatement>);
   TyTy::BaseType *checkNeverType(std::shared_ptr<ast::types::NeverType>);
+  TyTy::BaseType *
+      checkReferenceType(std::shared_ptr<ast::types::ReferenceType>);
+
   TyTy::BaseType *
       checkExpressionStatement(std::shared_ptr<ast::ExpressionStatement>);
   TyTy::BaseType *checkIfExpression(std::shared_ptr<ast::IfExpression>);
@@ -146,6 +157,9 @@ private:
 
   TyTy::BaseType *checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>);
   TyTy::BaseType *checkTypePath(std::shared_ptr<ast::types::TypePath>);
+  TyTy::BaseType *checkTypeTraitObjectTypeOneBound(
+      std::shared_ptr<ast::types::TraitObjectTypeOneBound>);
+
   TyTy::BaseType *
       checkComparisonExpression(std::shared_ptr<ast::ComparisonExpression>);
   TyTy::BaseType *checkArrayType(std::shared_ptr<ast::types::ArrayType>);
@@ -154,8 +168,8 @@ private:
                                       ast::CallExpression *,
                                       TyTy::VariantDef &);
   TyTy::BaseType *checkCallExpressionFn(TyTy::BaseType *functionType,
-                                      ast::CallExpression *,
-                                      TyTy::VariantDef &);
+                                        ast::CallExpression *,
+                                        TyTy::VariantDef &);
 
   TyTy::BaseType *
   resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
@@ -181,6 +195,10 @@ private:
                                             std::vector<TyTy::Argument> &args,
                                             Location call, Location receiver,
                                             TyTy::BaseType *adjustedSelf);
+  void checkImplementation(ast::Implementation *);
+  void checkInherentImpl(ast::InherentImpl *);
+  TyTy::ParamType *checkGenericParam(const ast::GenericParam &);
+  TyTy::ParamType *checkGenericParamTypeParam(const ast::TypeParam &);
 
   bool
   resolveOperatorOverload(ArithmeticOrLogicalExpressionKind,
@@ -210,24 +228,35 @@ private:
                                    const GenericArgs &);
   TyTy::BaseType *applyGenericArgsToADT(TyTy::ADTType *, Location,
                                         const GenericArgs &);
-  //  TyTy::BaseType *
-  //  applySubstitutionMappings(TyTy::BaseType *,
-  //                            const TyTy::SubstitutionArgumentMappings &);
+  TyTy::BaseType *
+  applySubstitutionMappings(TyTy::BaseType *,
+                            const TyTy::SubstitutionArgumentMappings &);
 
   TyTy::TypeBoundPredicate
-      getPredicateFromBound(std::shared_ptr<ast::types::TypeExpression>);
+  getPredicateFromBound(std::shared_ptr<ast::types::TypeExpression>,
+                        ast::types::TypeExpression *);
   TyTy::ParamType *checkTypeParam(const TypeParam &);
 
   TraitReference *resolveTraitPath(std::shared_ptr<ast::types::TypePath>);
 
-  //  TyTy::SubstitutionArgumentMappings
-  //  getUsesSubstitutionArguments(TyTy::BaseType *);
+  TyTy::SubstitutionArgumentMappings
+  getUsedSubstitutionArguments(TyTy::BaseType *);
 
   bool checkGenericParamsAndArgs(const TyTy::BaseType *,
                                  const ast::GenericArgs &);
 
   bool checkGenericParamsAndArgs(const ast::GenericParams &,
                                  const ast::GenericArgs &);
+  TraitReference *resolveTrait(ast::Trait *trait);
+
+  TraitItemReference resolveAssociatedItemInTraitToRef(
+      AssociatedItem &, TyTy::BaseType *,
+      const std::vector<TyTy::SubstitutionParamMapping> &);
+
+  TyTy::BaseType *inferClosureParam(patterns::PatternNoTopAlt *);
+
+  void resolveFunctionItemInTrait(std::shared_ptr<ast::Item>,
+                                  TyTy::BaseType *type);
 };
 
 } // namespace rust_compiler::sema::type_checking

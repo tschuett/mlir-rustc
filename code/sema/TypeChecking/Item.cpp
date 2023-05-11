@@ -1,9 +1,13 @@
 #include "ADT/CanonicalPath.h"
+#include "ADT/ScopedCanonicalPath.h"
 #include "AST/Function.h"
 #include "AST/GenericParams.h"
+#include "AST/Implementation.h"
+#include "AST/InherentImpl.h"
 #include "AST/Struct.h"
 #include "AST/StructField.h"
 #include "AST/VisItem.h"
+#include "TyCtx/Substitutions.h"
 #include "TyCtx/TyTy.h"
 #include "TyCtx/TypeIdentity.h"
 #include "TypeChecking.h"
@@ -53,10 +57,12 @@ void TypeResolver::checkVisItem(std::shared_ptr<ast::VisItem> v) {
     assert(false && "to be implemented");
   }
   case VisItemKind::Trait: {
-    assert(false && "to be implemented");
+    checkTrait(std::static_pointer_cast<Trait>(v).get());
+    break;
   }
   case VisItemKind::Implementation: {
-    assert(false && "to be implemented");
+    checkImplementation(static_cast<Implementation *>(v.get()));
+    break;
   }
   case VisItemKind::ExternBlock: {
     assert(false && "to be implemented");
@@ -83,11 +89,9 @@ void TypeResolver::checkStruct(ast::Struct *s) {
 
 void TypeResolver::checkStructStruct(ast::StructStruct *s) {
 
-  std::optional<GenericParams> genericParams;
-  if (s->hasGenerics()) {
-    genericParams = s->getGenericParams();
-    checkGenericParams(s->getGenericParams());
-  }
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  if (s->hasGenerics())
+    checkGenericParams(s->getGenericParams(), substitutions);
 
   if (s->hasWhereClause())
     checkWhereClause(s->getWhereClause());
@@ -119,17 +123,15 @@ void TypeResolver::checkStructStruct(ast::StructStruct *s) {
   // parse #[repr(X)]
   TyTy::BaseType *type =
       new TyTy::ADTType(s->getNodeId(), s->getIdentifier(), ident,
-                        TyTy::ADTKind::StructStruct, variants, genericParams);
+                        TyTy::ADTKind::StructStruct, variants, substitutions);
 
   tcx->insertType(s->getIdentity(), type);
 }
 
 void TypeResolver::checkTupleStruct(ast::TupleStruct *s) {
-  std::optional<GenericParams> genericParams;
-  if (s->hasGenerics()) {
-    genericParams = s->getGenericParams();
-    checkGenericParams(s->getGenericParams());
-  }
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  if (s->hasGenerics())
+  checkGenericParams(s->getGenericParams(), substitutions);
 
   if (s->hasWhereClause())
     checkWhereClause(s->getWhereClause());
@@ -155,15 +157,30 @@ void TypeResolver::checkTupleStruct(ast::TupleStruct *s) {
 
   std::vector<TyTy::VariantDef *> variants;
   variants.push_back(new TyTy::VariantDef(s->getNodeId(), s->getName(), ident,
-                                          TyTy::VariantKind::Tuple, nullptr, fields));
+                                          TyTy::VariantKind::Tuple, nullptr,
+                                          fields));
 
   // parse #[rept(X)]
 
   TyTy::BaseType *type =
       new TyTy::ADTType(s->getNodeId(), s->getName(), ident,
-                        TyTy::ADTKind::TupleStruct, variants, genericParams);
+                        TyTy::ADTKind::TupleStruct, variants, substitutions);
 
   tcx->insertType(s->getIdentity(), type);
 }
+
+void TypeResolver::checkImplementation(ast::Implementation *impl) {
+  switch (impl->getKind()) {
+  case ImplementationKind::InherentImpl: {
+    checkInherentImpl(static_cast<InherentImpl *>(impl));
+    break;
+  }
+  case ImplementationKind::TraitImpl: {
+    assert(false);
+  }
+  }
+}
+
+void TypeResolver::checkInherentImpl(ast::InherentImpl *impl) { assert(false); }
 
 } // namespace rust_compiler::sema::type_checking

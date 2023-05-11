@@ -50,35 +50,34 @@ TyTy::BaseType *TypeResolver::applyGenericArgs(TyTy::BaseType *type,
 TyTy::BaseType *TypeResolver::applyGenericArgsToADT(TyTy::ADTType *type,
                                                     Location loc,
                                                     const GenericArgs &args) {
-  GenericParameters *gps = static_cast<GenericParameters *>(type);
-  std::optional<ast::GenericParams> genericParams = gps->getGenericParams();
-
-  if (genericParams) {
-    if ((*genericParams).getNumberOfParams() != args.getNumberOfArgs()) {
-      // report error
-    }
-  } else { // no genericParams
-    if (args.getNumberOfArgs() != 0) {
-      // report error
-    }
-  }
-  if (args.getNumberOfArgs() == 0) {
-    return type;
-  } else {
-    //    TyTy::SubstitutionArgumentMappings mappings =
-    //        type->getMappingsFromGenericArgs(args, this);
-    //    // if (mappings.isError())
-    //    //   return
-    //    return type->handleSubstitutions(mappings);
-  }
+//  GenericParameters *gps = static_cast<GenericParameters *>(type);
+//  std::optional<ast::GenericParams> genericParams = gps->getGenericParams();
+//
+//  if (genericParams) {
+//    if ((*genericParams).getNumberOfParams() != args.getNumberOfArgs()) {
+//      // report error
+//    }
+//  } else { // no genericParams
+//    if (args.getNumberOfArgs() != 0) {
+//      // report error
+//    }
+//  }
+//  if (args.getNumberOfArgs() == 0) {
+//    return type;
+//  } else {
+//    //    TyTy::SubstitutionArgumentMappings mappings =
+//    //        type->getMappingsFromGenericArgs(args, this);
+//    //    // if (mappings.isError())
+//    //    //   return
+//    //    return type->handleSubstitutions(mappings);
+//  }
   assert(false);
   // TODO
 }
 
-// TyTy::BaseType *TypeResolver::applySubstitutionMappings(
-//     TyTy::BaseType *, const TyTy::SubstitutionArgumentMappings &) {
-//   assert(false);
-// }
-
+ TyTy::BaseType *TypeResolver::applySubstitutionMappings(
+     TyTy::BaseType *, const TyTy::SubstitutionArgumentMappings &) {
+   assert(false);
+ }
 
 } // namespace rust_compiler::sema::type_checking

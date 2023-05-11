@@ -45,7 +45,6 @@ void Rib::insertName(const adt::CanonicalPath &path, basic::NodeId id,
 }
 
 void Rib::clearName(const adt::CanonicalPath &path, basic::NodeId id) {
-  assert(false);
   auto ii = pathMappings.find(path);
   if (ii != pathMappings.end())
     pathMappings.erase(ii);
@@ -192,7 +191,7 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
     break;
   }
   case VisItemKind::Function: {
-    resolveFunction(std::static_pointer_cast<Function>(visItem), prefix,
+    resolveFunction(std::static_pointer_cast<Function>(visItem).get(), prefix,
                     canonicalPrefix);
     break;
   }

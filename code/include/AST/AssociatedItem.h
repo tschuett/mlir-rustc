@@ -34,6 +34,18 @@ public:
   void setFunction(std::shared_ptr<ast::Item> f) { function = f; }
   void setVisiblity(Visibility vi) { visibility = vi; }
   void setMacroItem(std::shared_ptr<ast::Item> m) { macroItem = m; }
+
+  std::optional<Visibility> getVisibility() const { return visibility; }
+
+  bool hasFunction() const { return (bool)function; }
+  bool hasTypeAlias() const { return (bool)typeAlias; }
+  bool hasConstantItem() const { return (bool)constantItem; }
+  bool hasMacroInvocationSemi() const { return (bool)macroItem; }
+
+  std::shared_ptr<ast::Item> getTypeAlias() const { return typeAlias;}
+  std::shared_ptr<ast::Item> getConstantItem() const { return constantItem;}
+  std::shared_ptr<ast::Item> getFunction() const { return function;}
+  std::shared_ptr<ast::Item> getMacroItem() const { return macroItem;}
 };
 
 } // namespace rust_compiler::ast

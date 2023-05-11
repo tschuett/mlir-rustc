@@ -12,10 +12,10 @@ class StructExprUnit : public StructExpression {
 
 public:
   StructExprUnit(Location loc)
-      : StructExpression(loc, StructExpressionKind::StructExprUnit) {
-  }
+      : StructExpression(loc, StructExpressionKind::StructExprUnit) {}
 
   void setPath(std::shared_ptr<Expression> p) { path = p; }
+  std::shared_ptr<Expression> getPath() const { return path; }
 };
 
 } // namespace rust_compiler::ast

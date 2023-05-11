@@ -30,13 +30,11 @@ class Trait : public VisItem {
   std::optional<WhereClause> whereClause;
 
   std::vector<InnerAttribute> innerAttributes;
-  std::vector<AssociatedItem> associatedItem;
+  std::vector<AssociatedItem> associatedItems;
 
 public:
   Trait(Location loc, std::optional<Visibility> vis)
       : VisItem(loc, VisItemKind::Trait, vis) {}
-
-  std::span<std::shared_ptr<AssociatedItem>> getAssociatedItems() const;
 
   void setUnsafe() { unsafe = true; }
   void setIdentifier(const Identifier &id) { identifier = id; }
@@ -47,9 +45,32 @@ public:
 
   void setInner(std::vector<InnerAttribute> &inn) { innerAttributes = inn; }
 
-  void addItem(const AssociatedItem &item) { associatedItem.push_back(item); }
+  void addItem(const AssociatedItem &item) { associatedItems.push_back(item); }
 
   Identifier getIdentifier() const { return identifier; }
+
+  bool hasGenericParams() const { return genericParams.has_value(); }
+  GenericParams getGenericParams() const { return *genericParams; }
+  bool hasWhereClause() const { return whereClause.has_value(); }
+  WhereClause getWhereClause() const { return *whereClause; }
+  bool hasTypeParamBounds() const { return typeParamBounds.has_value(); }
+  types::TypeParamBounds getTypeParamBounds() const { return *typeParamBounds; }
+  std::vector<AssociatedItem> getAssociatedItems() const {
+    return associatedItems;
+  }
+
+  // convinience
+  void insertImplicitSelf(const GenericParam &gp) {
+    if (genericParams) {
+      GenericParams tmp = *genericParams;
+      tmp.addGenericParam(gp);
+      genericParams = tmp;
+      return;
+    }
+    GenericParams tmp = {getLocation()};
+    tmp.addGenericParam(gp);
+    genericParams = tmp;
+  }
 };
 
 } // namespace rust_compiler::ast

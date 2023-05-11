@@ -2,7 +2,6 @@
 
 #include "AST/GenericArgsBinding.h"
 #include "TyCtx/TyTy.h"
-#include "../sema/TypeChecking/TypeChecking.h"
 
 #include <map>
 
@@ -21,94 +20,13 @@ std::string SubstitutionParamMapping::toString() const {
   return param->toString();
 }
 
-bool SubstitutionParamMapping::needsSubstitution() const {
+bool SubstitutionParamMapping::needSubstitution() const {
   return !param->isConcrete();
 }
 
-BaseType *SubstitutionsReference::inferSubstitutions(Location) {
-  assert(false);
-}
+BaseType *SubstitutionRef::inferSubstitions(Location) { assert(false); }
 
-size_t
-SubstitutionsReference::getNumberOfTypeParams(const ast::GenericArgs &args) {
-  size_t types = 0;
-  for (const GenericArg &arg : args.getArgs()) {
-    switch (arg.getKind()) {
-    case GenericArgKind::Lifetime: {
-      break;
-    }
-    case GenericArgKind::Type: {
-      ++types;
-      break;
-    }
-    case GenericArgKind::Const: {
-      break;
-    }
-    case GenericArgKind::Binding: {
-      break;
-    }
-    }
-  }
-  return types;
-}
-
-SubstitutionArgumentMappings
-SubstitutionsReference::getMappingsFromGenericArgs(const ast::GenericArgs &args,
-                                                   TypeResolver *resolver) {
-  assert(false);
-  std::map<Identifier, BaseType *> bindingArguments;
-
-  // FIXME detect misbehaviour
-
-  // size_t types = getNumberOfTypeParams(args);
-  //  size_t offset = usedArguments.getSize();
-  if (args.getNumberOfArgs() == substitutions.size()) {
-    // FIXME
-    // report error
-  }
-
-  // We can now type check based on GenericArgs. They were not
-  // available when we type check based on GenericParams.
-  size_t offset = 0;
-  std::vector<SubstitutionArg> mappings;
-  for (const GenericArg &arg : args.getArgs()) {
-    switch (arg.getKind()) {
-    case GenericArgKind::Lifetime: {
-      // We don't type check lifetimes
-      break;
-    }
-    case GenericArgKind::Type: {
-      // hack
-      BaseType *type = resolver->checkType(arg.getType());
-      assert(type != nullptr);
-      assert(type->getKind() != TypeKind::Error);
-      SubstitutionArg substArg(&substitutions[offset], type);
-      mappings.push_back(substArg);
-      ++offset;
-      break;
-    }
-    case GenericArgKind::Const: {
-      break;
-    }
-    case GenericArgKind::Binding: {
-      GenericArgsBinding bind = arg.getBinding();
-      // hack
-      BaseType *type = resolver->checkType(bind.getType());
-      assert(type == nullptr);
-      assert(type->getKind() != TypeKind::Error);
-      bindingArguments[bind.getIdentifier()] = type;
-      break;
-    }
-    }
-  }
-}
-
-BaseType *
-SubstitutionsReference::handleSubstitutions(SubstitutionArgumentMappings) {
-  assert(false);
-}
-
-std::string SubstitutionsReference::substToString() const {
+std::string SubstitutionRef::substToString() const {
   std::string buffer;
   for (size_t i = 0; i < substitutions.size(); i++) {
     const SubstitutionParamMapping &sub = substitutions[i];
@@ -121,11 +39,75 @@ std::string SubstitutionsReference::substToString() const {
   return buffer.empty() ? "" : "<" + buffer + ">";
 }
 
-bool SubstitutionsReference::needsSubstitution() const {
+bool SubstitutionRef::needsSubstitution() const {
   for (auto &sub : substitutions)
-    if (sub.needsSubstitution())
+    if (sub.needSubstitution())
       return true;
   return false;
+}
+
+std::vector<SubstitutionParamMapping> SubstitutionRef::cloneSubsts() const {
+  std::vector<SubstitutionParamMapping> clone;
+
+  for (auto &sub : substitutions)
+    clone.push_back(sub.clone());
+
+  return clone;
+}
+
+SubstitutionParamMapping SubstitutionParamMapping::clone() const {
+  return SubstitutionParamMapping(generic,
+                                  static_cast<ParamType *>(param->clone()));
+}
+
+bool SubstitutionParamMapping::fillParamType(
+    SubstitutionArgumentMappings &mappings, Location loc) {
+  std::optional<SubstitutionArg> arg =
+      mappings.getArgumentForSymbol(getParamType());
+  if (!arg)
+    return true;
+
+  BaseType *type = (*arg).getType();
+  if (type->getKind() == TypeKind::Inferred)
+    type->inheritBounds(*param);
+
+  if (type->getKind() == TypeKind::Parameter) {
+    param = static_cast<ParamType *>(type->clone());
+  } else {
+    if (!param->isImplicitSelfTrait())
+      if (!param->isBoundsCompatible(*type, loc, true))
+        return false;
+
+    // -> HRTB
+    for (auto &bound : param->getSpecifiedBounds())
+      bound.handleSubstitions(mappings);
+
+    param->setTypeReference(type->getReference());
+    mappings.onParamSubst(*param, *arg);
+  }
+
+  return true;
+}
+
+std::optional<SubstitutionArg>
+SubstitutionArgumentMappings::getArgumentForSymbol(const ParamType *symbol) {
+  for (auto &mapping : mappings) {
+    const SubstitutionParamMapping *parm = mapping.getParamMapping();
+    const ParamType *p = parm->getParamType();
+
+    if (p->getSymbol() == symbol->getSymbol())
+      return mapping;
+  }
+
+  return std::nullopt;
+}
+
+void SubstitutionArgumentMappings::onParamSubst(
+    const ParamType &p, const SubstitutionArg &a) const {
+  if (paramSubstCallback == nullptr)
+    return;
+
+  paramSubstCallback(p, a);
 }
 
 } // namespace rust_compiler::tyctx::TyTy

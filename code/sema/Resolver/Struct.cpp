@@ -74,6 +74,10 @@ void Resolver::resolveTupleStructItem(
 
   tyCtx->insertCanonicalPath(tuple->getNodeId(), cpath);
 
+  // FIXME: experiment
+  getTypeScope().insert(segment, tuple->getNodeId(), tuple->getLocation(),
+                        RibKind::Type);
+
   resolveVisibility(tuple->getVisibility());
 
   NodeId scopeNodeId = tuple->getNodeId();

@@ -1,5 +1,7 @@
 #include "ADT/CanonicalPath.h"
 #include "AST/ClosureParameters.h"
+#include "AST/Patterns/PatternNoTopAlt.h"
+#include "AST/Patterns/PatternWithoutRange.h"
 #include "Basic/Ids.h"
 #include "Coercion.h"
 #include "Session/Session.h"
@@ -11,6 +13,7 @@
 #include <vector>
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::ast::patterns;
 using namespace rust_compiler::basic;
 using namespace rust_compiler::tyctx;
 
@@ -23,8 +26,8 @@ TyTy::BaseType *TypeResolver::checkClosureExpression(
   TypeCheckContextItem &currentContext = peekContext();
   TyTy::FunctionType *currentFunction = currentContext.getContextType();
 
-  std::optional<GenericParams> genericParams =
-      currentFunction->getGenericParams();
+  std::vector<TyTy::SubstitutionParamMapping> substRfs =
+      currentFunction->cloneSubsts();
 
   tyctx::TypeIdentity ident = {
       adt::CanonicalPath::newSegment(closure->getNodeId(),
@@ -36,20 +39,17 @@ TyTy::BaseType *TypeResolver::checkClosureExpression(
 
     ClosureParameters parameters = closure->getParameters();
     for (ClosureParam &param : parameters.getParameters()) {
+      TyTy::BaseType *paramType = nullptr;
       if (param.hasType()) {
-        TyTy::BaseType *paramType = checkType(param.getType());
+        paramType = checkType(param.getType());
 
-        parameterTypes.push_back(TyTy::TypeVariable(paramType->getReference()));
-
-        checkPattern(param.getPattern(), paramType);
       } else {
-
-        TyTy::TypeVariable paramType =
-            TyTy::TypeVariable::getImplicitInferVariable(param.getLocation());
-        parameterTypes.push_back(paramType);
-
-        checkPattern(param.getPattern(), paramType.getType());
+        paramType = inferClosureParam(param.getPattern().get());
+        //            TyTy::TypeVariable::getImplicitInferVariable(param.getLocation());
       }
+      parameterTypes.push_back(TyTy::TypeVariable(paramType->getReference()));
+
+      checkPattern(param.getPattern(), paramType);
     }
   }
 
@@ -80,11 +80,63 @@ TyTy::BaseType *TypeResolver::checkClosureExpression(
 
   std::set<NodeId> captures = tcx->getCaptures(closure->getNodeId());
 
-  return new TyTy::ClosureType(closure->getNodeId(),
-                               ident, closureArgs, resultType,
-                               genericParams, captures);
+  TyTy::BaseType *result = new TyTy::ClosureType(
+      closure->getNodeId(), ident, closureArgs, resultType, substRfs, captures);
 
   // FIXME
+
+  return result;
+}
+
+TyTy::BaseType *
+TypeResolver::inferClosureParam(patterns::PatternNoTopAlt *noTop) {
+  switch (noTop->getKind()) {
+  case PatternNoTopAltKind::PatternWithoutRange: {
+    PatternWithoutRange *wo =
+        static_cast<patterns::PatternWithoutRange *>(noTop);
+    switch (wo->getWithoutRangeKind()) {
+    case PatternWithoutRangeKind::LiteralPattern: {
+      assert(false);
+    }
+    case PatternWithoutRangeKind::IdentifierPattern: {
+      assert(false);
+    }
+    case PatternWithoutRangeKind::WildcardPattern: {
+      assert(false);
+    }
+    case PatternWithoutRangeKind::RestPattern: {
+      assert(false);
+    }
+    case PatternWithoutRangeKind::ReferencePattern: {
+      assert(false);
+    }
+    case PatternWithoutRangeKind::StructPattern: {
+      assert(false);
+    }
+    case PatternWithoutRangeKind::TupleStructPattern: {
+      assert(false);
+    }
+    case PatternWithoutRangeKind::TuplePattern: {
+      assert(false);
+    }
+    case PatternWithoutRangeKind::GroupedPattern: {
+      assert(false);
+    }
+    case PatternWithoutRangeKind::SlicePattern: {
+      assert(false);
+    }
+    case PatternWithoutRangeKind::PathPattern: {
+      assert(false);
+    }
+    case PatternWithoutRangeKind::MacroInvocation: {
+      assert(false);
+    }
+    }
+  }
+  case PatternNoTopAltKind::RangePattern: {
+    assert(false);
+  }
+  }
 }
 
 } // namespace rust_compiler::sema::type_checking

@@ -1,10 +1,19 @@
 #include "ADT/CanonicalPath.h"
+#include "AST/ConstantItem.h"
 #include "AST/EnumItem.h"
 #include "AST/EnumItemDiscriminant.h"
 #include "AST/EnumItems.h"
 #include "AST/Enumeration.h"
+#include "AST/GenericParam.h"
+#include "AST/Item.h"
+#include "AST/MacroInvocationSemiItem.h"
 #include "AST/TupleFields.h"
+#include "AST/TypeAlias.h"
+#include "AST/Types/TypeParamBounds.h"
+#include "Lexer/Identifier.h"
 #include "Resolver.h"
+
+#include <memory>
 
 using namespace rust_compiler::adt;
 using namespace rust_compiler::ast;
@@ -137,13 +146,116 @@ void Resolver::resolveEnumItem(std::shared_ptr<ast::EnumItem> enuIt,
 void Resolver::resolveTraitItem(std::shared_ptr<ast::Trait> trait,
                                 const adt::CanonicalPath &prefix,
                                 const adt::CanonicalPath &canonicalPrefix) {
-  assert(false && "to be handled later");
+  NodeId scopeNodeId = trait->getNodeId();
+
+  resolveVisibility(trait->getVisibility());
+  getNameScope().push(scopeNodeId);
+  getTypeScope().push(scopeNodeId);
+  pushNewNameRib(getNameScope().peek());
+  pushNewTypeRib(getTypeScope().peek());
+
+  TypeParam param = TypeParam(trait->getLocation());
+  param.setIdentifier(lexer::Identifier("Self"));
+
+  GenericParam gp = {trait->getLocation()};
+  gp.setTypeParam(param);
+  trait->insertImplicitSelf(gp);
+
+  CanonicalPath Self = CanonicalPath::getBigSelf(trait->getNodeId());
+
+  if (trait->hasGenericParams())
+    resolveGenericParams(trait->getGenericParams(), prefix, canonicalPrefix);
+
+  // FIXME add identifier to type scope, see Struct
+  
+  getTypeScope().appendReferenceForDef(Self.getNodeId(), param.getNodeId());
+
+  if (trait->hasTypeParamBounds())
+    for (auto b : trait->getTypeParamBounds().getBounds())
+      resolveTypeParamBound(b);
+
+  if (trait->hasWhereClause())
+    resolveWhereClause(trait->getWhereClause());
+
+  CanonicalPath path = CanonicalPath::createEmpty();
+  CanonicalPath cpath = CanonicalPath::createEmpty();
+
+  for (auto &asso : trait->getAssociatedItems())
+    resolveAssociatedItemInTrait(asso, path, cpath);
+
+  getTypeScope().pop();
+  getNameScope().pop();
 }
 
 void Resolver::resolveAssociatedItem(
-    const ast::AssociatedItem &, const adt::CanonicalPath &prefix,
+    const ast::AssociatedItem &asso, const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
-  assert(false && "to be handled later");
+  resolveVisibility(asso.getVisibility());
+
+  if (asso.hasTypeAlias()) {
+    assert(false);
+    // resolveAssociatedTypeAlias(asso.getTypeAlias(), prefix, canonicalPrefix);
+  } else if (asso.hasConstantItem()) {
+    assert(false);
+    // resolveAssociatedConstantItem(asso.getConstantItem(), prefix,
+    //                               canonicalPrefix);
+  } else if (asso.hasFunction()) {
+    if (asso.getFunction()->getItemKind() == ItemKind::VisItem) {
+      resolveAssociatedFunction(
+          static_cast<Function *>(
+              std::static_pointer_cast<VisItem>(asso.getFunction()).get()),
+          prefix, canonicalPrefix);
+    }
+  } else if (asso.hasMacroInvocationSemi()) {
+    assert(false);
+    // resolveAssociatedMacroInvocationSemi(asso.getMacroItem(), prefix,
+    //                                      canonicalPrefix);
+  }
+
+  // FIXME function is method!!!! only in type checking!!!
+}
+
+void Resolver::resolveAssociatedFunction(
+    ast::Function *fun, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  resolveFunction(fun, prefix, canonicalPrefix);
+}
+
+void Resolver::resolveAssociatedTypeAlias(
+    ast::TypeAlias *, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  assert(false);
+}
+
+void Resolver::resolveAssociatedConstantItem(
+    ast::ConstantItem *, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  assert(false);
+}
+
+void Resolver::resolveAssociatedMacroInvocationSemi(
+    ast::MacroInvocationSemiItem *, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  assert(false);
+}
+
+void Resolver::resolveAssociatedItemInTrait(
+    const ast::AssociatedItem &asso, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  if (asso.hasMacroInvocationSemi())
+    resolveMacroInvocationSemiInTrait(
+        static_cast<MacroInvocationSemiItem *>(asso.getMacroItem().get()),
+        prefix, canonicalPrefix);
+  else if (asso.hasTypeAlias())
+    resolveTypeAliasInTrait(static_cast<TypeAlias *>(asso.getTypeAlias().get()),
+                            prefix, canonicalPrefix);
+  else if (asso.hasConstantItem())
+    resolveConstantItemInTrait(
+        static_cast<ConstantItem *>(asso.getConstantItem().get()), prefix,
+        canonicalPrefix);
+  else if (asso.hasFunction())
+    resolveFunctionInTrait(static_cast<Function *>(asso.getFunction().get()),
+                           prefix, canonicalPrefix);
 }
 
 } // namespace rust_compiler::sema::resolver

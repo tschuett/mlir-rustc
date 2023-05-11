@@ -12,7 +12,8 @@ class StructBase : public Node {
 public:
   StructBase(Location loc) : Node(loc) {}
 
-  void setPath(std::shared_ptr<Expression> p) { path = p;}
+  void setPath(std::shared_ptr<Expression> p) { path = p; }
+  std::shared_ptr<Expression> getPath() const { return path; }
 };
 
 } // namespace rust_compiler::ast

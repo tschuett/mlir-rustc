@@ -28,6 +28,7 @@ public:
   void addFunctionParam(ast::FunctionParam param);
 
   bool hasSelfParam() const { return selfParam.has_value(); }
+  SelfParam getSelfParam() const { return *selfParam; }
 };
 
 } // namespace rust_compiler::ast

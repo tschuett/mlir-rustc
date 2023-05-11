@@ -4,10 +4,10 @@
 #include "AST/OuterAttribute.h"
 
 #include <memory>
-#include <vector>
 #include <span>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace rust_compiler::ast {
 
@@ -26,9 +26,13 @@ public:
     outer = {o.begin(), o.end()};
   }
 
-  void setIdentifier(std::string_view s) { identifier = s;}
-  void setTupleIndex(std::string_view t) { tupleIndex = t;}
-  void setExpression(std::shared_ptr<ast::Expression> e) { expr = e;}
+  void setIdentifier(std::string_view s) { identifier = s; }
+  void setTupleIndex(std::string_view t) { tupleIndex = t; }
+  void setExpression(std::shared_ptr<ast::Expression> e) { expr = e; }
+
+  bool hasExpression() const { return (bool)expr; }
+
+  std::shared_ptr<Expression> getExpression() const { return expr; }
 };
 
 } // namespace rust_compiler::ast

@@ -324,6 +324,7 @@ StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
     assert(eat(TokenKind::DotDotDot));
     FunctionParamPattern pat = (loc);
     pat.setName(pattern.getValue());
+    pat.setDotDotDot();
     return StringResult<ast::FunctionParamPattern>(pat);
   }
 

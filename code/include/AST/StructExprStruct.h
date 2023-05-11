@@ -16,11 +16,25 @@ class StructExprStruct : public StructExpression {
 
 public:
   StructExprStruct(Location loc)
-    : StructExpression(loc, StructExpressionKind::StructExprStruct) {}
+      : StructExpression(loc, StructExpressionKind::StructExprStruct) {}
 
   void setPath(std::shared_ptr<Expression> p) { path = p; }
   void setBase(const StructBase &b) { expr = b; }
   void setFields(const StructExprFields &f) { expr = f; }
+
+  std::shared_ptr<Expression> getName() const { return path; }
+
+  bool hasStructBase() const {
+    return expr.has_value() && std::holds_alternative<StructBase>(*expr);
+  }
+  bool hasStructExprFields() const {
+    return expr.has_value() && std::holds_alternative<StructExprFields>(*expr);
+  }
+
+  StructBase getStructBase() const { return std::get<StructBase>(*expr); }
+  StructExprFields getStructExprFields() const {
+    return std::get<StructExprFields>(*expr);
+  }
 };
 
 } // namespace rust_compiler::ast

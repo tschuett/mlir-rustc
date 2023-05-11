@@ -28,7 +28,9 @@ Parser::parseRawPointerType() {
 
   if (checkKeyWord(KeyWordKind::KW_MUT)) {
     rawPointer.setMut();
+    assert(eatKeyWord(KeyWordKind::KW_MUT));
   } else if (checkKeyWord(KeyWordKind::KW_CONST)) {
+    assert(eatKeyWord(KeyWordKind::KW_CONST));
     rawPointer.setConst();
   } else {
     return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
@@ -56,8 +58,8 @@ Parser::parseReferenceType() {
   Location loc = getLocation();
   ReferenceType refType = {loc};
 
-  llvm::errs() << "parseReferenceType"
-               << "\n";
+//  llvm::errs() << "parseReferenceType"
+//               << "\n";
 
   if (!check(TokenKind::And))
     return StringResult<std::shared_ptr<ast::types::TypeExpression>>(

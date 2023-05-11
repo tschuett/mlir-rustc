@@ -16,6 +16,7 @@ add_library(Resolver
             Struct.cpp
             PatternDeclaration.cpp
             Type2String.cpp
+            Trait.cpp
            )
 
 target_include_directories(Resolver PRIVATE  ../../include)

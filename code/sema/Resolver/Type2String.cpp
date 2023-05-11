@@ -1,7 +1,9 @@
 #include "AST/Types/ImplTraitType.h"
+#include "AST/Types/TraitObjectType.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
-#include "AST/Types/TraitObjectType.h"
+#include "AST/Types/TypePath.h"
+#include "AST/Types/TypePathSegment.h"
 #include "Resolver.h"
 
 using namespace rust_compiler::ast::types;
@@ -21,7 +23,6 @@ std::string Resolver::resolveTypeToString(ast::types::TypeExpression *typ) {
 
 std::string
 Resolver::resolveTypeNoBoundsToString(ast::types::TypeNoBounds *noBounds) {
-  assert(false);
   switch (noBounds->getKind()) {
   case TypeNoBoundsKind::ParenthesizedType: {
     assert(false);
@@ -36,7 +37,8 @@ Resolver::resolveTypeNoBoundsToString(ast::types::TypeNoBounds *noBounds) {
     assert(false);
   }
   case TypeNoBoundsKind::TypePath: {
-    assert(false);
+    return resolveTypePathToString(
+        static_cast<ast::types::TypePath *>(noBounds));
   }
   case TypeNoBoundsKind::TupleType: {
     assert(false);
@@ -79,6 +81,40 @@ Resolver::resolveImplTraitTypeToString(ast::types::ImplTraitType *) {
 std::string
 Resolver::resolveTraitObjectTypeToString(ast::types::TraitObjectType *) {
   assert(false);
+}
+
+std::string Resolver::resolveTypePathToString(ast::types::TypePath *path) {
+  std::string buffer;
+  llvm::raw_string_ostream stream(buffer);
+
+  std::vector<TypePathSegment> segments = path->getSegments();
+  for (unsigned i = 0; i < segments.size(); ++i) {
+    stream << resolveTypePathSegmentToString(segments[i]);
+    if (i + 1 < segments.size())
+      stream << "::";
+  }
+  return stream.str();
+}
+
+std::string Resolver::resolveTypePathSegmentToString(
+    const ast::types::TypePathSegment &seg) {
+  std::string buffer;
+  llvm::raw_string_ostream stream(buffer);
+
+  stream << resolvePathIdentSegmentToString(seg.getSegment());
+  if (seg.hasGenerics()) {
+    assert(false);
+  }
+  if (seg.hasTypeFunction()) {
+    assert(false);
+  }
+
+  return stream.str();
+}
+
+std::string
+Resolver::resolvePathIdentSegmentToString(const ast::PathIdentSegment &seg) {
+  return seg.toString();
 }
 
 } // namespace rust_compiler::sema::resolver

@@ -364,4 +364,29 @@ void TyCtx::setupBuiltin(std::string_view name, TyTy::BaseType *tyty) {
       CanonicalPath::newSegment(builtinType->getNodeId(), name));
 }
 
+bool TyCtx::isTraitQueryInProgress(basic::NodeId id) const {
+  return traitQueriesInProgress.find(id) != traitQueriesInProgress.end();
+}
+
+std::optional<TraitReference *> TyCtx::lookupTraitReference(basic::NodeId id) {
+  auto it = traitContext.find(id);
+  if (it == traitContext.end())
+    return std::nullopt;
+
+  return &it->second;
+}
+
+void TyCtx::insertTraitQuery(basic::NodeId id) {
+  traitQueriesInProgress.insert(id);
+}
+
+void TyCtx::traitQueryCompleted(basic::NodeId id) {
+  traitQueriesInProgress.erase(id);
+}
+
+void TyCtx::insertTraitReference(basic::NodeId id, TraitReference &&ref) {
+  assert(traitContext.find(id) == traitContext.end());
+  traitContext.emplace(id, std::move(ref));
+}
+
 } // namespace rust_compiler::tyctx

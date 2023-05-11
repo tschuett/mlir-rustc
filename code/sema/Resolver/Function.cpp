@@ -10,7 +10,7 @@ using namespace rust_compiler::basic;
 
 namespace rust_compiler::sema::resolver {
 
-void Resolver::resolveFunction(std::shared_ptr<ast::Function> fun,
+void Resolver::resolveFunction(ast::Function* fun,
                                const adt::CanonicalPath &prefix,
                                const adt::CanonicalPath &canonicalPrefix) {
 
@@ -41,7 +41,7 @@ void Resolver::resolveFunction(std::shared_ptr<ast::Function> fun,
     resolveType(fun->getReturnType(), prefix, canonicalPrefix);
 
   FunctionParameters params = fun->getParams();
-  assert(!params.hasSelfParam() && "to be implemented");
+  //assert(!params.hasSelfParam() && "to be implemented");
 
   std::vector<PatternBinding> bindings = {
       PatternBinding(PatternBoundCtx::Product, std::set<NodeId>())};

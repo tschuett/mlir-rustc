@@ -16,8 +16,9 @@ add_library(TypeChecking
             Pointer.cpp
             Substitutions.cpp
             Traits.cpp
-            Generics.cpp
+            #Generics.cpp
             MethodProbe.cpp
+            Trait.cpp
            )
 
 target_include_directories(TypeChecking PRIVATE  ../../include)

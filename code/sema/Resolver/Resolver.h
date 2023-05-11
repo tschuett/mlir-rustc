@@ -8,10 +8,12 @@
 #include "AST/CallExpression.h"
 #include "AST/ClosureExpression.h"
 #include "AST/ComparisonExpression.h"
+#include "AST/ConstantItem.h"
 #include "AST/Crate.h"
 #include "AST/DereferenceExpression.h"
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/Function.h"
 #include "AST/IfExpression.h"
 #include "AST/Implementation.h"
 #include "AST/IndexEpression.h"
@@ -19,11 +21,13 @@
 #include "AST/InherentImpl.h"
 #include "AST/LetStatement.h"
 #include "AST/LoopExpression.h"
+#include "AST/MacroInvocationSemiItem.h"
 #include "AST/MacroItem.h"
 #include "AST/MatchExpression.h"
 #include "AST/MethodCallExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/PathExpression.h"
+#include "AST/PathIdentSegment.h"
 #include "AST/PathInExpression.h"
 #include "AST/Patterns/PathPattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
@@ -34,18 +38,23 @@
 #include "AST/Statement.h"
 #include "AST/StaticItem.h"
 #include "AST/Struct.h"
+#include "AST/StructExprFields.h"
+#include "AST/StructExpression.h"
 #include "AST/StructStruct.h"
 #include "AST/Trait.h"
 #include "AST/TraitImpl.h"
 #include "AST/TupleStruct.h"
+#include "AST/TypeAlias.h"
 #include "AST/Types/ArrayType.h"
 #include "AST/Types/ImplTraitType.h"
+#include "AST/Types/ReferenceType.h"
 #include "AST/Types/TraitObjectType.h"
 #include "AST/Types/TupleType.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
 #include "AST/Types/TypeParamBound.h"
 #include "AST/Types/TypePathFn.h"
+#include "AST/Types/TypePathSegment.h"
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
@@ -63,7 +72,11 @@
 
 namespace rust_compiler::ast {
 class MethodCallExpression;
-}
+namespace types {
+class TraitObjectTypeOneBound;
+class TraitBound;
+} // namespace types
+} // namespace rust_compiler::ast
 
 namespace rust_compiler::sema::resolver {
 
@@ -225,8 +238,7 @@ private:
   void resolveTraitImpl(std::shared_ptr<ast::TraitImpl>,
                         const adt::CanonicalPath &prefix,
                         const adt::CanonicalPath &canonicalPrefix);
-  void resolveFunction(std::shared_ptr<ast::Function>,
-                       const adt::CanonicalPath &prefix,
+  void resolveFunction(ast::Function *, const adt::CanonicalPath &prefix,
                        const adt::CanonicalPath &canonicalPrefix);
   void resolveModule(std::shared_ptr<ast::Module>,
                      const adt::CanonicalPath &prefix,
@@ -343,6 +355,18 @@ private:
   resolveArrayType(std::shared_ptr<ast::types::ArrayType>,
                    const adt::CanonicalPath &prefix,
                    const adt::CanonicalPath &canonicalPrefix);
+  std::optional<basic::NodeId>
+  resolveReferenceType(std::shared_ptr<ast::types::ReferenceType>,
+                       const adt::CanonicalPath &prefix,
+                       const adt::CanonicalPath &canonicalPrefix);
+  std::optional<basic::NodeId> resolveTraitObjectTypeOneBound(
+      std::shared_ptr<ast::types::TraitObjectTypeOneBound>,
+      const adt::CanonicalPath &prefix,
+      const adt::CanonicalPath &canonicalPrefix);
+  std::optional<basic::NodeId>
+  resolveTypeParamBound(std::shared_ptr<ast::types::TypeParamBound>,
+                        const adt::CanonicalPath &prefix,
+                        const adt::CanonicalPath &canonicalPrefix);
 
   std::optional<adt::CanonicalPath>
   resolveTypeToCanonicalPath(ast::types::TypeExpression *);
@@ -351,7 +375,10 @@ private:
   std::string resolveTypeNoBoundsToString(ast::types::TypeNoBounds *);
   std::string resolveImplTraitTypeToString(ast::types::ImplTraitType *);
   std::string resolveTraitObjectTypeToString(ast::types::TraitObjectType *);
-
+  std::string resolveTypePathToString(ast::types::TypePath *);
+  std::string
+  resolveTypePathSegmentToString(const ast::types::TypePathSegment &);
+  std::string resolvePathIdentSegmentToString(const ast::PathIdentSegment &);
   // checks
   void resolveVisibility(std::optional<ast::Visibility>);
 
@@ -413,10 +440,44 @@ private:
   resolvePathInExpression(std::shared_ptr<ast::PathInExpression>,
                           const adt::CanonicalPath &prefix,
                           const adt::CanonicalPath &canonicalPrefix);
+  void resolveStructExpression(std::shared_ptr<ast::StructExpression> str,
+                               const adt::CanonicalPath &prefix,
+                               const adt::CanonicalPath &canonicalPrefix);
+  void resolveStructExprFields(const ast::StructExprFields &fields,
+                               const adt::CanonicalPath &prefix,
+                               const adt::CanonicalPath &canonicalPrefix);
 
   void verifyAssignee(std::shared_ptr<ast::Expression>);
   std::map<basic::NodeId, std::shared_ptr<ast::UseDeclaration>> useDeclarations;
   std::map<basic::NodeId, std::shared_ptr<ast::Module>> modules;
+
+  void resolveAssociatedFunction(ast::Function *,
+                                 const adt::CanonicalPath &prefix,
+                                 const adt::CanonicalPath &canonicalPrefix);
+  void resolveAssociatedTypeAlias(ast::TypeAlias *,
+                                  const adt::CanonicalPath &prefix,
+                                  const adt::CanonicalPath &canonicalPrefix);
+  void resolveAssociatedConstantItem(ast::ConstantItem *,
+                                     const adt::CanonicalPath &prefix,
+                                     const adt::CanonicalPath &canonicalPrefix);
+  void resolveAssociatedMacroInvocationSemi(
+      ast::MacroInvocationSemiItem *, const adt::CanonicalPath &prefix,
+      const adt::CanonicalPath &canonicalPrefix);
+  void resolveAssociatedItemInTrait(const ast::AssociatedItem &,
+                                    const adt::CanonicalPath &prefix,
+                                    const adt::CanonicalPath &canonicalPrefix);
+  void
+  resolveMacroInvocationSemiInTrait(ast::MacroInvocationSemiItem *,
+                                    const adt::CanonicalPath &prefix,
+                                    const adt::CanonicalPath &canonicalPrefix);
+  void resolveTypeAliasInTrait(ast::TypeAlias *,
+                               const adt::CanonicalPath &prefix,
+                               const adt::CanonicalPath &canonicalPrefix);
+  void resolveConstantItemInTrait(ast::ConstantItem *,
+                                  const adt::CanonicalPath &prefix,
+                                  const adt::CanonicalPath &canonicalPrefix);
+  void resolveFunctionInTrait(ast::Function *, const adt::CanonicalPath &prefix,
+                              const adt::CanonicalPath &canonicalPrefix);
 
   std::vector<Import> determinedImports;
 

@@ -40,7 +40,7 @@ class PathProbeCandidate {
   };
   struct TraitItem {
     TraitReference *traitRef;
-    AssociatedItemReference *itemRef;
+    TraitItemReference *itemRef;
     ast::Implementation *impl;
   };
 

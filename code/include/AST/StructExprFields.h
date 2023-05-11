@@ -21,6 +21,10 @@ public:
   void addField(const StructExprField &f) { fields.push_back(f); }
   void setBase(const StructBase &b) { base = b; }
   void setTrailingcomma() { trailingComma = true; }
+
+  bool hasBase() const { return base.has_value(); }
+  StructBase getBase() const { return *base; }
+  std::vector<StructExprField> getFields() const { return fields; }
 };
 
 } // namespace rust_compiler::ast

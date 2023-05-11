@@ -10,11 +10,17 @@
 #include "Location.h"
 #include "Session/Session.h"
 #include "TyCtx/NodeIdentity.h"
+#include "TyCtx/Substitutions.h"
+#include "TyCtx/SubstitutionsMapper.h"
+#include "TyCtx/TraitReference.h"
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TypeIdentity.h"
+#include "llvm/Support/ErrorHandling.h"
 
 #include <llvm/Support/raw_ostream.h>
+#include <optional>
 #include <sstream>
+#include <vector>
 
 using namespace rust_compiler::adt;
 using namespace rust_compiler::tyctx;
@@ -24,6 +30,7 @@ namespace rust_compiler::tyctx::TyTy {
 static constexpr uint32_t MAX_RECURSION_DEPTH = 1024 * 16;
 
 bool BaseType::needsGenericSubstitutions() const {
+  const TyTy::BaseType *x = destructure();
   switch (getKind()) {
   case TypeKind::Bool:
   case TypeKind::Char:
@@ -47,19 +54,20 @@ bool BaseType::needsGenericSubstitutions() const {
   case TypeKind::Reference:
     return false;
   case TypeKind::Projection: {
-    assert(false);
+    const ProjectionType &p = *static_cast<const ProjectionType *>(x);
+    return static_cast<const SubstitutionRef &>(p).needsSubstitution();
   }
   case TypeKind::Function: {
-    const FunctionType *fun = static_cast<const FunctionType *>(this);
-    return static_cast<const GenericParameters *>(fun)->needsSubstitution();
+    const FunctionType &fun = *static_cast<const FunctionType *>(x);
+    return static_cast<const SubstitutionRef &>(fun).needsSubstitution();
   }
   case TypeKind::ADT: {
-    const ADTType *adt = static_cast<const ADTType *>(this);
-    return static_cast<const GenericParameters *>(adt)->needsSubstitution();
+    const ADTType &adt = *static_cast<const ADTType *>(this);
+    return static_cast<const SubstitutionRef &>(adt).needsSubstitution();
   }
   case TypeKind::Closure: {
-    const ClosureType *clos = static_cast<const ClosureType *>(this);
-    return static_cast<const ClosureType *>(clos)->needsSubstitution();
+    const ClosureType &clos = *static_cast<const ClosureType *>(x);
+    return static_cast<const SubstitutionRef &>(clos).needsSubstitution();
   }
   }
 }
@@ -268,34 +276,6 @@ ErrorType::ErrorType(basic::NodeId id, basic::NodeId type,
 
 std::string ErrorType::toString() const { return "error"; }
 
-FunctionType::FunctionType(
-    basic::NodeId id, lexer::Identifier name, tyctx::ItemIdentity ident,
-    uint8_t flags,
-    std::vector<std::pair<
-        std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
-        TyTy::BaseType *>>
-        parameters,
-    TyTy::BaseType *returnType, std::optional<ast::GenericParams> genericParams,
-    std::set<basic::NodeId> refs)
-    : BaseType(id, id, TypeKind::Function,
-               TypeIdentity(ident.getPath(), ident.getLocation()), refs),
-      GenericParameters(genericParams), id(id), name(name), ident(ident),
-      flags(flags), parameters(parameters), returnType(returnType) {}
-
-FunctionType::FunctionType(
-    basic::NodeId id, basic::NodeId type, lexer::Identifier name,
-    tyctx::ItemIdentity ident, uint8_t flags,
-    std::vector<std::pair<
-        std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
-        TyTy::BaseType *>>
-        parameters,
-    TyTy::BaseType *returnType, std::optional<ast::GenericParams> genericParams,
-    std::set<basic::NodeId> refs)
-    : BaseType(id, type, TypeKind::Function,
-               TypeIdentity(ident.getPath(), ident.getLocation()), refs),
-      GenericParameters(genericParams), id(id), name(name), ident(ident),
-      flags(flags), parameters(parameters), returnType(returnType) {}
-
 TyTy::BaseType *FunctionType::getReturnType() const { return returnType; }
 
 std::string FunctionType::toString() const { assert(false); }
@@ -463,26 +443,6 @@ VariantDef::VariantDef(basic::NodeId id, const adt::Identifier &identifier,
     : id(id), identifier(identifier), ident(ident), kind(kind),
       discriminant(discriminant), fields(fields) {}
 
-ADTType::ADTType(basic::NodeId id, const adt::Identifier &identifier,
-                 TypeIdentity ident, ADTKind kind,
-                 std::span<VariantDef *> variant,
-                 std::optional<ast::GenericParams> genericParams,
-                 std::set<basic::NodeId> refs)
-    : BaseType(id, id, TypeKind::ADT, ident, refs),
-      GenericParameters(genericParams), identifier(identifier), kind(kind) {
-  variants = {variant.begin(), variant.end()};
-}
-
-ADTType::ADTType(basic::NodeId id, basic::NodeId typeId,
-                 const adt::Identifier &identifier, TypeIdentity ident,
-                 ADTKind kind, std::span<VariantDef *> variant,
-                 std::optional<ast::GenericParams> genericParams,
-                 std::set<basic::NodeId> refs)
-    : BaseType(id, typeId, TypeKind::ADT, ident, refs),
-      GenericParameters(genericParams), identifier(identifier), kind(kind) {
-  variants = {variant.begin(), variant.end()};
-}
-
 std::string ADTType::toString() const {
   std::string variantsBuffer;
   for (size_t i = 0; i < variants.size(); ++i) {
@@ -492,7 +452,7 @@ std::string ADTType::toString() const {
       variantsBuffer += ", ";
   }
 
-  return /*identifier*/ substToString() + "{" + variantsBuffer + "}";
+  return identifier.toString() + substToString() + "{" + variantsBuffer + "}";
 }
 
 unsigned ADTType::getNumberOfSpecifiedBounds() { return 0; }
@@ -676,34 +636,12 @@ void InferType::applyScalarTypeHint(const BaseType &hint) {
   }
 }
 
-bool GenericParameters::needsSubstitution() const {
-  return genericParams.has_value();
-}
-
-std::string GenericParameters::substToString() const {
-  if (genericParams) {
-    std::string buffer;
-    std::vector<ast::GenericParam> gps = (*genericParams).getGenericParams();
-    for (size_t i = 0; i < gps.size(); ++i) {
-      [[maybe_unused]] const ast::GenericParam &gp = gps[i];
-      // buffer += sub.toString();
-      //
-      // if ((i + 1) < substitutions.size())
-      //   buffer += ", ";
-    }
-
-    return buffer.empty() ? "" : "<" + buffer + ">";
-  }
-
-  return "empty";
-}
-
 const BaseType *BaseType::destructure() const {
   uint32_t steps = 0;
   const BaseType *x = this;
 
   while (true) {
-    if (steps >= MAX_RECURSION_DEPTH) {
+    if (steps++ >= MAX_RECURSION_DEPTH) {
       // report error
       return new ErrorType(getReference());
     }
@@ -820,12 +758,6 @@ void TypeBoundsMappings::addBound(const TypeBoundPredicate &predicate) {
   specifiedBounds.push_back(predicate);
 }
 
-void BaseType::inheritBounds(
-    std::span<TyTy::TypeBoundPredicate> specifiedBounds) {
-  for (auto &bound : specifiedBounds)
-    addBound(bound);
-}
-
 BaseType *BoolType::clone() const {
   return new BoolType(getReference(), getTypeReference(),
                       getCombinedReferences());
@@ -891,14 +823,15 @@ BaseType *FunctionType::clone() const {
     clonedParams.push_back({p.first, p.second->clone()});
 
   return new FunctionType(getReference(), getTypeReference(), getIdentifier(),
-                          ident, flags, clonedParams, getReturnType()->clone(),
-                          getGenericParams(), getCombinedReferences());
+                          getTypeIdentity(), flags, clonedParams,
+                          getReturnType()->clone(), cloneSubsts(),
+                          getCombinedReferences());
 }
 
 BaseType *ClosureType::clone() const {
   return new ClosureType(getReference(), getTypeReference(), getTypeIdentity(),
                          (TyTy::TupleType *)parameters->clone(), resultType,
-                         getGenericParams(), captures, getCombinedReferences(),
+                         cloneSubsts(), captures, getCombinedReferences(),
                          getSpecifiedBounds());
 }
 
@@ -908,8 +841,8 @@ BaseType *ADTType::clone() const {
     clonedVariants.push_back(variant->clone());
 
   return new ADTType(getReference(), getTypeReference(), identifier,
-                     getTypeIdentity(), kind, clonedVariants,
-                     getGenericParams(), getCombinedReferences());
+                     getTypeIdentity(), kind, clonedVariants, cloneSubsts(),
+                     usedArguments, getCombinedReferences());
 }
 
 BaseType *ArrayType::clone() const {
@@ -965,16 +898,250 @@ BaseType *InferType::clone() const {
 }
 
 void ClosureType::setupFnOnceOutput() const {
-  //TyCtx *context = rust_compiler::session::session->getTypeContext();
+  // TyCtx *context = rust_compiler::session::session->getTypeContext();
 
   assert(false);
 
-//  std::optional<ast::Item *> item = context->lookupItem(traitId);
-//  assert(item.has_value());
-//  assert((*item)->getItemKind() == ItemKind::VisItem);
-//  ast::VisItem *visItem = static_cast<ast::VisItem*>(*item);
-//  assert(visItem->getKind() == VisItemKind::Trait);
-//  ast::Trait *trait = static_cast<ast::Trait*>(visItem);
+  //  std::optional<ast::Item *> item = context->lookupItem(traitId);
+  //  assert(item.has_value());
+  //  assert((*item)->getItemKind() == ItemKind::VisItem);
+  //  ast::VisItem *visItem = static_cast<ast::VisItem*>(*item);
+  //  assert(visItem->getKind() == VisItemKind::Trait);
+  //  ast::Trait *trait = static_cast<ast::Trait*>(visItem);
+}
+
+TraitReference *TypeBoundPredicate::get() const {
+  TyCtx *context = rust_compiler::session::session->getTypeContext();
+  std::optional<TraitReference *> ref = context->lookupTraitReference(id);
+  assert(ref.has_value());
+  return *ref;
+}
+
+FunctionType *
+FunctionType::handleSubstitions(SubstitutionArgumentMappings &mappings) {
+  FunctionType *fn = static_cast<FunctionType *>(clone());
+  fn->setTypeReference(basic::getNextNodeId());
+  fn->usedArguments = mappings;
+
+  for (auto &sub : fn->getSubstitutions()) {
+    std::optional<SubstitutionArg> arg =
+        mappings.getArgumentForSymbol(sub.getParamType());
+    if (arg)
+      sub.fillParamType(mappings, mappings.getLocation());
+  }
+
+  BaseType *ret = fn->getReturnType();
+  bool isParamType = ret->getKind() == TypeKind::Parameter;
+  if (isParamType) {
+    ParamType *p = static_cast<ParamType *>(ret);
+    std::optional<SubstitutionArg> arg = mappings.getArgumentForSymbol(p);
+    if (arg) {
+      if ((*arg).getType()->getKind() == TypeKind::Parameter ||
+          (*arg).getType()->getKind() != TypeKind::Inferred) {
+        BaseType *newField = (*arg).getType()->clone();
+        newField->setReference(ret->getReference());
+        fn->returnType = newField;
+      } else {
+        ret->setTypeReference((*arg).getType()->getReference());
+      }
+    }
+  } else if (ret->needsGenericSubstitutions() || !ret->isConcrete()) {
+    InternalSubstitutionsMapper mapper;
+    BaseType *concrete = mapper.resolve(ret, mappings);
+    if (concrete == nullptr || concrete->getKind() == TypeKind::Error) {
+      // report error
+      assert(false);
+      return nullptr;
+    }
+    BaseType *newField = concrete->clone();
+    newField->setReference(ret->getReference());
+    fn->returnType = newField;
+  }
+
+  for (auto &param : fn->getParameters()) {
+    BaseType *paramType = param.second;
+    if (paramType->getKind() == TypeKind::Parameter) {
+      ParamType *p = static_cast<ParamType *>(paramType);
+
+      std::optional<SubstitutionArg> arg = mappings.getArgumentForSymbol(p);
+      if (arg) {
+        BaseType *argType = (*arg).getType();
+        if (argType->getKind() == TypeKind::Parameter ||
+            argType->getKind() != TypeKind::Inferred) {
+          BaseType *newField = argType->clone();
+          newField->setReference(paramType->getReference());
+          param.second = newField;
+        }
+      }
+    } else if (paramType->hasSubsititionsDefined() ||
+               !paramType->isConcrete()) {
+      InternalSubstitutionsMapper mapper;
+      BaseType *concrete = mapper.resolve(paramType, mappings);
+      if (concrete == nullptr || concrete->getKind() == TypeKind::Error) {
+        // report error
+        assert(false);
+      }
+
+      BaseType *newField = concrete->clone();
+      newField->setReference(paramType->getReference());
+      param.second = newField;
+    }
+  }
+
+  return fn;
+}
+
+bool ParamType::isImplicitSelfTrait() const { return isTraitSelf; }
+
+bool BaseType::hasSubsititionsDefined() const {
+  const BaseType *x = destructure();
+  switch (x->getKind()) {
+  case TypeKind::Inferred:
+  case TypeKind::Bool:
+  case TypeKind::Char:
+  case TypeKind::Int:
+  case TypeKind::Uint:
+  case TypeKind::USize:
+  case TypeKind::ISize:
+  case TypeKind::Never:
+  case TypeKind::Str:
+  case TypeKind::Float:
+  case TypeKind::Dynamic:
+  case TypeKind::Error:
+  case TypeKind::FunctionPointer:
+  case TypeKind::Array:
+  case TypeKind::Slice:
+  case TypeKind::RawPointer:
+  case TypeKind::Reference:
+  case TypeKind::Tuple:
+  case TypeKind::Parameter:
+  case TypeKind::PlaceHolder:
+    return false;
+  case TypeKind::Projection: {
+    const ProjectionType &p = *static_cast<const ProjectionType *>(x);
+    const SubstitutionRef &ref = static_cast<const SubstitutionRef &>(p);
+    return ref.hasSubstitutions();
+  }
+  case TypeKind::Function: {
+    const FunctionType &p = *static_cast<const FunctionType *>(x);
+    const SubstitutionRef &ref = static_cast<const SubstitutionRef &>(p);
+    return ref.hasSubstitutions();
+  }
+  case TypeKind::ADT: {
+    const ADTType &p = *static_cast<const ADTType *>(x);
+    const SubstitutionRef &ref = static_cast<const SubstitutionRef &>(p);
+    return ref.hasSubstitutions();
+  }
+  case TypeKind::Closure: {
+    const ClosureType &p = *static_cast<const ClosureType *>(x);
+    const SubstitutionRef &ref = static_cast<const SubstitutionRef &>(p);
+    return ref.hasSubstitutions();
+  }
+  }
+  return false;
+}
+
+bool BaseType::isBoundsCompatible(const BaseType &other, Location loc,
+                                  bool emitError) const {
+  std::vector<std::reference_wrapper<const TypeBoundPredicate>>
+      unsatisfiedBounds;
+  for (auto bound : getSpecifiedBounds()) {
+    if (!other.satisfiesBound(bound))
+      unsatisfiedBounds.push_back(bound);
+  }
+
+  if (unsatisfiedBounds.size() > 0) {
+    // report error
+    assert(false);
+  }
+
+  return unsatisfiedBounds.size() == 0;
+}
+
+ClosureType *
+ClosureType::handleSubstitions(SubstitutionArgumentMappings &mappings) {
+  llvm_unreachable("not supported");
+  return nullptr;
+}
+
+TypeBoundPredicate::TypeBoundPredicate(TraitReference &ref, Location loc)
+    : SubstitutionRef({}, SubstitutionArgumentMappings::empty()),
+      id(ref.getNodeId()), loc(loc) {
+  substitutions.clear();
+  for (const auto &p : ref.getTraitSubsts())
+    substitutions.push_back(p.clone());
+
+  SubstitutionArg placeholder(&getSubstitutions().front(), nullptr);
+  usedArguments.getMappings().push_back(placeholder);
+}
+
+TypeBoundPredicate::TypeBoundPredicate(
+    basic::NodeId id, std::vector<SubstitutionParamMapping> subst, Location loc)
+    : SubstitutionRef({}, SubstitutionArgumentMappings::empty()), id(id),
+      loc(loc) {
+  substitutions.clear();
+  for (const auto &p : subst)
+    substitutions.push_back(p.clone());
+
+  SubstitutionArg placeholder(&getSubstitutions().front(), nullptr);
+  usedArguments.getMappings().push_back(placeholder);
+}
+
+void BaseType::inheritBounds(const BaseType &other) {
+  inheritBounds(other.getSpecifiedBounds());
+}
+
+void BaseType::inheritBounds(
+    std::vector<TyTy::TypeBoundPredicate> specifiedBounds) {
+  for (TyTy::TypeBoundPredicate &pred : specifiedBounds) {
+    addBound(pred);
+  }
+}
+
+std::string DynamicObjectType::toString() const {
+  return "dyn [" + rawBoundsToString() + "]";
+}
+
+std::string TypeBoundsMappings::rawBoundsToString() const {
+  std::string buf;
+  for (size_t i = 0; i < specifiedBounds.size(); i++) {
+    const TypeBoundPredicate &b = specifiedBounds.at(i);
+    bool has_next = (i + 1) < specifiedBounds.size();
+    buf += b.toString() + (has_next ? " + " : "");
+  }
+  return buf;
+}
+
+std::string TypeBoundPredicate::toString() const {
+  return get()->toString() + substToString();
+}
+
+unsigned DynamicObjectType::getNumberOfSpecifiedBounds() { return 0; }
+
+BaseType *DynamicObjectType::clone() const {
+  return new DynamicObjectType(getReference(), getTypeReference(),
+                               getTypeIdentity(), getSpecifiedBounds(),
+                               getCombinedReferences());
+}
+
+ADTType *ADTType::handleSubstitions(SubstitutionArgumentMappings &mappings) {
+  assert(false);
+}
+
+bool BaseType::satisfiesBound(const TypeBoundPredicate &predicate) const {
+  assert(false);
+}
+
+std::string RawPointerType::toString() const {
+  return std::string("* ") + (isMutable() ? "mut" : "const") + " " +
+         getBase()->toString();
+}
+
+unsigned RawPointerType::getNumberOfSpecifiedBounds() { return 0; }
+
+BaseType *RawPointerType::clone() const {
+  return new RawPointerType(getReference(), getTypeReference(), base, mut,
+                            getCombinedReferences());
 }
 
 } // namespace rust_compiler::tyctx::TyTy

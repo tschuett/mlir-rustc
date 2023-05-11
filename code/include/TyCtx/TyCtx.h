@@ -137,6 +137,13 @@ public:
 
   void insertOperatorOverLoad(basic::NodeId id, TyTy::FunctionType *callSite);
 
+  // traits
+  void insertTraitQuery(basic::NodeId id);
+  void traitQueryCompleted(basic::NodeId id);
+  std::optional<TraitReference *> lookupTraitReference(basic::NodeId id);
+  bool isTraitQueryInProgress(basic::NodeId id) const;
+  void insertTraitReference(basic::NodeId id, TraitReference &&ref);
+
 private:
   void generateBuiltins();
 
@@ -215,6 +222,9 @@ private:
   std::map<basic::NodeId, basic::NodeId> variants;
   std::map<basic::NodeId, TyTy::BaseType *> receiverContext;
   std::map<basic::NodeId, TyTy::FunctionType *> operatorOverloads;
+
+  std::set<basic::NodeId> traitQueriesInProgress;
+  std::map<basic::NodeId, TraitReference> traitContext;
 };
 
 } // namespace rust_compiler::tyctx

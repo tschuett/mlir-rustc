@@ -1,7 +1,10 @@
 #include "ADT/CanonicalPath.h"
 #include "AST/PathIdentSegment.h"
+#include "AST/Types/TraitBound.h"
+#include "AST/Types/TraitObjectTypeOneBound.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
+#include "AST/Types/TypeParamBound.h"
 #include "Basic/Ids.h"
 #include "Resolver.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -48,7 +51,9 @@ std::optional<NodeId> Resolver::resolveTypeNoBounds(
     assert(false && "to be handled later");
   }
   case TypeNoBoundsKind::TraitObjectTypeOneBound: {
-    assert(false && "to be handled later");
+    return resolveTraitObjectTypeOneBound(
+        std::static_pointer_cast<TraitObjectTypeOneBound>(noBounds), prefix,
+        canonicalPrefix);
   }
   case TypeNoBoundsKind::TypePath: {
     return resolveRelativeTypePath(std::static_pointer_cast<TypePath>(noBounds),
@@ -64,7 +69,9 @@ std::optional<NodeId> Resolver::resolveTypeNoBounds(
     assert(false && "to be handled later");
   }
   case TypeNoBoundsKind::ReferenceType: {
-    assert(false && "to be handled later");
+    return resolveReferenceType(
+        std::static_pointer_cast<ReferenceType>(noBounds), prefix,
+        canonicalPrefix);
   }
   case TypeNoBoundsKind::ArrayType: {
     return resolveArrayType(std::static_pointer_cast<ArrayType>(noBounds),
@@ -243,6 +250,35 @@ Resolver::resolveArrayType(std::shared_ptr<ast::types::ArrayType> arr,
   resolveExpression(arr->getExpression(), adt::CanonicalPath::createEmpty(),
                     adt::CanonicalPath::createEmpty());
   return resolveType(arr->getType(), prefix, canonicalPrefix);
+}
+
+std::optional<basic::NodeId>
+Resolver::resolveReferenceType(std::shared_ptr<ast::types::ReferenceType> ref,
+                               const adt::CanonicalPath &prefix,
+                               const adt::CanonicalPath &canonicalPrefix) {
+  return resolveType(ref->getReferencedType(), prefix, canonicalPrefix);
+}
+
+std::optional<basic::NodeId> Resolver::resolveTraitObjectTypeOneBound(
+    std::shared_ptr<ast::types::TraitObjectTypeOneBound> one,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  return resolveTypeParamBound(one->getBound(), prefix, canonicalPrefix);
+}
+
+std::optional<basic::NodeId> Resolver::resolveTypeParamBound(
+    std::shared_ptr<ast::types::TypeParamBound> bound,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  switch (bound->getKind()) {
+  case TypeParamBoundKind::Lifetime: {
+    return std::nullopt;
+  }
+  case TypeParamBoundKind::TraitBound: {
+    return resolveType(std::static_pointer_cast<TraitBound>(bound)->getPath(),
+                       prefix, canonicalPrefix);
+  }
+  }
 }
 
 } // namespace rust_compiler::sema::resolver

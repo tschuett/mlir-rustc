@@ -12,6 +12,7 @@ namespace rust_compiler::ast {
 class FunctionParamPattern : public Node {
   std::optional<std::shared_ptr<ast::types::TypeExpression>> type;
   std::shared_ptr<ast::patterns::PatternNoTopAlt> name;
+  bool dotDotDot = false;
 
 public:
   FunctionParamPattern(Location loc) : Node(loc) {}
@@ -19,6 +20,8 @@ public:
   void setName(std::shared_ptr<ast::patterns::PatternNoTopAlt> name);
 
   void setType(std::shared_ptr<ast::types::TypeExpression> type);
+
+  void setDotDotDot() { dotDotDot = true; }
 
   std::shared_ptr<ast::patterns::PatternNoTopAlt> getPattern() const {
     return name;

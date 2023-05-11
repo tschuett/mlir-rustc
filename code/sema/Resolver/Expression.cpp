@@ -18,6 +18,10 @@
 #include "AST/PathInExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Statements.h"
+#include "AST/StructBase.h"
+#include "AST/StructExprStruct.h"
+#include "AST/StructExprUnit.h"
+#include "AST/StructExpression.h"
 #include "Basic/Ids.h"
 #include "Resolver.h"
 
@@ -127,7 +131,9 @@ void Resolver::resolveExpressionWithoutBlock(
     assert(false && "to be handled later");
   }
   case ExpressionWithoutBlockKind::StructExpression: {
-    assert(false && "to be handled later");
+    resolveStructExpression(std::static_pointer_cast<StructExpression>(woBlock),
+                            prefix, canonicalPrefix);
+    break;
   }
   case ExpressionWithoutBlockKind::CallExpression: {
     resolveCallExpression(std::static_pointer_cast<CallExpression>(woBlock),
@@ -500,7 +506,6 @@ void Resolver::resolveCallExpression(
 void Resolver::resolveMethodCallExpression(
     ast::MethodCallExpression *method, const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
-  assert(false);
   resolveExpression(method->getReceiver(), prefix, canonicalPrefix);
 
   if (method->getMethod().hasGenerics()) {
@@ -511,6 +516,52 @@ void Resolver::resolveMethodCallExpression(
   CallParams pa = method->getParams();
   for (auto &param : pa.getParams())
     resolveExpression(param, prefix, canonicalPrefix);
+}
+
+void Resolver::resolveStructExpression(
+    std::shared_ptr<StructExpression> str, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  switch (str->getKind()) {
+  case StructExpressionKind::StructExprStruct: {
+    StructExprStruct *expr = static_cast<StructExprStruct *>(str.get());
+    resolveExpression(expr->getName(), prefix, canonicalPrefix);
+
+    if (expr->hasStructBase()) {
+      StructBase base = expr->getStructBase();
+      resolveExpression(base.getPath(), prefix, canonicalPrefix);
+    }
+    if (expr->hasStructExprFields())
+      resolveStructExprFields(expr->getStructExprFields(), prefix,
+                              canonicalPrefix);
+    break;
+  }
+  case StructExpressionKind::StructExprTuple: {
+    assert(false);
+  }
+  case StructExpressionKind::StructExprUnit: {
+    StructExprUnit *expr = static_cast<StructExprUnit *>(str.get());
+    resolveExpression(expr->getPath(), prefix, canonicalPrefix);
+    break;
+  }
+  }
+}
+
+void Resolver::resolveStructExprFields(
+    const StructExprFields &fields, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  if (fields.hasBase()) {
+    StructBase base = fields.getBase();
+    resolveExpression(base.getPath(), prefix, canonicalPrefix);
+  }
+
+  for (const StructExprField &field : fields.getFields()) {
+    // FIXME: experiment
+    // getTypeScope().insert(segment, str->getNodeId(), str->getLocation(),
+    //                   RibKind::Type);
+    if (field.hasExpression())
+      resolveExpression(field.getExpression(), prefix, canonicalPrefix);
+    assert(false);
+  }
 }
 
 } // namespace rust_compiler::sema::resolver

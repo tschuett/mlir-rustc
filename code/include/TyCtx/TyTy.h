@@ -6,20 +6,24 @@
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Trait.h"
 #include "Basic/Ids.h"
+#include "Basic/Mutability.h"
 #include "Lexer/Identifier.h"
 #include "Location.h"
+#include "Substitutions.h"
 #include "TyCtx/ItemIdentity.h"
 #include "TyCtx/NodeIdentity.h"
+#include "TyCtx/Substitutions.h"
 #include "TyCtx/TraitReference.h"
 #include "TypeIdentity.h"
 
 #include <set>
+#include <vector>
 
 namespace rust_compiler::tyctx::TyTy {
 
 using namespace rust_compiler::adt;
+using namespace rust_compiler::basic;
 
-enum class Mutability { Imm, Mut };
 enum class FunctionTrait { FnOnce, Fn, FnMut };
 
 class BaseType;
@@ -37,24 +41,42 @@ private:
   Location loc;
 };
 
-class TypeBoundPredicate {
+class TypeBoundPredicate : public SubstitutionRef {
 public:
   // hack for std::map
-  TypeBoundPredicate() = default;
+  // TypeBoundPredicate() = default;
   TypeBoundPredicate(TraitReference &ref, Location loc);
+  TypeBoundPredicate(basic::NodeId id,
+                     std::vector<SubstitutionParamMapping> substitutions,
+                     Location loc);
+  virtual ~TypeBoundPredicate() = default;
 
-  bool isError() const { return error; }
+  bool isError() const { return errorFlag; }
 
   basic::NodeId getId() const { return id; }
 
-  lexer::Identifier getIdentifier() const {
-    return trait.getTrait()->getIdentifier();
+  lexer::Identifier getIdentifier() const { return get()->getIdentifier(); }
+
+  static TypeBoundPredicate error() {
+    TypeBoundPredicate p = TypeBoundPredicate(basic::UNKNOWN_NODEID, {},
+                                              Location::getEmptyLocation());
+    p.errorFlag = true;
+    return p;
   }
+
+  TraitReference *get() const;
+
+  BaseType *
+  handleSubstitions(SubstitutionArgumentMappings &mappings) override final {
+    return nullptr;
+  }
+
+  std::string toString() const;
 
 private:
   basic::NodeId id;
-  bool error = false;
-  TraitReference trait;
+  Location loc;
+  bool errorFlag = false;
 };
 
 class TypeBoundsMappings {
@@ -67,6 +89,8 @@ public:
     return specifiedBounds;
   }
 
+  std::string rawBoundsToString() const;
+
 protected:
   TypeBoundsMappings(std::vector<TypeBoundPredicate> specifiedBounds)
       : specifiedBounds(specifiedBounds) {}
@@ -75,25 +99,6 @@ protected:
 
 private:
   std::vector<TypeBoundPredicate> specifiedBounds;
-};
-
-/// https://rustc-dev-guide.rust-lang.org/generics.html
-class GenericParameters {
-public:
-  GenericParameters(std::optional<ast::GenericParams> genericParams)
-      : genericParams(genericParams) {}
-
-  bool needsSubstitution() const;
-
-  std::optional<ast::GenericParams> getGenericParams() const {
-    return genericParams;
-  }
-
-protected:
-  std::string substToString() const;
-
-private:
-  std::optional<ast::GenericParams> genericParams;
 };
 
 /// https://rustc-dev-guide.rust-lang.org/ty.html
@@ -207,16 +212,22 @@ public:
   basic::NodeId getTypeReference() const;
 
   void setReference(basic::NodeId);
+  void setTypeReference(basic::NodeId id) { typeReference = id; }
 
   std::set<basic::NodeId> getCombinedReferences() const { return combined; }
   void appendReference(basic::NodeId id);
 
   TypeKind getKind() const { return kind; }
 
+  bool hasSubsititionsDefined() const;
   bool needsGenericSubstitutions() const;
   virtual std::string toString() const = 0;
 
   virtual unsigned getNumberOfSpecifiedBounds() = 0;
+
+  bool satisfiesBound(const TypeBoundPredicate &predicate) const;
+  bool isBoundsCompatible(const BaseType &other, Location loc,
+                          bool emitError) const;
 
   bool isConcrete() const;
 
@@ -225,7 +236,8 @@ public:
 
   virtual BaseType *clone() const = 0;
 
-  void inheritBounds(std::span<TyTy::TypeBoundPredicate> specifiedBounds);
+  void inheritBounds(const BaseType &other);
+  void inheritBounds(std::vector<TyTy::TypeBoundPredicate> specifiedBounds);
 
   TypeIdentity getTypeIdentity() const { return identity; }
 
@@ -411,7 +423,7 @@ private:
   std::vector<TypeVariable> fields;
 };
 
-class FunctionType : public BaseType, public GenericParameters {
+class FunctionType : public BaseType, public SubstitutionRef {
 public:
   static constexpr uint8_t FunctionTypeDefaultFlags = 0x00;
   static constexpr uint8_t FunctionTypeIsMethod = 0x01;
@@ -419,25 +431,32 @@ public:
   static constexpr uint8_t FunctionTypeIsVariadic = 0x04;
 
   FunctionType(
-      basic::NodeId, lexer::Identifier name, tyctx::ItemIdentity, uint8_t flags,
-      std::vector<std::pair<
-          std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
-          TyTy::BaseType *>>
-          parameters,
-      TyTy::BaseType *returnType,
-      std::optional<ast::GenericParams> genericParams,
-      std::set<basic::NodeId> refs = std::set<basic::NodeId>());
-
-  FunctionType(
-      basic::NodeId, basic::NodeId, lexer::Identifier name, tyctx::ItemIdentity,
+      basic::NodeId id, lexer::Identifier name, tyctx::TypeIdentity ident,
       uint8_t flags,
       std::vector<std::pair<
           std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
           TyTy::BaseType *>>
           parameters,
       TyTy::BaseType *returnType,
-      std::optional<ast::GenericParams> genericParams,
-      std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+      std::vector<SubstitutionParamMapping> substRefs,
+      std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(id, id, TypeKind::Function, ident, refs),
+        SubstitutionRef(substRefs, SubstitutionArgumentMappings::error()),
+        name(name), parameters(parameters), returnType(returnType) {}
+
+  FunctionType(
+      basic::NodeId id, basic::NodeId typeId, lexer::Identifier name,
+      tyctx::TypeIdentity ident, uint8_t flags,
+      std::vector<std::pair<
+          std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
+          TyTy::BaseType *>>
+          parameters,
+      TyTy::BaseType *returnType,
+      std::vector<SubstitutionParamMapping> substRefs,
+      std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(id, typeId, TypeKind::Function, ident, refs),
+        SubstitutionRef(substRefs, SubstitutionArgumentMappings::error()),
+        name(name), parameters(parameters), returnType(returnType) {}
 
   std::string toString() const override;
 
@@ -445,14 +464,16 @@ public:
 
   unsigned getNumberOfSpecifiedBounds() override;
 
-  basic::NodeId getId() const { return id; }
+  // basic::NodeId getId() const { return id; }
 
   Identifier getIdentifier() const { return name; }
 
   std::vector<
       std::pair<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
                 TyTy::BaseType *>>
-  getParameters() const;
+  getParameters() const {
+    return parameters;
+  }
 
   BaseType *clone() const final override;
 
@@ -474,45 +495,46 @@ public:
     return parameters[i];
   }
 
+  FunctionType *
+  handleSubstitions(SubstitutionArgumentMappings &mappings) override final;
+
 private:
-  basic::NodeId id;
   lexer::Identifier name;
-  tyctx::ItemIdentity ident;
   uint8_t flags;
   std::vector<
       std::pair<std::shared_ptr<rust_compiler::ast::patterns::PatternNoTopAlt>,
                 TyTy::BaseType *>>
       parameters;
-  TyTy::BaseType *returnType = nullptr;
+  TyTy::BaseType *returnType;
 };
 
 /// ClosureSubsts
 /// https://doc.rust-lang.org/stable/nightly-rustc/rustc_middle/ty/struct.ClosureSubsts.html
-class ClosureType : public BaseType, public GenericParameters {
+class ClosureType : public BaseType, public SubstitutionRef {
 public:
   ClosureType(basic::NodeId id, TypeIdentity ident, TupleType *closureArgs,
               TypeVariable resultType,
-              std::optional<ast::GenericParams> genericParams,
+              std::vector<SubstitutionParamMapping> substRefs,
               std::set<basic::NodeId> captures,
               std::set<basic::NodeId> refs = std::set<basic::NodeId>(),
               std::vector<TypeBoundPredicate> specifiedBounds =
                   std::vector<TypeBoundPredicate>())
-      : BaseType(id, id, TypeKind::Closure, ident),
-        GenericParameters(genericParams), parameters(closureArgs),
-        resultType(resultType), captures(captures) {
+      : BaseType(id, id, TypeKind::Closure, ident, refs),
+        SubstitutionRef(substRefs, SubstitutionArgumentMappings::error()),
+        parameters(closureArgs), resultType(resultType), captures(captures) {
     inheritBounds(specifiedBounds);
   };
 
   ClosureType(basic::NodeId id, basic::NodeId type, TypeIdentity ident,
               TupleType *closureArgs, TypeVariable resultType,
-              std::optional<ast::GenericParams> genericParams,
+              std::vector<SubstitutionParamMapping> substRefs,
               std::set<basic::NodeId> captures,
               std::set<basic::NodeId> refs = std::set<basic::NodeId>(),
               std::vector<TypeBoundPredicate> specifiedBounds =
                   std::vector<TypeBoundPredicate>())
-      : BaseType(id, type, TypeKind::Closure, ident),
-        GenericParameters(genericParams), parameters(closureArgs),
-        resultType(resultType), captures(captures) {
+      : BaseType(id, type, TypeKind::Closure, ident, refs),
+        SubstitutionRef(substRefs, SubstitutionArgumentMappings::error()),
+        parameters(closureArgs), resultType(resultType), captures(captures) {
     inheritBounds(specifiedBounds);
   };
 
@@ -525,6 +547,9 @@ public:
   BaseType *clone() const final override;
 
   void setupFnOnceOutput() const;
+
+  ClosureType *
+  handleSubstitions(SubstitutionArgumentMappings &mappings) override final;
 
 private:
   TyTy::TupleType *parameters;
@@ -641,14 +666,28 @@ private:
 
 enum class ADTKind { StructStruct, TupleStruct, Enum };
 
-class ADTType : public BaseType, public GenericParameters {
+class ADTType : public BaseType, public SubstitutionRef {
 public:
-  ADTType(basic::NodeId, const adt::Identifier &, TypeIdentity, ADTKind,
-          std::span<VariantDef *>, std::optional<ast::GenericParams>,
-          std::set<basic::NodeId> refs = std::set<basic::NodeId>());
-  ADTType(basic::NodeId, basic::NodeId, const adt::Identifier &, TypeIdentity,
-          ADTKind, std::span<VariantDef *>, std::optional<ast::GenericParams>,
-          std::set<basic::NodeId> refs = std::set<basic::NodeId>());
+  ADTType(basic::NodeId id, const adt::Identifier &identifier,
+          TypeIdentity ident, ADTKind kind, std::vector<VariantDef *> variants,
+          std::vector<SubstitutionParamMapping> substRefs,
+          SubstitutionArgumentMappings genericArguments =
+              SubstitutionArgumentMappings::error(),
+          std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(id, id, TypeKind::ADT, ident, refs),
+        SubstitutionRef(substRefs, genericArguments), identifier(identifier),
+        variants(variants), kind(kind) {}
+
+  ADTType(basic::NodeId id, basic::NodeId type,
+          const adt::Identifier &identifier, TypeIdentity ident, ADTKind kind,
+          std::vector<VariantDef *> variants,
+          std::vector<SubstitutionParamMapping> substRefs,
+          SubstitutionArgumentMappings genericArguments =
+              SubstitutionArgumentMappings::error(),
+          std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(id, type, TypeKind::ADT, ident, refs),
+        SubstitutionRef(substRefs, genericArguments), identifier(identifier),
+        variants(variants), kind(kind) {}
 
   std::string toString() const override;
   unsigned getNumberOfSpecifiedBounds() override;
@@ -680,10 +719,13 @@ public:
     return false;
   }
 
+  ADTType *
+  handleSubstitions(SubstitutionArgumentMappings &mappings) override final;
+
 private:
   adt::Identifier identifier;
-  ADTKind kind;
   std::vector<VariantDef *> variants;
+  ADTKind kind;
 };
 
 class ParamType : public BaseType {
@@ -703,6 +745,8 @@ public:
 
   std::string toString() const override;
 
+  Identifier getSymbol() const { return identifier; }
+
   unsigned getNumberOfSpecifiedBounds() override;
 
   bool canResolve() const { return getReference() == getTypeReference(); }
@@ -710,11 +754,14 @@ public:
 
   BaseType *clone() const final override;
 
+  bool isImplicitSelfTrait() const;
+
 private:
   Identifier identifier;
   Location loc;
   ast::TypeParam type;
   std::vector<TyTy::TypeBoundPredicate> bounds;
+  bool isTraitSelf;
 };
 
 class ArrayType : public BaseType {
@@ -758,6 +805,11 @@ public:
   BaseType *getBase() const { return base.getType(); }
 
   BaseType *clone() const final override;
+
+  std::string toString() const override;
+  unsigned getNumberOfSpecifiedBounds() override;
+
+  bool isMutable() const { return mut == Mutability::Mut; }
 
 private:
   TypeVariable base;
@@ -854,7 +906,7 @@ private:
   Identifier id;
 };
 
-class ProjectionType : public BaseType {
+class ProjectionType : public BaseType, public SubstitutionRef {
 public:
   const BaseType *get() const { return base; }
   BaseType *get() { return base; }
@@ -865,6 +917,22 @@ private:
   BaseType *base;
 };
 
-class DynamicObjectType : public BaseType {};
+class DynamicObjectType : public BaseType {
+public:
+  DynamicObjectType(basic::NodeId id, TypeIdentity ident,
+                    std::vector<TypeBoundPredicate> specifiedBounds,
+                    std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(id, id, TypeKind::Dynamic, ident, specifiedBounds, refs) {}
+  DynamicObjectType(basic::NodeId id, basic::NodeId type, TypeIdentity ident,
+                    std::vector<TypeBoundPredicate> specifiedBounds,
+                    std::set<basic::NodeId> refs = std::set<basic::NodeId>())
+      : BaseType(id, type, TypeKind::Dynamic, ident, specifiedBounds, refs) {}
+
+  std::string toString() const override;
+
+  unsigned getNumberOfSpecifiedBounds() override;
+
+  BaseType *clone() const final override;
+};
 
 } // namespace rust_compiler::tyctx::TyTy

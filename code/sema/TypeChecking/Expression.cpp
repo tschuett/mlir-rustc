@@ -611,7 +611,8 @@ TypeResolver::checkCallExpressionFn(TyTy::BaseType *functionType,
 std::optional<TyTy::BaseType *>
 TypeResolver::checkFunctionTraitCall(CallExpression *expr,
                                      TyTy::BaseType *functionType) {
-  TyTy::TypeBoundPredicate associatedPredicate;
+  TyTy::TypeBoundPredicate associatedPredicate =
+      TyTy::TypeBoundPredicate::error();
   std::optional<TyTy::FunctionTrait> methodTrait =
       checkPossibleFunctionTraitCallMethodName(*functionType,
                                                &associatedPredicate);
