@@ -2,6 +2,7 @@
 #include "AST/ArrayExpression.h"
 #include "AST/Expression.h"
 #include "AST/GroupedExpression.h"
+#include "AST/TupleExpression.h"
 #include "Sema/Sema.h"
 
 using namespace rust_compiler::ast;
@@ -32,7 +33,7 @@ bool Sema::isConstantEpressionWithoutBlock(
     assert(false);
   }
   case ExpressionWithoutBlockKind::GroupedExpression: {
-    GroupedExpression *group = static_cast<GroupedExpression*>(woBlock);
+    GroupedExpression *group = static_cast<GroupedExpression *>(woBlock);
     return isConstantExpression(group->getExpression().get());
   }
   case ExpressionWithoutBlockKind::ArrayExpression: {
@@ -59,7 +60,14 @@ bool Sema::isConstantEpressionWithoutBlock(
     assert(false);
   }
   case ExpressionWithoutBlockKind::TupleExpression: {
-    assert(false);
+    TupleExpression *tuple = static_cast<TupleExpression *>(woBlock);
+    if (tuple->isUnit())
+      return true;
+    TupleElements elements = tuple->getElements();
+    for (auto &element : elements.getElements())
+      if (!isConstantExpression(element))
+        return false;
+    return true;
   }
   case ExpressionWithoutBlockKind::TupleIndexingExpression: {
     assert(false);

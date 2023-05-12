@@ -336,6 +336,9 @@ private:
   void resolveMethodCallExpression(ast::MethodCallExpression *,
                                    const adt::CanonicalPath &prefix,
                                    const adt::CanonicalPath &canonicalPrefix);
+  void resolveTupleExpression(ast::TupleExpression *,
+                                   const adt::CanonicalPath &prefix,
+                                   const adt::CanonicalPath &canonicalPrefix);
 
   // types
   std::optional<basic::NodeId>
