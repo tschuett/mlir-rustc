@@ -9,6 +9,7 @@
 #include "Resolver.h"
 #include "llvm/Support/ErrorHandling.h"
 
+#include <cstdlib>
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
 
@@ -107,6 +108,21 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
 
   std::vector<TypePathSegment> segments = typePath->getSegments();
 
+  // experiment
+  //{
+  //  if (segments.size() == 1) {
+  //    PathIdentSegment ident = segments[0].getSegment();
+  //    adt::CanonicalPath path = adt::CanonicalPath::newSegment(
+  //        typePath->getNodeId(), Identifier(ident.toString()));
+  //    if (auto node = getTypeScope().lookup(path)) {
+  //      insertResolvedType(segment.getNodeId(), *node);
+  //      resolvedNodeId = *node;
+  //      return resolvedNodeId;
+  //    }
+  //    assert(false);
+  //  }
+  //}
+
   assert(segments.size() == 1 && "to be handled later");
 
   for (unsigned i = 0; i < segments.size(); ++i) {
@@ -158,9 +174,11 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
       if (auto node = getTypeScope().lookup(path)) {
         insertResolvedType(segment.getNodeId(), *node);
         resolvedNodeId = *node;
+        //llvm::errs() << "it is a type" << "\n";
       } else if (auto node = getNameScope().lookup(path)) {
         insertResolvedName(segment.getNodeId(), *node);
         resolvedNodeId = *node;
+        //llvm::errs() << "it is a name" << "\n";
       } else if (ident.getKind() == PathIdentSegmentKind::self) {
         moduleScopeId = crateScopeId;
         previousResolveNodeId = moduleScopeId;
@@ -187,7 +205,7 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
           insertResolvedType(segment.getNodeId(), resolvedNode);
         } else {
           // report error
-          llvm::errs() << llvm::formatv("cannot file path {0} in this scope",
+          llvm::errs() << llvm::formatv("cannot find path {0} in this scope",
                                         segment.getSegment().toString())
                               .str()
                        << "\n";
@@ -209,6 +227,8 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
                           segment.getSegment().toString())
                           .str()
                    << "\n";
+      llvm::errs() << "Name Resolution pass failed" << "\n";
+      exit(EXIT_FAILURE);
       return std::nullopt;
     }
   }

@@ -148,6 +148,17 @@ void Resolver::resolveTraitItem(std::shared_ptr<ast::Trait> trait,
                                 const adt::CanonicalPath &canonicalPrefix) {
   NodeId scopeNodeId = trait->getNodeId();
 
+  CanonicalPath segment =
+      CanonicalPath::newSegment(trait->getNodeId(), trait->getIdentifier());
+  CanonicalPath path = prefix.append(segment);
+  CanonicalPath cpath = canonicalPrefix.append(segment);
+
+  tyCtx->insertCanonicalPath(trait->getNodeId(), cpath);
+
+  // Bug fix. Note that it is before the push pop pair!
+  getTypeScope().insert(segment, trait->getNodeId(), trait->getLocation(),
+                        RibKind::Type);
+
   resolveVisibility(trait->getVisibility());
   getNameScope().push(scopeNodeId);
   getTypeScope().push(scopeNodeId);
@@ -166,8 +177,6 @@ void Resolver::resolveTraitItem(std::shared_ptr<ast::Trait> trait,
   if (trait->hasGenericParams())
     resolveGenericParams(trait->getGenericParams(), prefix, canonicalPrefix);
 
-  // FIXME add identifier to type scope, see Struct
-  
   getTypeScope().appendReferenceForDef(Self.getNodeId(), param.getNodeId());
 
   if (trait->hasTypeParamBounds())
@@ -177,11 +186,11 @@ void Resolver::resolveTraitItem(std::shared_ptr<ast::Trait> trait,
   if (trait->hasWhereClause())
     resolveWhereClause(trait->getWhereClause());
 
-  CanonicalPath path = CanonicalPath::createEmpty();
-  CanonicalPath cpath = CanonicalPath::createEmpty();
+  CanonicalPath path2 = CanonicalPath::createEmpty();
+  CanonicalPath cpath2 = CanonicalPath::createEmpty();
 
   for (auto &asso : trait->getAssociatedItems())
-    resolveAssociatedItemInTrait(asso, path, cpath);
+    resolveAssociatedItemInTrait(asso, path2, cpath2);
 
   getTypeScope().pop();
   getNameScope().pop();

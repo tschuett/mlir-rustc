@@ -1,5 +1,6 @@
 #include "AST/Types/Types.h"
 
+#include "ADT/CanonicalPath.h"
 #include "AST/ConstParam.h"
 #include "AST/Enumeration.h"
 #include "AST/GenericArgs.h"
@@ -17,6 +18,7 @@
 #include "TyCtx/Substitutions.h"
 #include "TyCtx/SubstitutionsMapper.h"
 #include "TyCtx/TyTy.h"
+#include "TyCtx/TypeIdentity.h"
 #include "TypeChecking.h"
 #include "Unification.h"
 
@@ -360,7 +362,13 @@ TyTy::TypeBoundPredicate TypeResolver::getPredicateFromBound(
   if (lookup)
     return *lookup;
 
-  [[maybe_unused]] TraitReference *trait = resolveTraitPath(typePath);
+  TraitReference *trait = resolveTraitPath(typePath);
+  if (trait->isError())
+    return TyTy::TypeBoundPredicate::error();
+
+  TyTy::TypeBoundPredicate predicate (*trait, path->getLocation());
+
+  
 
   assert(false);
 }
@@ -438,7 +446,19 @@ TyTy::BaseType *TypeResolver::checkReferenceType(
 
 TyTy::BaseType *TypeResolver::checkTypeTraitObjectTypeOneBound(
     std::shared_ptr<ast::types::TraitObjectTypeOneBound> trait) {
-  assert(false);
+  std::vector<TyTy::TypeBoundPredicate> specifiedBounds;
+
+  std::shared_ptr<ast::types::TypeParamBound> b = trait->getBound();
+  if (b->getKind() == TypeParamBoundKind::TraitBound) {
+    TyTy::TypeBoundPredicate pred = getPredicateFromBound(
+        std::static_pointer_cast<TraitBound>(b)->getPath(), nullptr);
+    specifiedBounds.push_back(pred);
+  }
+
+  TypeIdentity ident = {adt::CanonicalPath::createEmpty(),
+                        trait->getLocation()};
+  return new TyTy::DynamicObjectType(trait->getNodeId(), ident,
+                                     specifiedBounds);
 }
 
 } // namespace rust_compiler::sema::type_checking

@@ -38,7 +38,7 @@ public:
                               Location::getEmptyLocation());
   }
 
-  static TraitItemReference &error_node() {
+  static TraitItemReference &errorNode() {
     static TraitItemReference error = TraitItemReference::error();
     return error;
   }
@@ -78,7 +78,7 @@ public:
 
   lexer::Identifier getIdentifier() const { return trait->getIdentifier(); }
 
-  static TraitReference &error_node() {
+  static TraitReference &errorNode() {
     static TraitReference traitErrorNode = TraitReference::error();
     return traitErrorNode;
   }

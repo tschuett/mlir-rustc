@@ -257,6 +257,9 @@ private:
 
   void resolveFunctionItemInTrait(std::shared_ptr<ast::Item>,
                                   TyTy::BaseType *type);
+
+  std::optional<Trait *>
+  resolvePathToTrait(std::shared_ptr<ast::types::TypePath> path);
 };
 
 } // namespace rust_compiler::sema::type_checking

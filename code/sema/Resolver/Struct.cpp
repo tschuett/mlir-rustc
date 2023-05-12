@@ -59,9 +59,8 @@ void Resolver::resolveStructStructItem(
 
       resolveType(field.getType(), prefix, canonicalPrefix);
     }
-
-    getTypeScope().pop();
   }
+  getTypeScope().pop();
 }
 
 void Resolver::resolveTupleStructItem(

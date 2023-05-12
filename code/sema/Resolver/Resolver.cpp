@@ -470,6 +470,7 @@ std::optional<Rib *> Scope::lookupRibForDecl(basic::NodeId id) {
 void Resolver::insertResolvedType(basic::NodeId refId, basic::NodeId defId) {
   resolvedTypes[refId] = defId;
   getTypeScope().appendReferenceForDef(refId, defId);
+  tyCtx->insertResolvedType(refId, defId);
 }
 
 bool Scope::wasDeclDeclaredInCurrentScope(NodeId def) const {

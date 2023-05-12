@@ -119,6 +119,9 @@ public:
   [[nodiscard]] std::optional<basic::NodeId> lookupName(basic::NodeId);
 
   void insertResolvedName(basic::NodeId ref, basic::NodeId def);
+  void insertResolvedType(basic::NodeId ref, basic::NodeId def);
+  std::optional<basic::NodeId> lookupResolvedName(basic::NodeId);
+  std::optional<basic::NodeId> lookupResolvedType(basic::NodeId);
 
   std::vector<std::pair<std::string, ast::types::TypeExpression *>> &
   getBuiltinTypes() {
@@ -126,6 +129,8 @@ public:
   }
 
   std::optional<TyTy::TypeBoundPredicate> lookupPredicate(NodeId);
+  void insertResolvedPredicate(basic::NodeId id,
+                               TyTy::TypeBoundPredicate predicate);
 
   void insertClosureCapture(basic::NodeId closureExpr,
                             basic::NodeId capturedItem);
@@ -173,6 +178,7 @@ private:
   std::vector<std::unique_ptr<TyTy::BaseType>> builtinsList;
 
   std::map<basic::NodeId, basic::NodeId> resolvedNames;
+  std::map<basic::NodeId, basic::NodeId> resolvedTypes;
 
   std::map<NodeId, std::pair<ast::Enumeration *, ast::EnumItem *>>
       enumItemsMappings;
@@ -225,6 +231,8 @@ private:
 
   std::set<basic::NodeId> traitQueriesInProgress;
   std::map<basic::NodeId, TraitReference> traitContext;
+
+  std::map<basic::NodeId, TyTy::TypeBoundPredicate> predicates;
 };
 
 } // namespace rust_compiler::tyctx

@@ -51,6 +51,18 @@ void TyCtx::insertResolvedName(NodeId ref, NodeId def) {
   resolvedNames[ref] = def;
 }
 
+void TyCtx::insertResolvedType(NodeId ref, NodeId def) {
+  resolvedTypes[ref] = def;
+}
+
+std::optional<NodeId> TyCtx::lookupResolvedType(NodeId id) {
+  auto it = resolvedTypes.find(id);
+  if (it == resolvedTypes.end())
+    return std::nullopt;
+
+  return it->second;
+}
+
 std::optional<NodeId> TyCtx::lookupName(NodeId ref) {
   auto it = resolvedNames.find(ref);
   if (it == resolvedNames.end())
@@ -58,8 +70,16 @@ std::optional<NodeId> TyCtx::lookupName(NodeId ref) {
   return it->second;
 }
 
-std::optional<TyTy::TypeBoundPredicate> TyCtx::lookupPredicate(NodeId) {
-  assert(false);
+void TyCtx::insertResolvedPredicate(basic::NodeId id,
+                                    TyTy::TypeBoundPredicate predicate) {
+  predicates.insert({id, predicate});
+}
+std::optional<TyTy::TypeBoundPredicate> TyCtx::lookupPredicate(NodeId id) {
+  auto it = predicates.find(id);
+  if (it == predicates.end())
+    return std::nullopt;
+
+  return it->second;
 }
 
 void TyCtx::insertModule(ast::Module *mod) { assert(false); }
