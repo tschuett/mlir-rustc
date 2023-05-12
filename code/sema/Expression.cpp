@@ -1,5 +1,6 @@
 #include "AST/Expression.h"
 
+#include "AST/ArrayElements.h"
 #include "Sema/Sema.h"
 
 #include <memory>
@@ -52,6 +53,7 @@ void Sema::analyzeExpressionWithoutBlock(
     break;
   }
   case ExpressionWithoutBlockKind::ArrayExpression: {
+    analyzeArrayExpression(std::static_pointer_cast<ArrayExpression>(let));
     break;
   }
   case ExpressionWithoutBlockKind::AwaitExpression: {
@@ -115,6 +117,22 @@ void Sema::analyzeExpression(std::shared_ptr<ast::Expression> let) {
   case ast::ExpressionKind::ExpressionWithoutBlock: {
     analyzeExpressionWithoutBlock(
         std::static_pointer_cast<ExpressionWithoutBlock>(let));
+    break;
+  }
+  }
+}
+
+void Sema::analyzeArrayExpression(std::shared_ptr<ast::ArrayExpression> array) {
+  ArrayElements elements = array->getArrayElements();
+
+  switch (elements.getKind()) {
+  case ArrayElementsKind::List: {
+    break;
+  }
+  case ArrayElementsKind::Repeated: {
+    std::shared_ptr<Expression> count = elements.getCount();
+
+    [[maybe_unused]]bool constant = isConstantExpression(count.get());
     break;
   }
   }
