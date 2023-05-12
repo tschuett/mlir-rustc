@@ -19,6 +19,8 @@ public:
 
   void setTuple(std::shared_ptr<Expression> t) { t = tuple; }
   void setIndex(std::string_view i) { index = i; }
+
+  std::shared_ptr<Expression> getTuple() const { return tuple; }
 };
 
 } // namespace rust_compiler::ast

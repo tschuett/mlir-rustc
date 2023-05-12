@@ -58,6 +58,7 @@
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
+#include "AST/TupleExpression.h"
 #include "Basic/Ids.h"
 #include "Location.h"
 #include "TyCtx/TyCtx.h"

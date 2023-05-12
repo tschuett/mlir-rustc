@@ -22,6 +22,8 @@ public:
 
   void setLeft(std::shared_ptr<Expression> l) { expr = l; }
   void setIdentifier(const Identifier id) { identifier = id; }
+
+  std::shared_ptr<Expression> getField() const { return expr; }
 };
 
 } // namespace rust_compiler::ast

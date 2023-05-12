@@ -32,6 +32,9 @@ public:
   void setKind(RangeExpressionKind k) { kind = k; }
   void setLeft(std::shared_ptr<ast::Expression> l) { left = l; }
   void setRight(std::shared_ptr<ast::Expression> r) { right = r; }
+
+  std::shared_ptr<ast::Expression> getLeft() const { return *left; }
+  std::shared_ptr<ast::Expression> getRight() const { return *right; }
 };
 
 } // namespace rust_compiler::ast

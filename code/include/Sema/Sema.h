@@ -1,10 +1,12 @@
 #pragma once
 
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/ArrayExpression.h"
 #include "AST/AssignmentExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/CallExpression.h"
 #include "AST/Crate.h"
+#include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/InfiniteLoopExpression.h"
 #include "AST/LetStatement.h"
@@ -13,6 +15,7 @@
 #include "AST/MacroInvocationSemiStatement.h"
 #include "AST/MatchArmGuard.h"
 #include "AST/MethodCallExpression.h"
+#include "AST/Statement.h"
 #include "AST/Statements.h"
 #include "AST/Types/Types.h"
 #include "Basic/Ids.h"
@@ -42,10 +45,10 @@ private:
   analyzeMethodCallExpression(std::shared_ptr<ast::MethodCallExpression> let);
   void
   analyzeExpressionStatement(std::shared_ptr<ast::ExpressionStatement> expr);
-  void
-  analyzeMacroInvocationSemiStatement(std::shared_ptr<ast::MacroInvocationSemiStatement> macro);
-//  void analyzeMacroInvocationSemiStatement(
-//      std::shared_ptr<ast::MacroInvocationSemiStatement> macro);
+  void analyzeMacroInvocationSemiStatement(
+      std::shared_ptr<ast::MacroInvocationSemiStatement> macro);
+  //  void analyzeMacroInvocationSemiStatement(
+  //      std::shared_ptr<ast::MacroInvocationSemiStatement> macro);
   void analyzeExpression(std::shared_ptr<ast::Expression> let);
   void
   analyzeExpressionWithBlock(std::shared_ptr<ast::ExpressionWithBlock> let);
@@ -71,9 +74,33 @@ private:
 
   // void checkExhaustiveness(std::shared_ptr<ast::MatchArmGuard>);
 
+  void analyzeArrayExpression(std::shared_ptr<ast::ArrayExpression>);
+
   bool isReachable(std::shared_ptr<ast::VisItem>,
                    std::shared_ptr<ast::VisItem>);
 
+  /// This should probably run after type checking.
+  /// https://doc.rust-lang.org/reference/const_eval.html
+  bool isConstantExpression(ast::Expression *);
+  bool isConstantEpressionWithoutBlock(ast::ExpressionWithoutBlock *);
+  bool isConstantEpressionWithBlock(ast::ExpressionWithBlock *);
+  bool isConstantOperatorExpression(ast::OperatorExpression *);
+  bool isConstantBlockExpression(ast::BlockExpression *op);
+  bool isConstantStatement(ast::Statement *stmt);
+  bool isConstantLoopExpression(ast::LoopExpression *);
+
+  /// https://doc.rust-lang.org/reference/expressions.html#place-expressions-and-value-expressions
+  bool isPlaceExpression(ast::Expression *);
+  bool isPlaceExpressionWithBlock(ast::ExpressionWithBlock *);
+  bool isPlaceExpressionWithoutBlock(ast::ExpressionWithoutBlock *);
+
+  bool isAssigneeExpression(ast::Expression *);
+  bool isAssigneeExpressionWithBlock(ast::ExpressionWithBlock *);
+  bool isAssigneeExpressionWithoutBlock(ast::ExpressionWithoutBlock *);
+
+  bool isValueExpression(ast::Expression *);
+  bool isValueExpressionWithBlock(ast::ExpressionWithBlock *);
+  bool isValueExpressionWithoutBlock(ast::ExpressionWithoutBlock *);
 };
 
 void analyzeSemantics(std::shared_ptr<ast::Crate> &ast);

@@ -58,7 +58,7 @@
 * https://github.com/iree-org/iree/blob/main/compiler/src/iree/compiler/Dialect/Util/Analysis/DFX/Solver.h
 * https://llvm.org/devmtg/2020-09/slides/The_Present_and_Future_of_Interprocedural_Optimization_in_LLVM.pdf
 * https://llvm.org/devmtg/2020-09/slides/A_Deep_Dive_into_Interprocedural_Optimization.pdf
-* https://mapping-high-level-constructs-to-llvm-ir.readthedocs.io/en/latest/README.html
+* https://mapping-high-level-constructs-to-llvm-ir.readthedocs.io/en/latest/
 ## Async
 
 * https://mlir.llvm.org/docs/Dialects/AsyncDialect/

@@ -15,9 +15,11 @@ public:
       : ExpressionWithoutBlock(loc,
                                ExpressionWithoutBlockKind::TupleExpression){};
 
-  void setElements(const TupleElements& el) {
-    elements = el;
-  }
+  void setElements(const TupleElements &el) { elements = el; }
+
+  bool isUnit() const { return !elements.has_value(); }
+
+  TupleElements getElements() const { return *elements;}
 };
 
 } // namespace rust_compiler::ast

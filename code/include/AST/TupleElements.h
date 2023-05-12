@@ -18,6 +18,8 @@ public:
   bool hasTrailingComma() const { return trailingComma; };
 
   void addElement(std::shared_ptr<Expression> e) { elements.push_back(e); }
+
+  std::vector<std::shared_ptr<Expression>> &getElements() { return elements; }
 };
 
 } // namespace rust_compiler::ast

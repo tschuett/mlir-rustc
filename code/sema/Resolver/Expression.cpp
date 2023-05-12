@@ -126,8 +126,9 @@ void Resolver::resolveExpressionWithoutBlock(
   }
   case ExpressionWithoutBlockKind::TupleExpression: {
     assert(false && "to be handled later");
-    resolveTupleExpression(std::static_pointer_cast<TupleExpression>(woBlock),
-                           prefix, canonicalPrefix);
+    resolveTupleExpression(
+        std::static_pointer_cast<TupleExpression>(woBlock).get(), prefix,
+        canonicalPrefix);
   }
   case ExpressionWithoutBlockKind::TupleIndexingExpression: {
     assert(false && "to be handled later");
