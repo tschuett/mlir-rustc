@@ -2,6 +2,7 @@
 #include "AST/ArrayExpression.h"
 #include "AST/Expression.h"
 #include "AST/GroupedExpression.h"
+#include "AST/OperatorExpression.h"
 #include "Sema/Sema.h"
 
 using namespace rust_compiler::ast;
@@ -45,7 +46,8 @@ bool Sema::isPlaceExpressionWithoutBlock(ast::ExpressionWithoutBlock *woBlock) {
     assert(false);
   }
   case ExpressionWithoutBlockKind::OperatorExpression: {
-    assert(false);
+    return isPlaceOperatorExpression(
+        static_cast<OperatorExpression *>(woBlock));
   }
   case ExpressionWithoutBlockKind::GroupedExpression: {
     assert(false);
@@ -75,7 +77,7 @@ bool Sema::isPlaceExpressionWithoutBlock(ast::ExpressionWithoutBlock *woBlock) {
     assert(false);
   }
   case ExpressionWithoutBlockKind::FieldExpression: {
-    assert(false);
+    return true;
   }
   case ExpressionWithoutBlockKind::ClosureExpression: {
     assert(false);
@@ -147,7 +149,7 @@ bool Sema::isValueExpressionWithoutBlock(ast::ExpressionWithoutBlock *woBlock) {
     assert(false);
   }
   case ExpressionWithoutBlockKind::FieldExpression: {
-    assert(false);
+    return false;
   }
   case ExpressionWithoutBlockKind::ClosureExpression: {
     assert(false);
@@ -255,6 +257,41 @@ bool Sema::isAssigneeExpressionWithoutBlock(
     assert(false);
   }
   case ExpressionWithoutBlockKind::MacroInvocation: {
+    assert(false);
+  }
+  }
+}
+
+bool Sema::isPlaceOperatorExpression(OperatorExpression *op) {
+  switch (op->getKind()) {
+  case OperatorExpressionKind::BorrowExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::DereferenceExpression: {
+    return true;
+  }
+  case OperatorExpressionKind::ErrorPropagationExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::NegationExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::ArithmeticOrLogicalExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::ComparisonExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::LazyBooleanExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::TypeCastExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::AssignmentExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::CompoundAssignmentExpression: {
     assert(false);
   }
   }

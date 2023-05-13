@@ -8,6 +8,7 @@
 #include "AST/Crate.h"
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/IfLetExpression.h"
 #include "AST/InfiniteLoopExpression.h"
 #include "AST/LetStatement.h"
 #include "AST/LiteralExpression.h"
@@ -17,6 +18,7 @@
 #include "AST/MethodCallExpression.h"
 #include "AST/Statement.h"
 #include "AST/Statements.h"
+#include "AST/StructExpression.h"
 #include "AST/Types/Types.h"
 #include "Basic/Ids.h"
 
@@ -88,11 +90,14 @@ private:
   bool isConstantBlockExpression(ast::BlockExpression *op);
   bool isConstantStatement(ast::Statement *stmt);
   bool isConstantLoopExpression(ast::LoopExpression *);
+  bool isConstantStructExpression(ast::StructExpression *);
+  bool isConstantIfLetExpression(ast::IfLetExpression *);
 
   /// https://doc.rust-lang.org/reference/expressions.html#place-expressions-and-value-expressions
   bool isPlaceExpression(ast::Expression *);
   bool isPlaceExpressionWithBlock(ast::ExpressionWithBlock *);
   bool isPlaceExpressionWithoutBlock(ast::ExpressionWithoutBlock *);
+  bool isPlaceOperatorExpression(ast::OperatorExpression *);
 
   bool isAssigneeExpression(ast::Expression *);
   bool isAssigneeExpressionWithBlock(ast::ExpressionWithBlock *);

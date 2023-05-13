@@ -6,13 +6,22 @@
 #include "AST/FieldExpression.h"
 #include "AST/GroupedExpression.h"
 #include "AST/IfExpression.h"
+#include "AST/IfLetExpression.h"
 #include "AST/IndexEpression.h"
 #include "AST/LoopExpression.h"
 #include "AST/MatchArms.h"
 #include "AST/MatchExpression.h"
 #include "AST/OperatorExpression.h"
+#include "AST/PredicateLoopExpression.h"
+#include "AST/PredicatePatternLoopExpression.h"
 #include "AST/RangeExpression.h"
+#include "AST/Scrutinee.h"
 #include "AST/Statement.h"
+#include "AST/StructBase.h"
+#include "AST/StructExprField.h"
+#include "AST/StructExprStruct.h"
+#include "AST/StructExprTuple.h"
+#include "AST/StructExpression.h"
 #include "AST/TupleExpression.h"
 #include "AST/TupleIndexingExpression.h"
 #include "Sema/Sema.h"
@@ -92,7 +101,7 @@ bool Sema::isConstantEpressionWithoutBlock(
     return isConstantExpression(index->getTuple().get());
   }
   case ExpressionWithoutBlockKind::StructExpression: {
-    assert(false);
+    return isConstantStructExpression(static_cast<StructExpression *>(woBlock));
   }
   case ExpressionWithoutBlockKind::CallExpression: {
     assert(false);
@@ -178,7 +187,7 @@ bool Sema::isConstantEpressionWithBlock(ast::ExpressionWithBlock *withBlock) {
     return true;
   }
   case ExpressionWithBlockKind::IfLetExpression: {
-    assert(false);
+    return isConstantIfLetExpression(static_cast<IfLetExpression *>(withBlock));
   }
   case ExpressionWithBlockKind::MatchExpression: {
     MatchExpression *match = static_cast<MatchExpression *>(withBlock);
@@ -286,15 +295,27 @@ bool Sema::isConstantStatement(ast::Statement *stmt) {
 }
 
 bool Sema::isConstantLoopExpression(ast::LoopExpression *loop) {
-  switch(loop->getLoopExpressionKind()) {
+  switch (loop->getLoopExpressionKind()) {
   case LoopExpressionKind::InfiniteLoopExpression: {
     assert(false);
   }
   case LoopExpressionKind::PredicateLoopExpression: {
-    assert(false);
+    PredicateLoopExpression *pred =
+        static_cast<PredicateLoopExpression *>(loop);
+    if (!isConstantExpression(pred->getCondition().get()))
+      return false;
+    if (!isConstantExpression(pred->getBody().get()))
+      return false;
+    return true;
   }
   case LoopExpressionKind::PredicatePatternLoopExpression: {
-    assert(false);
+    PredicatePatternLoopExpression *pattern =
+        static_cast<PredicatePatternLoopExpression *>(loop);
+    if (!isConstantExpression(pattern->getScrutinee().getExpression().get()))
+      return false;
+    if (!isConstantExpression(pattern->getBody().get()))
+      return false;
+    return true;
   }
   case LoopExpressionKind::IteratorLoopExpression: {
     assert(false);
@@ -303,6 +324,71 @@ bool Sema::isConstantLoopExpression(ast::LoopExpression *loop) {
     assert(false);
   }
   }
+}
+
+bool Sema::isConstantStructExpression(ast::StructExpression *se) {
+  switch (se->getKind()) {
+  case StructExpressionKind::StructExprStruct: {
+    StructExprStruct *str = static_cast<StructExprStruct *>(se);
+    if (str->hasStructBase()) {
+      StructBase base = str->getStructBase();
+      return isConstantExpression(base.getPath().get());
+    }
+    if (str->hasStructExprFields()) {
+      StructExprFields fields = str->getStructExprFields();
+      if (fields.hasBase()) {
+        StructBase base = fields.getBase();
+        if (!isConstantExpression(base.getPath().get()))
+          return false;
+      }
+      for (StructExprField &field : fields.getFields()) {
+        if (field.hasExpression())
+          if (!isConstantExpression(field.getExpression().get()))
+            return false;
+      }
+    }
+    return true;
+  }
+  case StructExpressionKind::StructExprTuple: {
+    StructExprTuple *tuple = static_cast<StructExprTuple *>(se);
+    for (auto &expr : tuple->getExpressions())
+      if (!isConstantExpression(expr.get()))
+        return false;
+    return true;
+  }
+  case StructExpressionKind::StructExprUnit: {
+    assert(false);
+  }
+  }
+}
+
+bool Sema::isConstantIfLetExpression(ast::IfLetExpression *ifLet) {
+  if (!isConstantExpression(ifLet->getScrutinee().getExpression().get()))
+    return false;
+  if (!isConstantExpression(ifLet->getBlock().get()))
+    return false;
+
+  switch (ifLet->getKind()) {
+  case IfLetExpressionKind::NoElse: {
+    return true;
+  }
+  case IfLetExpressionKind::ElseBlock: {
+    if (!isConstantExpression(ifLet->getTailBlock().get()))
+      return false;
+    break;
+  }
+  case IfLetExpressionKind::ElseIf: {
+    if (!isConstantExpression(ifLet->getIf().get()))
+      return false;
+    break;
+  }
+  case IfLetExpressionKind::ElseIfLet: {
+    if (!isConstantExpression(ifLet->getIfLet().get()))
+      return false;
+    break;
+  }
+  }
+  return true;
 }
 
 } // namespace rust_compiler::sema
