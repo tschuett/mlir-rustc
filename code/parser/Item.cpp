@@ -409,8 +409,8 @@ StringResult<std::shared_ptr<ast::Item>>
 Parser::parseImplementation(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
-  //llvm::errs() << "parseImplementation"
-  //             << "\n";
+  // llvm::errs() << "parseImplementation"
+  //              << "\n";
 
   CheckPoint cp = getCheckPoint();
 
@@ -471,8 +471,8 @@ Parser::parseTypeAlias(std::optional<ast::Visibility> vis) {
 
   TypeAlias alias = {loc, vis};
 
-  //llvm::errs() << "parseTypeAlias"
-  //             << "\n";
+  // llvm::errs() << "parseTypeAlias"
+  //              << "\n";
 
   if (!checkKeyWord(KeyWordKind::KW_TYPE))
     return StringResult<std::shared_ptr<ast::Item>>(
@@ -745,7 +745,10 @@ Parser::parseUnion(std::optional<ast::Visibility> vis) {
     return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse identifier token in union");
 
-  assert(check(TokenKind::Identifier));
+  Token tok = getToken();
+  uni.setIdentifier(tok.getIdentifier());
+
+  assert(eat(TokenKind::Identifier));
 
   if (check(TokenKind::Lt)) {
     StringResult<ast::GenericParams> genericParams = parseGenericParams();

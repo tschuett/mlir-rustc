@@ -5,6 +5,7 @@
 #include "AST/AssignmentExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/CallExpression.h"
+#include "AST/ConstantItem.h"
 #include "AST/Crate.h"
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
@@ -18,7 +19,10 @@
 #include "AST/MethodCallExpression.h"
 #include "AST/Statement.h"
 #include "AST/Statements.h"
+#include "AST/StaticItem.h"
 #include "AST/StructExpression.h"
+#include "AST/Types/TypeExpression.h"
+#include "AST/Types/TypeNoBounds.h"
 #include "AST/Types/Types.h"
 #include "Basic/Ids.h"
 
@@ -77,6 +81,8 @@ private:
   // void checkExhaustiveness(std::shared_ptr<ast::MatchArmGuard>);
 
   void analyzeArrayExpression(std::shared_ptr<ast::ArrayExpression>);
+  void analyzeConstantItem(ast::ConstantItem *);
+  void analyzeStaticItem(ast::StaticItem *);
 
   bool isReachable(std::shared_ptr<ast::VisItem>,
                    std::shared_ptr<ast::VisItem>);
@@ -106,6 +112,10 @@ private:
   bool isValueExpression(ast::Expression *);
   bool isValueExpressionWithBlock(ast::ExpressionWithBlock *);
   bool isValueExpressionWithoutBlock(ast::ExpressionWithoutBlock *);
+
+  // types
+  void walkType(ast::types::TypeExpression *);
+  void walkTypeNoBounds(ast::types::TypeNoBounds *);
 };
 
 void analyzeSemantics(std::shared_ptr<ast::Crate> &ast);

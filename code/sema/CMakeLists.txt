@@ -27,6 +27,7 @@ add_library(sema
            Autoderef.cpp
            ConstantEvaluater.cpp
            PlaceOrValue.cpp
+           Types.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)

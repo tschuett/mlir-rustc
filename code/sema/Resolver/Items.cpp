@@ -10,6 +10,7 @@
 #include "AST/TupleFields.h"
 #include "AST/TypeAlias.h"
 #include "AST/Types/TypeParamBounds.h"
+#include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
 #include "Resolver.h"
 
@@ -265,6 +266,33 @@ void Resolver::resolveAssociatedItemInTrait(
   else if (asso.hasFunction())
     resolveFunctionInTrait(static_cast<Function *>(asso.getFunction().get()),
                            prefix, canonicalPrefix);
+}
+
+void Resolver::resolveUnionItem(std::shared_ptr<ast::Union> uni,
+                                const adt::CanonicalPath &prefix,
+                                const adt::CanonicalPath &canonicalPrefix) {
+  CanonicalPath decl =
+      CanonicalPath::newSegment(uni->getNodeId(), uni->getIdentifier());
+  CanonicalPath path = prefix.append(decl);
+  CanonicalPath cpath = canonicalPrefix.append(decl);
+
+  tyCtx->insertCanonicalPath(uni->getNodeId(), cpath);
+
+  resolveVisibility(uni->getVisibility());
+  basic::NodeId scopeNodeId = uni->getNodeId();
+  getTypeScope().push(scopeNodeId);
+
+  if (uni->hasGenericParams())
+    resolveGenericParams(uni->getGenericParams(), prefix, canonicalPrefix);
+
+  if (uni->hasWhereClause())
+    resolveWhereClause(uni->getWhereClause());
+
+  StructFields fields = uni->getStructFields();
+  for (StructField &field : fields.getFields())
+    resolveType(field.getType(), prefix, canonicalPrefix);
+
+  getTypeScope().pop();
 }
 
 } // namespace rust_compiler::sema::resolver

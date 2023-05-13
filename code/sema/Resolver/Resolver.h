@@ -43,6 +43,7 @@
 #include "AST/StructStruct.h"
 #include "AST/Trait.h"
 #include "AST/TraitImpl.h"
+#include "AST/TupleExpression.h"
 #include "AST/TupleStruct.h"
 #include "AST/TypeAlias.h"
 #include "AST/Types/ArrayType.h"
@@ -55,10 +56,10 @@
 #include "AST/Types/TypeParamBound.h"
 #include "AST/Types/TypePathFn.h"
 #include "AST/Types/TypePathSegment.h"
+#include "AST/Union.h"
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
-#include "AST/TupleExpression.h"
 #include "Basic/Ids.h"
 #include "Location.h"
 #include "TyCtx/TyCtx.h"
@@ -266,6 +267,9 @@ private:
   void resolveAssociatedItem(const ast::AssociatedItem &,
                              const adt::CanonicalPath &prefix,
                              const adt::CanonicalPath &canonicalPrefix);
+  void resolveUnionItem(std::shared_ptr<ast::Union>,
+                        const adt::CanonicalPath &prefix,
+                        const adt::CanonicalPath &canonicalPrefix);
 
   // expressions
   void resolveExpression(std::shared_ptr<ast::Expression>,
@@ -338,8 +342,8 @@ private:
                                    const adt::CanonicalPath &prefix,
                                    const adt::CanonicalPath &canonicalPrefix);
   void resolveTupleExpression(ast::TupleExpression *,
-                                   const adt::CanonicalPath &prefix,
-                                   const adt::CanonicalPath &canonicalPrefix);
+                              const adt::CanonicalPath &prefix,
+                              const adt::CanonicalPath &canonicalPrefix);
 
   // types
   std::optional<basic::NodeId>

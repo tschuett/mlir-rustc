@@ -210,7 +210,8 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
     break;
   }
   case VisItemKind::Union: {
-    assert(false && "to be handled later");
+    resolveUnionItem(std::static_pointer_cast<Union>(visItem), prefix,
+                        canonicalPrefix);
     break;
   }
   case VisItemKind::ConstantItem: {

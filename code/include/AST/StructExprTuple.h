@@ -22,6 +22,8 @@ public:
   void setPath(std::shared_ptr<Expression> p) { path = p; };
   void setTrailingComma() { trailingComma = true; }
   void addExpression(std::shared_ptr<Expression> e) { exprs.push_back(e); }
+
+  std::vector<std::shared_ptr<Expression>> &getExpressions() { return exprs; };
 };
 
 } // namespace rust_compiler::ast

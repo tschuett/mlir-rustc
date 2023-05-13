@@ -1,5 +1,8 @@
+#include "AST/ConstantItem.h"
 #include "AST/Module.h"
 #include "Sema/Sema.h"
+
+#include <memory>
 
 using namespace rust_compiler::ast;
 
@@ -26,6 +29,7 @@ void Sema::walkVisItem(std::shared_ptr<ast::VisItem> item) {
     break;
   }
   case VisItemKind::ConstantItem: {
+    analyzeConstantItem(std::static_pointer_cast<ConstantItem>(item).get());
     break;
   }
   case VisItemKind::Enumeration: {
@@ -35,6 +39,7 @@ void Sema::walkVisItem(std::shared_ptr<ast::VisItem> item) {
     break;
   }
   case VisItemKind::StaticItem: {
+    analyzeStaticItem(std::static_pointer_cast<StaticItem>(item).get());
     break;
   }
   case VisItemKind::Trait: {
@@ -47,6 +52,21 @@ void Sema::walkVisItem(std::shared_ptr<ast::VisItem> item) {
     break;
   }
   }
+}
+
+void Sema::analyzeConstantItem(ast::ConstantItem *ci) {
+  if (ci->hasInit()) {
+    [[maybe_unused]] bool isConst = isConstantExpression(ci->getInit().get());
+  }
+
+  walkType(ci->getType().get());
+}
+
+void Sema::analyzeStaticItem(StaticItem *si) {
+  if (si->hasInit()) {
+    [[maybe_unused]] bool isConst = isConstantExpression(si->getInit().get());
+  }
+  walkType(si->getType().get());
 }
 
 } // namespace rust_compiler::sema
