@@ -6,7 +6,8 @@
 
 namespace rust_compiler::ast {
 class Struct;
-}
+class Trait;
+} // namespace rust_compiler::ast
 
 namespace rust_compiler::sema::attribute_checker {
 
@@ -23,6 +24,7 @@ private:
   void checkVisItem(VisItem *item);
   void checkFunction(Function *item);
   void checkStruct(Struct *item);
+  void checkTrait(Trait *);
 };
 
 } // namespace rust_compiler::sema::attribute_checker

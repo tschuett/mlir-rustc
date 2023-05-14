@@ -10,8 +10,8 @@ void AttributeChecker::checkFunction(Function *item) {
   // assert(false);
 }
 
-void AttributeChecker::checkStruct(Struct *item) {
-  
-}
+void AttributeChecker::checkStruct(Struct *item) {}
+
+void AttributeChecker::checkTrait(Trait *) {}
 
 } // namespace rust_compiler::sema::attribute_checker

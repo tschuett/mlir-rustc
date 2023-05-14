@@ -6,6 +6,7 @@
 #include "TyCtx/TyTy.h"
 
 #include <memory>
+#include <optional>
 
 using namespace rust_compiler::tyctx::TyTy;
 
@@ -67,11 +68,12 @@ std::string TraitReference::toString() const {
     itemBuf += item.toString() + ", ";
   }
   return "Trait: " + getIdentifier().toString() + "->" +
-    /*trait->get_mappings().as_string() +*/ " [" + itemBuf + "]";
+         /*trait->get_mappings().as_string() +*/ " [" + itemBuf + "]";
 }
 
 std::string TraitItemReference::toString() const {
-  return "(" + traitItemTypeToString() + " " + identifier.toString() + " " + ")";
+  return "(" + traitItemTypeToString() + " " + identifier.toString() + " " +
+         ")";
 }
 
 std::string TraitItemReference::traitItemTypeToString() const {
@@ -85,6 +87,25 @@ std::string TraitItemReference::traitItemTypeToString() const {
   case TraitItemKind::Error:
     return "ERROR";
   }
+}
+
+std::optional<TraitItemReference *>
+TraitReference::lookupTraitItem(const lexer::Identifier &id) {
+  for (auto &item : items)
+    if (id == item.getIdentifier())
+      return &item;
+  return std::nullopt;
+}
+
+void TraitItemReference::associatedTypeSet(TyTy::BaseType *ty) const {
+  assert(getTraitItemKind() == TraitItemKind::TypeAlias);
+
+  TyTy::BaseType *itemType = getType();
+
+  TyTy::PlaceholderType *placeholder =
+      static_cast<TyTy::PlaceholderType *>(itemType);
+
+  placeholder->setAssociatedType(ty->getTypeReference());
 }
 
 } // namespace rust_compiler::tyctx

@@ -1,7 +1,10 @@
 #include "TyCtx/Substitutions.h"
 
+#include "AST/GenericArg.h"
 #include "AST/GenericArgsBinding.h"
+#include "Lexer/Identifier.h"
 #include "TyCtx/TyTy.h"
+#include "TyCtx/TypeIdentity.h"
 
 #include <map>
 
@@ -108,6 +111,32 @@ void SubstitutionArgumentMappings::onParamSubst(
     return;
 
   paramSubstCallback(p, a);
+}
+
+SubstitutionArgumentMappings
+SubstitutionRef::getMappingsFromGenericArgs(ast::GenericArgs &args) {
+  std::map<lexer::Identifier, BaseType *> bindingArgument;
+  std::vector<GenericArg> argsV = args.getArgs();
+  size_t bindings = 0;
+  for (GenericArg &arg : argsV)
+    if (arg.getKind() == GenericArgKind::Binding)
+      ++bindings;
+  if (bindings > 0) {
+    if (supportsAssociatedBindings()) {
+      if (bindings > getNumberOfAssociatedBindings()) {
+        // report error
+        assert(false);
+      }
+
+      for (GenericArg &arg : argsV)
+        if (arg.getKind() == GenericArgKind::Binding) {
+          //GenericArgsBinding bind = arg.getBinding();
+          //BaseType *resolved = checkType();
+          assert(false);
+        }
+    }
+  }
+  assert(false);
 }
 
 } // namespace rust_compiler::tyctx::TyTy

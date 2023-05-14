@@ -32,8 +32,13 @@ public:
 
 namespace rust_compiler::sema {
 
-void Sema::analyzeFunction(std::shared_ptr<ast::Function> fun) {
-
+void Sema::analyzeFunction(ast::Function *fun) {
+  if (fun->hasBody())
+    analyzeExpression(fun->getBody().get());
 }
+
+// void Sema::analyzeFunction(std::shared_ptr<ast::Function> fun) {
+//
+// }
 
 } // namespace rust_compiler::sema

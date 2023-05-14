@@ -7,6 +7,7 @@
 #include "AST/Trait.h"
 #include "Basic/Ids.h"
 #include "Basic/Mutability.h"
+#include "Bounds.h"
 #include "Lexer/Identifier.h"
 #include "Location.h"
 #include "Substitutions.h"
@@ -66,10 +67,18 @@ public:
 
   TraitReference *get() const;
 
+  bool requiresGenericArgs() const;
+  void applyGenericArgs(ast::GenericArgs *, bool hasAssociatedSelf);
+
   BaseType *
   handleSubstitions(SubstitutionArgumentMappings &mappings) override final {
     return nullptr;
   }
+
+  TypeBoundPredicateItem
+  lookupAssociatedItem(const lexer::Identifier &search) const;
+
+  size_t getNumberOfAssociatedBindings() const final;
 
   std::string toString() const;
 
@@ -148,6 +157,7 @@ enum class TypeKind {
   Projection,
   /// A trait object
   Dynamic,
+  /// Placeholder type in traits
   PlaceHolder,
   /// A pointer to a function
   FunctionPointer,
@@ -883,6 +893,7 @@ private:
   Mutability mut;
 };
 
+/// https://doc.rust-lang.org/book/ch19-03-advanced-traits.html
 class PlaceholderType : public BaseType {
 public:
   PlaceholderType(const Identifier &id, basic::NodeId ref,
@@ -901,6 +912,8 @@ public:
   BaseType *resolve() const;
 
   BaseType *clone() const final override;
+
+  void setAssociatedType(basic::NodeId);
 
 private:
   Identifier id;

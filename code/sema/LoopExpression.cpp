@@ -1,21 +1,24 @@
 #include "AST/LoopExpression.h"
 
+#include "AST/PredicatePatternLoopExpression.h"
 #include "Sema/Sema.h"
 
 using namespace rust_compiler::ast;
 
 namespace rust_compiler::sema {
 
-void Sema::analyzeLoopExpression(std::shared_ptr<ast::LoopExpression> arith) {
+void Sema::analyzeLoopExpression(ast::LoopExpression *arith) {
   switch (arith->getLoopExpressionKind()) {
   case ast::LoopExpressionKind::InfiniteLoopExpression: {
-    analyzeInfiniteLoopExpression(std::static_pointer_cast<InfiniteLoopExpression>(arith));
+    analyzeInfiniteLoopExpression(static_cast<InfiniteLoopExpression *>(arith));
     break;
   }
   case ast::LoopExpressionKind::PredicateLoopExpression: {
     break;
   }
   case ast::LoopExpressionKind::PredicatePatternLoopExpression: {
+    analyzePredicatePatternLoopExpression(
+        static_cast<PredicatePatternLoopExpression *>(arith));
     break;
   }
   case ast::LoopExpressionKind::IteratorLoopExpression: {
@@ -25,6 +28,11 @@ void Sema::analyzeLoopExpression(std::shared_ptr<ast::LoopExpression> arith) {
     break;
   }
   }
+}
+
+void Sema::analyzePredicatePatternLoopExpression(
+    ast::PredicatePatternLoopExpression *pred) {
+  pred->getScrutinee().setPlaceExpression();
 }
 
 } // namespace rust_compiler::sema

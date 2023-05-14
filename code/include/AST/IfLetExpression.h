@@ -56,7 +56,7 @@ public:
 
   std::shared_ptr<ast::Expression> getBlock() const { return block; }
 
-  Scrutinee getScrutinee() const { return scrutinee; }
+  Scrutinee &getScrutinee() { return scrutinee; }
 
   std::shared_ptr<ast::patterns::Pattern> getPatterns() const {
     return pattern;

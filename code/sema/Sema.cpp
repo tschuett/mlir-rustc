@@ -106,7 +106,7 @@ void Sema::analyzeVisItem(std::shared_ptr<ast::VisItem> vis) {
     break;
   }
   case VisItemKind::Function: {
-    analyzeFunction(std::static_pointer_cast<Function>(vis));
+    analyzeFunction(std::static_pointer_cast<Function>(vis).get());
     break;
   }
   case VisItemKind::TypeAlias: {

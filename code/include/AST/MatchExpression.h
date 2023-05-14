@@ -30,7 +30,7 @@ public:
 
   void setMatchArms(const MatchArms &ma) { matchArms = ma; }
 
-  Scrutinee getScrutinee() const { return scrutinee; }
+  Scrutinee &getScrutinee()  { return scrutinee; }
 
   MatchArms getMatchArms() const { return matchArms; }
 };

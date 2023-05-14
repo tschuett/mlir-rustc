@@ -5,10 +5,12 @@
 #include "AST/AssignmentExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/CallExpression.h"
+#include "AST/CompoundAssignmentExpression.h"
 #include "AST/ConstantItem.h"
 #include "AST/Crate.h"
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
 #include "AST/InfiniteLoopExpression.h"
 #include "AST/LetStatement.h"
@@ -16,7 +18,9 @@
 #include "AST/LoopExpression.h"
 #include "AST/MacroInvocationSemiStatement.h"
 #include "AST/MatchArmGuard.h"
+#include "AST/MatchExpression.h"
 #include "AST/MethodCallExpression.h"
+#include "AST/PredicatePatternLoopExpression.h"
 #include "AST/Statement.h"
 #include "AST/Statements.h"
 #include "AST/StaticItem.h"
@@ -42,8 +46,8 @@ private:
   void walkOuterAttributes(std::span<ast::OuterAttribute>);
 
   void analyzeVisItem(std::shared_ptr<ast::VisItem> vis);
-  void analyzeFunction(std::shared_ptr<ast::Function> fun);
-  void analyzeBlockExpression(std::shared_ptr<ast::BlockExpression> block);
+  // void analyzeFunction(std::shared_ptr<ast::Function> fun);
+  void analyzeBlockExpression(ast::BlockExpression *block);
   void analyzeStatements(ast::Statements stmts);
   void analyzeLetStatement(std::shared_ptr<ast::LetStatement> let);
   void analyzeCallExpression(std::shared_ptr<ast::CallExpression> let);
@@ -55,34 +59,36 @@ private:
       std::shared_ptr<ast::MacroInvocationSemiStatement> macro);
   //  void analyzeMacroInvocationSemiStatement(
   //      std::shared_ptr<ast::MacroInvocationSemiStatement> macro);
-  void analyzeExpression(std::shared_ptr<ast::Expression> let);
-  void
-  analyzeExpressionWithBlock(std::shared_ptr<ast::ExpressionWithBlock> let);
-  void analyzeExpressionWithoutBlock(
-      std::shared_ptr<ast::ExpressionWithoutBlock> let);
+  void analyzeExpression(ast::Expression *let);
+  void analyzeExpressionWithBlock(ast::ExpressionWithBlock *let);
+  void analyzeExpressionWithoutBlock(ast::ExpressionWithoutBlock *let);
 
   void analyzeItemDeclaration(std::shared_ptr<ast::Node> item);
 
   void analyzeArithmeticOrLogicalExpression(
       std::shared_ptr<ast::ArithmeticOrLogicalExpression> arith);
 
-  void analyzeLoopExpression(std::shared_ptr<ast::LoopExpression> arith);
-  void
-  analyzeOperatorExpression(std::shared_ptr<ast::OperatorExpression> arith);
+  void analyzeLoopExpression(ast::LoopExpression *arith);
+  void analyzeOperatorExpression(ast::OperatorExpression *arith);
 
   void analyzeLiteralExpression(std::shared_ptr<ast::LiteralExpression> arith);
 
-  void analyzeInfiniteLoopExpression(
-      std::shared_ptr<ast::InfiniteLoopExpression> arith);
-
+  void analyzeInfiniteLoopExpression(ast::InfiniteLoopExpression *arith);
   void
-  analyzeAssignmentExpression(std::shared_ptr<ast::AssignmentExpression> arith);
+  analyzePredicatePatternLoopExpression(ast::PredicatePatternLoopExpression *);
+
+  void analyzeAssignmentExpression(ast::AssignmentExpression *arith);
+  void analyzeCompoundAssignmentExpression(ast::CompoundAssignmentExpression *);
+  void analyzeMatchExpression(ast::MatchExpression *);
+  void analyzeIfLetExpression(ast::IfLetExpression *);
+  void analyzeIfExpression(ast::IfExpression *);
 
   // void checkExhaustiveness(std::shared_ptr<ast::MatchArmGuard>);
 
-  void analyzeArrayExpression(std::shared_ptr<ast::ArrayExpression>);
+  void analyzeArrayExpression(ast::ArrayExpression *);
   void analyzeConstantItem(ast::ConstantItem *);
   void analyzeStaticItem(ast::StaticItem *);
+  void analyzeFunction(ast::Function *);
 
   bool isReachable(std::shared_ptr<ast::VisItem>,
                    std::shared_ptr<ast::VisItem>);

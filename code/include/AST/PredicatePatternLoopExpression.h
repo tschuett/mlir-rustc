@@ -2,7 +2,7 @@
 
 #include "AST/Expression.h"
 #include "AST/LoopExpression.h"
-#include "AST/Patterns/Patterns.h"
+#include "AST/Patterns/Pattern.h"
 #include "AST/Scrutinee.h"
 
 #include <memory>
@@ -29,7 +29,7 @@ public:
 
   void setLabel(std::string_view lab) { loopLabel = lab; }
 
-  Scrutinee getScrutinee() const { return scrutinee; }
+  Scrutinee &getScrutinee()  { return scrutinee; }
   std::shared_ptr<ast::Expression> getBody() const { return body; }
 };
 

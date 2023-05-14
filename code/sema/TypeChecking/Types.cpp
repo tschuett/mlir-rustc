@@ -354,7 +354,7 @@ TypeResolver::checkNeverType(std::shared_ptr<ast::types::NeverType>) {
 
 TyTy::TypeBoundPredicate TypeResolver::getPredicateFromBound(
     std::shared_ptr<ast::types::TypeExpression> path,
-    ast::types::TypeExpression *) {
+    ast::types::TypeExpression *associatedSelf) {
   std::shared_ptr<ast::types::TypePath> typePath =
       std::static_pointer_cast<TypePath>(path);
   std::optional<TyTy::TypeBoundPredicate> lookup =
@@ -366,11 +366,28 @@ TyTy::TypeBoundPredicate TypeResolver::getPredicateFromBound(
   if (trait->isError())
     return TyTy::TypeBoundPredicate::error();
 
-  TyTy::TypeBoundPredicate predicate (*trait, path->getLocation());
+  TyTy::TypeBoundPredicate predicate(*trait, path->getLocation());
+  GenericArgs args = {typePath->getLocation()};
 
-  
+  TypePathSegment lastSegment =
+      typePath->getSegments()[typePath->getSegments().size() - 1];
 
-  assert(false);
+  if (lastSegment.hasTypeFunction()) {
+    assert(false);
+  } else if (lastSegment.hasGenerics()) {
+    assert(false);
+  }
+
+  if (associatedSelf != nullptr) {
+    assert(false);
+  }
+
+  if (!args.isEmpty() || predicate.requiresGenericArgs())
+    predicate.applyGenericArgs(&args, associatedSelf != nullptr);
+
+  tcx->insertResolvedPredicate(typePath->getNodeId(), predicate);
+
+  return predicate;
 }
 
 TyTy::ParamType *TypeResolver::checkTypeParam(const TypeParam &type) {

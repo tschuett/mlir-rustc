@@ -12,11 +12,14 @@ namespace rust_compiler::sema {
 void Sema::analyzeLetStatement(std::shared_ptr<ast::LetStatement> let) {
   std::shared_ptr<ast::patterns::PatternNoTopAlt> pattern = let->getPattern();
 
+  if (let->hasInit())
+    let->getInit()->setPlaceExpression();
+
   switch (pattern->getKind()) {
   case ast::patterns::PatternNoTopAltKind::PatternWithoutRange: {
     std::shared_ptr<PatternWithoutRange> woRange =
         std::static_pointer_cast<ast::patterns::PatternWithoutRange>(pattern);
-    switch(woRange->getWithoutRangeKind()) {
+    switch (woRange->getWithoutRangeKind()) {
     case PatternWithoutRangeKind::LiteralPattern: {
       break;
     }

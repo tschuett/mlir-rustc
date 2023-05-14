@@ -1,6 +1,9 @@
 #pragma once
 
+#include "AST/GenericArgs.h"
 #include "AST/TypeParam.h"
+#include "Bounds.h"
+#include "Lexer/Identifier.h"
 
 #include <map>
 #include <string>
@@ -50,12 +53,11 @@ using ParamSubstCallback =
 
 class SubstitutionArgumentMappings {
 public:
-  SubstitutionArgumentMappings(std::vector<SubstitutionArg> mappings,
-                               std::map<std::string, BaseType *> bindingArgs,
-                               Location loc,
-                               ParamSubstCallback paramSubstCallback = nullptr,
-                               bool traitItemFlag = false,
-                               bool errorFlag = false)
+  SubstitutionArgumentMappings(
+      std::vector<SubstitutionArg> mappings,
+      std::map<lexer::Identifier, BaseType *> bindingArgs, Location loc,
+      ParamSubstCallback paramSubstCallback = nullptr,
+      bool traitItemFlag = false, bool errorFlag = false)
       : mappings(mappings), bindingArgs(bindingArgs), loc(loc),
         paramSubstCallback(paramSubstCallback), traitItemFlag(traitItemFlag),
         errorFlag(errorFlag) {}
@@ -78,19 +80,27 @@ public:
 
   const std::vector<SubstitutionArg> &getMappings() const { return mappings; }
 
-  std::map<std::string, BaseType *> &getBindingArgs() { return bindingArgs; }
-
-  const std::map<std::string, BaseType *> &getBindingArgs() const {
+  std::map<lexer::Identifier, BaseType *> &getBindingArgs() {
     return bindingArgs;
   }
+
+  const std::map<lexer::Identifier, BaseType *> &getBindingArgs() const {
+    return bindingArgs;
+  }
+
+  TypeBoundPredicateItem
+  lookupAssociatedItem(const lexer::Identifier &search) const;
 
   bool isError() const { return errorFlag; }
 
   bool getTraitItemMode() const { return traitItemFlag; }
 
+  size_t size() const { return mappings.size(); }
+  bool isEmpty() const { return size() == 0; }
+
 private:
   std::vector<SubstitutionArg> mappings;
-  std::map<std::string, TyTy::BaseType *> bindingArgs;
+  std::map<lexer::Identifier, TyTy::BaseType *> bindingArgs;
   Location loc;
   ParamSubstCallback paramSubstCallback;
   bool traitItemFlag;
@@ -127,8 +137,17 @@ public:
     return usedArguments;
   }
 
+  SubstitutionArgumentMappings
+  getMappingsFromGenericArgs(ast::GenericArgs &args);
+
   virtual BaseType *
   handleSubstitions(SubstitutionArgumentMappings &mappings) = 0;
+
+  virtual size_t getNumberOfAssociatedBindings() const { return 0; }
+
+  bool supportsAssociatedBindings() const {
+    return getNumberOfAssociatedBindings() > 0;
+  }
 
 protected:
   std::vector<SubstitutionParamMapping> substitutions;

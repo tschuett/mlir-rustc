@@ -6,6 +6,7 @@
 #include "Lexer/Identifier.h"
 #include "TyCtx/Substitutions.h"
 
+#include <optional>
 #include <vector>
 
 namespace rust_compiler::ast {
@@ -43,11 +44,18 @@ public:
     return error;
   }
 
+  bool isType() const { return item->hasTypeAlias(); }
   std::string traitItemTypeToString() const;
 
   TyTy::BaseType *getType() const { return self; }
 
   std::string toString() const;
+
+  void associatedTypeSet(TyTy::BaseType *) const;
+
+  lexer::Identifier getIdentifier() const { return identifier; }
+
+  TraitItemKind getTraitItemKind() const { return kind;}
 
 private:
   lexer::Identifier identifier;
@@ -90,6 +98,11 @@ public:
   };
 
   std::string toString() const;
+
+  const std::vector<TraitItemReference> &getTraitItems() const { return items; }
+
+  std::optional<TraitItemReference *>
+  lookupTraitItem(const lexer::Identifier &);
 
 private:
   ast::Trait *trait;

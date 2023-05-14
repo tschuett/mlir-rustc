@@ -16,6 +16,7 @@ class Node {
   basic::CrateNum crateNum;
 
   unsigned constant : 1;
+  unsigned place : 1;
 
 public:
   explicit Node(Location location);
@@ -31,6 +32,9 @@ public:
 
   void setConstant() { constant = 1; }
   bool isConstant() const { return constant; }
+
+  void setPlaceExpression() { place = 1; }
+  bool getPlaceExpression() { return place; }
 };
 
 } // namespace rust_compiler::ast

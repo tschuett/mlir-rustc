@@ -14,11 +14,16 @@ class TypeBoundPredicate;
 class TypeBoundPredicateItem {
 public:
   TypeBoundPredicateItem(const TypeBoundPredicate *parent,
-                         const TraitItemReference *traitItemRef);
+                         const TraitItemReference *traitItemRef)
+      : parent(parent), traitItemRef(traitItemRef) {}
 
-  TraitItemReference *getRawItem() const;
+  const TraitItemReference *getRawItem() const { return traitItemRef; }
 
   bool isError() const { return parent == nullptr or traitItemRef == nullptr; }
+
+  static TypeBoundPredicateItem error() {
+    return TypeBoundPredicateItem(nullptr, nullptr);
+  };
 
 private:
   const TypeBoundPredicate *parent;

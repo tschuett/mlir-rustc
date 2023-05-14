@@ -3,6 +3,7 @@
 #include "AST/InnerAttribute.h"
 #include "AST/VisItem.h"
 #include "AST/Struct.h"
+#include "AST/Trait.h"
 
 using namespace rust_compiler::ast;
 
@@ -71,7 +72,8 @@ void AttributeChecker::checkVisItem(VisItem *item) {
     assert(false);
   }
   case VisItemKind::Trait: {
-    assert(false);
+    checkTrait(static_cast<Trait*>(item));
+    break;
   }
   case VisItemKind::Implementation: {
     assert(false);

@@ -14,6 +14,7 @@ void Sema::walkVisItem(std::shared_ptr<ast::VisItem> item) {
     break;
   }
   case VisItemKind::Function: {
+    analyzeFunction(std::static_pointer_cast<Function>(item).get());
     break;
   }
   case VisItemKind::UseDeclaration: {

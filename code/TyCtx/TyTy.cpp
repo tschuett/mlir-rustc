@@ -9,14 +9,15 @@
 #include "Lexer/Identifier.h"
 #include "Location.h"
 #include "Session/Session.h"
+#include "TyCtx/Bounds.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/Substitutions.h"
 #include "TyCtx/SubstitutionsMapper.h"
 #include "TyCtx/TraitReference.h"
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TypeIdentity.h"
-#include "llvm/Support/ErrorHandling.h"
 
+#include <llvm/Support/ErrorHandling.h>
 #include <llvm/Support/raw_ostream.h>
 #include <optional>
 #include <sstream>
@@ -1142,6 +1143,66 @@ unsigned RawPointerType::getNumberOfSpecifiedBounds() { return 0; }
 BaseType *RawPointerType::clone() const {
   return new RawPointerType(getReference(), getTypeReference(), base, mut,
                             getCombinedReferences());
+}
+
+bool TypeBoundPredicate::requiresGenericArgs() const {
+  if (isError())
+    return false;
+  return substitutions.size() > 1;
+}
+
+void TypeBoundPredicate::applyGenericArgs(ast::GenericArgs *genericArgs,
+                                          bool hasAssociatedSelf) {
+  assert(!substitutions.empty());
+  if (hasAssociatedSelf)
+    usedArguments = SubstitutionArgumentMappings::empty();
+  else
+    assert(!usedArguments.isEmpty());
+
+  usedArguments = getMappingsFromGenericArgs(*genericArgs);
+
+  errorFlag |= usedArguments.isError();
+
+  SubstitutionArgumentMappings &substMappings = usedArguments;
+
+  for (SubstitutionParamMapping &param : getSubstitutions()) {
+    std::optional<SubstitutionArg> arg =
+        substMappings.getArgumentForSymbol(param.getParamType());
+    if (arg && (*arg).getType() != nullptr)
+      param.fillParamType(substMappings, substMappings.getLocation());
+  }
+
+  for (auto &it : substMappings.getBindingArgs()) {
+    TypeBoundPredicateItem item = lookupAssociatedItem(it.first);
+    assert(!item.isError());
+
+    const TraitItemReference *itemRef = item.getRawItem();
+    itemRef->associatedTypeSet(it.second);
+  }
+}
+
+size_t TypeBoundPredicate::getNumberOfAssociatedBindings() const {
+  size_t count = 0;
+  TraitReference *traitRef = get();
+  for (const TraitItemReference &traitItem : traitRef->getTraitItems())
+    if (traitItem.isType())
+      ++count;
+  return count;
+}
+
+TypeBoundPredicateItem
+TypeBoundPredicate::lookupAssociatedItem(const Identifier &id) const {
+  TraitReference *ref = get();
+  std::optional<TraitItemReference *> traitRef = ref->lookupTraitItem(id);
+  if (!traitRef)
+    return TypeBoundPredicateItem::error();
+
+  return TypeBoundPredicateItem(this, *traitRef);
+}
+
+void PlaceholderType::setAssociatedType(basic::NodeId id) {
+  rust_compiler::session::session->getTypeContext()
+      ->insertAssociatedTypeMapping(getTypeReference(), id);
 }
 
 } // namespace rust_compiler::tyctx::TyTy

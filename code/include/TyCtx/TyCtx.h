@@ -149,6 +149,8 @@ public:
   bool isTraitQueryInProgress(basic::NodeId id) const;
   void insertTraitReference(basic::NodeId id, TraitReference &&ref);
 
+  void insertAssociatedTypeMapping(basic::NodeId id, basic::NodeId mapping);
+
 private:
   void generateBuiltins();
 

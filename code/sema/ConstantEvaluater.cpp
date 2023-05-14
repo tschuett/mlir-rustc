@@ -44,7 +44,8 @@ bool Sema::isConstantExpression(ast::Expression *expr) {
         static_cast<ast::ExpressionWithoutBlock *>(expr));
     break;
   }
-  expr->setConstant();
+  if (result)
+    expr->setConstant();
   return result;
 }
 

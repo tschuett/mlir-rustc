@@ -409,4 +409,9 @@ void TyCtx::insertTraitReference(basic::NodeId id, TraitReference &&ref) {
   traitContext.emplace(id, std::move(ref));
 }
 
+void TyCtx::insertAssociatedTypeMapping(basic::NodeId id,
+                                        basic::NodeId mapping) {
+  associatedTypeMappings[id] = mapping;
+}
+
 } // namespace rust_compiler::tyctx

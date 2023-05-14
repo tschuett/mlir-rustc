@@ -39,7 +39,7 @@ void Sema::analyzeStatements(ast::Statements stmts) {
   }
 }
 
-void Sema::analyzeBlockExpression(std::shared_ptr<ast::BlockExpression> block) {
+void Sema::analyzeBlockExpression(ast::BlockExpression* block) {
   analyzeStatements(block->getExpressions());
 }
 

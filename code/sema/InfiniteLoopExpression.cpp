@@ -23,22 +23,21 @@ public:
   };
 };
 
-void Sema::analyzeInfiniteLoopExpression(
-    std::shared_ptr<ast::InfiniteLoopExpression> loop) {
+void Sema::analyzeInfiniteLoopExpression(ast::InfiniteLoopExpression *loop) {
 
   BreakExpressionCollector collector;
 
-  //run(loop->getBody(), &collector);
+  // run(loop->getBody(), &collector);
 
   std::vector<std::shared_ptr<ast::BreakExpression>> breaks =
       collector.getBreaks();
   // collect breaks in BlockExpression
 
-  //NodeId nodeId = getNodeId(loop);
-  //  if (breaks.size() == 0)
-  //    typeChecking.isKnownType(
-  //        astId, std::make_shared<PrimitiveType>(loop->getLocation(),
-  //                                               PrimitiveTypeKind::Unit));
+  // NodeId nodeId = getNodeId(loop);
+  //   if (breaks.size() == 0)
+  //     typeChecking.isKnownType(
+  //         astId, std::make_shared<PrimitiveType>(loop->getLocation(),
+  //                                                PrimitiveTypeKind::Unit));
 }
 
 } // namespace rust_compiler::sema
