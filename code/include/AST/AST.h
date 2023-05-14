@@ -15,6 +15,8 @@ class Node {
   basic::NodeId nodeId;
   basic::CrateNum crateNum;
 
+  unsigned constant : 1;
+
 public:
   explicit Node(Location location);
 
@@ -26,6 +28,9 @@ public:
   tyctx::NodeIdentity getIdentity() const {
     return tyctx::NodeIdentity(nodeId, crateNum, location);
   }
+
+  void setConstant() { constant = 1; }
+  bool isConstant() const { return constant; }
 };
 
 } // namespace rust_compiler::ast

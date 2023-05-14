@@ -33,14 +33,19 @@ using namespace rust_compiler::ast;
 namespace rust_compiler::sema {
 
 bool Sema::isConstantExpression(ast::Expression *expr) {
+  bool result = false;
   switch (expr->getExpressionKind()) {
   case ExpressionKind::ExpressionWithBlock:
-    return isConstantEpressionWithBlock(
+    result = isConstantEpressionWithBlock(
         static_cast<ast::ExpressionWithBlock *>(expr));
+    break;
   case ExpressionKind::ExpressionWithoutBlock:
-    return isConstantEpressionWithoutBlock(
+    result = isConstantEpressionWithoutBlock(
         static_cast<ast::ExpressionWithoutBlock *>(expr));
+    break;
   }
+  expr->setConstant();
+  return result;
 }
 
 bool Sema::isConstantEpressionWithoutBlock(
@@ -69,6 +74,7 @@ bool Sema::isConstantEpressionWithoutBlock(
       for (auto &expr : elements.getElements())
         if (!isConstantExpression(expr.get()))
           return false;
+      array->setConstant();
       return true;
     }
     case ArrayElementsKind::Repeated: {
@@ -93,6 +99,7 @@ bool Sema::isConstantEpressionWithoutBlock(
     for (auto &element : elements.getElements())
       if (!isConstantExpression(element.get()))
         return false;
+    tuple->setConstant();
     return true;
   }
   case ExpressionWithoutBlockKind::TupleIndexingExpression: {
@@ -184,6 +191,7 @@ bool Sema::isConstantEpressionWithBlock(ast::ExpressionWithBlock *withBlock) {
       if (!isConstantExpression(ifExpr->getTrailing().get()))
         return false;
 
+    withBlock->setConstant();
     return true;
   }
   case ExpressionWithBlockKind::IfLetExpression: {
@@ -202,6 +210,7 @@ bool Sema::isConstantEpressionWithBlock(ast::ExpressionWithBlock *withBlock) {
           return false;
     }
 
+    withBlock->setConstant();
     return true;
   }
   }
@@ -257,12 +266,14 @@ bool Sema::isConstantBlockExpression(ast::BlockExpression *block) {
   if (stmts.hasTrailing())
     return isConstantExpression(stmts.getTrailing().get());
 
+  block->setConstant();
   return true;
 }
 
 bool Sema::isConstantStatement(ast::Statement *stmt) {
   switch (stmt->getKind()) {
   case StatementKind::EmptyStatement: {
+    stmt->setConstant();
     return true;
   }
   case StatementKind::ItemDeclaration: {
@@ -306,6 +317,7 @@ bool Sema::isConstantLoopExpression(ast::LoopExpression *loop) {
       return false;
     if (!isConstantExpression(pred->getBody().get()))
       return false;
+    loop->setConstant();
     return true;
   }
   case LoopExpressionKind::PredicatePatternLoopExpression: {
@@ -315,6 +327,7 @@ bool Sema::isConstantLoopExpression(ast::LoopExpression *loop) {
       return false;
     if (!isConstantExpression(pattern->getBody().get()))
       return false;
+    loop->setConstant();
     return true;
   }
   case LoopExpressionKind::IteratorLoopExpression: {
@@ -347,6 +360,7 @@ bool Sema::isConstantStructExpression(ast::StructExpression *se) {
             return false;
       }
     }
+    se->setConstant();
     return true;
   }
   case StructExpressionKind::StructExprTuple: {
@@ -354,6 +368,7 @@ bool Sema::isConstantStructExpression(ast::StructExpression *se) {
     for (auto &expr : tuple->getExpressions())
       if (!isConstantExpression(expr.get()))
         return false;
+    se->setConstant();
     return true;
   }
   case StructExpressionKind::StructExprUnit: {
@@ -370,6 +385,7 @@ bool Sema::isConstantIfLetExpression(ast::IfLetExpression *ifLet) {
 
   switch (ifLet->getKind()) {
   case IfLetExpressionKind::NoElse: {
+    ifLet->setConstant();
     return true;
   }
   case IfLetExpressionKind::ElseBlock: {
@@ -388,6 +404,7 @@ bool Sema::isConstantIfLetExpression(ast::IfLetExpression *ifLet) {
     break;
   }
   }
+  ifLet->setConstant();
   return true;
 }
 
