@@ -333,7 +333,8 @@ Parser::parseStatementOrExpressionWithoutBlock() {
           ExpressionOrStatement(expr.getValue()));
     }
     case TokenKind::BraceOpen: {
-      // block expr
+      // maybe block expr
+      CheckPoint cp = getCheckPoint();
       Result<std::shared_ptr<ast::Expression>, std::string> block =
           parseBlockExpression(outerAttr);
       if (!block) {
@@ -344,14 +345,39 @@ Parser::parseStatementOrExpressionWithoutBlock() {
         // report error
         std::string s =
             llvm::formatv("{0}\n{1}",
-                          "failed to parse bloc kexpression in statement or "
+                          "failed to parse block expression in statement or "
                           "expression without block",
                           block.getError())
                 .str();
         return StringResult<ExpressionOrStatement>(s);
       }
-      return StringResult<ExpressionOrStatement>(
-          ExpressionOrStatement(block.getValue()));
+
+      if (check(TokenKind::BraceClose) or check(TokenKind::Semi)) {
+        return StringResult<ExpressionOrStatement>(
+            ExpressionOrStatement(block.getValue()));
+      } else {
+        recover(cp);
+        adt::Result<std::shared_ptr<ast::Expression>, std::string> expr =
+            parseExpression({}, restrictions);
+        if (!expr) {
+          // report error
+          llvm::errs()
+              << "failed to parse expression without block in statement or "
+                 "expression without block: "
+              << expr.getError() << "\n";
+          // report error
+          std::string s =
+              llvm::formatv(
+                  "{0}\n{1}",
+                  "failed to parse expression without block  in statement or "
+                  "expression without block",
+                  expr.getError())
+                  .str();
+          return StringResult<ExpressionOrStatement>(s);
+        }
+        return StringResult<ExpressionOrStatement>(
+            ExpressionOrStatement(expr.getValue()));
+      }
     }
     case TokenKind::Identifier: {
       // path and ...
@@ -434,8 +460,8 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
 
   BlockExpression bloc = {loc};
 
-  //  llvm::errs() << "parseBlockExpression"
-  //               << "\n";
+  llvm::errs() << "parseBlockExpression2"
+               << "\n";
 
   if (!check(TokenKind::BraceOpen)) {
     return Result<std::shared_ptr<ast::Expression>, std::string>(
@@ -464,6 +490,14 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
 
   Statements stmts = {loc};
 
+  if (check(TokenKind::BraceClose)) {
+    assert(eat(TokenKind::BraceClose));
+    bloc.setStatements(stmts);
+
+    return Result<std::shared_ptr<ast::Expression>, std::string>(
+        std::make_shared<BlockExpression>(bloc));
+  }
+
   while (getToken().getKind() != TokenKind::BraceClose) {
     adt::StringResult<ExpressionOrStatement> expr =
         parseStatementOrExpressionWithoutBlock();
@@ -482,17 +516,35 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
 
     ExpressionOrStatement eos = expr.getValue();
 
-    if (eos.getKind() == ExpressionOrStatementKind::Statement) {
+    switch (eos.getKind()) {
+    case ExpressionOrStatementKind::Expression: {
+      stmts.setTrailing(eos.getExpression());
+      break;
+    }
+    case ExpressionOrStatementKind::Statement: {
       stmts.addStmt(eos.getStatement());
-    } else if (eos.getKind() == ExpressionOrStatementKind::Item) {
+      break;
+    }
+    case ExpressionOrStatementKind::Item: {
       std::shared_ptr<ast::Item> item = eos.getItem();
       ItemDeclaration decl = {item->getLocation()};
       decl.setVisItem(item);
       stmts.addStmt(std::make_shared<ItemDeclaration>(decl));
-    } else {
-      stmts.setTrailing(eos.getExpression());
       break;
     }
+    }
+    // if (eos.getKind() == ExpressionOrStatementKind::Statement) {
+    //   stmts.addStmt(eos.getStatement());
+    // } else if (eos.getKind() == ExpressionOrStatementKind::Item) {
+    //   std::shared_ptr<ast::Item> item = eos.getItem();
+    //   ItemDeclaration decl = {item->getLocation()};
+    //   decl.setVisItem(item);
+    //   stmts.addStmt(std::make_shared<ItemDeclaration>(decl));
+    // } else if (eos.getKind() == ExpressionOrStatementKind::Expression) {
+    //   stmts.setTrailing(eos.getExpression());
+    // } else {
+    //   llvm::er break;
+    // }
   }
 
   if (!check(TokenKind::BraceClose)) {

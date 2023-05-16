@@ -78,6 +78,7 @@ Parser::parseInfixExpression(std::shared_ptr<Expression> left,
     Location loc = getLocation();
     ErrorPropagationExpression error = {loc};
     error.setLhs(left);
+    assert(eat(TokenKind::QMark));
     return adt::StringResult<std::shared_ptr<ast::Expression>>(
         std::make_shared<ErrorPropagationExpression>(error));
   }
@@ -107,12 +108,12 @@ Parser::parseInfixExpression(std::shared_ptr<Expression> left,
   }
   case TokenKind::Dot: {
     // field expression or method call
-    if (checkKeyWord(KeyWordKind::KW_AWAIT)) {
+    if (checkKeyWord(KeyWordKind::KW_AWAIT, 1)) {
       return parseAwaitExpression(left, outer);
-    } else if (check(TokenKind::INTEGER_LITERAL)) {
+    } else if (check(TokenKind::INTEGER_LITERAL, 1)) {
       return parseTupleIndexingExpression(left, outer, restrictions);
-    } else if (check(TokenKind::Identifier) &&
-               !check(TokenKind::ParenOpen, 1) && !check(TokenKind::PathSep, 1)) {
+    } else if (check(TokenKind::Identifier, 1) &&
+               !check(TokenKind::ParenOpen, 2) && !check(TokenKind::PathSep, 2)) {
       return parseFieldExpression(left, outer, restrictions);
     }
     return parseMethodCallExpression(left, outer, restrictions);

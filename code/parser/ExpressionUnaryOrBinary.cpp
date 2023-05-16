@@ -61,11 +61,11 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
                                                    restrictions);
       }
       case TokenKind::BraceOpen: {
-        // bool notABlock = (getToken(1).isIdentifier() &&
-        //                   getToken(2).getKind() == TokenKind::Comma) ||
-        //                  (getToken(2).getKind() == TokenKind::Colon &&
-        //                   getToken(4).getKind() == TokenKind::Comma) ||
-        //                  !canTokenStartType(getToken(3));
+         bool notABlock = (getToken(1).isIdentifier() &&
+                           getToken(2).getKind() == TokenKind::Comma) ||
+                          (getToken(2).getKind() == TokenKind::Colon &&
+                           getToken(4).getKind() == TokenKind::Comma) ||
+                          !canTokenStartType(getToken(3));
 
         /* definitely not a block:
          *  path '{' ident ','
@@ -77,7 +77,7 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
         //              << " canbeStruct: " << restrictions.canBeStructExpr
         //              << "\n";
 
-        if (!restrictions.canBeStructExpr)
+        if (!restrictions.canBeStructExpr && !notABlock)
           return StringResult<std::shared_ptr<ast::Expression>>(
               path.getValue());
 

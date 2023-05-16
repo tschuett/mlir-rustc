@@ -24,10 +24,13 @@ Precedence Parser::getLeftBindingPower() {
   case TokenKind::DotDot:
     return Precedence::DotDot;
   case TokenKind::DotDotEq:
+    return Precedence::DotDotEq;
   case TokenKind::ParenOpen:
     return Precedence::FunctionCall;
   case TokenKind::SquareOpen:
     return Precedence::ArrayIndexing;
+  case TokenKind::QMark:
+    return Precedence::QuestionMark;
   case TokenKind::Dot: {
     if (getToken(1).isIdentifier() && getToken(2).getKind() == TokenKind::ParenOpen)
       return Precedence::FieldExpression;
