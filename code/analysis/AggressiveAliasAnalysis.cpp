@@ -1,4 +1,5 @@
 #include "Analysis/AggressiveAliasAnalysis.h"
+#include "mlir/Interfaces/CallInterfaces.h"
 
 #include <cstdlib>
 #include <llvm/ADT/StringRef.h>
@@ -77,7 +78,6 @@ bool AggressiveAliasAnalysis::analyzeFunction(Function *fun) {
                          << "\n";
             exit(EXIT_FAILURE);
           }
-          load.getResult();
           transferFunLoad(fun, Load(load.getMemRef(), load.getResult()));
         } else if (auto store = mlir::dyn_cast<mlir::memref::StoreOp>(op)) {
           if (op.getNumResults() != 1) {
@@ -91,6 +91,10 @@ bool AggressiveAliasAnalysis::analyzeFunction(Function *fun) {
         } else if (auto call = mlir::dyn_cast<mlir::func::CallOp>(op)) {
           //
           // std::string callee = call.getCallee();
+        } else if (auto callIndirect = mlir::dyn_cast<mlir::func::CallIndirectOp>(op)) {
+          //
+          // std::string callee = call.getCallee();
+          callIndirect.getCallee();
         } else if (auto effectInterface =
                        dyn_cast<MemoryEffectOpInterface>(op)) {
           SmallVector<MemoryEffects::EffectInstance, 1> effects;
@@ -107,6 +111,7 @@ bool AggressiveAliasAnalysis::analyzeFunction(Function *fun) {
                 exit(EXIT_FAILURE);
               }
               it.getValue();
+              transferFunLoad(fun, Load(load.getMemRef(), load.getResult()));
             } else if (isa<MemoryEffects::Write>(it.getEffect())) {
               if (op.getNumResults() != 1) {
                 llvm::errs() << "store with more than one result"
@@ -145,13 +150,13 @@ ModRefResult AggressiveAliasAnalysis::getModRef(Operation *op, Value location) {
 }
 
 void AggressiveAliasAnalysis::transferFunLoad(Function *f, const Load &load) {
-  AliasInstanceSet Aout;
+  mlir::Value p = load.getAddress();///??
+  mlir::Value q = load.getStorage(); ///??
 
   AliasInstanceSet Ain = f->getEntryAliasSet();
-  // AliasSet AinOfP = f->getEntryAliasSet().getSubset(load.getValue());
-  /*
-    (A_{IN} - A_{IN}(ma)) u
-   */
+  AliasInstanceSet AinOfP = f->getEntryAliasSet().getSubset(p);
+  AliasInstanceSet AinOfQ = Ain.getSubset(q);
+  AliasInstanceSet tmp = Ain.minus(AinOfP);
 }
 
 /// 4.4 Realizable Execution Paths
@@ -160,8 +165,8 @@ void AggressiveAliasAnalysis::transferFunStore(Function *f,
   mlir::Value q = store.getAddress();
   mlir::Value p = store.getValue();
   AliasInstanceSet Ain = f->getEntryAliasSet();
-  AliasInstanceSet AinOfP = Ain.getSubset(store.getAddress());
-  AliasInstanceSet AinOfQ = Ain.getSubset(store.getValue());
+  AliasInstanceSet AinOfP = Ain.getSubset(p);
+  AliasInstanceSet AinOfQ = Ain.getSubset(q);
   AliasInstanceSet tmp = Ain.minus(AinOfP);
 
   AliasInstanceSet result;

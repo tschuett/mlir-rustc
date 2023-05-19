@@ -1,15 +1,14 @@
 #pragma once
 
-#include "mlir/IR/BuiltinTypes.h"
-#include "mlir/IR/Value.h"
-
 #include <llvm/ADT/SmallPtrSet.h>
 #include <llvm/ADT/StringRef.h>
 #include <memory>
 #include <mlir/Analysis/AliasAnalysis.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/BuiltinOps.h>
+#include <mlir/IR/BuiltinTypes.h>
 #include <mlir/IR/Dialect.h>
+#include <mlir/IR/Value.h>
 #include <optional>
 #include <set>
 #include <span>
@@ -22,7 +21,8 @@ namespace rust_compiler::analysis {
 /// Computation Aliases and Side Effects. Jong-Deok Choi, Michael
 /// Burke, and Paul Carini.
 ///
-/// Limitations: loads and stores may only generate one SSA value.
+/// Limitations: loads and stores may only generate one SSA
+/// value. Only FuncOp dialect supported.
 
 /// Choi, Automatic construction of sparse data flow evaluation graphs.
 class SparseEvaluationGraph {
@@ -31,8 +31,8 @@ public:
   mlir::func::FuncOp *getExitNode() const { return exitNode; }
 
 private:
-  llvm::SmallPtrSet<mlir::func::FuncOp *, 8> genNodes;
-  llvm::SmallPtrSet<mlir::func::FuncOp *, 8> meetNodes;
+  llvm::SmallPtrSet<mlir::func::FuncOp, 8> genNodes;
+  llvm::SmallPtrSet<mlir::func::FuncOp, 8> meetNodes;
   std::vector<std::pair<mlir::func::FuncOp *, mlir::func::FuncOp *>> edges;
   mlir::func::FuncOp *entryNode;
   mlir::func::FuncOp *exitNode;
@@ -86,6 +86,9 @@ private:
 class Load : public MemoryAccess {
 public:
   Load(mlir::Value address, mlir::Value storage);
+
+  mlir::Value getAddress() const { return address; }
+  mlir::Value getStorage() const { return storage; }
 
 private:
   mlir::Value storage;

@@ -21,6 +21,7 @@ add_library(optimizer
            FuncSpecialization.cpp
            LoopPlan.cpp
            MemoryAnalysis.cpp
+           TestAliasAnalysisPass.cpp
            )
 
 target_include_directories(optimizer PRIVATE  ../include)
