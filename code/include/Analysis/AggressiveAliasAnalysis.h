@@ -111,6 +111,7 @@ public:
   AliasRelation replaceWith(mlir::Value, mlir::Value);
 
   mlir::Value getLeft() const;
+  mlir::Value getRight() const;
 
 private:
   mlir::Value left;
@@ -147,6 +148,12 @@ class CallSite {
 
 public:
   Function *getFun() const { return fun; }
+
+  bool isNull() const;
+
+  friend bool operator==(const CallSite &l, const CallSite &r) {
+    return l.fun == r.fun;
+  }
 };
 
 /// Alias instance (AI)
@@ -157,6 +164,18 @@ class AliasInstance {
 
 public:
   Function *getFun() const { return c.getFun(); }
+
+  /// AliasRelation
+  void setAliasRelation(const AliasRelation &);
+  AliasRelation getAliasRelation() const;
+
+  /// AliasSet
+  void setAliasSet(const AliasSet &);
+  AliasSet getAliasSet() const;
+
+  // CallSite
+  void setCallSite(const CallSite &);
+  CallSite getCallSite() const;
 };
 
 /// Alias instance set
@@ -169,6 +188,12 @@ public:
 
   std::vector<AliasInstance> getSets() const;
 
+  AliasInstanceSet join(const AliasInstanceSet &);
+
+  std::vector<AliasInstance> getSetsWhereAliasRelationLeftIs(mlir::Value);
+
+  void insert(const AliasInstance &);
+
 private:
   std::set<AliasInstance> mayAliases;
 };
@@ -178,7 +203,7 @@ public:
   AliasInstanceSet getEntryAliasSet();
   AliasInstanceSet getExitAliasSet();
 
-  void setExitSet(const AliasSet &);
+  void setExitSet(const AliasInstanceSet &);
 
   mlir::func::FuncOp getFuncOp();
 

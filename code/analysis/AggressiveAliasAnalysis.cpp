@@ -154,24 +154,42 @@ void AggressiveAliasAnalysis::transferFunLoad(Function *f, const Load &load) {
    */
 }
 
+/// 4.4 Realizable Execution Paths
 void AggressiveAliasAnalysis::transferFunStore(Function *f,
                                                const Store &store) {
-//  AliasInstanceSet Ain = f->getEntryAliasSet();
-//  AliasInstanceSet AinOfP = Ain.getSubset(store.getAddress());
-//  AliasInstanceSet AinOfQ = Ain.getSubset(store.getValue());
-//  AliasInstanceSet tmp = Ain.minus(AinOfP);
-//
-//  AliasInstanceSet leftU = Ain.whereLeftIs(store.getAddress());
+  mlir::Value q = store.getAddress();
+  mlir::Value p = store.getValue();
+  AliasInstanceSet Ain = f->getEntryAliasSet();
+  AliasInstanceSet AinOfP = Ain.getSubset(store.getAddress());
+  AliasInstanceSet AinOfQ = Ain.getSubset(store.getValue());
+  AliasInstanceSet tmp = Ain.minus(AinOfP);
 
-  /*
-    (A_{IN} - (set difference) A_{IN}(ma)) union
-   */
   AliasInstanceSet result;
-//  for (AliasRelation &l : leftU.getSets())
-//    for (AliasRelation &r : AinOfQ.getSets())
-//      result.add(r.replaceWith(l.getLeft(), store.getValue()));
-//
-  //f->setExitSet(tmp.join(result));
+  for (AliasInstance &l : Ain.getSetsWhereAliasRelationLeftIs(p)) {
+    for (AliasInstance &r : AinOfQ.getSets()) {
+      AliasInstance tmp;
+      AliasRelation pu = l.getAliasRelation();
+      AliasSet SAg = l.getAliasSet().join(r.getAliasSet());
+      CallSite C1 = l.getCallSite();
+      CallSite C2 = r.getCallSite();
+      CallSite Cg;
+
+      // revisit !
+      if (C1 == C2)
+        Cg = C1;
+      else if (C2.isNull())
+        Cg = C1;
+      else if (C1.isNull())
+        Cg = C2;
+
+      tmp.setAliasRelation(r.getAliasRelation().replaceWith(pu.getRight(), q));
+      tmp.setAliasSet(SAg);
+      tmp.setCallSite(Cg);
+      result.insert(tmp);
+    }
+  }
+
+  f->setExitSet(tmp.join(result));
 }
 
 } // namespace rust_compiler::analysis
