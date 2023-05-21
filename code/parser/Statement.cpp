@@ -284,6 +284,10 @@ Parser::parseLetStatement(std::span<ast::OuterAttribute> outer,
   if (!check(TokenKind::Semi)) {
     llvm::errs() << "let statement; failed to parse ; token:"
                  << "\n";
+    llvm::errs() << "found: " << Token2String(getToken().getKind()) << "\n";
+    if (getToken().isKeyWord()) {
+      llvm::errs() << KeyWord2String(getToken().getKeyWordKind()) << "\n";
+    }
     return StringResult<std::shared_ptr<ast::Statement>>(
         "let statement: failed to parse ; token:");
     // exit(EXIT_FAILURE);

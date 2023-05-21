@@ -9,9 +9,9 @@
 #include "Resolver/Resolver.h"
 #include "TyCtx/TyCtx.h"
 #include "TypeChecking/TypeChecking.h"
-#include "llvm/Support/raw_ostream.h"
 
 #include <llvm/Support/TimeProfiler.h>
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 
 using namespace llvm;
@@ -29,7 +29,7 @@ void analyzeSemantics(std::shared_ptr<ast::Crate> &crate) {
 
   sema.analyze(crate);
 
-  // path resolution
+  // name resolution
   // type checking
   // visiblity checks -> turns into linkage
   // match resp pattern exhaustive check
@@ -39,6 +39,8 @@ void analyzeSemantics(std::shared_ptr<ast::Crate> &crate) {
   // Trait resolution (AssociatedItems, Implementations, Traits, and Structs
 
   // monomorph
+
+  // which path points to which variable (let, static, const, or function param) or item?
 }
 
 void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {

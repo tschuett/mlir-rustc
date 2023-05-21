@@ -67,7 +67,9 @@ std::optional<NodeId> Resolver::resolveTypeNoBounds(
     assert(false && "to be handled later");
   }
   case TypeNoBoundsKind::RawPointerType: {
-    assert(false && "to be handled later");
+    return resolveRawPointerType(
+        std::static_pointer_cast<RawPointerType>(noBounds), prefix,
+        canonicalPrefix);
   }
   case TypeNoBoundsKind::ReferenceType: {
     return resolveReferenceType(
@@ -174,11 +176,11 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
       if (auto node = getTypeScope().lookup(path)) {
         insertResolvedType(segment.getNodeId(), *node);
         resolvedNodeId = *node;
-        //llvm::errs() << "it is a type" << "\n";
+        // llvm::errs() << "it is a type" << "\n";
       } else if (auto node = getNameScope().lookup(path)) {
         insertResolvedName(segment.getNodeId(), *node);
         resolvedNodeId = *node;
-        //llvm::errs() << "it is a name" << "\n";
+        // llvm::errs() << "it is a name" << "\n";
       } else if (ident.getKind() == PathIdentSegmentKind::self) {
         moduleScopeId = crateScopeId;
         previousResolveNodeId = moduleScopeId;
@@ -227,7 +229,8 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
                           segment.getSegment().toString())
                           .str()
                    << "\n";
-      llvm::errs() << "Name Resolution pass failed" << "\n";
+      llvm::errs() << "Name Resolution pass failed"
+                   << "\n";
       exit(EXIT_FAILURE);
       return std::nullopt;
     }
@@ -299,6 +302,13 @@ std::optional<basic::NodeId> Resolver::resolveTypeParamBound(
                        prefix, canonicalPrefix);
   }
   }
+}
+
+std::optional<basic::NodeId> Resolver::resolveRawPointerType(
+    std::shared_ptr<ast::types::RawPointerType> pointer,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  return resolveType(pointer->getType(), prefix, canonicalPrefix);
 }
 
 } // namespace rust_compiler::sema::resolver

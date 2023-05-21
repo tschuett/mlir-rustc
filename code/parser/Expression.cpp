@@ -205,6 +205,7 @@ Parser::parseArrayElements(std::span<OuterAttribute>,
     el.addElement(first.getValue());
     return Result<ArrayElements, std::string>(el);
   } else {
+    el.setKind(ArrayElementsKind::List);
     while (true) {
       if (check(TokenKind::Eof)) {
         return Result<ArrayElements, std::string>(
@@ -529,8 +530,8 @@ Parser::parseMethodCallExpression(std::shared_ptr<ast::Expression> receiver,
   Location loc = getLocation();
   MethodCallExpression call = {loc};
 
-//  llvm::errs() << "parseMethodCallExpression"
-//               << "\n";
+  //  llvm::errs() << "parseMethodCallExpression"
+  //               << "\n";
 
   call.setReceiver(receiver);
 

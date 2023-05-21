@@ -22,6 +22,7 @@
 #include "AST/StructExprStruct.h"
 #include "AST/StructExprUnit.h"
 #include "AST/StructExpression.h"
+#include "AST/UnsafeBlockExpression.h"
 #include "Basic/Ids.h"
 #include "Resolver.h"
 
@@ -66,7 +67,10 @@ void Resolver::resolveExpressionWithBlock(
     break;
   }
   case ExpressionWithBlockKind::UnsafeBlockExpression: {
-    assert(false && "to be handled later");
+    resolveUnsafeBlockExpression(
+        std::static_pointer_cast<UnsafeBlockExpression>(withBlock), prefix,
+        canonicalPrefix);
+    break;
   }
   case ExpressionWithBlockKind::LoopExpression: {
     resolveLoopExpression(std::static_pointer_cast<LoopExpression>(withBlock),
@@ -230,7 +234,9 @@ void Resolver::resolveOperatorExpression(
     assert(false && "to be handled later");
   }
   case OperatorExpressionKind::TypeCastExpression: {
-    assert(false && "to be handled later");
+    resolveTypeCastExpression(std::static_pointer_cast<TypeCastExpression>(op),
+                              prefix, canonicalPrefix);
+    break;
   }
   case OperatorExpressionKind::AssignmentExpression: {
     std::shared_ptr<AssignmentExpression> assign =
@@ -473,13 +479,18 @@ void Resolver::resolveArrayExpression(
     ArrayElements el = arr->getArrayElements();
     switch (el.getKind()) {
     case ArrayElementsKind::List: {
+      llvm::errs() << "list"
+                   << "\n";
       for (auto expr : el.getElements())
         resolveExpression(expr, prefix, canonicalPrefix);
       break;
     }
     case ArrayElementsKind::Repeated: {
+      llvm::errs() << "repeated"
+                   << "\n";
       resolveExpression(el.getCount(), prefix, canonicalPrefix);
       resolveExpression(el.getValue(), prefix, canonicalPrefix);
+      break;
     }
     }
   }
@@ -577,6 +588,22 @@ void Resolver::resolveTupleExpression(
 
   for (auto &element : elements.getElements())
     resolveExpression(element, prefix, canonicalPrefix);
+}
+
+void Resolver::resolveUnsafeBlockExpression(
+    std::shared_ptr<ast::UnsafeBlockExpression> unsafe,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  resolveBlockExpression(
+      std::static_pointer_cast<BlockExpression>(unsafe->getBlock()), prefix,
+      canonicalPrefix);
+}
+
+void Resolver::resolveTypeCastExpression(
+    std::shared_ptr<TypeCastExpression> cast, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  resolveExpression(cast->getLeft(), prefix, canonicalPrefix);
+  resolveType(cast->getRight(), prefix, canonicalPrefix);
 }
 
 } // namespace rust_compiler::sema::resolver

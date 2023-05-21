@@ -106,6 +106,17 @@ Parser::parseInfixExpression(std::shared_ptr<Expression> left,
   case TokenKind::ParenOpen: {
     return parseCallExpression(left, outer, restrictions);
   }
+  case TokenKind::Keyword: {
+    switch (getToken().getKeyWordKind()) {
+    case KeyWordKind::KW_AS: {
+      return parseTypeCastExpression(left);
+    }
+    default: {
+      llvm::errs() << KeyWord2String(getToken().getKeyWordKind()) << "\n";
+      assert(false);
+    }
+    }
+  }
   case TokenKind::Dot: {
     // field expression or method call
     if (checkKeyWord(KeyWordKind::KW_AWAIT, 1)) {
@@ -113,7 +124,8 @@ Parser::parseInfixExpression(std::shared_ptr<Expression> left,
     } else if (check(TokenKind::INTEGER_LITERAL, 1)) {
       return parseTupleIndexingExpression(left, outer, restrictions);
     } else if (check(TokenKind::Identifier, 1) &&
-               !check(TokenKind::ParenOpen, 2) && !check(TokenKind::PathSep, 2)) {
+               !check(TokenKind::ParenOpen, 2) &&
+               !check(TokenKind::PathSep, 2)) {
       return parseFieldExpression(left, outer, restrictions);
     }
     return parseMethodCallExpression(left, outer, restrictions);

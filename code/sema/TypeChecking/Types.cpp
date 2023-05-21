@@ -132,7 +132,8 @@ TypeResolver::checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds> no) {
     return checkNeverType(std::static_pointer_cast<ast::types::NeverType>(no));
   }
   case TypeNoBoundsKind::RawPointerType: {
-    assert(false && "to be implemented");
+    return checkRawPointerType(
+        std::static_pointer_cast<ast::types::RawPointerType>(no));
   }
   case TypeNoBoundsKind::ReferenceType: {
     return checkReferenceType(
@@ -476,6 +477,14 @@ TyTy::BaseType *TypeResolver::checkTypeTraitObjectTypeOneBound(
                         trait->getLocation()};
   return new TyTy::DynamicObjectType(trait->getNodeId(), ident,
                                      specifiedBounds);
+}
+
+TyTy::BaseType *TypeResolver::checkRawPointerType(
+    std::shared_ptr<ast::types::RawPointerType> raw) {
+  TyTy::BaseType *base = checkType(raw->getType());
+  return new TyTy::RawPointerType(raw->getNodeId(),
+                                  TyTy::TypeVariable(base->getReference()),
+                                  raw->getMutability());
 }
 
 } // namespace rust_compiler::sema::type_checking

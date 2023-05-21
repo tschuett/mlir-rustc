@@ -21,6 +21,8 @@ public:
     return TypeIdentity(adt::CanonicalPath::createEmpty(),
                         Location::getBuiltinLocation());
   }
+
+  Location getLocation() const { return loc; }
 };
 
 } // namespace rust_compiler::tyctx

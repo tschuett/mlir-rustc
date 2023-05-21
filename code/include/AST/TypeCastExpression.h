@@ -18,6 +18,7 @@ public:
   void setType(std::shared_ptr<types::TypeExpression> no) { type = no; }
 
   std::shared_ptr<Expression> getLeft() const { return expr; }
+  std::shared_ptr<types::TypeExpression> getRight() const { return type; }
 };
 
 } // namespace rust_compiler::ast

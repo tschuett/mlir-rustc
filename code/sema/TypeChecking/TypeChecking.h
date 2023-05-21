@@ -1,8 +1,10 @@
 #pragma once
 
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/ArrayExpression.h"
 #include "AST/AssignmentExpression.h"
 #include "AST/AssociatedItem.h"
+#include "AST/BorrowExpression.h"
 #include "AST/CallExpression.h"
 #include "AST/ClosureExpression.h"
 #include "AST/ComparisonExpression.h"
@@ -16,6 +18,7 @@
 #include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
 #include "AST/Implementation.h"
+#include "AST/IndexEpression.h"
 #include "AST/InherentImpl.h"
 #include "AST/Item.h"
 #include "AST/LetStatement.h"
@@ -31,16 +34,20 @@
 #include "AST/ReturnExpression.h"
 #include "AST/StructStruct.h"
 #include "AST/TupleStruct.h"
+#include "AST/TypeCastExpression.h"
 #include "AST/TypeParam.h"
 #include "AST/Types/ArrayType.h"
 #include "AST/Types/NeverType.h"
+#include "AST/Types/RawPointerType.h"
 #include "AST/Types/ReferenceType.h"
 #include "AST/Types/TraitObjectTypeOneBound.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypePath.h"
+#include "AST/UnsafeBlockExpression.h"
 #include "AST/WhereClause.h"
 #include "Basic/Ids.h"
 #include "PathProbing.h"
+#include "Sema/Properties.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TraitReference.h"
 #include "TyCtx/TyCtx.h"
@@ -115,11 +122,21 @@ private:
   TyTy::BaseType *
       checkExpressionWithoutBlock(std::shared_ptr<ast::ExpressionWithoutBlock>);
   TyTy::BaseType *checkBlockExpression(std::shared_ptr<ast::BlockExpression>);
+  TyTy::BaseType *
+      checkUnsafeBlockExpression(std::shared_ptr<ast::UnsafeBlockExpression>);
   TyTy::BaseType *checkLiteral(std::shared_ptr<ast::LiteralExpression>);
   TyTy::BaseType *
       checkOperatorExpression(std::shared_ptr<ast::OperatorExpression>);
+  TyTy::BaseType *checkArrayExpression(std::shared_ptr<ast::ArrayExpression>);
+
   TyTy::BaseType *checkArithmeticOrLogicalExpression(
       std::shared_ptr<ast::ArithmeticOrLogicalExpression>);
+  TyTy::BaseType *checkBorrowExpression(std::shared_ptr<ast::BorrowExpression>);
+  TyTy::BaseType *checkIndexExpression(std::shared_ptr<ast::IndexExpression>);
+
+  TyTy::BaseType *
+      checkTypeCastExpression(std::shared_ptr<ast::TypeCastExpression>);
+
   TyTy::BaseType *checkReturnExpression(std::shared_ptr<ast::ReturnExpression>);
   TyTy::BaseType *checkMatchExpression(std::shared_ptr<ast::MatchExpression>);
   void checkGenericParams(const ast::GenericParams &,
@@ -199,6 +216,8 @@ private:
   void checkInherentImpl(ast::InherentImpl *);
   TyTy::ParamType *checkGenericParam(const ast::GenericParam &);
   TyTy::ParamType *checkGenericParamTypeParam(const ast::TypeParam &);
+  TyTy::BaseType *
+      checkRawPointerType(std::shared_ptr<ast::types::RawPointerType>);
 
   bool
   resolveOperatorOverload(ArithmeticOrLogicalExpressionKind,
@@ -217,6 +236,8 @@ private:
 
   std::vector<std::pair<TypeCheckContextItem, TyTy::BaseType *>>
       returnTypeStack;
+
+  bool haveFunctionContext() const { return not returnTypeStack.empty(); }
 
   std::set<basic::NodeId> queriesInProgress;
 
@@ -260,6 +281,16 @@ private:
 
   std::optional<Trait *>
   resolvePathToTrait(std::shared_ptr<ast::types::TypePath> path);
+
+  std::optional<TyTy::BaseType *> resolveOperatorOverload(PropertyKind,
+                                                          Expression *,
+                                                          TyTy::BaseType *lhs,
+                                                          TyTy::BaseType *rhs);
+
+  std::set<MethodCandidate>
+  probeMethodResolver(TyTy::BaseType *receiver,
+                      const ast::PathIdentSegment &segmentName,
+                      bool autoDeref = false);
 };
 
 } // namespace rust_compiler::sema::type_checking

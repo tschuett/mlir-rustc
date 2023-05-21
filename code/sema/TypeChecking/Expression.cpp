@@ -1,6 +1,7 @@
 #include "AST/Expression.h"
 
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/ArrayElements.h"
 #include "AST/AssignmentExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/ClosureExpression.h"
@@ -12,11 +13,13 @@
 #include "AST/Scrutinee.h"
 #include "AST/Statement.h"
 #include "Basic/Ids.h"
+#include "Casting.h"
 #include "Coercion.h"
 #include "Lexer/Identifier.h"
 #include "Location.h"
 #include "PathProbing.h"
 #include "Sema/Autoderef.h"
+#include "Sema/Properties.h"
 #include "Session/Session.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyTy.h"
@@ -31,6 +34,7 @@
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::tyctx;
+using namespace rust_compiler::tyctx::TyTy;
 
 namespace rust_compiler::sema::type_checking {
 
@@ -63,7 +67,8 @@ TyTy::BaseType *TypeResolver::checkExpressionWithBlock(
         std::static_pointer_cast<ast::BlockExpression>(withBlock));
   }
   case ast::ExpressionWithBlockKind::UnsafeBlockExpression: {
-    assert(false && "to be implemented");
+    return checkUnsafeBlockExpression(
+        std::static_pointer_cast<ast::UnsafeBlockExpression>(withBlock));
   }
   case ast::ExpressionWithBlockKind::LoopExpression: {
     assert(false && "to be implemented");
@@ -100,13 +105,15 @@ TyTy::BaseType *TypeResolver::checkExpressionWithoutBlock(
     assert(false && "to be implemented");
   }
   case ExpressionWithoutBlockKind::ArrayExpression: {
-    assert(false && "to be implemented");
+    return checkArrayExpression(
+        std::static_pointer_cast<ArrayExpression>(woBlock));
   }
   case ExpressionWithoutBlockKind::AwaitExpression: {
     assert(false && "to be implemented");
   }
   case ExpressionWithoutBlockKind::IndexExpression: {
-    assert(false && "to be implemented");
+    return checkIndexExpression(
+        std::static_pointer_cast<IndexExpression>(woBlock));
   }
   case ExpressionWithoutBlockKind::TupleExpression: {
     assert(false && "to be implemented");
@@ -202,7 +209,8 @@ TyTy::BaseType *TypeResolver::checkOperatorExpression(
     std::shared_ptr<ast::OperatorExpression> op) {
   switch (op->getKind()) {
   case OperatorExpressionKind::BorrowExpression: {
-    assert(false && "to be implemented");
+    return checkBorrowExpression(
+        std::static_pointer_cast<BorrowExpression>(op));
   }
   case OperatorExpressionKind::DereferenceExpression: {
     assert(false && "to be implemented");
@@ -225,7 +233,8 @@ TyTy::BaseType *TypeResolver::checkOperatorExpression(
     assert(false && "to be implemented");
   }
   case OperatorExpressionKind::TypeCastExpression: {
-    assert(false && "to be implemented");
+    return checkTypeCastExpression(
+        std::static_pointer_cast<TypeCastExpression>(op));
   }
   case OperatorExpressionKind::AssignmentExpression: {
     return checkAssignmentExpression(
@@ -723,6 +732,156 @@ TypeResolver::checkPossibleFunctionTraitCallMethodName(
 TyTy::BaseType *TypeResolver::checkMethodCallExpression(
     TyTy::FunctionType *, NodeIdentity, std::vector<TyTy::Argument> &args,
     Location call, Location receiver, TyTy::BaseType *adjustedSelf) {
+  assert(false);
+}
+
+TyTy::BaseType *TypeResolver::checkUnsafeBlockExpression(
+    std::shared_ptr<ast::UnsafeBlockExpression> unsafe) {
+  return checkExpression(unsafe->getBlock());
+}
+
+TyTy::BaseType *
+TypeResolver::checkArrayExpression(std::shared_ptr<ast::ArrayExpression> arr) {
+  TyTy::BaseType *elementType = nullptr;
+  std::shared_ptr<Expression> capacityExpr;
+  if (arr->hasArrayElements()) {
+    ArrayElements elements = arr->getArrayElements();
+    switch (elements.getKind()) {
+    case ArrayElementsKind::List: {
+      std::vector<TyTy::BaseType *> types;
+      for (auto &el : elements.getElements())
+        types.push_back(checkExpression(el));
+
+      elementType =
+          TyTy::TypeVariable::getImplicitInferVariable(arr->getLocation())
+              .getType();
+
+      for (auto &type : types) {
+        elementType = Unification::unifyWithSite(
+            TyTy::WithLocation(elementType),
+            TyTy::WithLocation(type, type->getLocation()), arr->getLocation(),
+            tcx);
+      }
+
+      std::shared_ptr<LiteralExpression> lit =
+          std::make_shared<LiteralExpression>(arr->getLocation());
+      lit->setKind(LiteralExpressionKind::IntegerLiteral);
+      lit->setStorage(std::to_string(elements.getNumberOfElements()));
+      capacityExpr = lit;
+
+      std::optional<TyTy::BaseType *> expectedType =
+          tcx->lookupBuiltin("usize");
+      assert(expectedType.has_value());
+      tcx->insertType(
+          NodeIdentity(basic::UNKNOWN_NODEID,
+                       rust_compiler::session::session->getCurrentCrateNum(),
+                       (*expectedType)->getLocation()),
+          *expectedType);
+      break;
+    }
+    case ArrayElementsKind::Repeated: {
+      elementType = checkExpression(elements.getValue());
+      TyTy::BaseType *capacityType = checkExpression(elements.getCount());
+
+      std::optional<TyTy::BaseType *> expectedType =
+          tcx->lookupBuiltin("usize");
+      assert(expectedType.has_value());
+      tcx->insertType(elements.getCount()->getIdentity(), *expectedType);
+
+      Unification::unifyWithSite(
+          TyTy::WithLocation(*expectedType),
+          TyTy::WithLocation(capacityType, elements.getCount()->getLocation()),
+          arr->getLocation(), tcx);
+
+      capacityExpr = elements.getCount();
+      break;
+    }
+    }
+    return new TyTy::ArrayType(arr->getNodeId(), arr->getLocation(),
+                               capacityExpr,
+                               TyTy::TypeVariable(elementType->getReference()));
+  }
+  assert(false);
+}
+
+TyTy::BaseType *TypeResolver::checkTypeCastExpression(
+    std::shared_ptr<ast::TypeCastExpression> cast) {
+  TyTy::BaseType *left = checkExpression(cast->getLeft());
+  TyTy::BaseType *right = checkType(cast->getRight());
+
+  return Casting::castWithSite(
+      cast->getNodeId(),
+      TyTy::WithLocation(left, cast->getLeft()->getLocation()),
+      TyTy::WithLocation(right, cast->getRight()->getLocation()),
+      cast->getLocation());
+}
+
+TyTy::BaseType *TypeResolver::checkBorrowExpression(
+    std::shared_ptr<ast::BorrowExpression> borrow) {
+  TyTy::BaseType *base = checkExpression(borrow->getExpression());
+
+  if (base->getKind() == TyTy::TypeKind::Reference) {
+    TyTy::ReferenceType *ref = static_cast<TyTy::ReferenceType *>(base);
+
+    if (ref->isDynStrType()) {
+      return ref;
+    }
+  }
+
+  return new TyTy::ReferenceType(borrow->getNodeId(),
+                                 TyTy::TypeVariable(base->getReference()),
+                                 borrow->getMutability());
+}
+
+TyTy::BaseType *
+TypeResolver::checkIndexExpression(std::shared_ptr<IndexExpression> index) {
+  TyTy::BaseType *arrayExprType = checkExpression(index->getArray());
+  if (arrayExprType->getKind() == TyTy::TypeKind::Error) {
+    assert(false);
+  }
+
+  TyTy::BaseType *indexExprType = checkExpression(index->getIndex());
+  if (indexExprType->getKind() == TyTy::TypeKind::Error) {
+    assert(false);
+  }
+
+  TyTy::BaseType *copyArrayExprType = arrayExprType;
+  if (arrayExprType->getKind() == TyTy::TypeKind::Reference) {
+    TyTy::ReferenceType *ref =
+        static_cast<TyTy::ReferenceType *>(copyArrayExprType);
+    TyTy::BaseType *base = ref->getBase();
+    if (base->getKind() == TypeKind::Array) {
+      copyArrayExprType = base;
+    }
+  }
+
+  std::optional<TyTy::BaseType *> usize = tcx->lookupBuiltin("usize");
+  assert(usize.has_value());
+  if (indexExprType->canEqual(*usize, false) &&
+      copyArrayExprType->getKind() == TypeKind::Array) {
+
+    Unification::unifyWithSite(
+        TyTy::WithLocation(*usize),
+        TyTy::WithLocation(indexExprType, index->getIndex()->getLocation()),
+        index->getLocation(), tcx);
+
+    TyTy::ArrayType *arrayType =
+        static_cast<TyTy::ArrayType *>(copyArrayExprType);
+    return arrayType->getElementType()->clone();
+  }
+
+  std::optional<TyTy::BaseType *> overloaded = resolveOperatorOverload(
+      PropertyKind::INDEX, index.get(), arrayExprType, indexExprType);
+
+  if (overloaded) {
+
+    TyTy::BaseType *resolved = *overloaded;
+    assert(resolved->getKind() == TypeKind::Reference);
+    TyTy::ReferenceType *ref = static_cast<TyTy::ReferenceType *>(resolved);
+
+    return ref->getBase()->clone();
+  }
+
   assert(false);
 }
 

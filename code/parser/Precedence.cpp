@@ -1,5 +1,6 @@
 #include "Parser/Precedence.h"
 
+#include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 
 #include <cstdlib>
@@ -32,9 +33,22 @@ Precedence Parser::getLeftBindingPower() {
   case TokenKind::QMark:
     return Precedence::QuestionMark;
   case TokenKind::Dot: {
-    if (getToken(1).isIdentifier() && getToken(2).getKind() == TokenKind::ParenOpen)
+    if (getToken(1).isIdentifier() &&
+        getToken(2).getKind() == TokenKind::ParenOpen)
       return Precedence::FieldExpression;
     return Precedence::MethodCall;
+  }
+  case TokenKind::Keyword: {
+    switch (getToken().getKeyWordKind()) {
+    case KeyWordKind::KW_AS: {
+      return Precedence::As;
+    }
+    default: {
+      llvm::errs() << KeyWord2String(getToken().getKeyWordKind()) << "\n";
+      assert(false);
+    }
+    }
+    break;
   }
   default: {
     llvm::errs() << "getLeftBindingPower: unknown token: "

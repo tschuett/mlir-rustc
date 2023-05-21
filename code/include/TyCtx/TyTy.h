@@ -233,7 +233,7 @@ public:
   bool needsGenericSubstitutions() const;
   virtual std::string toString() const = 0;
 
-  virtual unsigned getNumberOfSpecifiedBounds() = 0;
+  virtual unsigned getNumberOfSpecifiedBounds() const = 0;
 
   bool satisfiesBound(const TypeBoundPredicate &predicate) const;
   bool isBoundsCompatible(const BaseType &other, Location loc,
@@ -250,6 +250,13 @@ public:
   void inheritBounds(std::vector<TyTy::TypeBoundPredicate> specifiedBounds);
 
   TypeIdentity getTypeIdentity() const { return identity; }
+
+  Location getLocation() const { return identity.getLocation(); }
+
+  virtual bool canEqual(const BaseType *other, bool emitErrors) const = 0;
+
+  bool boundsCompatible(const BaseType *other, Location loc,
+                        bool emitError) const;
 
 protected:
   BaseType(basic::NodeId ref, basic::NodeId typeRef, TypeKind kind,
@@ -276,11 +283,13 @@ public:
           std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   IntKind getIntKind() const;
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 
 private:
   IntKind kind;
@@ -294,11 +303,13 @@ public:
            std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   UintKind getUintKind() const { return kind; }
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 
 private:
   UintKind kind;
@@ -312,9 +323,11 @@ public:
             std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 };
 
 class ISizeType : public BaseType {
@@ -325,9 +338,11 @@ public:
             std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 };
 
 /// F32 or F64
@@ -339,11 +354,13 @@ public:
             std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   FloatKind getFloatKind() const { return kind; }
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 
 private:
   FloatKind kind;
@@ -359,9 +376,11 @@ public:
 
   std::string toString() const override;
 
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 };
 
 class CharType : public BaseType {
@@ -373,9 +392,11 @@ public:
 
   std::string toString() const override;
 
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 };
 
 class StrType : public BaseType {
@@ -387,9 +408,11 @@ public:
 
   std::string toString() const override;
 
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 };
 
 /// !
@@ -402,9 +425,11 @@ public:
 
   std::string toString() const override;
 
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 };
 
 /// (.., .., ..)
@@ -420,7 +445,7 @@ public:
             std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   static TupleType *getUnitType(basic::NodeId);
 
@@ -428,6 +453,8 @@ public:
   BaseType *getField(size_t i) const { return fields[i].getType(); }
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 
 private:
   std::vector<TypeVariable> fields;
@@ -472,7 +499,7 @@ public:
 
   TyTy::BaseType *getReturnType() const;
 
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   // basic::NodeId getId() const { return id; }
 
@@ -507,6 +534,8 @@ public:
 
   FunctionType *
   handleSubstitions(SubstitutionArgumentMappings &mappings) override final;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 
 private:
   lexer::Identifier name;
@@ -549,7 +578,7 @@ public:
   };
 
   std::string toString() const override;
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   TyTy::TupleType *getParameters() const { return parameters; }
   TyTy::BaseType *getResultType() const { return resultType.getType(); }
@@ -560,6 +589,8 @@ public:
 
   ClosureType *
   handleSubstitions(SubstitutionArgumentMappings &mappings) override final;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 
 private:
   TyTy::TupleType *parameters;
@@ -580,11 +611,13 @@ public:
 
   bool needsSubstitution() const;
   std::string toString() const override;
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   void applyScalarTypeHint(const BaseType &hint);
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 
 private:
   InferKind inferKind;
@@ -600,9 +633,11 @@ public:
             std::set<basic::NodeId> refs = std::set<basic::NodeId>());
 
   std::string toString() const override;
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 };
 
 class WithLocation {
@@ -655,7 +690,10 @@ public:
   VariantKind getKind() const { return kind; }
   basic::NodeId getId() const { return id; }
 
-  std::vector<TyTy::StructFieldType *> getFields() const;
+  std::vector<TyTy::StructFieldType *> getFields() const { return fields; }
+  size_t getNumberOfFields() const { return fields.size(); }
+
+  TyTy::StructFieldType *getFieldAt(size_t i) const { return fields[i]; }
 
   VariantDef *clone() const;
 
@@ -700,7 +738,7 @@ public:
         variants(variants), kind(kind) {}
 
   std::string toString() const override;
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   ADTKind getKind() const { return kind; }
 
@@ -709,6 +747,7 @@ public:
   bool isEnum() const { return kind == ADTKind::Enum; };
 
   std::vector<VariantDef *> getVariants() const { return variants; }
+  VariantDef *getVariant(size_t i) const { return variants[i]; }
 
   BaseType *clone() const final override;
 
@@ -731,6 +770,10 @@ public:
 
   ADTType *
   handleSubstitions(SubstitutionArgumentMappings &mappings) override final;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
+
+  Identifier getIdentifier() const { return identifier; }
 
 private:
   adt::Identifier identifier;
@@ -757,7 +800,7 @@ public:
 
   Identifier getSymbol() const { return identifier; }
 
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   bool canResolve() const { return getReference() == getTypeReference(); }
   BaseType *resolve() const;
@@ -765,6 +808,8 @@ public:
   BaseType *clone() const final override;
 
   bool isImplicitSelfTrait() const;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 
 private:
   Identifier identifier;
@@ -788,10 +833,12 @@ public:
         loc(loc), expr(expr), type(type) {}
 
   std::string toString() const override;
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
   TyTy::BaseType *getElementType() const;
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 
 private:
   Location loc;
@@ -817,9 +864,11 @@ public:
   BaseType *clone() const final override;
 
   std::string toString() const override;
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   bool isMutable() const { return mut == Mutability::Mut; }
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 
 private:
   TypeVariable base;
@@ -841,10 +890,16 @@ public:
                  refs),
         parameters(params), resultType(resultType) {}
 
-  TyTy::BaseType *getReturnType() const;
+  TyTy::BaseType *getReturnType() const { return resultType.getType(); }
   std::vector<TypeVariable> getParameters() const;
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
+
+  size_t getNumberOfArguments() const { return parameters.size(); }
+
+  BaseType *getParameter(size_t i) const { return parameters[i].getType(); }
 
 private:
   std::vector<TypeVariable> parameters;
@@ -867,6 +922,8 @@ public:
 
   BaseType *clone() const final override;
 
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
+
 private:
   TypeVariable elementType;
 };
@@ -887,6 +944,16 @@ public:
   BaseType *getBase() const { return base.getType(); }
 
   BaseType *clone() const final override;
+
+  std::optional<TyTy::StrType *> isDynStrType() const;
+
+  bool isMutable() const { return mut == Mutability::Mut; }
+
+  std::string toString() const override;
+
+  unsigned getNumberOfSpecifiedBounds() const override { return 0; }
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 
 private:
   TypeVariable base;
@@ -915,6 +982,8 @@ public:
 
   void setAssociatedType(basic::NodeId);
 
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
+
 private:
   Identifier id;
 };
@@ -925,6 +994,8 @@ public:
   BaseType *get() { return base; }
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 
 private:
   BaseType *base;
@@ -943,9 +1014,11 @@ public:
 
   std::string toString() const override;
 
-  unsigned getNumberOfSpecifiedBounds() override;
+  unsigned getNumberOfSpecifiedBounds() const override;
 
   BaseType *clone() const final override;
+
+  bool canEqual(const BaseType *other, bool emitErrors) const override;
 };
 
 } // namespace rust_compiler::tyctx::TyTy

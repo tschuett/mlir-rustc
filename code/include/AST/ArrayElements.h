@@ -28,9 +28,8 @@ public:
   std::shared_ptr<Expression> getCount() const { return count; }
   std::shared_ptr<Expression> getValue() const { return value; }
 
-  std::vector<std::shared_ptr<Expression>> &getElements()  {
-    return elements;
-  }
+  size_t getNumberOfElements() const { return elements.size(); }
+  std::vector<std::shared_ptr<Expression>> &getElements() { return elements; }
 };
 
 } // namespace rust_compiler::ast

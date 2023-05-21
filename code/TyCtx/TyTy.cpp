@@ -10,6 +10,7 @@
 #include "Location.h"
 #include "Session/Session.h"
 #include "TyCtx/Bounds.h"
+#include "TyCtx/Compare.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/Substitutions.h"
 #include "TyCtx/SubstitutionsMapper.h"
@@ -17,6 +18,7 @@
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TypeIdentity.h"
 
+#include <functional>
 #include <llvm/Support/ErrorHandling.h>
 #include <llvm/Support/raw_ostream.h>
 #include <optional>
@@ -234,7 +236,7 @@ StrType::StrType(basic::NodeId reference, basic::NodeId type,
 
 std::string StrType::toString() const { return "str"; }
 
-unsigned StrType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned StrType::getNumberOfSpecifiedBounds() const { return 0; }
 
 TupleType::TupleType(basic::NodeId id, Location loc,
                      std::vector<TyTy::TypeVariable> parameterTyps,
@@ -281,29 +283,29 @@ TyTy::BaseType *FunctionType::getReturnType() const { return returnType; }
 
 std::string FunctionType::toString() const { assert(false); }
 
-unsigned NeverType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned NeverType::getNumberOfSpecifiedBounds() const { return 0; }
 
-unsigned CharType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned CharType::getNumberOfSpecifiedBounds() const { return 0; }
 
-unsigned ISizeType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned ISizeType::getNumberOfSpecifiedBounds() const { return 0; }
 
-unsigned USizeType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned USizeType::getNumberOfSpecifiedBounds() const { return 0; }
 
-unsigned BoolType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned BoolType::getNumberOfSpecifiedBounds() const { return 0; }
 
-unsigned FloatType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned FloatType::getNumberOfSpecifiedBounds() const { return 0; }
 
-unsigned IntType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned IntType::getNumberOfSpecifiedBounds() const { return 0; }
 
-unsigned UintType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned UintType::getNumberOfSpecifiedBounds() const { return 0; }
 
-unsigned TupleType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned TupleType::getNumberOfSpecifiedBounds() const { return 0; }
 
-unsigned FunctionType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned FunctionType::getNumberOfSpecifiedBounds() const { return 0; }
 
-unsigned ErrorType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned ErrorType::getNumberOfSpecifiedBounds() const { return 0; }
 
-unsigned InferType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned InferType::getNumberOfSpecifiedBounds() const { return 0; }
 
 InferType::InferType(basic::NodeId ref, InferKind kind, TypeHint hint,
                      Location loc, std::set<basic::NodeId> refs)
@@ -426,7 +428,7 @@ std::string ClosureType::toString() const {
   return s.str();
 }
 
-unsigned ClosureType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned ClosureType::getNumberOfSpecifiedBounds() const { return 0; }
 
 StructFieldType::StructFieldType(basic::NodeId ref, const adt::Identifier &id,
                                  TyTy::BaseType *type, Location loc)
@@ -456,17 +458,17 @@ std::string ADTType::toString() const {
   return identifier.toString() + substToString() + "{" + variantsBuffer + "}";
 }
 
-unsigned ADTType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned ADTType::getNumberOfSpecifiedBounds() const { return 0; }
 
 std::string ArrayType::toString() const {
   return "[" + getElementType()->toString() + ":" + "CAPACITY" + "]";
 }
 
-unsigned ArrayType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned ArrayType::getNumberOfSpecifiedBounds() const { return 0; }
 
 TyTy::BaseType *ArrayType::getElementType() const { return type.getType(); }
 
-unsigned ParamType::getNumberOfSpecifiedBounds() { return bounds.size(); }
+unsigned ParamType::getNumberOfSpecifiedBounds() const { return bounds.size(); }
 
 std::string ParamType::toString() const {
   assert(false && "to be implemented");
@@ -1117,7 +1119,7 @@ std::string TypeBoundPredicate::toString() const {
   return get()->toString() + substToString();
 }
 
-unsigned DynamicObjectType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned DynamicObjectType::getNumberOfSpecifiedBounds() const { return 0; }
 
 BaseType *DynamicObjectType::clone() const {
   return new DynamicObjectType(getReference(), getTypeReference(),
@@ -1138,7 +1140,7 @@ std::string RawPointerType::toString() const {
          getBase()->toString();
 }
 
-unsigned RawPointerType::getNumberOfSpecifiedBounds() { return 0; }
+unsigned RawPointerType::getNumberOfSpecifiedBounds() const { return 0; }
 
 BaseType *RawPointerType::clone() const {
   return new RawPointerType(getReference(), getTypeReference(), base, mut,
@@ -1203,6 +1205,177 @@ TypeBoundPredicate::lookupAssociatedItem(const Identifier &id) const {
 void PlaceholderType::setAssociatedType(basic::NodeId id) {
   rust_compiler::session::session->getTypeContext()
       ->insertAssociatedTypeMapping(getTypeReference(), id);
+}
+
+TypeVariable TypeVariable::getImplicitInferVariable(Location loc) {
+  InferType *infer =
+      new InferType(rust_compiler::basic::getNextNodeId(), InferKind::General,
+                    TypeHint::unknown(), loc);
+
+  TyCtx *ctx = rust_compiler::session::session->getTypeContext();
+  ctx->insertType(
+      NodeIdentity(infer->getReference(),
+                   rust_compiler::session::session->getCurrentCrateNum(), loc),
+      infer);
+  ctx->insertLocation(infer->getReference(), loc);
+
+  return TypeVariable(infer->getReference());
+}
+
+std::optional<TyTy::StrType *> ReferenceType::isDynStrType() const {
+  TyTy::BaseType *element = getBase()->destructure();
+  if (element->getKind() != TypeKind::Str)
+    return std::nullopt;
+  //  if (str == nullptr)
+  //    return true;
+
+  return static_cast<TyTy::StrType *>(element);
+}
+
+std::string ReferenceType::toString() const {
+  return std::string("&") + (isMutable() ? "mut" : "") + " " +
+         getBase()->toString();
+}
+
+BaseType *ReferenceType::clone() const {
+  return new ReferenceType(getReference(), getTypeReference(), base, mut,
+                           getCombinedReferences());
+}
+
+bool ErrorType::canEqual(const TyTy::BaseType *other, bool emitErrors) const {
+  return getKind() == other->getKind();
+}
+
+bool ADTType::canEqual(const BaseType *other, bool emitErrors) const {
+  ADTCmp r(this);
+  return r.canEqual(other);
+}
+
+bool TupleType::canEqual(const BaseType *other, bool emitErrors) const {
+  TupleCmp r(this, emitErrors);
+  return r.canEqual(other);
+}
+
+bool FunctionType::canEqual(const BaseType *other, bool emitErrors) const {
+  FunctionCmp r(this, emitErrors);
+  return r.canEqual(other);
+}
+
+bool FunctionPointerType::canEqual(const BaseType *other,
+                                   bool emitErrors) const {
+  FunctionPointerCmp r(this, emitErrors);
+  return r.canEqual(other);
+}
+
+bool ClosureType::canEqual(const BaseType *other, bool emitErrors) const {
+  ClosureCmp r(this, emitErrors);
+  return r.canEqual(other);
+}
+
+bool ArrayType::canEqual(const BaseType *other, bool emitErrors) const {
+  ArrayCmp r(this, emitErrors);
+  return r.canEqual(other);
+}
+
+bool SliceType::canEqual(const BaseType *other, bool emitErrors) const {
+  SliceCmp r(this, emitErrors);
+  return r.canEqual(other);
+}
+
+bool BoolType::canEqual(const BaseType *other, bool emitErrors) const {
+  BoolCmp r;
+  return r.canEqual(other);
+}
+
+bool IntType::canEqual(const BaseType *other, bool emitErrors) const {
+  IntCmp r(this);
+  return r.canEqual(other);
+}
+
+bool UintType::canEqual(const BaseType *other, bool emitErrors) const {
+  UintCmp r(this);
+  return r.canEqual(other);
+}
+
+bool FloatType::canEqual(const BaseType *other, bool emitErrors) const {
+  FloatCmp r(this);
+  return r.canEqual(other);
+}
+
+bool USizeType::canEqual(const BaseType *other, bool emitErrors) const {
+  USizeCmp r;
+  return r.canEqual(other);
+}
+
+bool ISizeType::canEqual(const BaseType *other, bool emitErrors) const {
+  ISizeCmp r;
+  return r.canEqual(other);
+}
+
+bool CharType::canEqual(const BaseType *other, bool emitErrors) const {
+  CharCmp r;
+  return r.canEqual(other);
+}
+
+bool ReferenceType::canEqual(const BaseType *other, bool emitErrors) const {
+  ReferenceCmp r(this, emitErrors);
+  return r.canEqual(other);
+}
+
+bool RawPointerType::canEqual(const BaseType *other, bool emitErrors) const {
+  RawPointerCmp r(this, emitErrors);
+  return r.canEqual(other);
+}
+
+bool ParamType::canEqual(const BaseType *other, bool emitErrors) const {
+  ParamCmp r(this);
+  return r.canEqual(other);
+}
+
+bool StrType::canEqual(const BaseType *other, bool emitErrors) const {
+  StrCmp r;
+  return r.canEqual(other);
+}
+
+bool NeverType::canEqual(const BaseType *other, bool emitErrors) const {
+  NeverCmp r;
+  return r.canEqual(other);
+}
+
+bool PlaceholderType::canEqual(const BaseType *other, bool emitErrors) const {
+  PlaceholderCmp r;
+  return r.canEqual(other);
+}
+
+bool ProjectionType::canEqual(const BaseType *other, bool emitErrors) const {
+  return base->canEqual(other, emitErrors);
+}
+
+bool DynamicObjectType::canEqual(const BaseType *other, bool emitErrors) const {
+  DynamicCmp r(this);
+  return r.canEqual(other);
+}
+
+bool InferType::canEqual(const BaseType *other, bool emitErrors) const {
+  InferCmp r(this);
+  return r.canEqual(other);
+}
+
+bool BaseType::boundsCompatible(const TyTy::BaseType *other, Location loc,
+                                bool emitError) const {
+  std::vector<std::reference_wrapper<const TypeBoundPredicate>>
+      unsatisfiedBounds;
+
+  for (auto &bound : getSpecifiedBounds())
+    if (!other->satisfiesBound(bound))
+      unsatisfiedBounds.push_back(bound);
+
+  if (unsatisfiedBounds.size() > 0) {
+    // report error
+    assert(false);
+  }
+
+  return unsatisfiedBounds.size() == 1;
 }
 
 } // namespace rust_compiler::tyctx::TyTy

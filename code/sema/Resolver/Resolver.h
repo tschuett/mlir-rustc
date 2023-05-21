@@ -46,8 +46,10 @@
 #include "AST/TupleExpression.h"
 #include "AST/TupleStruct.h"
 #include "AST/TypeAlias.h"
+#include "AST/TypeCastExpression.h"
 #include "AST/Types/ArrayType.h"
 #include "AST/Types/ImplTraitType.h"
+#include "AST/Types/RawPointerType.h"
 #include "AST/Types/ReferenceType.h"
 #include "AST/Types/TraitObjectType.h"
 #include "AST/Types/TupleType.h"
@@ -57,6 +59,7 @@
 #include "AST/Types/TypePathFn.h"
 #include "AST/Types/TypePathSegment.h"
 #include "AST/Union.h"
+#include "AST/UnsafeBlockExpression.h"
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
@@ -300,6 +303,9 @@ private:
   void resolveBlockExpression(std::shared_ptr<ast::BlockExpression>,
                               const adt::CanonicalPath &prefix,
                               const adt::CanonicalPath &canonicalPrefix);
+  void resolveUnsafeBlockExpression(std::shared_ptr<ast::UnsafeBlockExpression>,
+                                    const adt::CanonicalPath &prefix,
+                                    const adt::CanonicalPath &canonicalPrefix);
   void resolveMatchExpression(std::shared_ptr<ast::MatchExpression>,
                               const adt::CanonicalPath &prefix,
                               const adt::CanonicalPath &canonicalPrefix);
@@ -319,6 +325,10 @@ private:
   void resolveComparisonExpression(std::shared_ptr<ast::ComparisonExpression>,
                                    const adt::CanonicalPath &prefix,
                                    const adt::CanonicalPath &canonicalPrefix);
+  void resolveTypeCastExpression(std::shared_ptr<ast::TypeCastExpression>,
+                                 const adt::CanonicalPath &prefix,
+                                 const adt::CanonicalPath &canonicalPrefix);
+
   void resolveDereferenceExpression(std::shared_ptr<ast::DereferenceExpression>,
                                     const adt::CanonicalPath &prefix,
                                     const adt::CanonicalPath &canonicalPrefix);
@@ -373,6 +383,10 @@ private:
       const adt::CanonicalPath &canonicalPrefix);
   std::optional<basic::NodeId>
   resolveTypeParamBound(std::shared_ptr<ast::types::TypeParamBound>,
+                        const adt::CanonicalPath &prefix,
+                        const adt::CanonicalPath &canonicalPrefix);
+  std::optional<basic::NodeId>
+  resolveRawPointerType(std::shared_ptr<ast::types::RawPointerType>,
                         const adt::CanonicalPath &prefix,
                         const adt::CanonicalPath &canonicalPrefix);
 

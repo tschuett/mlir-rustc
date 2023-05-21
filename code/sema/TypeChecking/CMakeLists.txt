@@ -19,6 +19,9 @@ add_library(TypeChecking
             #Generics.cpp
             MethodProbe.cpp
             Trait.cpp
+            Casting.cpp
+            OperatorOverload.cpp
+            MethodResolver.cpp
            )
 
 target_include_directories(TypeChecking PRIVATE  ../../include)

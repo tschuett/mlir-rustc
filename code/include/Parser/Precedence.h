@@ -20,6 +20,8 @@ enum class Precedence {
   UnaryNot = 70,
   UnaryStar = 70,
 
+  As = 65,
+
   Plus = 55,
   Minus = 55,
 

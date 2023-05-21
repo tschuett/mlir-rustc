@@ -3,6 +3,7 @@
 #include "Session/Session.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyTy.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include <vector>
 
@@ -47,7 +48,13 @@ void Unification::handleInference() {
   infers;
 }
 
-void Unification::emitFailedUnification() { assert(false); }
+void Unification::emitFailedUnification() {
+
+  llvm::errs() << rhs.getType()->toString() << "\n";
+  llvm::errs() << lhs.getType()->toString() << "\n";
+
+  assert(false);
+}
 
 void Unification::commit(TyTy::BaseType *leftType, TyTy::BaseType *rightType,
                          TyTy::BaseType *result) {
@@ -124,7 +131,8 @@ TyTy::BaseType *Unification::expect(TyTy::BaseType *leftType,
     assert(false);
   }
   case TyTy::TypeKind::Inferred: {
-    assert(false);
+    return expectInferenceVariable(static_cast<TyTy::InferType *>(leftType),
+                                   rightType);
   }
   case TyTy::TypeKind::Never: {
     assert(false);
@@ -163,7 +171,8 @@ TyTy::BaseType *Unification::expect(TyTy::BaseType *leftType,
     assert(false);
   }
   case TyTy::TypeKind::RawPointer: {
-    assert(false);
+    return expectRawPointer(static_cast<TyTy::RawPointerType *>(leftType),
+                            rightType);
   }
   case TyTy::TypeKind::Reference: {
     assert(false);
@@ -351,6 +360,97 @@ TyTy::BaseType *Unification::expectTuple(TyTy::TupleType *left,
   }
 }
 
+TyTy::BaseType *
+Unification::expectInferenceVariable(TyTy::InferType *left,
+                                     TyTy::BaseType *rightType) {
+  switch (rightType->getKind()) {
+  case TypeKind::Bool: {
+    assert(false);
+  }
+  case TypeKind::Char: {
+    assert(false);
+  }
+  case TypeKind::Int: {
+    assert(false);
+  }
+  case TypeKind::Uint: {
+    assert(false);
+  }
+  case TypeKind::USize: {
+    assert(false);
+  }
+  case TypeKind::ISize: {
+    assert(false);
+  }
+  case TypeKind::Float: {
+    assert(false);
+  }
+  case TypeKind::Closure: {
+    assert(false);
+  }
+  case TypeKind::Function: {
+    assert(false);
+  }
+  case TypeKind::Inferred: {
+    // TyTy::InferType *r = static_cast<TyTy::InferType*>(rightType);
+    switch (left->getInferredKind()) {
+    case InferKind::Integral: {
+      assert(false);
+    }
+    case InferKind::Float: {
+      assert(false);
+    }
+    case InferKind::General: {
+      return rightType->clone();
+    }
+    }
+    assert(false);
+  }
+  case TypeKind::Never: {
+    assert(false);
+  }
+  case TypeKind::Str: {
+    assert(false);
+  }
+  case TypeKind::Tuple: {
+    assert(false);
+  }
+  case TypeKind::Parameter: {
+    assert(false);
+  }
+  case TypeKind::ADT: {
+    assert(false);
+  }
+  case TypeKind::Array: {
+    assert(false);
+  }
+  case TypeKind::Slice: {
+    assert(false);
+  }
+  case TypeKind::Projection: {
+    assert(false);
+  }
+  case TypeKind::Dynamic: {
+    assert(false);
+  }
+  case TypeKind::PlaceHolder: {
+    assert(false);
+  }
+  case TypeKind::FunctionPointer: {
+    assert(false);
+  }
+  case TypeKind::RawPointer: {
+    assert(false);
+  }
+  case TypeKind::Reference: {
+    assert(false);
+  }
+  case TypeKind::Error: {
+    assert(false);
+  }
+  }
+}
+
 TyTy::BaseType *Unification::unifyWithSite(TyTy::WithLocation lhs,
                                            TyTy::WithLocation rhs,
                                            Location unify, TyCtx *context) {
@@ -361,6 +461,58 @@ TyTy::BaseType *Unification::unifyWithSite(TyTy::WithLocation lhs,
   Unification uni = {commits, infers, unify, lhs, rhs, context};
 
   return uni.unify(true /*commit*/, true /*emitError*/, false /*infer*/);
+}
+
+TyTy::BaseType *Unification::expectRawPointer(TyTy::RawPointerType *pointer,
+                                              TyTy::BaseType *rightType) {
+
+  switch (rightType->getKind()) {
+  case TyTy::TypeKind::Inferred: {
+    TyTy::InferType *infer = static_cast<TyTy::InferType *>(rightType);
+    if (infer->getInferredKind() == TyTy::InferKind::General) {
+      return pointer->clone();
+    }
+    return new ErrorType(0);
+  }
+  case TyTy::TypeKind::USize:
+  case TyTy::TypeKind::Bool:
+  case TyTy::TypeKind::Char:
+  case TyTy::TypeKind::Int:
+  case TyTy::TypeKind::Uint:
+  case TyTy::TypeKind::ISize:
+  case TyTy::TypeKind::Float:
+  case TyTy::TypeKind::Closure:
+  case TyTy::TypeKind::Function:
+  case TyTy::TypeKind::Never:
+  case TyTy::TypeKind::Str:
+  case TyTy::TypeKind::Tuple:
+  case TyTy::TypeKind::Parameter:
+  case TyTy::TypeKind::ADT:
+  case TyTy::TypeKind::Array:
+  case TyTy::TypeKind::Projection:
+  case TyTy::TypeKind::Slice:
+  case TyTy::TypeKind::Dynamic:
+  case TyTy::TypeKind::PlaceHolder:
+  case TyTy::TypeKind::FunctionPointer:
+  case TyTy::TypeKind::Reference:
+  case TyTy::TypeKind::Error:
+    return new ErrorType(0);
+  case TyTy::TypeKind::RawPointer:
+    TyTy::RawPointerType *type = static_cast<TyTy::RawPointerType *>(rightType);
+
+    TyTy::BaseType *baseType = pointer->getBase();
+    TyTy::BaseType *otherBaseType = type->getBase();
+
+    TyTy::BaseType *resolved = Unification::unifyWithSite(
+        TyTy::WithLocation(baseType), TyTy::WithLocation(otherBaseType),
+        location, context);
+
+    if (resolved->getKind() == TypeKind::Error)
+      return new ErrorType(0);
+
+    assert(false);
+  }
+  return new ErrorType(0);
 }
 
 } // namespace rust_compiler::sema::type_checking

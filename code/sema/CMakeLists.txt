@@ -28,6 +28,7 @@ add_library(sema
            ConstantEvaluater.cpp
            PlaceOrValue.cpp
            Types.cpp
+           Properties.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)
