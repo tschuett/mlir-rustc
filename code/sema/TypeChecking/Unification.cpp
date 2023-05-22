@@ -113,7 +113,7 @@ TyTy::BaseType *Unification::expect(TyTy::BaseType *leftType,
     return expectIntType(static_cast<TyTy::IntType *>(leftType), rightType);
   }
   case TyTy::TypeKind::Uint: {
-    assert(false);
+    return expectUint(static_cast<TyTy::UintType *>(leftType), rightType);
   }
   case TyTy::TypeKind::USize: {
     return expectUSizeType(static_cast<TyTy::USizeType *>(leftType), rightType);
@@ -150,7 +150,7 @@ TyTy::BaseType *Unification::expect(TyTy::BaseType *leftType,
     assert(false);
   }
   case TyTy::TypeKind::Array: {
-    assert(false);
+    return expectArray(static_cast<TyTy::ArrayType *>(leftType), rightType);
   }
   case TyTy::TypeKind::Projection: {
     assert(false);
@@ -159,7 +159,7 @@ TyTy::BaseType *Unification::expect(TyTy::BaseType *leftType,
     assert(false);
   }
   case TyTy::TypeKind::Slice: {
-    assert(false);
+    return expectSlice(static_cast<TyTy::SliceType *>(leftType), rightType);
   }
   case TyTy::TypeKind::Dynamic: {
     assert(false);
@@ -511,6 +511,149 @@ TyTy::BaseType *Unification::expectRawPointer(TyTy::RawPointerType *pointer,
       return new ErrorType(0);
 
     assert(false);
+  }
+  return new ErrorType(0);
+}
+
+TyTy::BaseType *Unification::expectSlice(TyTy::SliceType *leftType,
+                                         TyTy::BaseType *rightType) {
+  switch (rightType->getKind()) {
+  case TyTy::TypeKind::Inferred: {
+    TyTy::InferType *infer = static_cast<TyTy::InferType *>(rightType);
+    if (infer->getInferredKind() == TyTy::InferKind::General) {
+      return leftType->clone();
+    }
+    return new ErrorType(0);
+  }
+  case TyTy::TypeKind::USize:
+  case TyTy::TypeKind::Bool:
+  case TyTy::TypeKind::Char:
+  case TyTy::TypeKind::Int:
+  case TyTy::TypeKind::Uint:
+  case TyTy::TypeKind::ISize:
+  case TyTy::TypeKind::Float:
+  case TyTy::TypeKind::Closure:
+  case TyTy::TypeKind::Function:
+  case TyTy::TypeKind::Never:
+  case TyTy::TypeKind::Str:
+  case TyTy::TypeKind::Tuple:
+  case TyTy::TypeKind::Parameter:
+  case TyTy::TypeKind::ADT:
+  case TyTy::TypeKind::Array:
+  case TyTy::TypeKind::Projection:
+  case TyTy::TypeKind::Dynamic:
+  case TyTy::TypeKind::PlaceHolder:
+  case TyTy::TypeKind::FunctionPointer:
+  case TyTy::TypeKind::RawPointer:
+  case TyTy::TypeKind::Reference:
+  case TyTy::TypeKind::Error:
+    return new ErrorType(0);
+  case TyTy::TypeKind::Slice: {
+    TyTy::SliceType *type = static_cast<TyTy::SliceType *>(rightType);
+    TyTy::BaseType *elementUnify = Unification::unifyWithSite(
+        TyTy::WithLocation(leftType->getElementType()),
+        TyTy::WithLocation(type->getElementType()), location, context);
+    if (elementUnify->getKind() == TypeKind::Error)
+      return new ErrorType(0);
+    return new TyTy::SliceType(
+        type->getReference(), type->getTypeReference(),
+        type->getTypeIdentity().getLocation(),
+        TyTy::TypeVariable(elementUnify->getReference()));
+  }
+  }
+  return new ErrorType(0);
+}
+
+TyTy::BaseType *Unification::expectArray(TyTy::ArrayType *array,
+                                         TyTy::BaseType *rightType) {
+  switch (rightType->getKind()) {
+  case TyTy::TypeKind::Inferred: {
+    TyTy::InferType *infer = static_cast<TyTy::InferType *>(rightType);
+    if (infer->getInferredKind() == TyTy::InferKind::General) {
+      return array->clone();
+    }
+    return new ErrorType(0);
+  }
+  case TyTy::TypeKind::USize:
+  case TyTy::TypeKind::Bool:
+  case TyTy::TypeKind::Char:
+  case TyTy::TypeKind::Int:
+  case TyTy::TypeKind::Uint:
+  case TyTy::TypeKind::ISize:
+  case TyTy::TypeKind::Float:
+  case TyTy::TypeKind::Closure:
+  case TyTy::TypeKind::Function:
+  case TyTy::TypeKind::Never:
+  case TyTy::TypeKind::Str:
+  case TyTy::TypeKind::Tuple:
+  case TyTy::TypeKind::Parameter:
+  case TyTy::TypeKind::ADT:
+  case TyTy::TypeKind::Slice:
+  case TyTy::TypeKind::Projection:
+  case TyTy::TypeKind::Dynamic:
+  case TyTy::TypeKind::PlaceHolder:
+  case TyTy::TypeKind::FunctionPointer:
+  case TyTy::TypeKind::RawPointer:
+  case TyTy::TypeKind::Reference:
+  case TyTy::TypeKind::Error:
+    return new ErrorType(0);
+  case TyTy::TypeKind::Array: {
+    TyTy::ArrayType *type = static_cast<TyTy::ArrayType *>(rightType);
+    TyTy::BaseType *elementUnify = Unification::unifyWithSite(
+        TyTy::WithLocation(array->getElementType()),
+        TyTy::WithLocation(type->getElementType()), location, context);
+    if (elementUnify->getKind() == TypeKind::Error)
+      return new ErrorType(0);
+    return new TyTy::ArrayType(
+        type->getReference(), type->getTypeIdentity().getLocation(),
+        type->getCapacityExpression(),
+        TyTy::TypeVariable(elementUnify->getReference()));
+  }
+  }
+  return new ErrorType(0);
+}
+
+TyTy::BaseType *Unification::expectUint(TyTy::UintType *leftType,
+                                        TyTy::BaseType *rightType) {
+  switch (rightType->getKind()) {
+  case TyTy::TypeKind::Inferred: {
+    TyTy::InferType *infer = static_cast<TyTy::InferType *>(rightType);
+    if (infer->getInferredKind() == TyTy::InferKind::General or
+        infer->getInferredKind() == TyTy::InferKind::Integral) {
+      infer->applyScalarTypeHint(*leftType);
+      return leftType->clone();
+    }
+    return new ErrorType(0);
+  }
+  case TyTy::TypeKind::USize:
+  case TyTy::TypeKind::Bool:
+  case TyTy::TypeKind::Char:
+  case TyTy::TypeKind::Int:
+  case TyTy::TypeKind::ISize:
+  case TyTy::TypeKind::Float:
+  case TyTy::TypeKind::Closure:
+  case TyTy::TypeKind::Function:
+  case TyTy::TypeKind::Never:
+  case TyTy::TypeKind::Str:
+  case TyTy::TypeKind::Tuple:
+  case TyTy::TypeKind::Parameter:
+  case TyTy::TypeKind::ADT:
+  case TyTy::TypeKind::Slice:
+  case TyTy::TypeKind::Projection:
+  case TyTy::TypeKind::Dynamic:
+  case TyTy::TypeKind::Array: 
+  case TyTy::TypeKind::PlaceHolder:
+  case TyTy::TypeKind::FunctionPointer:
+  case TyTy::TypeKind::RawPointer:
+  case TyTy::TypeKind::Reference:
+  case TyTy::TypeKind::Error:
+    return new ErrorType(0);
+  case TyTy::TypeKind::Uint:
+    TyTy::UintType *type = static_cast<TyTy::UintType *>(rightType);
+    if (leftType->getUintKind() == type->getUintKind())
+      return new TyTy::UintType(type->getReference(), type->getTypeReference(),
+                                type->getUintKind());
+    return new ErrorType(0);
   }
   return new ErrorType(0);
 }

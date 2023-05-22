@@ -19,6 +19,7 @@ namespace rust_compiler::crate_builder {
 // }
 
 void CrateBuilder::emitCrate(rust_compiler::ast::Crate *crate) {
+  this->crate = crate;
 
   for (auto &i : crate->getItems()) {
     emitItem(i.get());

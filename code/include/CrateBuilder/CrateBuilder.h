@@ -2,6 +2,7 @@
 
 #include "ADT/ScopedHashTable.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/ArrayExpression.h"
 #include "AST/BlockExpression.h"
 #include "AST/CallExpression.h"
 #include "AST/ComparisonExpression.h"
@@ -11,21 +12,26 @@
 #include "AST/Function.h"
 #include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
+#include "AST/ItemDeclaration.h"
 #include "AST/LetStatement.h"
+#include "AST/LiteralExpression.h"
 #include "AST/LoopExpression.h"
 #include "AST/MethodCallExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/ReturnExpression.h"
+#include "AST/Statement.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
 #include "AST/Types/TypePath.h"
 #include "AST/VariableDeclaration.h"
+#include "Basic/Ids.h"
 #include "CrateBuilder/Target.h"
 #include "Hir/HirDialect.h"
 #include "Session/Session.h"
 #include "TyCtx/TyCtx.h"
 
+#include <cstdint>
 #include <llvm/ADT/ScopedHashTable.h>
 // #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
@@ -140,12 +146,15 @@ private:
   mlir::Value emitIfLetExpression(ast::IfLetExpression *expr);
   mlir::Value emitComparePatternWithExpression(ast::patterns::Pattern *pattern,
                                                ast::Expression *expr);
-  mlir::Value emitComparePatternWithOperatorExpression(ast::patterns::Pattern *pattern,
-                                               ast::OperatorExpression *expr);
+  mlir::Value
+  emitComparePatternWithOperatorExpression(ast::patterns::Pattern *pattern,
+                                           ast::OperatorExpression *expr);
   mlir::Value emitMatchIfLetPattern(ast::patterns::Pattern *pattern,
-                                               ast::Expression *expr);
+                                    ast::Expression *expr);
   mlir::Value emitMatchIfLetNoTopAlt(ast::patterns::PatternNoTopAlt *pattern,
-                                               ast::Expression *expr);
+                                     ast::Expression *expr);
+  mlir::Value emitLiteralExpression(ast::LiteralExpression *);
+  mlir::Value emitArrayExpression(ast::ArrayExpression *array);
 
   mlir::FunctionType getFunctionType(ast::Function *);
 
@@ -164,6 +173,70 @@ private:
                                      loc.getLineNumber(),
                                      loc.getColumnNumber());
   }
+
+  uint64_t foldAsUsizeExpression(ast::Expression *);
+  uint64_t foldAsUsizeWithoutBlock(ast::ExpressionWithoutBlock *);
+  uint64_t foldAsUsizeWithBlock(ast::ExpressionWithBlock *);
+  uint64_t foldAsUsizePathExpression(ast::PathExpression *);
+  uint64_t foldAsUsizeItem(ast::Item *);
+  uint64_t foldAsUsizeVisItem(ast::VisItem *);
+  uint64_t foldAsUsizeConstantItem(ast::ConstantItem *);
+  uint64_t foldAsUsizeLiteralExpression(ast::LiteralExpression *);
+
+  ast::Crate *crate;
+
+  enum class OwnerKind { Expression, Statement, Item };
+  class Owner {
+    ast::Expression *expr;
+    ast::Statement *stmt;
+    ast::Item *item;
+    OwnerKind kind;
+
+  public:
+    OwnerKind getKind() const { return kind; }
+
+    ast::Item *getItem() const { return item; }
+
+    static Owner expression(ast::Expression *expression) {
+      Owner owner;
+      owner.kind = OwnerKind::Expression;
+      owner.expr = expression;
+      return owner;
+    }
+
+    static Owner statement(ast::Statement *stmt) {
+      Owner owner;
+      owner.kind = OwnerKind::Statement;
+      owner.stmt = stmt;
+      return owner;
+    }
+
+    static Owner Item(ast::Item *item) {
+      Owner owner;
+      owner.kind = OwnerKind::Item;
+      owner.item = item;
+      return owner;
+    }
+  };
+
+  std::optional<Owner> getOwner(basic::NodeId id);
+  std::optional<Owner> getOwnerCrate(basic::NodeId id);
+  std::optional<Owner> getOwnerItem(basic::NodeId id, ast::Item *);
+  std::optional<Owner> getOwnerVisItem(basic::NodeId id, ast::VisItem *);
+  std::optional<Owner> getOwnerFunction(basic::NodeId id, ast::Function *);
+  std::optional<Owner> getOwnerExpression(basic::NodeId id, ast::Expression *);
+  std::optional<Owner> getOwnerExpressionWithBlock(basic::NodeId id,
+                                                   ast::ExpressionWithBlock *);
+  std::optional<Owner>
+  getOwnerExpressionWithoutBlock(basic::NodeId id,
+                                 ast::ExpressionWithoutBlock *);
+  std::optional<Owner> getOwnerBlockExpression(basic::NodeId id,
+                                               ast::BlockExpression *);
+  std::optional<Owner> getOwnerStatement(basic::NodeId id, ast::Statement *);
+  std::optional<Owner> getOwnerItemDeclaration(basic::NodeId id,
+                                               ast::ItemDeclaration *);
+
+  std::map<basic::NodeId, Owner> owners;
 };
 
 } // namespace rust_compiler::crate_builder

@@ -21,6 +21,7 @@
 #include "AST/IndexEpression.h"
 #include "AST/InherentImpl.h"
 #include "AST/Item.h"
+#include "AST/ItemDeclaration.h"
 #include "AST/LetStatement.h"
 #include "AST/LiteralExpression.h"
 #include "AST/MacroItem.h"
@@ -40,6 +41,7 @@
 #include "AST/Types/NeverType.h"
 #include "AST/Types/RawPointerType.h"
 #include "AST/Types/ReferenceType.h"
+#include "AST/Types/SliceType.h"
 #include "AST/Types/TraitObjectTypeOneBound.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypePath.h"
@@ -112,6 +114,9 @@ private:
   void checkMacroItem(std::shared_ptr<ast::MacroItem> v);
   void checkFunction(std::shared_ptr<ast::Function> f);
   void checkStruct(ast::Struct *s);
+  void checkConstantItem(ast::ConstantItem *);
+
+  TyTy::BaseType *checkItemDeclaration(ast::ItemDeclaration *item);
   TyTy::BaseType *checkTrait(ast::Trait *s);
   void checkStructStruct(ast::StructStruct *s);
   void checkTupleStruct(ast::TupleStruct *s);
@@ -218,6 +223,7 @@ private:
   TyTy::ParamType *checkGenericParamTypeParam(const ast::TypeParam &);
   TyTy::BaseType *
       checkRawPointerType(std::shared_ptr<ast::types::RawPointerType>);
+  TyTy::BaseType *checkSliceType(std::shared_ptr<ast::types::SliceType>);
 
   bool
   resolveOperatorOverload(ArithmeticOrLogicalExpressionKind,

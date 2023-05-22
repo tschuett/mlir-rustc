@@ -1,5 +1,6 @@
 #include "ADT/CanonicalPath.h"
 #include "ADT/ScopedCanonicalPath.h"
+#include "AST/ConstantItem.h"
 #include "AST/Function.h"
 #include "AST/GenericParams.h"
 #include "AST/Implementation.h"
@@ -7,6 +8,7 @@
 #include "AST/Struct.h"
 #include "AST/StructField.h"
 #include "AST/VisItem.h"
+#include "Coercion.h"
 #include "TyCtx/Substitutions.h"
 #include "TyCtx/TyTy.h"
 #include "TyCtx/TypeIdentity.h"
@@ -51,7 +53,8 @@ void TypeResolver::checkVisItem(std::shared_ptr<ast::VisItem> v) {
     assert(false && "to be implemented");
   }
   case VisItemKind::ConstantItem: {
-    assert(false && "to be implemented");
+    checkConstantItem(std::static_pointer_cast<ConstantItem>(v).get());
+    break;
   }
   case VisItemKind::StaticItem: {
     assert(false && "to be implemented");
@@ -131,7 +134,7 @@ void TypeResolver::checkStructStruct(ast::StructStruct *s) {
 void TypeResolver::checkTupleStruct(ast::TupleStruct *s) {
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (s->hasGenerics())
-  checkGenericParams(s->getGenericParams(), substitutions);
+    checkGenericParams(s->getGenericParams(), substitutions);
 
   if (s->hasWhereClause())
     checkWhereClause(s->getWhereClause());
@@ -182,5 +185,17 @@ void TypeResolver::checkImplementation(ast::Implementation *impl) {
 }
 
 void TypeResolver::checkInherentImpl(ast::InherentImpl *impl) { assert(false); }
+
+void TypeResolver::checkConstantItem(ast::ConstantItem *con) {
+  TyTy::BaseType *type = checkType(con->getType());
+  TyTy::BaseType *exprType = checkExpression(con->getInit());
+
+  TyTy::BaseType *result = coercionWithSite(con->getNodeId(),
+                   TyTy::WithLocation(type, con->getType()->getLocation()),
+                   TyTy::WithLocation(exprType, con->getInit()->getLocation()),
+                   con->getLocation(), tcx);
+
+  tcx->insertType(con->getIdentity(), result);
+}
 
 } // namespace rust_compiler::sema::type_checking

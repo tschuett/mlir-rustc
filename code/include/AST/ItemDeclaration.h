@@ -5,6 +5,7 @@
 #include "AST/MacroItem.h"
 #include "AST/Statement.h"
 #include "Location.h"
+#include "AST/VisItem.h"
 
 #include <memory>
 #include <span>
@@ -26,6 +27,13 @@ public:
   }
   void setVisItem(std::shared_ptr<Item> vis) { visItem = vis; }
   void setMacroItem(std::shared_ptr<Item> mac) { macroItem = mac; }
+
+  bool hasVisItem() const { return (bool)visItem; }
+  bool hasMacroItem() const { return (bool)macroItem; }
+
+  std::shared_ptr<VisItem> getVisItem() const {
+    return std::static_pointer_cast<VisItem>(visItem);
+  }
 };
 
 } // namespace rust_compiler::ast

@@ -840,6 +840,10 @@ public:
 
   bool canEqual(const BaseType *other, bool emitErrors) const override;
 
+  std::shared_ptr<ast::Expression> getCapacityExpression() const {
+    return expr;
+  }
+
 private:
   Location loc;
   std::shared_ptr<ast::Expression> expr;
@@ -923,6 +927,10 @@ public:
   BaseType *clone() const final override;
 
   bool canEqual(const BaseType *other, bool emitErrors) const override;
+
+  std::string toString() const override;
+
+  unsigned getNumberOfSpecifiedBounds() const override { return 0; }
 
 private:
   TypeVariable elementType;

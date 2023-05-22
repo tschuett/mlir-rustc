@@ -12,8 +12,8 @@ namespace rust_compiler::sema::type_checking {
 CoercionResult Coercion::coercion(TyTy::BaseType *receiver,
                                   TyTy::BaseType *expected, Location loc,
                                   bool allowAutoderef) {
-//  llvm::errs() << receiver->toString() << "\n";
-//  llvm::errs() << expected->toString() << "\n";
+//    llvm::errs() << receiver->toString() << "\n";
+//    llvm::errs() << expected->toString() << "\n";
 
   bool success = false;
   if (receiver->getKind() == TyTy::TypeKind::Never)
@@ -45,7 +45,20 @@ bool Coercion::coerceToNever(TyTy::BaseType *receiver,
 TyTy::BaseType *coercion(basic::NodeId, TyTy::WithLocation lhs,
                          TyTy::WithLocation rhs, Location unify,
                          TyCtx *context) {
-  assert(false && "to be implemented");
+  TyTy::BaseType *expectedType = lhs.getType();
+  TyTy::BaseType *expression = rhs.getType();
+
+  if (expectedType->getKind() == TyTy::TypeKind::Error ||
+      expression->getKind() == TyTy::TypeKind::Error)
+    return expression;
+
+  Coercion coercion = {context};
+  CoercionResult result = coercion.coercion(expression, expectedType, unify,
+                                            true /*allow autoderef*/);
+
+  if (!result.isError())
+    return result.getType();
+  assert(false);
 }
 
 TyTy::BaseType *coercionWithSite(basic::NodeId id, TyTy::WithLocation lhs,

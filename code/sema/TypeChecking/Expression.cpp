@@ -169,8 +169,8 @@ TyTy::BaseType *TypeResolver::checkBlockExpression(
   Statements stmts = block->getExpressions();
 
   for (auto &s : stmts.getStmts()) {
-    if (s->getKind() == StatementKind::ItemDeclaration)
-      continue;
+    //    if (s->getKind() == StatementKind::ItemDeclaration)
+//      continue;
 
     checkStatement(s);
   }

@@ -21,7 +21,8 @@ void Resolver::resolveStatement(std::shared_ptr<ast::Statement> stmt,
     break;
   }
   case StatementKind::ItemDeclaration: {
-    assert(false && "to be handled later");
+    resolveItemDeclaration(std::static_pointer_cast<ItemDeclaration>(stmt),
+                           prefix, canonicalPrefix);
     break;
   }
   case StatementKind::LetStatement: {
@@ -86,6 +87,17 @@ void Resolver::resolveTupleStructStatement(
     std::shared_ptr<ast::TupleStruct>, const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
   assert(false && "to be handled later");
+}
+
+void Resolver::resolveItemDeclaration(
+    std::shared_ptr<ast::ItemDeclaration> item,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  if (item->hasVisItem()) {
+    resolveVisItem(item->getVisItem(), prefix, canonicalPrefix);
+  } else if (item->hasMacroItem()) {
+    assert(false);
+  }
 }
 
 } // namespace rust_compiler::sema::resolver

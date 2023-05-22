@@ -54,6 +54,10 @@ void Resolver::resolveConstantItem(std::shared_ptr<ast::ConstantItem> cons,
   CanonicalPath path = prefix.append(decl);
   CanonicalPath cpath = canonicalPrefix.append(decl);
 
+  // Bug fix
+  getNameScope().insert(decl, cons->getNodeId(), cons->getLocation(),
+                        RibKind::Variable);
+
   tyCtx->insertCanonicalPath(cons->getNodeId(), cpath);
 
   resolveVisibility(cons->getVisibility());

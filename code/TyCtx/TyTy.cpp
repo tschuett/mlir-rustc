@@ -1378,4 +1378,13 @@ bool BaseType::boundsCompatible(const TyTy::BaseType *other, Location loc,
   return unsatisfiedBounds.size() == 1;
 }
 
+std::string SliceType::toString() const {
+  return "[" + getElementType()->toString() + "]";
+}
+
+TyTy::BaseType *SliceType::clone() const {
+  return new SliceType(getReference(), getTypeReference(), getLocation(),
+                       elementType.clone(), getCombinedReferences());
+}
+
 } // namespace rust_compiler::tyctx::TyTy

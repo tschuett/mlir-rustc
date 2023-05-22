@@ -89,6 +89,7 @@ mlir::Type CrateBuilder::getExpression(ast::Expression *expr) {
 mlir::Type CrateBuilder::convertTyTyToMLIR(TyTy::BaseType *type) {
   using TypeKind = rust_compiler::tyctx::TyTy::TypeKind;
   using IntKind = rust_compiler::tyctx::TyTy::IntKind;
+  using UintKind = rust_compiler::tyctx::TyTy::UintKind;
 
   switch (type->getKind()) {
   case TypeKind::Bool: {
@@ -117,7 +118,23 @@ mlir::Type CrateBuilder::convertTyTyToMLIR(TyTy::BaseType *type) {
     }
   }
   case TypeKind::Uint: {
-    assert(false && "to be implemented");
+    switch (static_cast<TyTy::UintType *>(type)->getUintKind()) {
+    case UintKind::U8: {
+      assert(false);
+    }
+    case UintKind::U16: {
+      assert(false);
+    }
+    case UintKind::U32: {
+      return builder.getIntegerType(32, false);
+    }
+    case UintKind::U64: {
+      assert(false);
+    }
+    case UintKind::U128: {
+      assert(false);
+    }
+    }
   }
   case TypeKind::USize: {
     assert(false && "to be implemented");

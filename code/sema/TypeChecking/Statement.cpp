@@ -2,6 +2,7 @@
 
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/ItemDeclaration.h"
 #include "Coercion.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
@@ -21,8 +22,8 @@ TypeResolver::checkStatement(std::shared_ptr<ast::Statement> stmt) {
     break;
   }
   case ast::StatementKind::ItemDeclaration: {
-    assert(false && "to be implemented");
-    break;
+    return checkItemDeclaration(
+        std::static_pointer_cast<ItemDeclaration>(stmt).get());
   }
   case ast::StatementKind::LetStatement: {
     return checkLetStatement(std::static_pointer_cast<LetStatement>(stmt));
@@ -113,6 +114,16 @@ TypeResolver::checkLetStatement(std::shared_ptr<ast::LetStatement> let) {
   }
 
   return TyTy::TupleType::getUnitType(let->getNodeId());
+}
+
+  TyTy::BaseType* TypeResolver::checkItemDeclaration(ast::ItemDeclaration *item) {
+  if (item->hasVisItem()) {
+    checkVisItem(item->getVisItem());
+  } else if (item->hasMacroItem()) {
+    assert(false);
+  }
+
+  return TyTy::TupleType::getUnitType(item->getNodeId());
 }
 
 } // namespace rust_compiler::sema::type_checking

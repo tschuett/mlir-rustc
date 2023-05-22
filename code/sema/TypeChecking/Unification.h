@@ -45,9 +45,14 @@ private:
   TyTy::BaseType *expectInferenceVariable(TyTy::InferType *left,
                                           TyTy::BaseType *rightType);
   TyTy::BaseType *expectRawPointer(TyTy::RawPointerType *,
-                                  TyTy::BaseType *rightType);
+                                   TyTy::BaseType *rightType);
+  TyTy::BaseType *expectSlice(TyTy::SliceType *leftType,
+                              TyTy::BaseType *rightType);
+  TyTy::BaseType *expectArray(TyTy::ArrayType *, TyTy::BaseType *rightType);
 
   TyTy::BaseType *expect(TyTy::BaseType *left, TyTy::BaseType *right);
+  TyTy::BaseType *expectUint(TyTy::UintType *leftType,
+                             TyTy::BaseType *rightType);
 
   void commit(TyTy::BaseType *leftType, TyTy::BaseType *rightType,
               TyTy::BaseType *result);

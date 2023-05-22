@@ -1,4 +1,5 @@
 #include "AST/ExpressionStatement.h"
+#include "AST/ItemDeclaration.h"
 #include "AST/LetStatement.h"
 #include "AST/MacroInvocationSemiStatement.h"
 #include "AST/Statement.h"
@@ -18,7 +19,7 @@ void Sema::analyzeStatements(ast::Statements stmts) {
       return;
     }
     case StatementKind::ItemDeclaration: {
-      analyzeItemDeclaration(std::static_pointer_cast<Node>(stmt));
+      analyzeItemDeclaration(std::static_pointer_cast<ItemDeclaration>(stmt));
       return;
     }
     case StatementKind::LetStatement: {

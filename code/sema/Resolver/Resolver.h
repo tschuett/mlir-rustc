@@ -19,6 +19,7 @@
 #include "AST/IndexEpression.h"
 #include "AST/InfiniteLoopExpression.h"
 #include "AST/InherentImpl.h"
+#include "AST/ItemDeclaration.h"
 #include "AST/LetStatement.h"
 #include "AST/LoopExpression.h"
 #include "AST/MacroInvocationSemiItem.h"
@@ -51,6 +52,7 @@
 #include "AST/Types/ImplTraitType.h"
 #include "AST/Types/RawPointerType.h"
 #include "AST/Types/ReferenceType.h"
+#include "AST/Types/SliceType.h"
 #include "AST/Types/TraitObjectType.h"
 #include "AST/Types/TupleType.h"
 #include "AST/Types/TypeExpression.h"
@@ -273,6 +275,9 @@ private:
   void resolveUnionItem(std::shared_ptr<ast::Union>,
                         const adt::CanonicalPath &prefix,
                         const adt::CanonicalPath &canonicalPrefix);
+  void resolveItemDeclaration(std::shared_ptr<ast::ItemDeclaration>,
+                          const adt::CanonicalPath &prefix,
+                        const adt::CanonicalPath &canonicalPrefix);
 
   // expressions
   void resolveExpression(std::shared_ptr<ast::Expression>,
@@ -389,6 +394,10 @@ private:
   resolveRawPointerType(std::shared_ptr<ast::types::RawPointerType>,
                         const adt::CanonicalPath &prefix,
                         const adt::CanonicalPath &canonicalPrefix);
+  std::optional<basic::NodeId>
+  resolveSliceType(std::shared_ptr<ast::types::SliceType>,
+                   const adt::CanonicalPath &prefix,
+                   const adt::CanonicalPath &canonicalPrefix);
 
   std::optional<adt::CanonicalPath>
   resolveTypeToCanonicalPath(ast::types::TypeExpression *);

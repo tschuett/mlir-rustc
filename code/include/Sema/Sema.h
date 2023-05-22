@@ -13,6 +13,7 @@
 #include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
 #include "AST/InfiniteLoopExpression.h"
+#include "AST/ItemDeclaration.h"
 #include "AST/LetStatement.h"
 #include "AST/LiteralExpression.h"
 #include "AST/LoopExpression.h"
@@ -63,7 +64,7 @@ private:
   void analyzeExpressionWithBlock(ast::ExpressionWithBlock *let);
   void analyzeExpressionWithoutBlock(ast::ExpressionWithoutBlock *let);
 
-  void analyzeItemDeclaration(std::shared_ptr<ast::Node> item);
+  void analyzeItemDeclaration(std::shared_ptr<ast::ItemDeclaration> item);
 
   void analyzeArithmeticOrLogicalExpression(
       std::shared_ptr<ast::ArithmeticOrLogicalExpression> arith);

@@ -81,7 +81,8 @@ std::optional<NodeId> Resolver::resolveTypeNoBounds(
                             prefix, canonicalPrefix);
   }
   case TypeNoBoundsKind::SliceType: {
-    assert(false && "to be handled later");
+    return resolveSliceType(std::static_pointer_cast<SliceType>(noBounds),
+                            prefix, canonicalPrefix);
   }
   case TypeNoBoundsKind::InferredType: {
     assert(false && "to be handled later");
@@ -309,6 +310,13 @@ std::optional<basic::NodeId> Resolver::resolveRawPointerType(
     const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
   return resolveType(pointer->getType(), prefix, canonicalPrefix);
+}
+
+std::optional<basic::NodeId>
+Resolver::resolveSliceType(std::shared_ptr<ast::types::SliceType> slice,
+                           const adt::CanonicalPath &prefix,
+                           const adt::CanonicalPath &canonicalPrefix) {
+  return resolveType(slice->getType(), prefix, canonicalPrefix);
 }
 
 } // namespace rust_compiler::sema::resolver

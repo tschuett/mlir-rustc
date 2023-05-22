@@ -18,6 +18,8 @@ add_library(crate_builder
            LetStatement.cpp
            ComparePatternWithExpression.cpp
            MatchIfLetPattern.cpp
+           ConstantEvaluator.cpp
+           Owner.cpp
            )
 
 

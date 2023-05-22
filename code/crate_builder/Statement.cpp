@@ -23,8 +23,7 @@ void CrateBuilder::emitStatement(ast::Statement *stmt) {
     break;
   }
   case ast::StatementKind::ExpressionStatement: {
-    emitExpressionStatement(
-        static_cast<ast::ExpressionStatement *>(stmt));
+    emitExpressionStatement(static_cast<ast::ExpressionStatement *>(stmt));
     break;
   }
   case ast::StatementKind::MacroInvocationSemi: {
@@ -33,6 +32,13 @@ void CrateBuilder::emitStatement(ast::Statement *stmt) {
   }
 }
 
-void CrateBuilder::emitLetStatement(ast::LetStatement *let) { assert(false); }
+void CrateBuilder::emitLetStatement(ast::LetStatement *let) {
+  if (let->hasInit()) {
+    std::optional<mlir::Value> init = emitExpression(let->getInit().get());
+    if (init) {
+    }
+  }
+  assert(false);
+}
 
 } // namespace rust_compiler::crate_builder

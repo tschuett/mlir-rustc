@@ -6,6 +6,7 @@
 #include "AST/GenericArgs.h"
 #include "AST/Types/ArrayType.h"
 #include "AST/Types/ReferenceType.h"
+#include "AST/Types/SliceType.h"
 #include "AST/Types/TraitBound.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
@@ -143,7 +144,7 @@ TypeResolver::checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds> no) {
     return checkArrayType(std::static_pointer_cast<ast::types::ArrayType>(no));
   }
   case TypeNoBoundsKind::SliceType: {
-    assert(false && "to be implemented");
+    return checkSliceType(std::static_pointer_cast<ast::types::SliceType>(no));
   }
   case TypeNoBoundsKind::InferredType: {
     assert(false && "to be implemented");
@@ -485,6 +486,14 @@ TyTy::BaseType *TypeResolver::checkRawPointerType(
   return new TyTy::RawPointerType(raw->getNodeId(),
                                   TyTy::TypeVariable(base->getReference()),
                                   raw->getMutability());
+}
+
+TyTy::BaseType *
+TypeResolver::checkSliceType(std::shared_ptr<ast::types::SliceType> slice) {
+  TyTy::BaseType *base = checkType(slice->getType());
+
+  return new TyTy::SliceType(slice->getNodeId(), slice->getLocation(),
+                       TyTy::TypeVariable(base->getReference()));
 }
 
 } // namespace rust_compiler::sema::type_checking
