@@ -2,10 +2,10 @@
 
 #include "AST/ExpressionStatement.h"
 #include "CrateBuilder/CrateBuilder.h"
-#include "mlir/IR/BuiltinTypes.h"
 
 #include <memory>
 #include <mlir/Dialect/MemRef/IR/MemRef.h>
+#include <mlir/IR/BuiltinTypes.h>
 #include <mlir/IR/Value.h>
 
 using namespace rust_compiler::ast;
@@ -47,11 +47,12 @@ void CrateBuilder::emitLetStatement(ast::LetStatement *let) {
       mlir::MemRefType memrefType = getMemRefType(*maybeType);
 
       mlir::Value memRef = builder.create<mlir::memref::AllocaOp>(
-          getLocation(let->getPattern()->getLocation()),
-          memrefType);
+          getLocation(let->getPattern()->getLocation()), memrefType);
 
       builder.create<mlir::memref::StoreOp>(
           getLocation(let->getPattern()->getLocation()), *init, memRef);
+
+      // FIXME: store *memRef* somewhere
     }
   } else {
     assert(false);

@@ -9,6 +9,7 @@
 #include "Hir/HirOps.h"
 #include "mlir/IR/Attributes.h"
 #include "mlir/IR/BuiltinAttributes.h"
+#include "mlir/IR/Value.h"
 
 #include <cassert>
 #include <memory>
@@ -17,6 +18,7 @@
 #include <vector>
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::tyctx;
 
 namespace rust_compiler::crate_builder {
 
@@ -165,14 +167,20 @@ mlir::Value CrateBuilder::emitLiteralExpression(ast::LiteralExpression *lit) {
 }
 
 mlir::Value CrateBuilder::emitArrayExpression(ast::ArrayExpression *array) {
+  std::optional<tyctx::TyTy::BaseType *> type =
+      tyCtx->lookupType(array->getNodeId());
+  assert(type.has_value());
+  assert((*type)->getKind() == TyTy::TypeKind::Array);
+
+  TyTy::ArrayType *arrayType = static_cast<TyTy::ArrayType *>(*type);
+
+  mlir::Type elementType = convertTyTyToMLIR(arrayType->getElementType());
+
   if (array->hasArrayElements()) {
     ArrayElements els = array->getArrayElements();
 
     switch (els.getKind()) {
     case ArrayElementsKind::Repeated: {
-      std::optional<tyctx::TyTy::BaseType *> maybeType =
-          tyCtx->lookupType(els.getValue()->getNodeId());
-      assert(maybeType.has_value());
 
       uint64_t count = foldAsUsizeExpression(els.getCount().get());
       std::vector<int64_t> shape = {static_cast<int64_t>(count)};
@@ -180,22 +188,39 @@ mlir::Value CrateBuilder::emitArrayExpression(ast::ArrayExpression *array) {
       assert(value.has_value());
       return builder.create<mlir::vector::BroadcastOp>(
           getLocation(array->getLocation()),
-          mlir::VectorType::get(shape, convertTyTyToMLIR(*maybeType), 0),
-          *value);
+          mlir::VectorType::get(shape, elementType, 0), *value);
     }
     case ArrayElementsKind::List: {
-      assert(false);
+      std::vector<mlir::Value> values;
+      for (auto &val : els.getElements()) {
+        std::optional<mlir::Value> el = emitExpression(val.get());
+        assert(el.has_value());
+        values.push_back(*el);
+      }
+      std::vector<int64_t> shape = {static_cast<int64_t>(values.size())};
+      mlir::Type vectorType = mlir::VectorType::get(shape, elementType, 0);
+
+      mlir::Value initialValue = builder.create<mlir::vector::BroadcastOp>(
+          getLocation(array->getLocation()), vectorType, values[0]);
+
+      mlir::Value vector = initialValue;
+      unsigned idx = 0;
+      for (auto &vl : values) {
+        mlir::Value index = builder.create<mlir::arith::ConstantOp>(
+            getLocation(array->getLocation()),
+            builder.getIntegerAttr(builder.getI32Type(), idx),
+            builder.getI32Type());
+        vector = builder.create<mlir::vector::InsertElementOp>(
+            getLocation(array->getLocation()), vl, vector, index);
+        ++idx;
+      }
+      return vector;
     }
     }
   }
   assert(false);
-}
 
-// mlir::Value
-// CrateBuilder::emitCallExpression(std::shared_ptr<ast::CallExpression> expr)
-// {}
-//
-// mlir::Value CrateBuilder::emitMethodCallExpression(
-//     std::shared_ptr<ast::MethodCallExpression> expr) {}
+  // FIXME: always homogenous array
+}
 
 } // namespace rust_compiler::crate_builder
