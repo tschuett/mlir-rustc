@@ -2,8 +2,11 @@
 
 #include "AST/ExpressionStatement.h"
 #include "CrateBuilder/CrateBuilder.h"
+#include "mlir/IR/BuiltinTypes.h"
 
 #include <memory>
+#include <mlir/Dialect/MemRef/IR/MemRef.h>
+#include <mlir/IR/Value.h>
 
 using namespace rust_compiler::ast;
 
@@ -36,7 +39,22 @@ void CrateBuilder::emitLetStatement(ast::LetStatement *let) {
   if (let->hasInit()) {
     std::optional<mlir::Value> init = emitExpression(let->getInit().get());
     if (init) {
+
+      std::optional<tyctx::TyTy::BaseType *> maybeType =
+          tyCtx->lookupType(let->getPattern()->getNodeId());
+      assert(maybeType.has_value());
+
+      mlir::MemRefType memrefType = getMemRefType(*maybeType);
+
+      mlir::Value memRef = builder.create<mlir::memref::AllocaOp>(
+          getLocation(let->getPattern()->getLocation()),
+          memrefType);
+
+      builder.create<mlir::memref::StoreOp>(
+          getLocation(let->getPattern()->getLocation()), *init, memRef);
     }
+  } else {
+    assert(false);
   }
   assert(false);
 }

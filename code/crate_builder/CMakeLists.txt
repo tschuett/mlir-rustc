@@ -37,6 +37,7 @@ target_link_libraries(crate_builder
         MLIRMemRefDialect
         MLIRArithDialect
         MLIRFuncDialect
+        MLIRVectorDialect
 )
 
 

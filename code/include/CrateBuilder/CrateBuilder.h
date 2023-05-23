@@ -164,6 +164,7 @@ private:
   mlir::Type getTypePath(ast::types::TypePath *);
 
   mlir::Type convertTyTyToMLIR(tyctx::TyTy::BaseType *);
+  mlir::MemRefType getMemRefType(tyctx::TyTy::BaseType *);
 
   void declare(basic::NodeId, mlir::Value);
 

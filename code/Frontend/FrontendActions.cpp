@@ -6,7 +6,6 @@
 #include "Lir/LirDialect.h"
 #include "Mir/MirDialect.h"
 #include "Optimizer/PassPipeLine.h"
-#include "mlir/IR/BuiltinOps.h"
 
 #include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/Analysis/TargetTransformInfo.h>
@@ -24,6 +23,8 @@
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/Dialect/LLVMIR/LLVMDialect.h>
 #include <mlir/Dialect/MemRef/IR/MemRef.h>
+#include <mlir/Dialect/Vector/IR/VectorOps.h>
+#include <mlir/IR/BuiltinOps.h>
 #include <mlir/Interfaces/DataLayoutInterfaces.h>
 #include <mlir/Pass/PassManager.h>
 #include <mlir/Target/LLVMIR/Dialect/Builtin/BuiltinToLLVMIRTranslation.h>
@@ -54,6 +55,7 @@ void CodeGenAction::loadDialects(mlir::MLIRContext *context) {
   context->getOrLoadDialect<mlir::cf::ControlFlowDialect>();
   context->getOrLoadDialect<mlir::async::AsyncDialect>();
   context->getOrLoadDialect<mlir::memref::MemRefDialect>();
+  context->getOrLoadDialect<mlir::vector::VectorDialect>();
 }
 
 void CodeGenAction::setupMLIRModule() {

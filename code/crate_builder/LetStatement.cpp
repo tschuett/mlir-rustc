@@ -66,29 +66,29 @@ getVariables(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat) {
   }
 }
 
-void CrateBuilder::emitLetStatement(ast::LetStatement *stmt) {
-
-  assert(false);
-
-  // memrefType
-
-  assert(stmt->hasType());
-
-  mlir::Type elementType = getType(stmt->getType().get());
-
-  mlir::MemRefType memRef = mlir::MemRefType::Builder(1, elementType);
-
-  mlir::Value addr = builder.create<mlir::memref::AllocaOp>(
-      getLocation(stmt->getLocation()), memRef);
-
-  allocaTable.insert(stmt->getPattern()->getNodeId(), addr);
-
-  if (stmt->hasInit()) {
-    std::optional<mlir::Value> val = emitExpression(stmt->getInit().get());
-    assert(val.has_value());
-    builder.create<mlir::memref::StoreOp>(getLocation(stmt->getLocation()), *val, addr);
-  }
-}
+//void CrateBuilder::emitLetStatement(ast::LetStatement *stmt) {
+//
+//  assert(false);
+//
+//  // memrefType
+//
+//  assert(stmt->hasType());
+//
+//  mlir::Type elementType = getType(stmt->getType().get());
+//
+//  mlir::MemRefType memRef = mlir::MemRefType::Builder(1, elementType);
+//
+//  mlir::Value addr = builder.create<mlir::memref::AllocaOp>(
+//      getLocation(stmt->getLocation()), memRef);
+//
+//  allocaTable.insert(stmt->getPattern()->getNodeId(), addr);
+//
+//  if (stmt->hasInit()) {
+//    std::optional<mlir::Value> val = emitExpression(stmt->getInit().get());
+//    assert(val.has_value());
+//    builder.create<mlir::memref::StoreOp>(getLocation(stmt->getLocation()), *val, addr);
+//  }
+//}
 
 } // namespace rust_compiler::crate_builder
 

@@ -2,6 +2,7 @@
 #include "AST/Types/TypeNoBounds.h"
 #include "CrateBuilder/CrateBuilder.h"
 #include "TyCtx/TyTy.h"
+#include "mlir/IR/BuiltinTypes.h"
 
 using namespace rust_compiler::ast::types;
 using namespace rust_compiler::tyctx;
@@ -208,6 +209,89 @@ mlir::Type CrateBuilder::getTypePath(ast::types::TypePath *path) {
     return convertTyTyToMLIR(*maybeType);
   }
   assert(false);
+}
+
+mlir::MemRefType CrateBuilder::getMemRefType(TyTy::BaseType *base) {
+  using namespace rust_compiler::tyctx::TyTy;
+
+  switch (base->getKind()) {
+  case TypeKind::Bool: {
+    assert(false);
+  }
+  case TypeKind::Char: {
+    assert(false);
+  }
+  case TypeKind::Int: {
+    assert(false);
+  }
+  case TypeKind::Uint: {
+    assert(false);
+  }
+  case TypeKind::USize: {
+    assert(false);
+  }
+  case TypeKind::ISize: {
+    assert(false);
+  }
+  case TypeKind::Float: {
+    assert(false);
+  }
+  case TypeKind::Closure: {
+    assert(false);
+  }
+  case TypeKind::Function: {
+    assert(false);
+  }
+  case TypeKind::Inferred: {
+    assert(false);
+  }
+  case TypeKind::Never: {
+    assert(false);
+  }
+  case TypeKind::Str: {
+    assert(false);
+  }
+  case TypeKind::Tuple: {
+    assert(false);
+  }
+  case TypeKind::Parameter: {
+    assert(false);
+  }
+  case TypeKind::ADT: {
+    assert(false);
+  }
+  case TypeKind::Array: {
+    TyTy::ArrayType *array = static_cast<TyTy::ArrayType *>(base);
+    mlir::Type elementType = convertTyTyToMLIR(array->getElementType());
+    uint64_t length =
+        foldAsUsizeExpression(array->getCapacityExpression().get());
+    return mlir::MemRefType::Builder(length, elementType);
+  }
+  case TypeKind::Slice: {
+    assert(false);
+  }
+  case TypeKind::Projection: {
+    assert(false);
+  }
+  case TypeKind::Dynamic: {
+    assert(false);
+  }
+  case TypeKind::PlaceHolder: {
+    assert(false);
+  }
+  case TypeKind::FunctionPointer: {
+    assert(false);
+  }
+  case TypeKind::RawPointer: {
+    assert(false);
+  }
+  case TypeKind::Reference: {
+    assert(false);
+  }
+  case TypeKind::Error: {
+    assert(false);
+  }
+  }
 }
 
 } // namespace rust_compiler::crate_builder

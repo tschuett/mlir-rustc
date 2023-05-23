@@ -7,9 +7,13 @@
 #include "AST/ReturnExpression.h"
 #include "CrateBuilder/CrateBuilder.h"
 #include "Hir/HirOps.h"
+#include "mlir/IR/Attributes.h"
+#include "mlir/IR/BuiltinAttributes.h"
 
 #include <cassert>
 #include <memory>
+#include <mlir/Dialect/Arith/IR/Arith.h>
+#include <mlir/Dialect/Vector/IR/VectorOps.h>
 #include <vector>
 
 using namespace rust_compiler::ast;
@@ -134,7 +138,16 @@ mlir::Value CrateBuilder::emitLiteralExpression(ast::LiteralExpression *lit) {
   }
   case LiteralExpressionKind::IntegerLiteral: {
     if (maybeType) {
-      /*mlir::Type type =*/convertTyTyToMLIR(*maybeType);
+
+      llvm::APInt result;
+      std::string storage = lit->getValue();
+      llvm::StringRef(storage).getAsInteger(10, result);
+
+      int64_t value = result.getLimitedValue();
+      mlir::Type type = convertTyTyToMLIR(*maybeType);
+      mlir::Attribute attr = mlir::IntegerAttr::get(type, value);
+      return builder.create<mlir::arith::ConstantOp>(
+          getLocation(lit->getLocation()), attr);
     }
     assert(false);
   }
@@ -163,9 +176,12 @@ mlir::Value CrateBuilder::emitArrayExpression(ast::ArrayExpression *array) {
 
       uint64_t count = foldAsUsizeExpression(els.getCount().get());
       std::vector<int64_t> shape = {static_cast<int64_t>(count)};
-      mlir::VectorType::Builder vectorBuilder =
-          mlir::VectorType::Builder(shape, convertTyTyToMLIR(*maybeType));
-      assert(false);
+      std::optional<mlir::Value> value = emitExpression(els.getValue().get());
+      assert(value.has_value());
+      return builder.create<mlir::vector::BroadcastOp>(
+          getLocation(array->getLocation()),
+          mlir::VectorType::get(shape, convertTyTyToMLIR(*maybeType), 0),
+          *value);
     }
     case ArrayElementsKind::List: {
       assert(false);
