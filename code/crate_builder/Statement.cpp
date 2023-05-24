@@ -53,11 +53,11 @@ void CrateBuilder::emitLetStatement(ast::LetStatement *let) {
           getLocation(let->getPattern()->getLocation()), *init, memRef);
 
       // FIXME: store *memRef* somewhere
+      variables[let->getPattern()->getNodeId()] = memRef;
     }
   } else {
     assert(false);
   }
-  assert(false);
 }
 
 } // namespace rust_compiler::crate_builder

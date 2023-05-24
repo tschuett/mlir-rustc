@@ -7,14 +7,16 @@
 #include "AST/ReturnExpression.h"
 #include "CrateBuilder/CrateBuilder.h"
 #include "Hir/HirOps.h"
-#include "mlir/IR/Attributes.h"
-#include "mlir/IR/BuiltinAttributes.h"
-#include "mlir/IR/Value.h"
+#include "mlir/IR/BuiltinAttributeInterfaces.h"
+#include "mlir/IR/BuiltinTypes.h"
 
 #include <cassert>
 #include <memory>
 #include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/Vector/IR/VectorOps.h>
+#include <mlir/IR/Attributes.h>
+#include <mlir/IR/BuiltinAttributes.h>
+#include <mlir/IR/Value.h>
 #include <vector>
 
 using namespace rust_compiler::ast;
@@ -145,9 +147,14 @@ mlir::Value CrateBuilder::emitLiteralExpression(ast::LiteralExpression *lit) {
       std::string storage = lit->getValue();
       llvm::StringRef(storage).getAsInteger(10, result);
 
-      int64_t value = result.getLimitedValue();
+      uint64_t value = result.getLimitedValue();
       mlir::Type type = convertTyTyToMLIR(*maybeType);
-      mlir::Attribute attr = mlir::IntegerAttr::get(type, value);
+      llvm::errs() << (*maybeType)->toString() << "\n";
+      llvm::errs() << value << "\n";
+      //mlir::IntegerAttr in = mlir::IntegerAttr(type, value);
+      //mlir::IntegerAttr::
+      mlir::IntegerAttr attr = mlir::IntegerAttr::get(type, value);
+
       return builder.create<mlir::arith::ConstantOp>(
           getLocation(lit->getLocation()), attr);
     }
@@ -204,12 +211,11 @@ mlir::Value CrateBuilder::emitArrayExpression(ast::ArrayExpression *array) {
           getLocation(array->getLocation()), vectorType, values[0]);
 
       mlir::Value vector = initialValue;
-      unsigned idx = 0;
+      int idx = 0;
       for (auto &vl : values) {
         mlir::Value index = builder.create<mlir::arith::ConstantOp>(
             getLocation(array->getLocation()),
-            builder.getIntegerAttr(builder.getI32Type(), idx),
-            builder.getI32Type());
+            builder.getIntegerAttr(builder.getI32Type(), idx));
         vector = builder.create<mlir::vector::InsertElementOp>(
             getLocation(array->getLocation()), vl, vector, index);
         ++idx;

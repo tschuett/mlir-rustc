@@ -206,15 +206,11 @@ CrateBuilder::getOwnerBlockExpression(basic::NodeId id,
 
   Statements stmts = block->getExpressions();
 
-  llvm::errs() << "number of stmts: " << stmts.getNrOfStatements() << "\n";
-
   for (auto &stmt : stmts.getStmts()) {
     llvm::errs() << "statement"
                  << "\n";
     std::optional<Owner> st = getOwnerStatement(id, stmt.get());
     if (st) {
-      llvm::errs() << "statement: success"
-                   << "\n";
       return *st;
     }
   }

@@ -6,6 +6,7 @@
 #include "Lir/LirDialect.h"
 #include "Mir/MirDialect.h"
 #include "Optimizer/PassPipeLine.h"
+#include "mlir/Support/LogicalResult.h"
 
 #include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/Analysis/TargetTransformInfo.h>
@@ -180,7 +181,9 @@ void CodeGenAction::generateLLVMIR() {
   createDefaultOptimizerPassPipeline(pm, ""); // FIXME
   // fir::createMLIRToLLVMPassPipeline(pm, level, opts.StackArrays,
   // opts.Underscoring);
-  mlir::applyPassManagerCLOptions(pm);
+  if (!mlir::succeeded(mlir::applyPassManagerCLOptions(pm))) {
+    // report error
+  }
 
   // run the pass manager
   if (!mlir::succeeded(pm.run(*mlirModule))) {

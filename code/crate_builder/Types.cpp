@@ -2,7 +2,8 @@
 #include "AST/Types/TypeNoBounds.h"
 #include "CrateBuilder/CrateBuilder.h"
 #include "TyCtx/TyTy.h"
-#include "mlir/IR/BuiltinTypes.h"
+
+#include <mlir/IR/BuiltinTypes.h>
 
 using namespace rust_compiler::ast::types;
 using namespace rust_compiler::tyctx;

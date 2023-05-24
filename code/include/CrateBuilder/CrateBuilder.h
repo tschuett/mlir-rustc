@@ -238,6 +238,8 @@ private:
                                                ast::ItemDeclaration *);
 
   std::map<basic::NodeId, Owner> owners;
+
+  std::map<basic::NodeId, mlir::Value> variables;
 };
 
 } // namespace rust_compiler::crate_builder

@@ -22,6 +22,7 @@ add_library(optimizer
            LoopPlan.cpp
            MemoryAnalysis.cpp
            TestAliasAnalysisPass.cpp
+           LowerUtilsToLLVM.cpp
            )
 
 target_include_directories(optimizer PRIVATE  ../include)
@@ -44,6 +45,7 @@ target_link_libraries(optimizer
                 MLIRControlFlowToLLVM
                 MLIRMemRefToLLVM
                 MLIRFuncToLLVM
+                MLIRVectorToLLVM
                 )
 
 target_precompile_headers(optimizer PRIVATE )

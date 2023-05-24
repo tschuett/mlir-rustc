@@ -104,6 +104,11 @@ def MemoryAnalysisPass : Pass<"MemoryAnalysis", "mlir::ModuleOp"> {
   let description = "analyses memrefs";
 }
 
+def LowerUtilsToLLVMPass : Pass<"LowerUtilsToLLVM", "mlir::ModuleOp"> {
+  let summary = "lower dialects to LLVM";
+  let description = "lower dialects to LLVM";
+}
+
 
 
 // eleminate Mir: how?

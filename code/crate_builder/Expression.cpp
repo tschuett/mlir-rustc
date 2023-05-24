@@ -3,7 +3,7 @@
 #include "AST/PathExpression.h"
 #include "Basic/Ids.h"
 #include "CrateBuilder/CrateBuilder.h"
-#include "mlir/Dialect/MemRef/IR/MemRef.h"
+#include <mlir/Dialect/MemRef/IR/MemRef.h>
 
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 

@@ -23,6 +23,7 @@ namespace rust_compiler::optimizer {
 #define GEN_PASS_DECL_DEADARGUMENTELIMINATIONPASS
 #define GEN_PASS_DECL_FUNCSPECIALPASS
 #define GEN_PASS_DECL_MEMORYANALYSISPASS
+#define GEN_PASS_DECL_LOWERUTILSTOLLVMPASS
 #include "Optimizer/Passes.h.inc"
 
 // declarative passes
