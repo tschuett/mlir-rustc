@@ -27,6 +27,7 @@ Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
 
   while (true) {
     llvm::errs() << lexer::Token2String(getToken().getKind()) << "\n";
+    llvm::errs() << getToken().getLocation().toString() << "\n";
     if (check(TokenKind::Eof)) {
       //// terminator for gtest
       // recover(cp);
@@ -88,7 +89,15 @@ Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
       // terminator
       recover(cp);
       return parseTypePath();
+    } else if (checkKeyWord(KeyWordKind::KW_WHERE)) {
+      // terminator
+      recover(cp);
+      return parseTypePath();
     } else if (check(TokenKind::SquareClose)) {
+      // terminator
+      recover(cp);
+      return parseTypePath();
+    } else if (check(TokenKind::Colon)) {
       // terminator
       recover(cp);
       return parseTypePath();

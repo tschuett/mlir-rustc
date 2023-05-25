@@ -1,4 +1,5 @@
 #include "AST/ConstantItem.h"
+#include "AST/FunctionQualifiers.h"
 #include "AST/Module.h"
 #include "Sema/Sema.h"
 
@@ -44,6 +45,7 @@ void Sema::walkVisItem(std::shared_ptr<ast::VisItem> item) {
     break;
   }
   case VisItemKind::Trait: {
+    analyzeTrait(std::static_pointer_cast<Trait>(item).get());
     break;
   }
   case VisItemKind::Implementation: {
@@ -68,6 +70,24 @@ void Sema::analyzeStaticItem(StaticItem *si) {
     [[maybe_unused]] bool isConst = isConstantExpression(si->getInit().get());
   }
   walkType(si->getType().get());
+}
+
+void Sema::analyzeTrait(ast::Trait *trait) {
+  for (auto &asso : trait->getAssociatedItems()) {
+    if (asso.hasFunction()) {
+      std::shared_ptr<Function> itemFun = std::static_pointer_cast<Function>(
+          std::static_pointer_cast<VisItem>(asso.getFunction()));
+      FunctionQualifiers qual = itemFun->getQualifiers();
+      if (qual.hasAsync())
+        llvm::errs() << "error: " << itemFun->getName().toString() << "trait"
+                     << trait->getIdentifier().toString() << " is async"
+                     << "\n";
+      if (qual.hasConst())
+        llvm::errs() << "error: " << itemFun->getName().toString() << "trait"
+                     << trait->getIdentifier().toString() << " is const"
+                     << "\n";
+    }
+  }
 }
 
 } // namespace rust_compiler::sema

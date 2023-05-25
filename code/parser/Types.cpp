@@ -831,6 +831,9 @@ StringResult<std::shared_ptr<ast::types::TypeParamBound>>
 Parser::parseTypeParamBound() {
   Location loc = getLocation();
 
+  llvm::errs() << "parseTypeParamBound"
+               << "\n";
+
   if (check(TokenKind::ParenOpen)) {
     StringResult<std::shared_ptr<ast::types::TypeParamBound>> trait =
         parseTraitBound();
@@ -906,10 +909,13 @@ StringResult<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
 
   TypeParamBounds bounds = {loc};
 
+  llvm::errs() << "parseTypeParamBounds"
+               << "\n";
+
   StringResult<std::shared_ptr<ast::types::TypeParamBound>> first =
       parseTypeParamBound();
   if (!first) {
-    llvm::errs() << "failed to parse type param bound in type param bound: "
+    llvm::errs() << "failed to parse type param bound in type param bounds: "
                  << first.getError() << "\n";
     printFunctionStack();
     exit(EXIT_FAILURE);
@@ -923,11 +929,11 @@ StringResult<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
       return StringResult<ast::types::TypeParamBounds>(
           "failed to parse type param bounds: eof");
     } else if (check(TokenKind::Semi) || check(TokenKind::Comma) ||
-               check(TokenKind::BraceOpen) || check(TokenKind::Lt)) {
+               check(TokenKind::BraceOpen) || check(TokenKind::Gt)) {
       return StringResult<ast::types::TypeParamBounds>(bounds);
     } else if (check(TokenKind::Plus) &&
                (check(TokenKind::Semi, 1) || check(TokenKind::Comma, 1) ||
-                check(TokenKind::BraceOpen, 1) || check(TokenKind::Lt, 1))) {
+                check(TokenKind::BraceOpen, 1) || check(TokenKind::Gt, 1))) {
       bounds.setTrailingPlus();
       return StringResult<ast::types::TypeParamBounds>(bounds);
     } else if (check(TokenKind::Plus)) {
@@ -935,7 +941,7 @@ StringResult<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
       StringResult<std::shared_ptr<ast::types::TypeParamBound>> type =
           parseTypeParamBound();
       if (!type) {
-        llvm::errs() << "failed to parse type param bound in type param bound: "
+        llvm::errs() << "failed to parse type param bound in type param bounds: "
                      << type.getError() << "\n";
         printFunctionStack();
         exit(EXIT_FAILURE);
@@ -1105,6 +1111,9 @@ StringResult<std::shared_ptr<ast::types::TypeParamBound>>
 Parser::parseTraitBound() {
   Location loc = getLocation();
   TraitBound tr = {loc};
+
+  llvm::errs() << "parseTraitBound"
+               << "\n";
 
   if (check(TokenKind::ParenOpen)) {
     tr.setHasParenthesis();

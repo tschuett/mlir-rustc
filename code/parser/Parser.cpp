@@ -799,6 +799,8 @@ StringResult<ast::TypeParam> Parser::parseTypeParam() {
 
   TypeParam param = {loc};
 
+  llvm::errs() << "parseTypeParam" << "\n";
+
   if (!check(TokenKind::Identifier))
     return StringResult<ast::TypeParam>(
         "failed to parse identifier token in type param");
@@ -836,9 +838,12 @@ StringResult<ast::TypeParam> Parser::parseTypeParam() {
   } else if (check(TokenKind::Colon) && !check(TokenKind::Eq, 1)) {
     // type param bounds
 
+    assert(eat(TokenKind::Colon));
+
     StringResult<ast::types::TypeParamBounds> bounds = parseTypeParamBounds();
     if (!bounds) {
-      llvm::errs() << "failed to parse type param bounds in type param: "
+      llvm::errs() << getToken().getLocation().toString()
+                   << "failed to parse type param bounds in type param: "
                    << bounds.getError() << "\n";
       printFunctionStack();
       exit(EXIT_FAILURE);

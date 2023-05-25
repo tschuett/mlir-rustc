@@ -464,7 +464,6 @@ private:
   void resolveTypeParam(const ast::GenericParam &p,
                         const adt::CanonicalPath &prefix,
                         const adt::CanonicalPath &canonicalPrefix);
-  void resolveTypeParamBound(std::shared_ptr<ast::types::TypeParamBound> bound);
 
   std::optional<basic::NodeId> resolveSimplePath(const ast::SimplePath &path);
   std::optional<basic::NodeId>

@@ -186,7 +186,7 @@ void Resolver::resolveTraitItem(std::shared_ptr<ast::Trait> trait,
 
   if (trait->hasTypeParamBounds())
     for (auto b : trait->getTypeParamBounds().getBounds())
-      resolveTypeParamBound(b);
+      resolveTypeParamBound(b, prefix, canonicalPrefix);
 
   if (trait->hasWhereClause())
     resolveWhereClause(trait->getWhereClause());

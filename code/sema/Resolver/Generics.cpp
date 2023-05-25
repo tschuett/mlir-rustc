@@ -5,11 +5,16 @@
 #include "AST/GenericArgsBinding.h"
 #include "AST/GenericArgsConst.h"
 #include "AST/GenericParam.h"
+#include "AST/Types/TraitBound.h"
 #include "AST/Types/TypeParamBound.h"
 #include "AST/Types/TypeParamBounds.h"
 #include "Resolver.h"
+#include "llvm/Support/ErrorHandling.h"
+
+#include <memory>
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::ast::types;
 using namespace rust_compiler::adt;
 
 namespace rust_compiler::sema::resolver {
@@ -52,8 +57,10 @@ void Resolver::resolveConstParam(const GenericParam &p,
   else if (co.hasLiteral())
     resolveExpression(co.getLiteral(), prefix, canonicalPrefix);
 
-  CanonicalPath segment = CanonicalPath::newSegment(co.getNodeId(), co.getIdentifier());
-  getTypeScope().insert(segment, co.getNodeId(), co.getLocation(), RibKind::Type);
+  CanonicalPath segment =
+      CanonicalPath::newSegment(co.getNodeId(), co.getIdentifier());
+  getTypeScope().insert(segment, co.getNodeId(), co.getLocation(),
+                        RibKind::Type);
 
   tyCtx->insertCanonicalPath(co.getNodeId(), segment);
 }
@@ -70,7 +77,7 @@ void Resolver::resolveTypeParam(const GenericParam &p,
     std::vector<std::shared_ptr<ast::types::TypeParamBound>> bounds =
         pa.getBounds().getBounds();
     for (std::shared_ptr<ast::types::TypeParamBound> bound : bounds)
-      resolveTypeParamBound(bound);
+      resolveTypeParamBound(bound, prefix, canonicalPrefix);
   }
 
   CanonicalPath segment =
@@ -79,11 +86,6 @@ void Resolver::resolveTypeParam(const GenericParam &p,
                         RibKind::Type);
 
   tyCtx->insertCanonicalPath(pa.getNodeId(), segment);
-}
-
-void Resolver::resolveTypeParamBound(
-    std::shared_ptr<ast::types::TypeParamBound> bound) {
-  assert(false);
 }
 
 void Resolver::resolveGenericArgs(const ast::GenericArgs &ga,

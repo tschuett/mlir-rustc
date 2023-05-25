@@ -87,8 +87,8 @@ StringResult<ast::SelfParam> Parser::parseSelfParam() {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
-  //llvm::errs() << "parseSelfParam"
-  //             << "\n";
+  // llvm::errs() << "parseSelfParam"
+  //              << "\n";
 
   SelfParam self = {loc};
 
@@ -417,9 +417,12 @@ StringResult<ast::Abi> Parser::parseAbi() {
 
   if (check(TokenKind::STRING_LITERAL)) {
     // FIXME
+    abi.setString(getToken().getStorage());
+    assert(eat(TokenKind::STRING_LITERAL));
     return StringResult<ast::Abi>(abi);
   } else if (check(TokenKind::RAW_STRING_LITERAL)) {
     // FIXME
+    assert(false);
     return StringResult<ast::Abi>(abi);
   }
 
@@ -598,8 +601,14 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
         std::make_shared<ast::VisItem>(fun));
   }
 
-  //  llvm::outs() << "parseFunction: parse body"
-  //               << "\n";
+  if (!check(TokenKind::BraceOpen)) {
+    llvm::outs() << "parseFunction: parse body: "
+                 << Token2String(getToken().getKind()) << "\n";
+    if (check(TokenKind::Identifier))
+      llvm::errs() << getToken().getIdentifier().toString() << "\n";
+    std::string s = llvm::formatv("failed to parse body in function: no { token").str();
+    return StringResult<std::shared_ptr<ast::Item>>(s);
+  }
 
   Result<std::shared_ptr<ast::Expression>, std::string> body =
       parseBlockExpression({});

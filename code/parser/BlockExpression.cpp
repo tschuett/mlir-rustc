@@ -464,6 +464,7 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
                << "\n";
 
   if (!check(TokenKind::BraceOpen)) {
+    llvm::errs() << Token2String(getToken().getKind()) << "\n";
     return Result<std::shared_ptr<ast::Expression>, std::string>(
         "failed to parse { in block expression");
   }

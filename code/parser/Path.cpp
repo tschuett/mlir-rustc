@@ -208,7 +208,8 @@ StringResult<ast::PathIdentSegment> Parser::parsePathIdentSegment() {
   if (check(TokenKind::Identifier)) {
     Token tok = getToken();
     seg.setIdentifier(tok.getIdentifier());
-    //llvm::errs() << "parsePathIdentSegment: " << tok.getIdentifier().toString() << "\n";
+    // llvm::errs() << "parsePathIdentSegment: " <<
+    // tok.getIdentifier().toString() << "\n";
     assert(eat(TokenKind::Identifier));
   } else if (checkKeyWord(KeyWordKind::KW_SUPER)) {
     seg.setSuper();
@@ -349,10 +350,11 @@ StringResult<ast::types::TypePathSegment> Parser::parseTypePathSegment() {
   }
   seg.setSegment(ident.getValue());
 
-  if (check(TokenKind::PathSep)) {
-    seg.setDoubleColon();
-    assert(eat(TokenKind::PathSep));
-  }
+  // FIXME !!!
+  //if (check(TokenKind::PathSep)) {
+  //  seg.setDoubleColon();
+  //  assert(eat(TokenKind::PathSep));
+  //}
 
   if (check(TokenKind::Lt)) {
     // GenericArgs
@@ -393,10 +395,10 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTypePath() {
   Location loc = getLocation();
 
-  //  llvm::errs() << "parseTypePath"
-  //               << "\n";
-  //  llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind())
-  //               << "\n";
+  llvm::errs() << "parseTypePath"
+               << "\n";
+  llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind())
+               << "\n";
 
   class TypePath path = {loc};
 
@@ -423,9 +425,8 @@ Parser::parseTypePath() {
   path.addSegment(first.getValue());
 
   while (true) {
-    //    llvm::errs() << "parseTypePath: " <<
-    //    Token2String(getToken().getKind())
-    //                 << "\n";
+    llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind())
+                 << "\n";
     if (check(TokenKind::Eof)) {
       // error
       return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
@@ -452,6 +453,8 @@ Parser::parseTypePath() {
           std::make_shared<ast::types::TypePath>(path));
     }
   }
+
+  llvm::errs() << "parseTypePath: " << path.getSegments().size() << "\n";
 
   return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
       std::make_shared<ast::types::TypePath>(path));
