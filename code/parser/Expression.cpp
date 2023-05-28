@@ -133,7 +133,7 @@ Parser::parseMacroInvocationExpression() {
     printFunctionStack();
     exit(EXIT_FAILURE);
   }
-  macro.setPath(path.getValue());
+  macro.setSimplePath(path.getValue());
 
   if (!check(TokenKind::Not))
     return StringResult<std::shared_ptr<ast::Expression>>(
@@ -530,8 +530,8 @@ Parser::parseMethodCallExpression(std::shared_ptr<ast::Expression> receiver,
   Location loc = getLocation();
   MethodCallExpression call = {loc};
 
-  //  llvm::errs() << "parseMethodCallExpression"
-  //               << "\n";
+  llvm::errs() << "parseMethodCallExpression"
+               << "\n";
 
   call.setReceiver(receiver);
 
@@ -561,7 +561,7 @@ Parser::parseMethodCallExpression(std::shared_ptr<ast::Expression> receiver,
     assert(eat(TokenKind::ParenClose));
     return Result<std::shared_ptr<ast::Expression>, std::string>(
         std::make_shared<MethodCallExpression>(call));
-  } else if (check(TokenKind::ParenClose)) {
+  } else {
     Result<ast::CallParams, std::string> params = parseCallParams(restrictions);
     if (!params) {
       llvm::errs() << "failed to parse call param in method call expression: "
@@ -579,6 +579,11 @@ Parser::parseMethodCallExpression(std::shared_ptr<ast::Expression> receiver,
     return Result<std::shared_ptr<ast::Expression>, std::string>(
         std::make_shared<MethodCallExpression>(call));
   }
+  llvm::errs() << "failed to parse method call expression"
+               << "\n";
+  llvm::errs() << Token2String(getToken().getKind()) << "\n";
+  if (getToken().getKind() == TokenKind::Identifier)
+    llvm::errs() << getToken().getIdentifier().toString() << "\n";
   return Result<std::shared_ptr<ast::Expression>, std::string>(
       "failed to parse method call expression");
 }
@@ -869,37 +874,49 @@ Parser::parseCompoundAssignmentExpression(std::shared_ptr<ast::Expression> e,
   Location loc = getLocation();
   CompoundAssignmentExpression comp = {loc};
 
+  comp.setLhs(e);
+
   Precedence pred;
   if (check(TokenKind::PlusEq)) {
     comp.setKind(CompoundAssignmentExpressionKind::Add);
     pred = Precedence::PlusAssign;
+    assert(eat(TokenKind::PlusEq));
   } else if (check(TokenKind::MinusEq)) {
     comp.setKind(CompoundAssignmentExpressionKind::Sub);
     pred = Precedence::MinusAssign;
+    assert(eat(TokenKind::MinusEq));
   } else if (check(TokenKind::StarEq)) {
     comp.setKind(CompoundAssignmentExpressionKind::Mul);
     pred = Precedence::MulAssign;
+    assert(eat(TokenKind::StarEq));
   } else if (check(TokenKind::SlashEq)) {
     comp.setKind(CompoundAssignmentExpressionKind::Div);
     pred = Precedence::DivAssign;
+    assert(eat(TokenKind::SlashEq));
   } else if (check(TokenKind::PercentEq)) {
     comp.setKind(CompoundAssignmentExpressionKind::Rem);
     pred = Precedence::RemAssign;
+    assert(eat(TokenKind::PercentEq));
   } else if (check(TokenKind::CaretEq)) {
     comp.setKind(CompoundAssignmentExpressionKind::Xor);
     pred = Precedence::XorAssign;
+    assert(eat(TokenKind::CaretEq));
   } else if (check(TokenKind::AndEq)) {
     comp.setKind(CompoundAssignmentExpressionKind::And);
     pred = Precedence::AndAssign;
+    assert(eat(TokenKind::AndEq));
   } else if (check(TokenKind::OrEq)) {
     comp.setKind(CompoundAssignmentExpressionKind::Or);
     pred = Precedence::OrAssign;
+    assert(eat(TokenKind::OrEq));
   } else if (check(TokenKind::ShlEq)) {
     comp.setKind(CompoundAssignmentExpressionKind::Shl);
     pred = Precedence::ShlAssign;
+    assert(eat(TokenKind::ShlEq));
   } else if (check(TokenKind::ShrEq)) {
     comp.setKind(CompoundAssignmentExpressionKind::Shr);
     pred = Precedence::ShrAssign;
+    assert(eat(TokenKind::ShrEq));
   } else {
     return Result<std::shared_ptr<ast::Expression>, std::string>(
         "failed to parse token in compound assignment expression");
@@ -1804,7 +1821,28 @@ adt::StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseMacroInvocationExpressionPratt(
     std::shared_ptr<ast::Expression> path, std::span<ast::OuterAttribute>,
     Restrictions) {
-  assert(false && "to be done");
+
+  MacroInvocationExpression macro = {path->getLocation()};
+  macro.setPath(path);
+
+  if (!check(TokenKind::Not))
+    return adt::StringResult<std::shared_ptr<ast::Expression>>(
+        "failed to parse ! token in parse macro invocation expression pratt");
+  assert(eat(TokenKind::Not));
+
+  StringResult<std::shared_ptr<ast::DelimTokenTree>> token =
+      parseDelimTokenTree();
+  if (!token) {
+    llvm::errs()
+        << "failed to delim token tree in macro invocation expression: "
+        << token.getError() << "\n";
+    printFunctionStack();
+    exit(EXIT_FAILURE);
+  }
+  macro.setTree(token.getValue());
+
+  return adt::StringResult<std::shared_ptr<ast::Expression>>(
+      std::make_shared<MacroInvocationExpression>(macro));
 }
 
 } // namespace rust_compiler::parser

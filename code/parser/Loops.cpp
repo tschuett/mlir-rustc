@@ -119,6 +119,7 @@ Parser::parseIteratorLoopExpression(std::span<OuterAttribute>) {
   assert(eatKeyWord(KeyWordKind::KW_IN));
 
   Restrictions restrictions;
+  restrictions.canBeStructExpr = false;
   StringResult<std::shared_ptr<ast::Expression>> expr =
       parseExpression({}, restrictions);
   if (!expr) {

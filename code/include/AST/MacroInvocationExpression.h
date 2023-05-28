@@ -4,19 +4,24 @@
 #include "AST/Expression.h"
 #include "AST/SimplePath.h"
 
+#include <memory>
+#include <optional>
+
 namespace rust_compiler::ast {
 
 class MacroInvocationExpression : public ExpressionWithoutBlock {
-  SimplePath simplePath;
+  std::shared_ptr<ast::Expression> simplePath;
   std::shared_ptr<DelimTokenTree> tree;
+
+  std::optional<SimplePath> path;
 
 public:
   MacroInvocationExpression(Location loc)
       : ExpressionWithoutBlock(loc,
-                               ExpressionWithoutBlockKind::MacroInvocation),
-    simplePath(loc) {}
+                               ExpressionWithoutBlockKind::MacroInvocation) {}
 
-  void setPath(const SimplePath &sp) { simplePath = sp; }
+  void setSimplePath(const SimplePath &p) { path = p; }
+  void setPath(std::shared_ptr<ast::Expression> sp) { simplePath = sp; }
   void setTree(std::shared_ptr<DelimTokenTree> tr) { tree = tr; }
 };
 

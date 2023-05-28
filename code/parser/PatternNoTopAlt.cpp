@@ -473,9 +473,11 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
     return parseIdentifierPattern();
   } else if (check(TokenKind::Identifier) && check(TokenKind::Semi, 1)) {
     return parseIdentifierPattern();
-  } else if (check(TokenKind::Identifier) && check(TokenKind::PathSep, 1)) {
-    return parseIdentifierPattern();
+//  } else if (check(TokenKind::Identifier) && check(TokenKind::PathSep, 1)) {
+//    return parseIdentifierPattern();
   } else if (check(TokenKind::Identifier) && check(TokenKind::Colon, 1)) {
+    return parseIdentifierPattern();
+  } else if (check(TokenKind::Identifier) && checkIsKeyword(1)) {
     return parseIdentifierPattern();
   } else if (check(TokenKind::Identifier) && check(TokenKind::Eq, 1)) {
     return parseIdentifierPattern();
@@ -567,6 +569,10 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
       // terminator
       recover(point);
       return parsePathOrStructOrTupleStructPattern();
+    } else if (checkIsKeyword()) {
+      // terminator
+      recover(point);
+      return parsePathOrStructOrTupleStructPattern();
     } else {
       // error
       std::string s =
@@ -613,6 +619,8 @@ Parser::parsePatternNoTopAlt() {
     return parseLiteralPattern();
   } else if (check(TokenKind::Underscore)) {
     return parseWildCardPattern();
+  } else if (check(TokenKind::Identifier) and checkIsKeyword(1)) {
+    return parseIdentifierPattern();
   } else if (check(lexer::TokenKind::DotDot)) {
     return parseRestPattern();
   } else if (check(TokenKind::CHAR_LITERAL) && check(TokenKind::DotDot, 1)) {

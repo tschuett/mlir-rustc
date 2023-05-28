@@ -28,6 +28,8 @@ Precedence Parser::getLeftBindingPower() {
     return Precedence::DotDotEq;
   case TokenKind::ParenOpen:
     return Precedence::FunctionCall;
+  case TokenKind::PlusEq:
+    return Precedence::PlusAssign;
   case TokenKind::SquareOpen:
     return Precedence::ArrayIndexing;
   case TokenKind::QMark:

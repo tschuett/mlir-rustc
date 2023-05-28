@@ -9,6 +9,7 @@
 #include "AST/ClosureExpression.h"
 #include "AST/ComparisonExpression.h"
 #include "AST/ConstantItem.h"
+#include "AST/IteratorLoopExpression.h"
 #include "AST/Crate.h"
 #include "AST/DereferenceExpression.h"
 #include "AST/Expression.h"
@@ -62,6 +63,7 @@
 #include "AST/Types/TypePathSegment.h"
 #include "AST/Union.h"
 #include "AST/UnsafeBlockExpression.h"
+#include "AST/RangeExpression.h"
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
@@ -293,6 +295,9 @@ private:
   void resolveReturnExpression(std::shared_ptr<ast::ReturnExpression>,
                                const adt::CanonicalPath &prefix,
                                const adt::CanonicalPath &canonicalPrefix);
+  void resolveRangeExpression(std::shared_ptr<ast::RangeExpression>,
+                               const adt::CanonicalPath &prefix,
+                               const adt::CanonicalPath &canonicalPrefix);
   void resolveOperatorExpression(std::shared_ptr<ast::OperatorExpression>,
                                  const adt::CanonicalPath &prefix,
                                  const adt::CanonicalPath &canonicalPrefix);
@@ -319,6 +324,10 @@ private:
                                 const adt::CanonicalPath &canonicalPrefix);
   void
   resolveInfiniteLoopExpression(std::shared_ptr<ast::InfiniteLoopExpression>,
+                                const adt::CanonicalPath &prefix,
+                                const adt::CanonicalPath &canonicalPrefix);
+  void
+  resolveIteratorLoopExpression(std::shared_ptr<ast::IteratorLoopExpression>,
                                 const adt::CanonicalPath &prefix,
                                 const adt::CanonicalPath &canonicalPrefix);
   void resolveQualifiedPathInExpression(
@@ -431,6 +440,9 @@ private:
   resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
                             RibKind, const adt::CanonicalPath &prefix,
                             const adt::CanonicalPath &canonicalPrefix);
+  void resolvePatternDeclaration(std::shared_ptr<ast::patterns::Pattern>,
+                            RibKind, const adt::CanonicalPath &prefix,
+                            const adt::CanonicalPath &canonicalPrefix);
   void resolvePatternDeclarationWithoutRange(
       std::shared_ptr<ast::patterns::PatternWithoutRange>, RibKind,
       std::vector<PatternBinding> &bindings, const adt::CanonicalPath &prefix,
@@ -477,7 +489,10 @@ private:
                                const adt::CanonicalPath &prefix,
                                const adt::CanonicalPath &canonicalPrefix);
 
-  void verifyAssignee(std::shared_ptr<ast::Expression>);
+  void verifyAssignee(ast::Expression*);
+  void verifyAssignee(ast::ExpressionWithoutBlock*);
+  void verifyAssignee(ast::ExpressionWithBlock*);
+  
   std::map<basic::NodeId, std::shared_ptr<ast::UseDeclaration>> useDeclarations;
   std::map<basic::NodeId, std::shared_ptr<ast::Module>> modules;
 

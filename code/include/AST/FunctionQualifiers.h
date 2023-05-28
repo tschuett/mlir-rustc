@@ -31,6 +31,8 @@ public:
   void setAbi(Abi _abi) { abi = _abi; }
   void setExtern() { isExtern = true; }
   bool hasExtern() const { return isExtern; }
+  bool hasConst() const { return isConst; };
+  bool hasAsync() const { return isAsync; };
 };
 
 } // namespace rust_compiler::ast

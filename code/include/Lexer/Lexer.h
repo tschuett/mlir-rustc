@@ -11,6 +11,17 @@ namespace rust_compiler::lexer {
 
 TokenStream lex(std::string_view code, std::string_view fileName);
 
+class CheckPoint {
+  uint32_t offset;
+  uint32_t lineNumber;
+  uint32_t columnNumber;
+public:
+
+  uint32_t getOffset() const { return offset;}
+  uint32_t getLineNumber() const { return lineNumber;}
+  uint32_t getColumnNumber() const { return columnNumber;}
+};
+
 /// https://doc.rust-lang.org/reference/tokens.html
 class Lexer {
   // std::string chars;
@@ -52,6 +63,7 @@ private:
   Token lexOctLiteral();
   Token lexHexLiteral();
   Token lexDecOrFloatLiteral();
+  Token lexDecimalLiteral();
 
   Token lexIdentifierOrKeyWord();
   Token lexIdentifierOrUnknownPrefix();
@@ -74,8 +86,17 @@ private:
   void skip();
   UChar32 peek(int i = 0);
 
-  unsigned lineNumber;
-  unsigned columnNumber;
+  uint32_t lineNumber;
+  uint32_t columnNumber;
+
+  CheckPoint getCheckPoint() const;
+  void recover(const CheckPoint&);
 };
 
 } // namespace rust_compiler::lexer
+
+
+/*
+
+  C API: New API for Unicode Normalization
+ */

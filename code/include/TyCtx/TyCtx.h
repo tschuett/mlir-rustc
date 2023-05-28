@@ -151,6 +151,10 @@ public:
 
   void insertAssociatedTypeMapping(basic::NodeId id, basic::NodeId mapping);
 
+  void pushNewIteratorLoopContext(basic::NodeId, Location loc);
+  TyTy::BaseType *popLoopContext();
+  TyTy::BaseType *peekLoopContext() const;
+
 private:
   void generateBuiltins();
 
@@ -235,6 +239,8 @@ private:
   std::map<basic::NodeId, TraitReference> traitContext;
 
   std::map<basic::NodeId, TyTy::TypeBoundPredicate> predicates;
+
+  std::vector<TyTy::BaseType *> loopTypeStack;
 };
 
 } // namespace rust_compiler::tyctx

@@ -7,15 +7,15 @@
 #include "AST/ReturnExpression.h"
 #include "CrateBuilder/CrateBuilder.h"
 #include "Hir/HirOps.h"
-#include "mlir/IR/BuiltinAttributeInterfaces.h"
-#include "mlir/IR/BuiltinTypes.h"
 
 #include <cassert>
 #include <memory>
 #include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/Vector/IR/VectorOps.h>
 #include <mlir/IR/Attributes.h>
+#include <mlir/IR/BuiltinAttributeInterfaces.h>
 #include <mlir/IR/BuiltinAttributes.h>
+#include <mlir/IR/BuiltinTypes.h>
 #include <mlir/IR/Value.h>
 #include <vector>
 
@@ -151,8 +151,8 @@ mlir::Value CrateBuilder::emitLiteralExpression(ast::LiteralExpression *lit) {
       mlir::Type type = convertTyTyToMLIR(*maybeType);
       llvm::errs() << (*maybeType)->toString() << "\n";
       llvm::errs() << value << "\n";
-      //mlir::IntegerAttr in = mlir::IntegerAttr(type, value);
-      //mlir::IntegerAttr::
+      // mlir::IntegerAttr in = mlir::IntegerAttr(type, value);
+      // mlir::IntegerAttr::
       mlir::IntegerAttr attr = mlir::IntegerAttr::get(type, value);
 
       return builder.create<mlir::arith::ConstantOp>(
@@ -215,7 +215,7 @@ mlir::Value CrateBuilder::emitArrayExpression(ast::ArrayExpression *array) {
       for (auto &vl : values) {
         mlir::Value index = builder.create<mlir::arith::ConstantOp>(
             getLocation(array->getLocation()),
-            builder.getIntegerAttr(builder.getI32Type(), idx));
+            builder.getIntegerAttr(builder.getIntegerType(32, false), idx));
         vector = builder.create<mlir::vector::InsertElementOp>(
             getLocation(array->getLocation()), vl, vector, index);
         ++idx;

@@ -13,6 +13,7 @@
 #include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
 #include "AST/ItemDeclaration.h"
+#include "AST/IteratorLoopExpression.h"
 #include "AST/LetStatement.h"
 #include "AST/LiteralExpression.h"
 #include "AST/LoopExpression.h"
@@ -46,7 +47,8 @@
 
 namespace rust_compiler::ast {
 class PathExpression;
-}
+class IteratorLoopExpression;
+} // namespace rust_compiler::ast
 
 namespace rust_compiler::crate_builder {
 
@@ -155,6 +157,7 @@ private:
                                      ast::Expression *expr);
   mlir::Value emitLiteralExpression(ast::LiteralExpression *);
   mlir::Value emitArrayExpression(ast::ArrayExpression *array);
+  mlir::Value emitIteratorLoopExpression(ast::IteratorLoopExpression *loop);
 
   mlir::FunctionType getFunctionType(ast::Function *);
 
@@ -236,6 +239,18 @@ private:
   std::optional<Owner> getOwnerStatement(basic::NodeId id, ast::Statement *);
   std::optional<Owner> getOwnerItemDeclaration(basic::NodeId id,
                                                ast::ItemDeclaration *);
+
+  bool isConstantExpression(ast::Expression *);
+  bool isConstantExpressionWithBlock(ast::ExpressionWithBlock *);
+  bool isConstantExpressionWithoutBlock(ast::ExpressionWithoutBlock *);
+
+  std::optional<size_t> getNrOfIterationsOfIntoIterator(ast::Expression *);
+  std::optional<size_t>
+  getNrOfIterationsOfIntoIterator(ast::ExpressionWithBlock *);
+  std::optional<size_t>
+  getNrOfIterationsOfIntoIterator(ast::ExpressionWithoutBlock *);
+  std::optional<size_t>
+  getNrOfIterationsOfIntoIterator(ast::OperatorExpression *);
 
   std::map<basic::NodeId, Owner> owners;
 

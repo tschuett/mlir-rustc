@@ -53,6 +53,10 @@ private:
   TyTy::BaseType *expect(TyTy::BaseType *left, TyTy::BaseType *right);
   TyTy::BaseType *expectUint(TyTy::UintType *leftType,
                              TyTy::BaseType *rightType);
+  TyTy::BaseType *expectReference(TyTy::ReferenceType *,
+                                   TyTy::BaseType *rightType);
+  TyTy::BaseType *expectStr(TyTy::StrType *,
+                                   TyTy::BaseType *rightType);
 
   void commit(TyTy::BaseType *leftType, TyTy::BaseType *rightType,
               TyTy::BaseType *result);

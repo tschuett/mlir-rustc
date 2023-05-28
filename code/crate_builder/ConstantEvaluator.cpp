@@ -1,5 +1,7 @@
+#include "AST/BorrowExpression.h"
 #include "AST/Expression.h"
 #include "AST/LiteralExpression.h"
+#include "AST/OperatorExpression.h"
 #include "AST/PathExpression.h"
 #include "AST/VisItem.h"
 #include "CrateBuilder/CrateBuilder.h"
@@ -211,6 +213,218 @@ CrateBuilder::foldAsUsizeLiteralExpression(ast::LiteralExpression *lit) {
                << "\n";
 
   exit(EXIT_FAILURE);
+}
+
+bool CrateBuilder::isConstantExpression(ast::Expression *expr) {
+  switch (expr->getExpressionKind()) {
+  case ExpressionKind::ExpressionWithBlock:
+    return isConstantExpressionWithBlock(
+        static_cast<ExpressionWithBlock *>(expr));
+  case ExpressionKind::ExpressionWithoutBlock:
+    return isConstantExpressionWithoutBlock(
+        static_cast<ExpressionWithoutBlock *>(expr));
+  }
+}
+
+bool CrateBuilder::isConstantExpressionWithBlock(ast::ExpressionWithBlock *) {
+  assert(false);
+}
+
+bool CrateBuilder::isConstantExpressionWithoutBlock(
+    ast::ExpressionWithoutBlock *withOut) {
+  switch (withOut->getWithoutBlockKind()) {
+  case ExpressionWithoutBlockKind::LiteralExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::PathExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::OperatorExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::GroupedExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::ArrayExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::AwaitExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::IndexExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::TupleExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::TupleIndexingExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::StructExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::CallExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::MethodCallExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::FieldExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::ClosureExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::AsyncBlockExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::ContinueExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::BreakExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::RangeExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::ReturnExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::UnderScoreExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::MacroInvocation: {
+    assert(false);
+  }
+  }
+  assert(false);
+}
+
+std::optional<size_t>
+CrateBuilder::getNrOfIterationsOfIntoIterator(ast::Expression *into) {
+  switch (into->getExpressionKind()) {
+  case ExpressionKind::ExpressionWithBlock:
+    return isConstantExpressionWithBlock(
+        static_cast<ExpressionWithBlock *>(into));
+  case ExpressionKind::ExpressionWithoutBlock:
+    return isConstantExpressionWithoutBlock(
+        static_cast<ExpressionWithoutBlock *>(into));
+  }
+}
+
+std::optional<size_t> CrateBuilder::getNrOfIterationsOfIntoIterator(
+    ast::ExpressionWithBlock *withBlock) {
+  assert(false);
+}
+
+std::optional<size_t> CrateBuilder::getNrOfIterationsOfIntoIterator(
+    ast::ExpressionWithoutBlock *withoutBlock) {
+  switch (withoutBlock->getWithoutBlockKind()) {
+  case ExpressionWithoutBlockKind::LiteralExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::PathExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::OperatorExpression: {
+    return getNrOfIterationsOfIntoIterator(
+        static_cast<ast::OperatorExpression *>(withoutBlock));
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::GroupedExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::ArrayExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::AwaitExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::IndexExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::TupleExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::TupleIndexingExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::StructExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::CallExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::MethodCallExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::FieldExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::ClosureExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::AsyncBlockExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::ContinueExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::BreakExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::RangeExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::ReturnExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::UnderScoreExpression: {
+    assert(false);
+  }
+  case ExpressionWithoutBlockKind::MacroInvocation: {
+    assert(false);
+  }
+  }
+  assert(false);
+}
+
+std::optional<size_t>
+CrateBuilder::getNrOfIterationsOfIntoIterator(ast::OperatorExpression *op) {
+  switch (op->getKind()) {
+  case OperatorExpressionKind::BorrowExpression: {
+    return getNrOfIterationsOfIntoIterator(
+        static_cast<BorrowExpression *>(op)->getExpression().get());
+  }
+  case OperatorExpressionKind::DereferenceExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::ErrorPropagationExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::NegationExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::ArithmeticOrLogicalExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::ComparisonExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::LazyBooleanExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::TypeCastExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::AssignmentExpression: {
+    assert(false);
+  }
+  case OperatorExpressionKind::CompoundAssignmentExpression: {
+    assert(false);
+  }
+  }
+  assert(false);
 }
 
 } // namespace rust_compiler::crate_builder

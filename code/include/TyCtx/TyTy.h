@@ -963,6 +963,8 @@ public:
 
   bool canEqual(const BaseType *other, bool emitErrors) const override;
 
+  Mutability getMut() const { return mut; }
+
 private:
   TypeVariable base;
   Mutability mut;

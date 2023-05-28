@@ -370,7 +370,8 @@ public:
                            std::span<ast::OuterAttribute>, Restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseFieldExpression(std::shared_ptr<ast::Expression>,
-                       std::span<ast::OuterAttribute>, Restrictions restrictions);
+                       std::span<ast::OuterAttribute>,
+                       Restrictions restrictions);
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
       parseRangeExpression(std::shared_ptr<ast::Expression>,
                            std::span<ast::OuterAttribute>, Restrictions);
@@ -648,7 +649,7 @@ private:
   bool eat(lexer::TokenKind token);
   bool eatKeyWord(lexer::KeyWordKind keyword);
 
-  lexer::Token getToken(uint8_t off = 0);
+  lexer::Token getToken(uint8_t off = 0) const;
 
   CheckPoint getCheckPoint();
   void recover(const CheckPoint &cp);
@@ -662,6 +663,7 @@ private:
   bool checkStatement();
   bool checkStaticOrUnderscore();
   bool checkVisItem();
+  bool checkLifetimeToken(std::string_view);
 
   // precision could be improved
   bool checkMacroItem();
@@ -678,6 +680,9 @@ private:
   bool checkPathOrStructOrMacro();
   bool checkPathExprSegment(uint8_t off = 0);
   bool checkPostFix();
+  bool checkIsKeyword(uint8_t off = 0) const {
+    return getToken(off).getKind() == lexer::TokenKind::Keyword;
+  }
 
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parseBinaryExpression(bool allowBlocks);

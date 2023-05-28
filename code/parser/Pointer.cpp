@@ -58,8 +58,8 @@ Parser::parseReferenceType() {
   Location loc = getLocation();
   ReferenceType refType = {loc};
 
-//  llvm::errs() << "parseReferenceType"
-//               << "\n";
+  //  llvm::errs() << "parseReferenceType"
+  //               << "\n";
 
   if (!check(TokenKind::And))
     return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
@@ -67,6 +67,24 @@ Parser::parseReferenceType() {
   assert(eat(TokenKind::And));
 
   // FIXME Lifetime
+
+  if (check(TokenKind::LIFETIME_OR_LABEL) or
+      checkKeyWord(KeyWordKind::KW_STATICLIFETIME) or
+      (check(TokenKind::LIFETIME_TOKEN) && getToken().getStorage() == "'_")) {
+    adt::Result<ast::Lifetime, std::string> lifetime =
+        parseLifetimeAsLifetime();
+    if (!lifetime) {
+      llvm::errs() << "failed to parse lifetime in reference tpye: "
+                   << lifetime.getError() << "\n";
+      std::string s =
+          llvm::formatv("{0} {1}",
+                        "failed to parse lifetime in reference type: ",
+                        lifetime.getError())
+              .str();
+      return StringResult<std::shared_ptr<ast::types::TypeExpression>>(s);
+    }
+    refType.setLifetime(lifetime.getValue());
+  }
 
   if (checkKeyWord(KeyWordKind::KW_MUT)) {
     refType.setMut();

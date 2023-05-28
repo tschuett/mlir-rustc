@@ -27,6 +27,18 @@ void Resolver::resolvePatternDeclaration(
                                         canonicalPrefix);
 }
 
+void Resolver::resolvePatternDeclaration(
+    std::shared_ptr<ast::patterns::Pattern> pattern, RibKind kind,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  std::vector<PatternBinding> bindings = {
+      PatternBinding(PatternBoundCtx::Product, std::set<basic::NodeId>())};
+
+  for (auto &p : pattern->getPatterns())
+    resolvePatternDeclarationWithBindings(p, kind, bindings, prefix,
+                                          canonicalPrefix);
+}
+
 void Resolver::resolvePatternDeclarationWithBindings(
     std::shared_ptr<ast::patterns::PatternNoTopAlt> noTopAlt, RibKind ribKind,
     std::vector<PatternBinding> &bindings, const adt::CanonicalPath &prefix,
@@ -56,8 +68,7 @@ void Resolver::resolvePatternDeclarationWithoutRange(
     std::shared_ptr<ast::patterns::IdentifierPattern> id =
         std::static_pointer_cast<IdentifierPattern>(pat);
     getNameScope().insert(
-        CanonicalPath::newSegment(id->getNodeId(),
-                                  Identifier(id->getIdentifier().toString())),
+        CanonicalPath::newSegment(id->getNodeId(), id->getIdentifier()),
         id->getNodeId(), id->getLocation(), rib);
     break;
   }

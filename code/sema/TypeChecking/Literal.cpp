@@ -1,4 +1,5 @@
 #include "AST/LiteralExpression.h"
+#include "Basic/Mutability.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
 
@@ -16,7 +17,10 @@ TypeResolver::checkLiteral(std::shared_ptr<ast::LiteralExpression> lit) {
     return builtin;
   }
   case ast::LiteralExpressionKind::StringLiteral: {
-    assert(false && "to be implemented");
+    TyTy::BaseType *builtin = tcx->lookupBuiltin("str");
+    return new ReferenceType(
+        lit->getNodeId(),
+        TyTy::TypeVariable(builtin->getReference()), basic::Mutability::Imm);
   }
   case ast::LiteralExpressionKind::RawStringLiteral: {
     assert(false && "to be implemented");

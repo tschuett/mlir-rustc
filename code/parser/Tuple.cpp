@@ -47,6 +47,7 @@ Parser::parseTupleStruct(std::optional<ast::Visibility> vis) {
   assert(eat(TokenKind::ParenOpen));
 
   if (check(TokenKind::ParenClose)) {
+    // FIXME
   } else if (!check(TokenKind::ParenClose)) {
     StringResult<ast::TupleFields> tupleFields = parseTupleFields();
     if (!tupleFields) {
@@ -57,6 +58,11 @@ Parser::parseTupleStruct(std::optional<ast::Visibility> vis) {
     }
     stru.setTupleFields(tupleFields.getValue());
   }
+
+  if (!check(TokenKind::ParenClose))
+    return StringResult<std::shared_ptr<ast::Item>>(
+        "failed to parse ) token in tuple struct");
+  assert(eat(TokenKind::ParenClose));
 
   if (checkKeyWord(KeyWordKind::KW_WHERE)) {
     StringResult<ast::WhereClause> where = parseWhereClause();

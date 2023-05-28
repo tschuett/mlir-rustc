@@ -36,10 +36,11 @@ void Resolver::resolveConstantItemInTrait(
 void Resolver::resolveFunctionInTrait(
     ast::Function *f, const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
-  assert(false);
   CanonicalPath decl = CanonicalPath::newSegment(f->getNodeId(), f->getName());
   CanonicalPath path = prefix.append(decl);
   CanonicalPath cpath = canonicalPrefix.append(decl);
+
+  // FIXME handle identifier
 
   tyCtx->insertCanonicalPath(f->getNodeId(), cpath);
 

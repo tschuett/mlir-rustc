@@ -18,7 +18,7 @@ public:
 
   size_t getLength() const { return tokens.size(); }
 
-  Token getAt(size_t at) {
+  Token getAt(size_t at) const {
     assert(at < tokens.size());
     return tokens[at];
   }

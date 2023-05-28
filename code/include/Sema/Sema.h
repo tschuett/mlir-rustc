@@ -26,6 +26,7 @@
 #include "AST/Statements.h"
 #include "AST/StaticItem.h"
 #include "AST/StructExpression.h"
+#include "AST/Trait.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
 #include "AST/Types/Types.h"
@@ -89,6 +90,7 @@ private:
   void analyzeArrayExpression(ast::ArrayExpression *);
   void analyzeConstantItem(ast::ConstantItem *);
   void analyzeStaticItem(ast::StaticItem *);
+  void analyzeTrait(ast::Trait *);
   void analyzeFunction(ast::Function *);
 
   bool isReachable(std::shared_ptr<ast::VisItem>,

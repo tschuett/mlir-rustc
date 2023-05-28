@@ -2,6 +2,7 @@
 
 #include "AST/BlockExpression.h"
 #include "AST/LoopExpression.h"
+#include "AST/LoopLabel.h"
 #include "AST/Patterns/Pattern.h"
 
 #include <memory>
@@ -14,7 +15,7 @@ class IteratorLoopExpression final : public LoopExpression {
   std::shared_ptr<patterns::Pattern> pattern;
   std::shared_ptr<Expression> rhs;
   std::shared_ptr<Expression> body;
-  std::optional<std::string> loopLabel;
+  std::optional<LoopLabel> loopLabel;
 
 public:
   IteratorLoopExpression(Location loc)
@@ -28,8 +29,11 @@ public:
 
   void setBody(const std::shared_ptr<Expression> bl) { body = bl; }
 
-  void setLabel(std::string_view lab) { loopLabel = lab; }
+  void setLabel(LoopLabel lab) { loopLabel = lab; }
+  bool hasLabel() const { return loopLabel.has_value(); }
+  LoopLabel getLabel() const { return *loopLabel; }
 
+  std::shared_ptr<patterns::Pattern> getPattern() const { return pattern; }
   std::shared_ptr<Expression> getBody() const { return body; }
   std::shared_ptr<Expression> getRHS() const { return rhs; }
 };

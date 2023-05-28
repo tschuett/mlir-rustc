@@ -106,6 +106,9 @@ Parser::parseInfixExpression(std::shared_ptr<Expression> left,
   case TokenKind::ParenOpen: {
     return parseCallExpression(left, outer, restrictions);
   }
+  case TokenKind::PlusEq: {
+    return parseCompoundAssignmentExpression(left, restrictions);
+  }
   case TokenKind::Keyword: {
     switch (getToken().getKeyWordKind()) {
     case KeyWordKind::KW_AS: {

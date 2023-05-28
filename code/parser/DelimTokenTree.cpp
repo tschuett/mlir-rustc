@@ -44,8 +44,9 @@ Parser::parseDelimTokenTree() {
     while (true) {
       if (check(TokenKind::Eof)) {
         return StringResult<std::shared_ptr<ast::DelimTokenTree>>(
-            "failed to parse delim token tree");
+            "failed to parse delim token tree (eof)");
       } else if (check(TokenKind::ParenClose)) {
+        assert(eat(TokenKind::ParenClose));
         return StringResult<std::shared_ptr<ast::DelimTokenTree>>(
             std::make_shared<DelimTokenTree>(tree));
       } else {
@@ -64,8 +65,9 @@ Parser::parseDelimTokenTree() {
     while (true) {
       if (check(TokenKind::Eof)) {
         return StringResult<std::shared_ptr<ast::DelimTokenTree>>(
-            "failed to parse delim token tree");
+            "failed to parse delim token tree (eof)");
       } else if (check(TokenKind::SquareClose)) {
+        assert(eat(TokenKind::SquareClose));
         return StringResult<std::shared_ptr<ast::DelimTokenTree>>(
             std::make_shared<DelimTokenTree>(tree));
       } else {
@@ -84,8 +86,9 @@ Parser::parseDelimTokenTree() {
     while (true) {
       if (check(TokenKind::Eof)) {
         return StringResult<std::shared_ptr<ast::DelimTokenTree>>(
-            "failed to parse delim token tree");
+            "failed to parse delim token tree (eof)");
       } else if (check(TokenKind::BraceClose)) {
+        assert(eat(TokenKind::BraceClose));
         return StringResult<std::shared_ptr<ast::DelimTokenTree>>(
             std::make_shared<DelimTokenTree>(tree));
       } else {
@@ -100,6 +103,9 @@ Parser::parseDelimTokenTree() {
       }
     }
   }
+
+  llvm::errs() << "failed to parse delim token tree" << "\n";
+  llvm::errs() << Token2String(getToken().getKind()) << "\n";
 
   return StringResult<std::shared_ptr<ast::DelimTokenTree>>(
       "failed to parse delim token tree");

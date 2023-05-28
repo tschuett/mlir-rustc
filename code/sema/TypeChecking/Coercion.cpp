@@ -4,6 +4,7 @@
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TyTy.h"
 #include "Unification.h"
+#include "llvm/Support/raw_ostream.h"
 
 using namespace rust_compiler::tyctx;
 
@@ -12,8 +13,8 @@ namespace rust_compiler::sema::type_checking {
 CoercionResult Coercion::coercion(TyTy::BaseType *receiver,
                                   TyTy::BaseType *expected, Location loc,
                                   bool allowAutoderef) {
-//    llvm::errs() << receiver->toString() << "\n";
-//    llvm::errs() << expected->toString() << "\n";
+  //    llvm::errs() << receiver->toString() << "\n";
+  //    llvm::errs() << expected->toString() << "\n";
 
   bool success = false;
   if (receiver->getKind() == TyTy::TypeKind::Never)
@@ -81,6 +82,8 @@ TyTy::BaseType *coercionWithSite(basic::NodeId id, TyTy::WithLocation lhs,
 
   TyTy::BaseType *coerced = Unification::unifyWithSite(
       lhs, TyTy::WithLocation(receiver, rhs.getLocation()), unify, context);
+
+  //llvm::errs() << "adjustments in coercion for : " << id << "\n";
 
   rust_compiler::session::session->getTypeContext()->insertAutoderefMapping(
       id, result.getAdjustments());

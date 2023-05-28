@@ -109,6 +109,7 @@ mlir::Type CrateBuilder::convertTyTyToMLIR(TyTy::BaseType *type) {
       assert(false && "to be implemented");
     }
     case IntKind::I32: {
+      llvm::errs() << "found: i32: " << type->getLocation().toString() << "\n";
       return builder.getI32Type();
     }
     case IntKind::I64: {
@@ -128,6 +129,7 @@ mlir::Type CrateBuilder::convertTyTyToMLIR(TyTy::BaseType *type) {
       assert(false);
     }
     case UintKind::U32: {
+      // return builder.getU32Type();
       return builder.getIntegerType(32, false);
     }
     case UintKind::U64: {

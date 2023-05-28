@@ -63,6 +63,14 @@ std::optional<NodeId> TyCtx::lookupResolvedType(NodeId id) {
   return it->second;
 }
 
+std::optional<NodeId> TyCtx::lookupResolvedName(NodeId id) {
+  auto it = resolvedNames.find(id);
+  if (it == resolvedNames.end())
+    return std::nullopt;
+
+  return it->second;
+}
+
 std::optional<NodeId> TyCtx::lookupName(NodeId ref) {
   auto it = resolvedNames.find(ref);
   if (it == resolvedNames.end())
@@ -232,7 +240,7 @@ std::optional<NodeId> TyCtx::lookupAssociatedTypeMapping(NodeId id) {
 
 void TyCtx::insertAutoderefMapping(NodeId id,
                                    std::vector<sema::Adjustment> ad) {
-  assert(autoderefMappings.find(id) == autoderefMappings.end());
+  // FIXME assert(autoderefMappings.find(id) == autoderefMappings.end());
   autoderefMappings.emplace(id, std::move(ad));
 }
 
@@ -412,6 +420,20 @@ void TyCtx::insertTraitReference(basic::NodeId id, TraitReference &&ref) {
 void TyCtx::insertAssociatedTypeMapping(basic::NodeId id,
                                         basic::NodeId mapping) {
   associatedTypeMappings[id] = mapping;
+}
+
+TyTy::BaseType *TyCtx::popLoopContext() {
+  TyTy::BaseType *result = peekLoopContext();
+  loopTypeStack.pop_back();
+  return result;
+}
+
+TyTy::BaseType *TyCtx::peekLoopContext() const { return loopTypeStack.back(); }
+
+void TyCtx::pushNewIteratorLoopContext(basic::NodeId id, Location loc) {
+  TyTy::BaseType *inferVar = new TyTy::InferType(
+      id, TyTy::InferKind::General, TyTy::TypeHint::unknown(), loc);
+  loopTypeStack.push_back(inferVar);
 }
 
 } // namespace rust_compiler::tyctx

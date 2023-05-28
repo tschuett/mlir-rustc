@@ -6,7 +6,6 @@
 #include "Lir/LirDialect.h"
 #include "Mir/MirDialect.h"
 #include "Optimizer/PassPipeLine.h"
-#include "mlir/Support/LogicalResult.h"
 
 #include <llvm/Analysis/TargetLibraryInfo.h>
 #include <llvm/Analysis/TargetTransformInfo.h>
@@ -28,6 +27,7 @@
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/Interfaces/DataLayoutInterfaces.h>
 #include <mlir/Pass/PassManager.h>
+#include <mlir/Support/LogicalResult.h>
 #include <mlir/Target/LLVMIR/Dialect/Builtin/BuiltinToLLVMIRTranslation.h>
 #include <mlir/Target/LLVMIR/Dialect/LLVMIR/LLVMToLLVMIRTranslation.h>
 #include <mlir/Target/LLVMIR/Import.h>

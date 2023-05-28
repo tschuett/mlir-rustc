@@ -3,7 +3,9 @@
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Lexer/TokenStream.h"
+#include "Location.h"
 
+#include <cstdlib>
 #include <llvm/Support/raw_ostream.h>
 #include <optional>
 
@@ -117,6 +119,7 @@ std::string tryLexComment(std::string_view code) {
   std::string ws;
 
   while (view.size() > 0) {
+    size_t wsSize = ws.size();
     if (view.starts_with("/")) {
       view.remove_prefix(1);
       ws.push_back('/');
@@ -201,6 +204,9 @@ std::string tryLexComment(std::string_view code) {
     } else if (view.starts_with("<")) {
       ws.push_back(view[0]);
       view.remove_prefix(1);
+    } else if (view.starts_with("`")) {
+      ws.push_back(view[0]);
+      view.remove_prefix(1);
     } else if (view.starts_with(">")) {
       ws.push_back(view[0]);
       view.remove_prefix(1);
@@ -215,6 +221,10 @@ std::string tryLexComment(std::string_view code) {
       view.remove_prefix(1);
       ws.push_back('\n');
       return ws;
+    }
+    if (ws.size() == wsSize) {
+      llvm::errs() << "no progress in tryLexComment:" << ws << "\n";
+      exit(EXIT_FAILURE);
     }
   }
 
@@ -453,14 +463,14 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       continue;
     }
 
-//    std::optional<std::string> ch = tryLexChar(code);
-//    if (ch) {
-//      ts.append(Token(Location(fileName, lineNumber, columnNumber),
-//                      TokenKind::Char, *ch));
-//      code.remove_prefix(ch->size());
-//      columnNumber += ch->size();
-//      continue;
-//    }
+    //    std::optional<std::string> ch = tryLexChar(code);
+    //    if (ch) {
+    //      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+    //                      TokenKind::Char, *ch));
+    //      code.remove_prefix(ch->size());
+    //      columnNumber += ch->size();
+    //      continue;
+    //    }
 
     std::optional<std::string> id = tryLexIdentifier(code);
     if (id) {
@@ -489,9 +499,19 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
                       TokenKind::Identifier, "$crate"));
       code.remove_prefix(6);
       columnNumber += 6;
+    } else if (code.starts_with("@")) {
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      TokenKind::At));
+      code.remove_prefix(1);
+      columnNumber += 1;
     } else if (code.starts_with("->")) {
       ts.append(Token(Location(fileName, lineNumber, columnNumber),
                       TokenKind::RArrow));
+      code.remove_prefix(2);
+      columnNumber += 2;
+    } else if (code.starts_with("+=")) {
+      ts.append(
+          Token(Location(fileName, lineNumber, columnNumber), TokenKind::PlusEq));
       code.remove_prefix(2);
       columnNumber += 2;
     } else if (code.starts_with("+")) {
@@ -698,6 +718,11 @@ TokenStream lex(std::string_view _code, std::string_view fileName) {
       code.remove_prefix(1);
       ++lineNumber;
       columnNumber = 0;
+    } else if (code.starts_with("'static")) {
+      code.remove_prefix(7);
+      columnNumber += 7;
+      ts.append(Token(Location(fileName, lineNumber, columnNumber),
+                      KeyWordKind::KW_STATICLIFETIME, "'static"));
     } else {
       if (code.size() == 0) {
         ts.append(Token(Location(fileName, lineNumber, columnNumber),

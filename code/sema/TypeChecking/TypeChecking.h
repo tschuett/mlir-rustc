@@ -8,6 +8,7 @@
 #include "AST/CallExpression.h"
 #include "AST/ClosureExpression.h"
 #include "AST/ComparisonExpression.h"
+#include "AST/CompoundAssignmentExpression.h"
 #include "AST/Crate.h"
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
@@ -22,6 +23,7 @@
 #include "AST/InherentImpl.h"
 #include "AST/Item.h"
 #include "AST/ItemDeclaration.h"
+#include "AST/IteratorLoopExpression.h"
 #include "AST/LetStatement.h"
 #include "AST/LiteralExpression.h"
 #include "AST/MacroItem.h"
@@ -32,6 +34,7 @@
 #include "AST/Patterns/PathPattern.h"
 #include "AST/Patterns/PatternWithoutRange.h"
 #include "AST/Patterns/RangePattern.h"
+#include "AST/RangeExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/StructStruct.h"
 #include "AST/TupleStruct.h"
@@ -129,6 +132,9 @@ private:
   TyTy::BaseType *checkBlockExpression(std::shared_ptr<ast::BlockExpression>);
   TyTy::BaseType *
       checkUnsafeBlockExpression(std::shared_ptr<ast::UnsafeBlockExpression>);
+  TyTy::BaseType *checkLoopExpression(std::shared_ptr<ast::LoopExpression>);
+  TyTy::BaseType *checkIteratorLoopExpression(ast::IteratorLoopExpression *);
+
   TyTy::BaseType *checkLiteral(std::shared_ptr<ast::LiteralExpression>);
   TyTy::BaseType *
       checkOperatorExpression(std::shared_ptr<ast::OperatorExpression>);
@@ -162,11 +168,17 @@ private:
   TyTy::BaseType *checkIfLetExpression(std::shared_ptr<ast::IfLetExpression>);
   TyTy::BaseType *
       checkAssignmentExpression(std::shared_ptr<ast::AssignmentExpression>);
+  TyTy::BaseType *checkCompoundAssignmentExpression(
+      std::shared_ptr<ast::CompoundAssignmentExpression>);
 
   bool validateArithmeticType(ast::ArithmeticOrLogicalExpressionKind,
                               TyTy::BaseType *t);
+  bool validateArithmeticType(ast::CompoundAssignmentExpressionKind,
+                              TyTy::BaseType *t);
 
   TyTy::BaseType *checkPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
+                               TyTy::BaseType *);
+  TyTy::BaseType *checkPattern(std::shared_ptr<ast::patterns::Pattern>,
                                TyTy::BaseType *);
   TyTy::BaseType *
   checkPatternWithoutRange(std::shared_ptr<ast::patterns::PatternWithoutRange>,
@@ -224,6 +236,11 @@ private:
   TyTy::BaseType *
       checkRawPointerType(std::shared_ptr<ast::types::RawPointerType>);
   TyTy::BaseType *checkSliceType(std::shared_ptr<ast::types::SliceType>);
+  TyTy::BaseType *checkIntoIteratorElementType(ast::Expression *);
+  TyTy::BaseType *checkIntoIteratorElementType(ast::ExpressionWithoutBlock *);
+  TyTy::BaseType *checkIntoIteratorElementType(ast::PathExpression *);
+  TyTy::BaseType *checkIntoIteratorElementType(TyTy::BaseType *);
+  TyTy::BaseType *checkIntoIteratorElementType(ast::RangeExpression *);
 
   bool
   resolveOperatorOverload(ArithmeticOrLogicalExpressionKind,

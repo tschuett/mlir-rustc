@@ -124,11 +124,14 @@ StringResult<ast::Lifetime> Parser::parseLifetimeAsLifetime() {
   Lifetime lf = {loc};
 
   if (check(TokenKind::LIFETIME_OR_LABEL)) {
+    assert(eat(TokenKind::LIFETIME_OR_LABEL));
     lf.setLifetime(getToken().getStorage());
   } else if (checkKeyWord(KeyWordKind::KW_STATICLIFETIME)) {
     lf.setLifetime(getToken().getStorage());
+    assert(eatKeyWord(KeyWordKind::KW_STATICLIFETIME));
   } else if (check(TokenKind::LIFETIME_TOKEN) &&
              getToken().getStorage() == "'_") {
+    assert(eat(TokenKind::LIFETIME_TOKEN));
     lf.setLifetime(getToken().getStorage());
   } else {
     return StringResult<ast::Lifetime>("failed to parse lifetime");
@@ -298,7 +301,7 @@ rust_compiler::Location Parser::getLocation() {
   return ts.getAt(offset).getLocation();
 }
 
-lexer::Token Parser::getToken(uint8_t off) {
+lexer::Token Parser::getToken(uint8_t off) const {
   assert(offset + off < ts.getLength() && "out of range access in getToken");
   return ts.getAt(offset + off);
 }
@@ -799,7 +802,8 @@ StringResult<ast::TypeParam> Parser::parseTypeParam() {
 
   TypeParam param = {loc};
 
-  llvm::errs() << "parseTypeParam" << "\n";
+  llvm::errs() << "parseTypeParam"
+               << "\n";
 
   if (!check(TokenKind::Identifier))
     return StringResult<ast::TypeParam>(

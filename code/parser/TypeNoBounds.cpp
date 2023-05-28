@@ -15,8 +15,8 @@ namespace rust_compiler::parser {
 StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTypeNoBounds() {
 
-//  llvm::errs() << "parseTypeNoBounds: " << Token2String(getToken().getKind())
-//               << "\n";
+  llvm::errs() << "parseTypeNoBounds: " << Token2String(getToken().getKind())
+               << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_IMPL))
     return parseImplType();

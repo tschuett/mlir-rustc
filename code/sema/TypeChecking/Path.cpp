@@ -39,6 +39,10 @@ TyTy::BaseType *TypeResolver::checkPathInExpression(
   TyTy::BaseType *typeSegment =
       resolveRootPathExpression(path, &offset, &resolvedNodeId);
   if (typeSegment->getKind() == TyTy::TypeKind::Error) {
+    llvm::errs() << "checkPathInExpression failed: "
+                 << path->getSegments()[0].getIdent().toString() << "\n";
+    llvm::errs() << path->getNodeId() << "\n";
+    llvm::errs() << path->getSegments().size() << "\n";
     assert(false);
     return typeSegment;
   }
@@ -68,6 +72,12 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
     refNodeId = *name;
   } else if (auto type = resolver->lookupResolvedType(path->getNodeId())) {
     //llvm::errs() << "resolve root path: it is a type" << "\n";
+    refNodeId = *type;
+  } else if (auto name = tcx->lookupResolvedName(path->getNodeId())) {
+    //llvm::errs() << "tcx:resolve root path: it is a name" << "\n";
+    refNodeId = *name;
+  } else if (auto type = tcx->lookupResolvedType(path->getNodeId())) {
+    //llvm::errs() << "tcx:resolve root path: it is a type" << "\n";
     refNodeId = *type;
   }
 

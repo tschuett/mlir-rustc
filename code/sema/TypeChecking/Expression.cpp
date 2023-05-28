@@ -6,10 +6,14 @@
 #include "AST/BlockExpression.h"
 #include "AST/ClosureExpression.h"
 #include "AST/ComparisonExpression.h"
+#include "AST/CompoundAssignmentExpression.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/IteratorLoopExpression.h"
 #include "AST/LiteralExpression.h"
+#include "AST/LoopExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/PathExpression.h"
+#include "AST/RangeExpression.h"
 #include "AST/Scrutinee.h"
 #include "AST/Statement.h"
 #include "Basic/Ids.h"
@@ -31,6 +35,7 @@
 #include <cassert>
 #include <llvm/Support/ErrorHandling.h>
 #include <memory>
+#include <optional>
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::tyctx;
@@ -71,7 +76,8 @@ TyTy::BaseType *TypeResolver::checkExpressionWithBlock(
         std::static_pointer_cast<ast::UnsafeBlockExpression>(withBlock));
   }
   case ast::ExpressionWithBlockKind::LoopExpression: {
-    assert(false && "to be implemented");
+    return checkLoopExpression(
+        std::static_pointer_cast<ast::LoopExpression>(withBlock));
   }
   case ast::ExpressionWithBlockKind::IfExpression: {
     return checkIfExpression(std::static_pointer_cast<IfExpression>(withBlock));
@@ -170,7 +176,7 @@ TyTy::BaseType *TypeResolver::checkBlockExpression(
 
   for (auto &s : stmts.getStmts()) {
     //    if (s->getKind() == StatementKind::ItemDeclaration)
-//      continue;
+    //      continue;
 
     checkStatement(s);
   }
@@ -187,13 +193,13 @@ TyTy::BaseType *TypeResolver::checkBlockExpression(
       return new TyTy::ErrorType(block->getNodeId());
     }
 
-    if (s->getKind() == StatementKind::ExpressionStatement) {
-      std::shared_ptr<ExpressionStatement> es =
-          std::static_pointer_cast<ExpressionStatement>(s);
-      if (es->getKind() == ExpressionStatementKind::ExpressionWithBlock) {
-        // FIXME unify
-      }
-    }
+    // if (s->getKind() == StatementKind::ExpressionStatement) {
+    //   std::shared_ptr<ExpressionStatement> es =
+    //       std::static_pointer_cast<ExpressionStatement>(s);
+    //   if (es->getKind() == ExpressionStatementKind::ExpressionWithBlock) {
+    //     // FIXME unify
+    //   }
+    // }
   }
 
   if (stmts.hasTrailing())
@@ -241,7 +247,8 @@ TyTy::BaseType *TypeResolver::checkOperatorExpression(
         std::static_pointer_cast<AssignmentExpression>(op));
   }
   case OperatorExpressionKind::CompoundAssignmentExpression: {
-    assert(false && "to be implemented");
+    return checkCompoundAssignmentExpression(
+        std::static_pointer_cast<CompoundAssignmentExpression>(op));
   }
   }
 }
@@ -883,6 +890,288 @@ TypeResolver::checkIndexExpression(std::shared_ptr<IndexExpression> index) {
   }
 
   assert(false);
+}
+
+TyTy::BaseType *
+TypeResolver::checkLoopExpression(std::shared_ptr<ast::LoopExpression> loop) {
+  switch (loop->getLoopExpressionKind()) {
+  case LoopExpressionKind::InfiniteLoopExpression: {
+    assert(false);
+  }
+  case LoopExpressionKind::PredicateLoopExpression: {
+    assert(false);
+  }
+  case LoopExpressionKind::PredicatePatternLoopExpression: {
+    assert(false);
+  }
+  case LoopExpressionKind::IteratorLoopExpression: {
+    return checkIteratorLoopExpression(
+        std::static_pointer_cast<IteratorLoopExpression>(loop).get());
+  }
+  case LoopExpressionKind::LabelBlockExpression: {
+    assert(false);
+  }
+  }
+}
+
+TyTy::BaseType *
+TypeResolver::checkIteratorLoopExpression(ast::IteratorLoopExpression *iter) {
+  tcx->pushNewIteratorLoopContext(iter->getNodeId(), iter->getLocation());
+
+  // llvm::errs() << "checkIteratorLoopExpression: " << iter->getNodeId() <<
+  // "\n";
+
+  // TyTy::BaseType *rhs = checkExpression(iter->getRHS());
+
+  TyTy::BaseType *elementType =
+      checkIntoIteratorElementType(iter->getRHS().get());
+
+  TyTy::BaseType *patternType = checkPattern(iter->getPattern(), elementType);
+  assert(patternType->getKind() != TyTy::TypeKind::Error);
+
+  if (patternType) {
+  }
+  if (elementType) {
+  }
+  TyTy::BaseType *body = checkExpression(iter->getBody());
+
+  // checkPattern(iter->getPattern(), rhs);
+
+  TyTy::BaseType *loopType = tcx->popLoopContext();
+
+  return coercionWithSite(
+      iter->getNodeId(),
+      TyTy::WithLocation(body, iter->getBody()->getLocation()),
+      TyTy::WithLocation(loopType), iter->getLocation(), tcx);
+}
+
+TyTy::BaseType *
+TypeResolver::checkIntoIteratorElementType(ast::Expression *expr) {
+  switch (expr->getExpressionKind()) {
+  case ExpressionKind::ExpressionWithBlock: {
+    assert(false);
+    break;
+  }
+  case ExpressionKind::ExpressionWithoutBlock: {
+    return checkIntoIteratorElementType(
+        static_cast<ast::ExpressionWithoutBlock *>(expr));
+    break;
+  }
+  }
+}
+
+TyTy::BaseType *TypeResolver::checkIntoIteratorElementType(
+    ast::ExpressionWithoutBlock *withoutBlock) {
+  switch (withoutBlock->getWithoutBlockKind()) {
+  case ExpressionWithoutBlockKind::LiteralExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::PathExpression: {
+    return checkIntoIteratorElementType(
+        static_cast<ast::PathExpression *>(withoutBlock));
+  }
+  case ExpressionWithoutBlockKind::OperatorExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::GroupedExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::ArrayExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::AwaitExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::IndexExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::TupleExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::TupleIndexingExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::StructExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::CallExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::MethodCallExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::FieldExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::ClosureExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::AsyncBlockExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::ContinueExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::BreakExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::RangeExpression: {
+    return checkIntoIteratorElementType(
+        static_cast<ast::RangeExpression *>(withoutBlock));
+  }
+  case ExpressionWithoutBlockKind::ReturnExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::UnderScoreExpression: {
+    assert(false && "to be implemented");
+  }
+  case ExpressionWithoutBlockKind::MacroInvocation: {
+    assert(false && "to be implemented");
+  }
+  }
+}
+
+TyTy::BaseType *
+TypeResolver::checkIntoIteratorElementType(ast::PathExpression *path) {
+  // FIXME improve
+  std::optional<NodeId> node = tcx->lookupResolvedName(path->getNodeId());
+  assert(node.has_value());
+  std::optional<TyTy::BaseType *> type = tcx->lookupType(*node);
+  assert(type.has_value());
+
+  return checkIntoIteratorElementType(*type);
+}
+
+TyTy::BaseType *
+TypeResolver::checkIntoIteratorElementType(TyTy::BaseType *type) {
+  switch (type->getKind()) {
+  case TyTy::TypeKind::Inferred:
+  case TyTy::TypeKind::USize:
+  case TyTy::TypeKind::Bool:
+  case TyTy::TypeKind::Char:
+  case TyTy::TypeKind::Int:
+  case TyTy::TypeKind::ISize:
+  case TyTy::TypeKind::Float:
+  case TyTy::TypeKind::Closure:
+  case TyTy::TypeKind::Function:
+  case TyTy::TypeKind::Never:
+  case TyTy::TypeKind::Tuple:
+  case TyTy::TypeKind::Parameter:
+  case TyTy::TypeKind::ADT:
+  case TyTy::TypeKind::Slice:
+  case TyTy::TypeKind::Projection:
+  case TyTy::TypeKind::Dynamic:
+  case TyTy::TypeKind::PlaceHolder:
+  case TyTy::TypeKind::FunctionPointer:
+  case TyTy::TypeKind::RawPointer:
+  case TyTy::TypeKind::Uint:
+  case TyTy::TypeKind::Error:
+  case TyTy::TypeKind::Str:
+    assert(false);
+  case TyTy::TypeKind::Array:
+    return static_cast<TyTy::ArrayType *>(type)->getElementType();
+  case TyTy::TypeKind::Reference:
+    return checkIntoIteratorElementType(
+        static_cast<TyTy::ReferenceType *>(type)->getBase());
+  }
+  assert(false);
+}
+
+TyTy::BaseType *
+TypeResolver::checkIntoIteratorElementType(ast::RangeExpression *range) {
+  switch (range->getKind()) {
+  case RangeExpressionKind::RangeExpr: {
+    TyTy::BaseType *left = checkExpression(range->getLeft());
+    TyTy::BaseType *right = checkExpression(range->getRight());
+
+    return Unification::unifyWithSite(
+        TyTy::WithLocation(left, range->getLeft()->getLocation()),
+        TyTy::WithLocation(right, range->getRight()->getLocation()),
+        range->getLocation(), tcx);
+  }
+  case RangeExpressionKind::RangeFromExpr: {
+    assert(false);
+  }
+  case RangeExpressionKind::RangeToExpr: {
+    assert(false);
+  }
+  case RangeExpressionKind::RangeFullExpr: {
+    assert(false);
+  }
+  case RangeExpressionKind::RangeInclusiveExpr: {
+    assert(false);
+  }
+  case RangeExpressionKind::RangeToInclusiveExpr: {
+    assert(false);
+  }
+  }
+}
+
+TyTy::BaseType *TypeResolver::checkCompoundAssignmentExpression(
+    std::shared_ptr<ast::CompoundAssignmentExpression> compound) {
+  TyTy::BaseType *left = checkExpression(compound->getLHS());
+  TyTy::BaseType *right = checkExpression(compound->getRHS());
+
+  coercionWithSite(compound->getNodeId(),
+                   TyTy::WithLocation(left, compound->getLHS()->getLocation()),
+                   TyTy::WithLocation(right, compound->getRHS()->getLocation()),
+                   compound->getLocation(), tcx);
+
+  // FIXME check overload
+
+  if (validateArithmeticType(compound->getKind(), left) and
+      validateArithmeticType(compound->getKind(), right)) {
+    return TyTy::TupleType::getUnitType(compound->getNodeId());
+  }
+
+  return new TyTy::ErrorType(0);
+}
+
+bool TypeResolver::validateArithmeticType(
+    ast::CompoundAssignmentExpressionKind kind, TyTy::BaseType *type) {
+
+  // https://doc.rust-lang.org/reference/expressions/operator-expr.html#compound-assignment-expressions
+  switch (kind) {
+  case CompoundAssignmentExpressionKind::Add:
+  case CompoundAssignmentExpressionKind::Sub:
+  case CompoundAssignmentExpressionKind::Mul:
+  case CompoundAssignmentExpressionKind::Div:
+  case CompoundAssignmentExpressionKind::Rem:
+    return (type->getKind() == TyTy::TypeKind::Int) ||
+           (type->getKind() == TyTy::TypeKind::Uint) ||
+           (type->getKind() == TyTy::TypeKind::Float) ||
+           (type->getKind() == TyTy::TypeKind::USize) ||
+           (type->getKind() == TyTy::TypeKind::ISize) ||
+           (type->getKind() == TyTy::TypeKind::Inferred &&
+            (((const TyTy::InferType *)type)->getInferredKind() ==
+             TyTy::InferKind::Integral)) ||
+           (type->getKind() == TyTy::TypeKind::Inferred &&
+            (((const TyTy::InferType *)type)->getInferredKind() ==
+             TyTy::InferKind::Float));
+
+  case CompoundAssignmentExpressionKind::And:
+  case CompoundAssignmentExpressionKind::Or:
+  case CompoundAssignmentExpressionKind::Xor:
+    return (type->getKind() == TyTy::TypeKind::Int) ||
+           (type->getKind() == TyTy::TypeKind::Uint) ||
+           (type->getKind() == TyTy::TypeKind::USize) ||
+           (type->getKind() == TyTy::TypeKind::ISize) ||
+           (type->getKind() == TyTy::TypeKind::Bool) ||
+           (type->getKind() == TyTy::TypeKind::Inferred &&
+            (((const TyTy::InferType *)type)->getInferredKind() ==
+             TyTy::InferKind::Integral));
+  case CompoundAssignmentExpressionKind::Shl:
+  case CompoundAssignmentExpressionKind::Shr:
+    return (type->getKind() == TyTy::TypeKind::Int) ||
+           (type->getKind() == TyTy::TypeKind::Uint) ||
+           (type->getKind() == TyTy::TypeKind::USize) ||
+           (type->getKind() == TyTy::TypeKind::ISize) ||
+           (type->getKind() == TyTy::TypeKind::Inferred &&
+            (((const TyTy::InferType *)type)->getInferredKind() ==
+             TyTy::InferKind::Integral));
+  }
+
+  llvm_unreachable("all cases covered");
 }
 
 } // namespace rust_compiler::sema::type_checking

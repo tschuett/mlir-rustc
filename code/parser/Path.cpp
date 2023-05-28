@@ -351,7 +351,7 @@ StringResult<ast::types::TypePathSegment> Parser::parseTypePathSegment() {
   seg.setSegment(ident.getValue());
 
   // FIXME !!!
-  //if (check(TokenKind::PathSep)) {
+  // if (check(TokenKind::PathSep)) {
   //  seg.setDoubleColon();
   //  assert(eat(TokenKind::PathSep));
   //}
@@ -395,10 +395,12 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTypePath() {
   Location loc = getLocation();
 
-  llvm::errs() << "parseTypePath"
-               << "\n";
-  llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind())
-               << "\n";
+//  llvm::errs() << "parseTypePath @ " << getToken().getLocation().toString()
+//               << "\n";
+//  llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind())
+//               << "\n";
+//  if (getToken().getKind() == TokenKind::Identifier)
+//    llvm::errs() << getToken().getIdentifier().toString() << "\n";
 
   class TypePath path = {loc};
 
@@ -454,7 +456,7 @@ Parser::parseTypePath() {
     }
   }
 
-  llvm::errs() << "parseTypePath: " << path.getSegments().size() << "\n";
+  //llvm::errs() << "parseTypePath: " << path.getSegments().size() << "\n";
 
   return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
       std::make_shared<ast::types::TypePath>(path));

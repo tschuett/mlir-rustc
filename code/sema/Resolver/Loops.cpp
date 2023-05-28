@@ -1,6 +1,7 @@
 #include "ADT/CanonicalPath.h"
 #include "AST/InfiniteLoopExpression.h"
 #include "AST/LoopExpression.h"
+#include "Basic/Ids.h"
 #include "Resolver.h"
 
 #include <llvm/Support/raw_ostream.h>
@@ -29,7 +30,10 @@ void Resolver::resolveLoopExpression(
     assert(false && "to be handled later");
   }
   case LoopExpressionKind::IteratorLoopExpression: {
-    assert(false && "to be handled later");
+    resolveIteratorLoopExpression(
+        std::static_pointer_cast<IteratorLoopExpression>(loop), prefix,
+        canonicalPrefix);
+    break;
   }
   case LoopExpressionKind::LabelBlockExpression: {
     assert(false && "to be handled later");
@@ -52,6 +56,38 @@ void Resolver::resolveInfiniteLoopExpression(
   resolveBlockExpression(
       std::static_pointer_cast<BlockExpression>(infini->getBody()), prefix,
       canonicalPrefix);
+}
+
+void Resolver::resolveIteratorLoopExpression(
+    std::shared_ptr<ast::IteratorLoopExpression> iter,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  if (iter->hasLabel()) {
+    LoopLabel l = iter->getLabel();
+    Identifier name = l.getName();
+    NodeId id = l.getNodeId();
+
+    getLabelScope().insert(CanonicalPath::newSegment(iter->getNodeId(), name),
+                           id, l.getLocation(), RibKind::Label);
+  }
+
+  basic::NodeId scopeNodeId = iter->getNodeId();
+  getNameScope().push(scopeNodeId);
+  getTypeScope().push(scopeNodeId);
+  getLabelScope().push(scopeNodeId);
+
+  pushNewNameRib(getNameScope().peek());
+  pushNewTypeRib(getTypeScope().peek());
+  pushNewLabelRib(getLabelScope().peek());
+
+  resolvePatternDeclaration(iter->getPattern(), RibKind::Variable, prefix,
+                            canonicalPrefix);
+  resolveExpression(iter->getRHS(), prefix, canonicalPrefix);
+  resolveExpression(iter->getBody(), prefix, canonicalPrefix);
+
+  getNameScope().pop();
+  getTypeScope().pop();
+  getLabelScope().pop();
 }
 
 } // namespace rust_compiler::sema::resolver

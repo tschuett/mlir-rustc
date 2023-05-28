@@ -16,6 +16,7 @@
 #include "AST/PathExpression.h"
 #include "AST/PathIdentSegment.h"
 #include "AST/PathInExpression.h"
+#include "AST/RangeExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Statements.h"
 #include "AST/StructBase.h"
@@ -24,6 +25,7 @@
 #include "AST/StructExpression.h"
 #include "AST/UnsafeBlockExpression.h"
 #include "Basic/Ids.h"
+#include "Lexer/Identifier.h"
 #include "Resolver.h"
 
 #include <llvm/Support/FormatVariadic.h>
@@ -172,7 +174,9 @@ void Resolver::resolveExpressionWithoutBlock(
     assert(false && "to be handled later");
   }
   case ExpressionWithoutBlockKind::RangeExpression: {
-    assert(false && "to be handled later");
+    resolveRangeExpression(std::static_pointer_cast<RangeExpression>(woBlock),
+                           prefix, canonicalPrefix);
+    break;
   }
   case ExpressionWithoutBlockKind::ReturnExpression: {
     resolveReturnExpression(std::static_pointer_cast<ReturnExpression>(woBlock),
@@ -243,11 +247,16 @@ void Resolver::resolveOperatorExpression(
         std::static_pointer_cast<AssignmentExpression>(op);
     resolveExpression(assign->getLHS(), prefix, canonicalPrefix);
     resolveExpression(assign->getRHS(), prefix, canonicalPrefix);
-    verifyAssignee(assign->getLHS());
+    verifyAssignee(assign->getLHS().get());
     break;
   }
   case OperatorExpressionKind::CompoundAssignmentExpression: {
-    assert(false && "to be handled later");
+    std::shared_ptr<ComparisonExpression> assign =
+        std::static_pointer_cast<ComparisonExpression>(op);
+    resolveExpression(assign->getLHS(), prefix, canonicalPrefix);
+    resolveExpression(assign->getRHS(), prefix, canonicalPrefix);
+    verifyAssignee(assign->getLHS().get());
+    break;
   }
   }
 }
@@ -428,8 +437,17 @@ void Resolver::resolveBlockExpression(
   getLabelScope().pop();
 }
 
-void Resolver::verifyAssignee(std::shared_ptr<ast::Expression> assignee) {
-  assert(false && "to be handled later");
+void Resolver::verifyAssignee(ast::Expression *assignee) {
+  switch (assignee->getExpressionKind()) {
+  case ExpressionKind::ExpressionWithBlock: {
+    verifyAssignee(static_cast<ast::ExpressionWithBlock *>(assignee));
+    break;
+  }
+  case ExpressionKind::ExpressionWithoutBlock: {
+    verifyAssignee(static_cast<ast::ExpressionWithoutBlock *>(assignee));
+    break;
+  }
+  }
 }
 
 void Resolver::resolveArithmeticOrLogicalExpression(
@@ -479,15 +497,11 @@ void Resolver::resolveArrayExpression(
     ArrayElements el = arr->getArrayElements();
     switch (el.getKind()) {
     case ArrayElementsKind::List: {
-      llvm::errs() << "list"
-                   << "\n";
       for (auto expr : el.getElements())
         resolveExpression(expr, prefix, canonicalPrefix);
       break;
     }
     case ArrayElementsKind::Repeated: {
-      llvm::errs() << "repeated"
-                   << "\n";
       resolveExpression(el.getCount(), prefix, canonicalPrefix);
       resolveExpression(el.getValue(), prefix, canonicalPrefix);
       break;
@@ -604,6 +618,135 @@ void Resolver::resolveTypeCastExpression(
     const adt::CanonicalPath &canonicalPrefix) {
   resolveExpression(cast->getLeft(), prefix, canonicalPrefix);
   resolveType(cast->getRight(), prefix, canonicalPrefix);
+}
+
+void Resolver::resolveRangeExpression(
+    std::shared_ptr<ast::RangeExpression> range,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  switch (range->getKind()) {
+  case RangeExpressionKind::RangeExpr: {
+    resolveExpression(range->getLeft(), prefix, canonicalPrefix);
+    resolveExpression(range->getRight(), prefix, canonicalPrefix);
+    break;
+  }
+  case RangeExpressionKind::RangeFromExpr: {
+    resolveExpression(range->getLeft(), prefix, canonicalPrefix);
+    break;
+  }
+  case RangeExpressionKind::RangeToExpr: {
+    resolveExpression(range->getRight(), prefix, canonicalPrefix);
+    break;
+  }
+  case RangeExpressionKind::RangeFullExpr: {
+    break;
+  }
+  case RangeExpressionKind::RangeInclusiveExpr: {
+    resolveExpression(range->getLeft(), prefix, canonicalPrefix);
+    resolveExpression(range->getRight(), prefix, canonicalPrefix);
+    break;
+  }
+  case RangeExpressionKind::RangeToInclusiveExpr: {
+    resolveExpression(range->getRight(), prefix, canonicalPrefix);
+    break;
+  }
+  }
+}
+
+void Resolver::verifyAssignee(ast::ExpressionWithoutBlock *woBlock) {
+  switch (woBlock->getWithoutBlockKind()) {
+  case ExpressionWithoutBlockKind::LiteralExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::PathExpression: {
+    // ok
+    // FIXME
+    PathExpression *path = static_cast<PathExpression *>(woBlock);
+    switch (path->getPathExpressionKind()) {
+    case PathExpressionKind::PathInExpression: {
+      PathInExpression *pathIn = static_cast<PathInExpression *>(path);
+      if (pathIn->isSingleSegment()) {
+        PathExprSegment seg = pathIn->getSegments()[0];
+        PathIdentSegment ident = seg.getIdent();
+        assert(ident.getKind() == PathIdentSegmentKind::Identifier);
+        lexer::Identifier id = ident.getIdentifier();
+        std::optional<NodeId> nodeId = getNameScope().lookup(
+            CanonicalPath::newSegment(path->getNodeId(), id));
+        assert(nodeId.has_value());
+        break;
+      } else {
+        break;
+      }
+      assert(false);
+    }
+    case PathExpressionKind::QualifiedPathInExpression: {
+      assert(false);
+    }
+    }
+    break;
+  }
+  case ExpressionWithoutBlockKind::OperatorExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::GroupedExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::ArrayExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::AwaitExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::IndexExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::TupleExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::TupleIndexingExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::StructExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::CallExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::MethodCallExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::FieldExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::ClosureExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::AsyncBlockExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::ContinueExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::BreakExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::RangeExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::ReturnExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::UnderScoreExpression: {
+    assert(false && "to be handled later");
+  }
+  case ExpressionWithoutBlockKind::MacroInvocation: {
+    assert(false && "to be handled later");
+  }
+  }
+}
+
+void Resolver::verifyAssignee(ast::ExpressionWithBlock *withBlock) {
+  assert(false);
 }
 
 } // namespace rust_compiler::sema::resolver

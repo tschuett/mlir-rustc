@@ -2,6 +2,7 @@
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
+#include <cstdlib>
 #include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::ast;
@@ -22,12 +23,14 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
   CheckPoint cp = getCheckPoint();
 
-//  llvm::errs() << "parseTraitObjectTypeOrTypePathOrMacroInvocation"
-//               << "\n";
+  //  llvm::errs() << "parseTraitObjectTypeOrTypePathOrMacroInvocation"
+  //               << "\n";
 
+  size_t iterations = 0;
   while (true) {
     llvm::errs() << lexer::Token2String(getToken().getKind()) << "\n";
     llvm::errs() << getToken().getLocation().toString() << "\n";
+    ++iterations;
     if (check(TokenKind::Eof)) {
       //// terminator for gtest
       // recover(cp);
@@ -102,6 +105,13 @@ Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
       recover(cp);
       return parseTypePath();
     }
+    if (iterations > 10) {
+      llvm::errs() << "failed parseTraitObjectTypeOrTypePathOrMacroInvocation()"
+                   << "\n";
+      llvm::errs() << "iterations limited exceed at "
+                   << getToken().getLocation().toString() << "\n";
+      exit(EXIT_FAILURE);
+    }
   }
   return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
       "failed to parse "
@@ -113,9 +123,10 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>> Parser::
   Location loc = getLocation();
   CheckPoint cp = getCheckPoint();
 
-//  llvm::outs() << "parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObje"
-//                  "ctTypeOrBareFunctionType"
-//               << "\n";
+  //  llvm::outs() <<
+  //  "parseTupleOrParensTypeOrTypePathOrMacroInvocationOrTraitObje"
+  //                  "ctTypeOrBareFunctionType"
+  //               << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_DYN)) {
     return parseTraitObjectType();

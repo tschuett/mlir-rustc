@@ -831,8 +831,8 @@ StringResult<std::shared_ptr<ast::types::TypeParamBound>>
 Parser::parseTypeParamBound() {
   Location loc = getLocation();
 
-  llvm::errs() << "parseTypeParamBound"
-               << "\n";
+//  llvm::errs() << "parseTypeParamBound"
+//               << "\n";
 
   if (check(TokenKind::ParenOpen)) {
     StringResult<std::shared_ptr<ast::types::TypeParamBound>> trait =
@@ -909,8 +909,8 @@ StringResult<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
 
   TypeParamBounds bounds = {loc};
 
-  llvm::errs() << "parseTypeParamBounds"
-               << "\n";
+//  llvm::errs() << "parseTypeParamBounds"
+//               << "\n";
 
   StringResult<std::shared_ptr<ast::types::TypeParamBound>> first =
       parseTypeParamBound();
@@ -1112,8 +1112,8 @@ Parser::parseTraitBound() {
   Location loc = getLocation();
   TraitBound tr = {loc};
 
-  llvm::errs() << "parseTraitBound"
-               << "\n";
+//  llvm::errs() << "parseTraitBound"
+//               << "\n";
 
   if (check(TokenKind::ParenOpen)) {
     tr.setHasParenthesis();

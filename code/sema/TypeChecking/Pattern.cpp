@@ -2,6 +2,7 @@
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/PatternWithoutRange.h"
 #include "AST/Patterns/RangePattern.h"
+#include "Lexer/Token.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
 
@@ -11,6 +12,20 @@ using namespace rust_compiler::ast::patterns;
 using namespace rust_compiler::tyctx;
 
 namespace rust_compiler::sema::type_checking {
+
+TyTy::BaseType *
+TypeResolver::checkPattern(std::shared_ptr<ast::patterns::Pattern> pat,
+                           TyTy::BaseType *rhs) {
+  for (auto &p : pat->getPatterns()) {
+    TyTy::BaseType *infered = checkPattern(p, rhs);
+    if (infered->getKind() != TyTy::TypeKind::Error)
+      return infered;
+  }
+
+  llvm::errs() << "failed to check pattern declaration"
+               << "\n";
+  return new TyTy::ErrorType(pat->getNodeId());
+}
 
 TyTy::BaseType *
 TypeResolver::checkPattern(std::shared_ptr<ast::patterns::PatternNoTopAlt> pat,
