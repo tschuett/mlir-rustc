@@ -802,8 +802,8 @@ StringResult<ast::TypeParam> Parser::parseTypeParam() {
 
   TypeParam param = {loc};
 
-  llvm::errs() << "parseTypeParam"
-               << "\n";
+//  llvm::errs() << "parseTypeParam"
+//               << "\n";
 
   if (!check(TokenKind::Identifier))
     return StringResult<ast::TypeParam>(

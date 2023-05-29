@@ -427,8 +427,8 @@ Parser::parseTypePath() {
   path.addSegment(first.getValue());
 
   while (true) {
-    llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind())
-                 << "\n";
+//    llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind())
+//                 << "\n";
     if (check(TokenKind::Eof)) {
       // error
       return StringResult<std::shared_ptr<ast::types::TypeExpression>>(

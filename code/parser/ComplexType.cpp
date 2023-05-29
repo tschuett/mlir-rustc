@@ -28,8 +28,8 @@ Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
 
   size_t iterations = 0;
   while (true) {
-    llvm::errs() << lexer::Token2String(getToken().getKind()) << "\n";
-    llvm::errs() << getToken().getLocation().toString() << "\n";
+    //    llvm::errs() << lexer::Token2String(getToken().getKind()) << "\n";
+    //    llvm::errs() << getToken().getLocation().toString() << "\n";
     ++iterations;
     if (check(TokenKind::Eof)) {
       //// terminator for gtest

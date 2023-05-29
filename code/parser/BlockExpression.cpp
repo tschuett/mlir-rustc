@@ -413,6 +413,74 @@ Parser::parseStatementOrExpressionWithoutBlock() {
             ExpressionOrStatement(woBlock.getValue()));
       }
     }
+    case TokenKind::CHAR_LITERAL:
+    case TokenKind::STRING_LITERAL:
+    case TokenKind::RAW_STRING_LITERAL:
+    case TokenKind::BYTE_LITERAL:
+    case TokenKind::BYTE_STRING_LITERAL:
+    case TokenKind::RAW_BYTE_STRING_LITERAL:
+    case TokenKind::INTEGER_LITERAL:
+    case TokenKind::FLOAT_LITERAL: {
+      Result<std::shared_ptr<ast::Expression>, std::string> woBlock =
+          parseExpressionWithoutBlock(outerAttr, restrictions);
+      if (!woBlock) {
+        // report block
+        llvm::errs()
+            << "failed to parse expression without block in statement or "
+               "expression without block: "
+            << woBlock.getError() << "\n";
+        // report error
+        std::string s =
+            llvm::formatv(
+                "{0}\n{1}",
+                "failed to parse expression without block in statement or "
+                "expression without block",
+                woBlock.getError())
+                .str();
+        return StringResult<ExpressionOrStatement>(s);
+      }
+
+      if (getToken().getKind() == TokenKind::Semi) {
+        assert(eat(TokenKind::Semi));
+        // eat and expression statement
+        ExpressionStatement stmt = {getLocation()};
+        stmt.setExprWoBlock(woBlock.getValue());
+        stmt.setTrailingSemi();
+        return StringResult<ExpressionOrStatement>(
+            ExpressionOrStatement(std::make_shared<ExpressionStatement>(stmt)));
+      } else {
+        return StringResult<ExpressionOrStatement>(
+            ExpressionOrStatement(woBlock.getValue()));
+      }
+    }
+    case TokenKind::ParenOpen: {
+      adt::Result<std::shared_ptr<ast::Expression>, std::string> paren =
+          parseGroupedOrTupleExpression(restrictions);
+      if (!paren) {
+        llvm::errs() << "failed to parse grouped or parenthesis expression in "
+                        "statement or expression without block"
+                     << "\n";
+        std::string s =
+            llvm::formatv(
+                "failed to parse grouped or parenthesis expression in "
+                "statement or expression without block: {0}",
+                paren.getError())
+                .str();
+        return StringResult<ExpressionOrStatement>(s);
+      }
+      if (getToken().getKind() == TokenKind::Semi) {
+        assert(eat(TokenKind::Semi));
+        // eat and expression statement
+        ExpressionStatement stmt = {getLocation()};
+        stmt.setExprWoBlock(paren.getValue());
+        stmt.setTrailingSemi();
+        return StringResult<ExpressionOrStatement>(
+            ExpressionOrStatement(std::make_shared<ExpressionStatement>(stmt)));
+      } else {
+        return StringResult<ExpressionOrStatement>(
+            ExpressionOrStatement(paren.getValue()));
+      }
+    }
     default: {
       llvm::errs() << "unknown token in statement or expression without block: "
                    << Token2String(getToken().getKind()) << "\n";
@@ -460,8 +528,8 @@ Parser::parseBlockExpression(std::span<OuterAttribute>) {
 
   BlockExpression bloc = {loc};
 
-  llvm::errs() << "parseBlockExpression2"
-               << "\n";
+  //  llvm::errs() << "parseBlockExpression2"
+  //               << "\n";
 
   if (!check(TokenKind::BraceOpen)) {
     llvm::errs() << Token2String(getToken().getKind()) << "\n";
