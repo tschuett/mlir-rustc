@@ -1,6 +1,13 @@
-pub trait FnOnce<Args: Tuple> {
+// marker trait from std::marker::Tuple
+pub trait Tuple {}
+
+pub trait FnOnce<Args>
+where
+    Args: Tuple,
+{
     type Output;
 
+    // Required method
     extern "rust-call" fn call_once(self, args: Args) -> Self::Output;
 }
 

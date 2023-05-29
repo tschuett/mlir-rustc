@@ -49,7 +49,7 @@ void Resolver::resolveStructStructItem(
     resolveGenericParams(str->getGenericParams(), prefix, canonicalPrefix);
 
   if (str->hasWhereClause())
-    resolveWhereClause(str->getWhereClause());
+    resolveWhereClause(str->getWhereClause(), prefix, canonicalPrefix);
 
   if (str->hasStructFields()) {
     std::vector<StructField> fields = str->getFields().getFields();
@@ -86,7 +86,7 @@ void Resolver::resolveTupleStructItem(
     resolveGenericParams(tuple->getGenericParams(), prefix, canonicalPrefix);
 
   if (tuple->hasWhereClause())
-    resolveWhereClause(tuple->getWhereClause());
+    resolveWhereClause(tuple->getWhereClause(), prefix, canonicalPrefix);
 
   if (tuple->hasTupleFields()) {
     std::vector<TupleField> fields = tuple->getTupleFields().getFields();

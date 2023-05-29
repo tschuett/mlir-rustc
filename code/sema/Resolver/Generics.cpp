@@ -5,9 +5,11 @@
 #include "AST/GenericArgsBinding.h"
 #include "AST/GenericArgsConst.h"
 #include "AST/GenericParam.h"
+#include "AST/TypeBoundWhereClauseItem.h"
 #include "AST/Types/TraitBound.h"
 #include "AST/Types/TypeParamBound.h"
 #include "AST/Types/TypeParamBounds.h"
+#include "AST/WhereClauseItem.h"
 #include "Resolver.h"
 #include "llvm/Support/ErrorHandling.h"
 
@@ -19,9 +21,26 @@ using namespace rust_compiler::adt;
 
 namespace rust_compiler::sema::resolver {
 
-void Resolver::resolveWhereClause(const WhereClause &) {
-  // FIXME
-  assert(false && "to be handled later");
+void Resolver::resolveWhereClause(const WhereClause &wo,
+                                  const adt::CanonicalPath &prefix,
+                                  const adt::CanonicalPath &canonicalPrefix) {
+  for (auto &item : wo.getItems()) {
+    switch (item->getKind()) {
+    case WhereClauseItemKind::LifetimeWhereClauseItem: {
+      break;
+    }
+    case WhereClauseItemKind::TypeBoundWherClauseItem: {
+      std::shared_ptr<TypeBoundWhereClauseItem> typeBound =
+          std::static_pointer_cast<TypeBoundWhereClauseItem>(item);
+      resolveType(typeBound->getType(), prefix, canonicalPrefix);
+      // FIXME
+      if (typeBound->hasTypeParamBounds())
+        for (auto &bound : typeBound->getBounds().getBounds())
+          resolveTypeParamBound(bound, prefix, canonicalPrefix);
+      break;
+    }
+    }
+  }
 }
 
 void Resolver::resolveGenericParams(const GenericParams &gp,

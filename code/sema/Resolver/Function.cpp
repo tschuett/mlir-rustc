@@ -35,7 +35,7 @@ void Resolver::resolveFunction(ast::Function* fun,
     resolveGenericParams(fun->getGenericParams(), prefix, canonicalPrefix);
 
   if (fun->hasWhereClause())
-    resolveWhereClause(fun->getWhereClause());
+    resolveWhereClause(fun->getWhereClause(), prefix, canonicalPrefix);
 
   if (fun->hasReturnType())
     resolveType(fun->getReturnType(), prefix, canonicalPrefix);

@@ -89,7 +89,7 @@ void Resolver::resolveEnumerationItem(
     resolveGenericParams(enu->getGenericParams(), prefix, cpath);
 
   if (enu->hasWhereClause())
-    resolveWhereClause(enu->getWhereClause());
+    resolveWhereClause(enu->getWhereClause(), prefix, canonicalPrefix);
 
   if (enu->hasEnumItems()) {
     std::vector<std::shared_ptr<EnumItem>> it = enu->getEnumItems().getItems();
@@ -162,9 +162,10 @@ void Resolver::resolveTraitItem(std::shared_ptr<ast::Trait> trait,
 
   // Bug fix. Note that it is before the push pop pair!
   getTypeScope().insert(segment, trait->getNodeId(), trait->getLocation(),
-                        RibKind::Type);
+                        RibKind::Trait);
 
   resolveVisibility(trait->getVisibility());
+
   getNameScope().push(scopeNodeId);
   getTypeScope().push(scopeNodeId);
   pushNewNameRib(getNameScope().peek());
@@ -185,11 +186,11 @@ void Resolver::resolveTraitItem(std::shared_ptr<ast::Trait> trait,
   getTypeScope().appendReferenceForDef(Self.getNodeId(), param.getNodeId());
 
   if (trait->hasTypeParamBounds())
-    for (auto b : trait->getTypeParamBounds().getBounds())
+    for (auto &b : trait->getTypeParamBounds().getBounds())
       resolveTypeParamBound(b, prefix, canonicalPrefix);
 
   if (trait->hasWhereClause())
-    resolveWhereClause(trait->getWhereClause());
+    resolveWhereClause(trait->getWhereClause(), prefix, canonicalPrefix);
 
   CanonicalPath path2 = CanonicalPath::createEmpty();
   CanonicalPath cpath2 = CanonicalPath::createEmpty();
@@ -290,11 +291,40 @@ void Resolver::resolveUnionItem(std::shared_ptr<ast::Union> uni,
     resolveGenericParams(uni->getGenericParams(), prefix, canonicalPrefix);
 
   if (uni->hasWhereClause())
-    resolveWhereClause(uni->getWhereClause());
+    resolveWhereClause(uni->getWhereClause(), prefix, canonicalPrefix);
 
   StructFields fields = uni->getStructFields();
   for (StructField &field : fields.getFields())
     resolveType(field.getType(), prefix, canonicalPrefix);
+
+  getTypeScope().pop();
+}
+
+void Resolver::resolveTypeAlias(ast::TypeAlias *alias,
+                                const adt::CanonicalPath &prefix,
+                                const adt::CanonicalPath &canonicalPrefix) {
+  CanonicalPath decl =
+      CanonicalPath::newSegment(alias->getNodeId(), alias->getIdentifier());
+  CanonicalPath path = prefix.append(decl);
+  CanonicalPath cpath = canonicalPrefix.append(decl);
+
+  tyCtx->insertCanonicalPath(alias->getNodeId(), cpath);
+
+  // Bug fix. Note that it is before the push pop pair!
+  getTypeScope().insert(decl, alias->getNodeId(), alias->getLocation(),
+                        RibKind::Type);
+
+  NodeId scopeNodeId = alias->getNodeId();
+  getTypeScope().push(scopeNodeId);
+
+  if (alias->hasGenericParams())
+    resolveGenericParams(alias->getGenericParams(), prefix, canonicalPrefix);
+
+  if (alias->hasWhereClause())
+    resolveWhereClause(alias->getWhereClause(), prefix, canonicalPrefix);
+
+  if (alias->hasType())
+    resolveType(alias->getType(), prefix, canonicalPrefix);
 
   getTypeScope().pop();
 }

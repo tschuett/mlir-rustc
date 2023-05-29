@@ -104,7 +104,7 @@ void Resolver::resolveFunctionInTrait(
   }
 
   if (f->hasWhereClause())
-    resolveWhereClause(f->getWhereClause());
+    resolveWhereClause(f->getWhereClause(), prefix, canonicalPrefix);
   if (f->hasBody())
     resolveExpression(f->getBody(), path, cpath);
 

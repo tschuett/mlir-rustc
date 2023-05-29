@@ -32,7 +32,7 @@ bool Rib::wasDeclDeclaredHere(basic::NodeId def) const {
 
 void Rib::insertName(const adt::CanonicalPath &path, basic::NodeId id,
                      Location loc, bool shadow, RibKind kind) {
-  // llvm::errs() << "insertName: " << path.asString() << "\n";
+  // llvm::errs() << "insertName: " << path.toString() << "\n";
   auto it = pathMappings.find(path);
   if (it != pathMappings.end() && !shadow)
     return;
@@ -42,6 +42,7 @@ void Rib::insertName(const adt::CanonicalPath &path, basic::NodeId id,
   declsWithinRib.insert({id, loc});
   references[id] = {};
   declTypeMappings.insert({id, kind});
+  // llvm::errs() << "insertedName: " << path.toString() << "\n";
 }
 
 void Rib::clearName(const adt::CanonicalPath &path, basic::NodeId id) {
@@ -196,7 +197,8 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
     break;
   }
   case VisItemKind::TypeAlias: {
-    assert(false && "to be handled later");
+    resolveTypeAlias(std::static_pointer_cast<TypeAlias>(visItem).get(), prefix,
+                     canonicalPrefix);
     break;
   }
   case VisItemKind::Struct: {
@@ -211,7 +213,7 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
   }
   case VisItemKind::Union: {
     resolveUnionItem(std::static_pointer_cast<Union>(visItem), prefix,
-                        canonicalPrefix);
+                     canonicalPrefix);
     break;
   }
   case VisItemKind::ConstantItem: {
@@ -283,7 +285,7 @@ void Resolver::resolveInherentImpl(std::shared_ptr<ast::InherentImpl> implBlock,
 
   if (implBlock->hasWhereClause()) {
     WhereClause wh = implBlock->getWhereClause();
-    resolveWhereClause(wh);
+    resolveWhereClause(wh, prefix, canonicalPrefix);
   }
 
   resolveType(implBlock->getType(), prefix, canonicalPrefix);
@@ -519,6 +521,16 @@ void Resolver::pushClosureContext(basic::NodeId id) {
 void Resolver::popClosureContext() {
   assert(!closureContext.empty());
   closureContext.pop_back();
+}
+
+void Scope::print() const {
+  for (auto &rib : stack)
+    rib->print();
+}
+
+void Rib::print() const {
+  for (auto &p : pathMappings)
+    llvm::errs() << p.first.asString() << "\n";
 }
 
 // std::vector<std::pair<std::string, ast::types::TypeExpression *>> &

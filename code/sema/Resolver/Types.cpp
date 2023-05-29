@@ -111,6 +111,9 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
 
   std::vector<TypePathSegment> segments = typePath->getSegments();
 
+  llvm::errs() << "resolveRelativeTypePath: "
+               << segments[0].getSegment().toString() << "\n";
+
   // experiment
   //{
   //  if (segments.size() == 1) {
@@ -177,11 +180,11 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
       if (auto node = getTypeScope().lookup(path)) {
         insertResolvedType(segment.getNodeId(), *node);
         resolvedNodeId = *node;
-        // llvm::errs() << "it is a type" << "\n";
+        llvm::errs() << "it is a type:" << *node << "\n";
       } else if (auto node = getNameScope().lookup(path)) {
         insertResolvedName(segment.getNodeId(), *node);
         resolvedNodeId = *node;
-        // llvm::errs() << "it is a name" << "\n";
+        llvm::errs() << "it is a name: " << *node << "\n";
       } else if (ident.getKind() == PathIdentSegmentKind::self) {
         moduleScopeId = crateScopeId;
         previousResolveNodeId = moduleScopeId;
@@ -218,6 +221,8 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
     }
 
     bool didResolveSegment = resolvedNodeId != UNKNOWN_NODEID;
+    llvm::errs() << "didResolveSegment:" << didResolveSegment << "\n";
+    llvm::errs() << "i:" << i << "\n";
     if (didResolveSegment) {
       if (tyCtx->isModule(resolvedNodeId) || tyCtx->isCrate(resolvedNodeId)) {
         moduleScopeId = resolvedNodeId;
@@ -225,11 +230,19 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
       previousResolveNodeId = resolvedNodeId;
     } else if (i == 0) {
       // report error
-      llvm::errs() << llvm::formatv(
-                          "failed to resolve type path {0} in this scope",
-                          segment.getSegment().toString())
-                          .str()
+      llvm::errs() << "print types"
                    << "\n";
+      getTypeScope().print();
+      llvm::errs() << "print names"
+                   << "\n";
+      getNameScope().print();
+      llvm::errs()
+          << llvm::formatv(
+                 "{0}: failed to resolve type path {1} in this scope: {2}",
+                 segment.getLocation().toString(),
+                 segment.getSegment().toString(), resolvedNodeId)
+                 .str()
+          << "\n";
       llvm::errs() << "Name Resolution pass failed"
                    << "\n";
       exit(EXIT_FAILURE);

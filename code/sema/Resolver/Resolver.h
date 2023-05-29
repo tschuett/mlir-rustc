@@ -9,7 +9,6 @@
 #include "AST/ClosureExpression.h"
 #include "AST/ComparisonExpression.h"
 #include "AST/ConstantItem.h"
-#include "AST/IteratorLoopExpression.h"
 #include "AST/Crate.h"
 #include "AST/DereferenceExpression.h"
 #include "AST/Expression.h"
@@ -21,6 +20,7 @@
 #include "AST/InfiniteLoopExpression.h"
 #include "AST/InherentImpl.h"
 #include "AST/ItemDeclaration.h"
+#include "AST/IteratorLoopExpression.h"
 #include "AST/LetStatement.h"
 #include "AST/LoopExpression.h"
 #include "AST/MacroInvocationSemiItem.h"
@@ -35,6 +35,7 @@
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/PatternWithoutRange.h"
 #include "AST/QualifiedPathInExpression.h"
+#include "AST/RangeExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/SimplePath.h"
 #include "AST/Statement.h"
@@ -63,7 +64,6 @@
 #include "AST/Types/TypePathSegment.h"
 #include "AST/Union.h"
 #include "AST/UnsafeBlockExpression.h"
-#include "AST/RangeExpression.h"
 #include "AST/UseDeclaration.h"
 #include "AST/VisItem.h"
 #include "AST/Visiblity.h"
@@ -118,7 +118,8 @@ enum class RibKind {
   Parameter,
   Unkown,
   Type,
-  Variable
+  Variable,
+  Trait
 };
 
 class Rib {
@@ -139,6 +140,8 @@ public:
   std::optional<RibKind> lookupDeclType(basic::NodeId id);
 
   void clearName(const adt::CanonicalPath &path, basic::NodeId id);
+
+  void print() const;
 
 private:
   basic::CrateNum crateNum;
@@ -171,6 +174,8 @@ public:
   std::optional<Rib *> lookupRibForDecl(basic::NodeId id);
 
   const std::vector<Rib *> &getContext() const { return stack; };
+
+  void print() const;
 
 private:
   basic::CrateNum crateNum;
@@ -221,6 +226,9 @@ private:
   void resolveFunctionNoRecurse(std::shared_ptr<ast::Function>,
                                 const adt::CanonicalPath &prefix,
                                 const adt::CanonicalPath &canonicalPrefix);
+  void resolveTraitNoRecurse(std::shared_ptr<ast::Trait> trait,
+                             const adt::CanonicalPath &prefix,
+                             const adt::CanonicalPath &canonicalPrefix);
 
   // items
   void resolveVisItem(std::shared_ptr<ast::VisItem>,
@@ -255,6 +263,8 @@ private:
   void resolveStructItem(std::shared_ptr<ast::Struct>,
                          const adt::CanonicalPath &prefix,
                          const adt::CanonicalPath &canonicalPrefix);
+  void resolveTypeAlias(ast::TypeAlias *, const adt::CanonicalPath &prefix,
+                        const adt::CanonicalPath &canonicalPrefix);
   void
   resolveStructStructItem(std::shared_ptr<rust_compiler::ast::StructStruct>,
                           const adt::CanonicalPath &prefix,
@@ -278,8 +288,8 @@ private:
                         const adt::CanonicalPath &prefix,
                         const adt::CanonicalPath &canonicalPrefix);
   void resolveItemDeclaration(std::shared_ptr<ast::ItemDeclaration>,
-                          const adt::CanonicalPath &prefix,
-                        const adt::CanonicalPath &canonicalPrefix);
+                              const adt::CanonicalPath &prefix,
+                              const adt::CanonicalPath &canonicalPrefix);
 
   // expressions
   void resolveExpression(std::shared_ptr<ast::Expression>,
@@ -296,8 +306,8 @@ private:
                                const adt::CanonicalPath &prefix,
                                const adt::CanonicalPath &canonicalPrefix);
   void resolveRangeExpression(std::shared_ptr<ast::RangeExpression>,
-                               const adt::CanonicalPath &prefix,
-                               const adt::CanonicalPath &canonicalPrefix);
+                              const adt::CanonicalPath &prefix,
+                              const adt::CanonicalPath &canonicalPrefix);
   void resolveOperatorExpression(std::shared_ptr<ast::OperatorExpression>,
                                  const adt::CanonicalPath &prefix,
                                  const adt::CanonicalPath &canonicalPrefix);
@@ -423,7 +433,9 @@ private:
   void resolveVisibility(std::optional<ast::Visibility>);
 
   // generics
-  void resolveWhereClause(const ast::WhereClause &);
+  void resolveWhereClause(const ast::WhereClause &,
+                          const adt::CanonicalPath &prefix,
+                          const adt::CanonicalPath &canonicalPrefix);
   void resolveGenericParams(const ast::GenericParams &,
                             const adt::CanonicalPath &prefix,
                             const adt::CanonicalPath &canonicalPrefix);
@@ -441,8 +453,8 @@ private:
                             RibKind, const adt::CanonicalPath &prefix,
                             const adt::CanonicalPath &canonicalPrefix);
   void resolvePatternDeclaration(std::shared_ptr<ast::patterns::Pattern>,
-                            RibKind, const adt::CanonicalPath &prefix,
-                            const adt::CanonicalPath &canonicalPrefix);
+                                 RibKind, const adt::CanonicalPath &prefix,
+                                 const adt::CanonicalPath &canonicalPrefix);
   void resolvePatternDeclarationWithoutRange(
       std::shared_ptr<ast::patterns::PatternWithoutRange>, RibKind,
       std::vector<PatternBinding> &bindings, const adt::CanonicalPath &prefix,
@@ -489,10 +501,10 @@ private:
                                const adt::CanonicalPath &prefix,
                                const adt::CanonicalPath &canonicalPrefix);
 
-  void verifyAssignee(ast::Expression*);
-  void verifyAssignee(ast::ExpressionWithoutBlock*);
-  void verifyAssignee(ast::ExpressionWithBlock*);
-  
+  void verifyAssignee(ast::Expression *);
+  void verifyAssignee(ast::ExpressionWithoutBlock *);
+  void verifyAssignee(ast::ExpressionWithBlock *);
+
   std::map<basic::NodeId, std::shared_ptr<ast::UseDeclaration>> useDeclarations;
   std::map<basic::NodeId, std::shared_ptr<ast::Module>> modules;
 
