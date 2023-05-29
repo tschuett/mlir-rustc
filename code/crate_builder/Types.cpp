@@ -198,7 +198,7 @@ mlir::Type CrateBuilder::convertTyTyToMLIR(TyTy::BaseType *type) {
     assert(false && "to be implemented");
   }
   case TypeKind::Reference: {
-    assert(false && "to be implemented");
+    return convertTyTyToMLIR(static_cast<TyTy::ReferenceType*>(type)->getBase());
   }
   }
 }

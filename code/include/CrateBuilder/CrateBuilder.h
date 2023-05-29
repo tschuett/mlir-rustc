@@ -255,6 +255,8 @@ private:
   std::map<basic::NodeId, Owner> owners;
 
   std::map<basic::NodeId, mlir::Value> variables;
+
+  bool isLiteralExpression(ast::Expression *) const;
 };
 
 } // namespace rust_compiler::crate_builder

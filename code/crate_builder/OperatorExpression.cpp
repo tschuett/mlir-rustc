@@ -1,6 +1,7 @@
 #include "AST/OperatorExpression.h"
 
 #include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/BorrowExpression.h"
 #include "AST/ComparisonExpression.h"
 #include "CrateBuilder/CrateBuilder.h"
 #include "TyCtx/TyTy.h"
@@ -20,15 +21,22 @@ mlir::Value
 CrateBuilder::emitOperatorExpression(ast::OperatorExpression *expr) {
   switch (expr->getKind()) {
   case OperatorExpressionKind::BorrowExpression: {
-    break;
+    // FIXME
+    std::optional<mlir::Value> value = emitExpression(
+        static_cast<ast::BorrowExpression *>(expr)->getExpression().get());
+    assert(value.has_value());
+    return *value;
   }
   case OperatorExpressionKind::DereferenceExpression: {
+    assert(false);
     break;
   }
   case OperatorExpressionKind::ErrorPropagationExpression: {
+    assert(false);
     break;
   }
   case OperatorExpressionKind::NegationExpression: {
+    assert(false);
     break;
   }
   case OperatorExpressionKind::ArithmeticOrLogicalExpression: {
@@ -37,18 +45,21 @@ CrateBuilder::emitOperatorExpression(ast::OperatorExpression *expr) {
   }
   case OperatorExpressionKind::ComparisonExpression: {
     return emitComparisonExpression(static_cast<ComparisonExpression *>(expr));
-    break;
   }
   case OperatorExpressionKind::LazyBooleanExpression: {
+    assert(false);
     break;
   }
   case OperatorExpressionKind::TypeCastExpression: {
+    assert(false);
     break;
   }
   case OperatorExpressionKind::AssignmentExpression: {
+    assert(false);
     break;
   }
   case OperatorExpressionKind::CompoundAssignmentExpression: {
+    assert(false);
     break;
   }
   }

@@ -180,7 +180,6 @@ mlir::Value CrateBuilder::emitArrayExpression(ast::ArrayExpression *array) {
   assert((*type)->getKind() == TyTy::TypeKind::Array);
 
   TyTy::ArrayType *arrayType = static_cast<TyTy::ArrayType *>(*type);
-
   mlir::Type elementType = convertTyTyToMLIR(arrayType->getElementType());
 
   if (array->hasArrayElements()) {
@@ -198,6 +197,13 @@ mlir::Value CrateBuilder::emitArrayExpression(ast::ArrayExpression *array) {
           mlir::VectorType::get(shape, elementType, 0), *value);
     }
     case ArrayElementsKind::List: {
+
+      if (isLiteralExpression(els.getElements()[0].get())) {
+        //mlir::Type elementType = convertTyTyToMLIR(arrayType->getElementType());
+        assert(false);
+      }
+      assert(false);
+
       std::vector<mlir::Value> values;
       for (auto &val : els.getElements()) {
         std::optional<mlir::Value> el = emitExpression(val.get());

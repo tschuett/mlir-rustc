@@ -6,6 +6,7 @@
 #include "AST/Types/Types.h"
 #include "AST/VisItem.h"
 #include "AST/WhereClause.h"
+#include "Lexer/Identifier.h"
 #include "Location.h"
 
 #include <optional>
@@ -35,6 +36,17 @@ public:
   void setWhereClause(const WhereClause &wc) { whereClause = wc; }
   void setTypeWhereClause(const WhereClause &wc) { whereClauseType = wc; }
   void setType(std::shared_ptr<types::TypeExpression> expr) { type = expr; }
+
+  Identifier getIdentifier() const { return identifier; }
+
+  bool hasGenericParams() const { return genericParams.has_value(); }
+  GenericParams getGenericParams() const { return *genericParams; }
+
+  bool hasWhereClause() const { return whereClause.has_value(); }
+  WhereClause getWhereClause() const { return *whereClause; }
+
+  bool hasType() const { return type.has_value(); }
+  std::shared_ptr<types::TypeExpression> getType() const { return *type; }
 };
 
 } // namespace rust_compiler::ast

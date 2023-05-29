@@ -2,8 +2,8 @@
 
 #include "AST/Types/ForLifetimes.h"
 #include "AST/Types/TypeExpression.h"
-#include "AST/WhereClauseItem.h"
 #include "AST/Types/TypeParamBounds.h"
+#include "AST/WhereClauseItem.h"
 
 #include <memory>
 #include <optional>
@@ -26,6 +26,12 @@ public:
   void setType(std::shared_ptr<ast::types::TypeExpression> t) { type = t; }
 
   void setBounds(ast::types::TypeParamBounds b) { bounds = b; }
+
+  std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
+
+  bool hasTypeParamBounds() const { return bounds.has_value(); }
+
+  ast::types::TypeParamBounds getBounds() const { return *bounds; }
 };
 
 } // namespace rust_compiler::ast

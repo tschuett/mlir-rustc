@@ -34,15 +34,15 @@ public:
     return CanonicalPath::newSegment(id, Identifier("Self"));
   }
 
-  //  std::string asString() const {
-  //    std::string buf;
-  //    for (size_t i = 0; i < segments.size(); i++) {
-  //      bool haveMore = (i + 1) < segments.size();
-  //      const std::string &seg = segments.at(i).second;
-  //      buf += seg + (haveMore ? "::" : "");
-  //    }
-  //    return buf;
-  //  }
+  std::string asString() const {
+    std::string buf;
+    for (size_t i = 0; i < segments.size(); i++) {
+      bool haveMore = (i + 1) < segments.size();
+      const std::string &seg = segments.at(i).second.toString();
+      buf += seg + (haveMore ? "::" : "");
+    }
+    return buf;
+  }
 
   CanonicalPath append(const CanonicalPath &other) const {
     assert(!other.isEmpty());
@@ -70,7 +70,7 @@ public:
     if (other.getSize() != getSize())
       return false;
     for (unsigned i = 0; i < segments.size(); ++i)
-      if (segments[i] != other.segments[i])
+      if (segments[i].second != other.segments[i].second)
         return false;
     return true;
   }
@@ -83,7 +83,7 @@ public:
       return false;
 
     for (unsigned i = 0; i < segments.size(); ++i)
-      if (segments[i] != b.segments[i])
+      if (segments[i].second != b.segments[i].second)
         return false;
 
     return true;
