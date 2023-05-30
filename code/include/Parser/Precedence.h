@@ -22,9 +22,14 @@ enum class Precedence {
 
   As = 65,
 
+  Mul = 60,
+
   Plus = 55,
   Minus = 55,
 
+  LShift = 50,
+  RShift = 50,
+  
   Equal = 30,
   NotEqual = 30,
   GreaterThan = 30,

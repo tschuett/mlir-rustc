@@ -18,7 +18,7 @@ public:
 
   void setTrailingComma() { trailingComma = true; }
 
-  size_t getNumberOfParams() const { return genericParams.size(); }
+  bool hasParams() const { return !genericParams.empty(); }
 
   std::vector<GenericParam> getGenericParams() const { return genericParams; }
 };

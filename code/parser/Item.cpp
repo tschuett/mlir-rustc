@@ -471,8 +471,8 @@ Parser::parseTypeAlias(std::optional<ast::Visibility> vis) {
 
   TypeAlias alias = {loc, vis};
 
-  // llvm::errs() << "parseTypeAlias"
-  //              << "\n";
+  //llvm::errs() << "parseTypeAlias"
+  //             << "\n";
 
   if (!checkKeyWord(KeyWordKind::KW_TYPE))
     return StringResult<std::shared_ptr<ast::Item>>(

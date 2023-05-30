@@ -564,6 +564,7 @@ Parser::parseMethodCallExpression(std::shared_ptr<ast::Expression> receiver,
   } else {
     Result<ast::CallParams, std::string> params = parseCallParams(restrictions);
     if (!params) {
+      llvm::errs() << getToken().getLocation().toString() << "\n";
       llvm::errs() << "failed to parse call param in method call expression: "
                    << params.getError() << "\n";
       printFunctionStack();

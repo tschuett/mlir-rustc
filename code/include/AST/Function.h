@@ -10,6 +10,7 @@
 #include "AST/WhereClause.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace rust_compiler::ast {
@@ -17,12 +18,12 @@ namespace rust_compiler::ast {
 class BlockExpression;
 
 class Function : public VisItem {
-  std::shared_ptr<Expression> body;
+  std::optional<std::shared_ptr<Expression>> body;
   FunctionQualifiers qualifiers;
-  FunctionParameters functionParameters;
-  GenericParams genericParams;
+  std::optional<FunctionParameters> functionParameters;
+  std::optional<GenericParams> genericParams;
   std::optional<FunctionReturnType> returnType;
-  WhereClause whereClause;
+  std::optional<WhereClause> whereClause;
 
   Identifier identifier;
 
@@ -31,9 +32,9 @@ public:
       : VisItem(loc, VisItemKind::Function, vis), qualifiers(loc),
         functionParameters(loc), genericParams(loc), whereClause(loc) {}
 
-  bool hasBody() const;
+  bool hasBody() const { return body.has_value(); }
 
-  std::shared_ptr<Expression> getBody();
+  std::shared_ptr<Expression> getBody() { return *body; }
 
   void setQualifiers(FunctionQualifiers qualifiers);
 
@@ -53,19 +54,20 @@ public:
 
   bool hasReturnType() const { return returnType.has_value(); }
 
-  bool hasGenericParams() const { return genericParams.getNumberOfParams(); }
+  bool hasGenericParams() const { return genericParams.has_value(); }
 
-  GenericParams getGenericParams() const { return genericParams; }
+  GenericParams getGenericParams() const { return *genericParams; }
 
   std::shared_ptr<ast::types::TypeExpression> getReturnType() const {
     return returnType->getType();
   }
 
-  bool hasWhereClause() const { return whereClause.getSize() > 0; }
+  bool hasWhereClause() const { return whereClause.has_value(); }
 
-  WhereClause getWhereClause() const { return whereClause; }
+  WhereClause getWhereClause() const { return *whereClause; }
 
-  FunctionParameters getParams() { return functionParameters; }
+  bool hasParams() const { return functionParameters.has_value(); }
+  FunctionParameters getParams() { return *functionParameters; }
 
   FunctionQualifiers getQualifiers() const { return qualifiers; }
 };

@@ -25,10 +25,15 @@ Parser::parseClosureExpression(std::span<ast::OuterAttribute> outer) {
     assert(eatKeyWord(KeyWordKind::KW_MOVE));
   }
 
-  if (check(TokenKind::Or) && check(TokenKind::OrOr, 1)) {
+  if (check(TokenKind::OrOr)) {
     // no parameters
-  } else if (check(TokenKind::Or) && !!check(TokenKind::OrOr)) {
-    assert(check(TokenKind::Or));
+    assert(eat(TokenKind::OrOr));
+  } else if (check(TokenKind::Or) && check(TokenKind::Or, 1)) {
+    // empty parameters
+    assert(eat(TokenKind::Or));
+    assert(eat(TokenKind::Or));
+  } else if (check(TokenKind::Or)) {
+    assert(eat(TokenKind::Or));
     // parameters
     StringResult<ast::ClosureParameters> parameters = parseClosureParameters();
     if (!parameters) {
@@ -39,8 +44,20 @@ Parser::parseClosureExpression(std::span<ast::OuterAttribute> outer) {
       exit(EXIT_FAILURE);
     }
     clos.setParameters(parameters.getValue());
+
+    if (!check(TokenKind::Or)) {
+      if (check(TokenKind::Identifier))
+        llvm::errs() << getToken().getIdentifier().toString() << "\n";
+      llvm::errs() << Token2String(getToken().getKind()) << "\n";
+      llvm::errs()
+          << "failed to parse | token in  closure parameters in closure"
+          << "\n";
+      exit(EXIT_FAILURE);
+    }
+    assert(eat(TokenKind::Or));
   } else {
     // error
+    assert(false);
   }
 
   if (check(TokenKind::RArrow)) {
@@ -106,12 +123,14 @@ StringResult<ast::ClosureParameters> Parser::parseClosureParameters() {
       return StringResult<ast::ClosureParameters>(
           "failed to parse closure parameters: eof");
     } else if (check(TokenKind::Comma) && check(TokenKind::Or, 1)) {
+      assert(eat(TokenKind::Comma));
       // done
       return StringResult<ast::ClosureParameters>(params);
     } else if (check(TokenKind::Or)) {
       // done
       return StringResult<ast::ClosureParameters>(params);
-    } else if (check(TokenKind::Or)) {
+    } else if (check(TokenKind::Comma)) {
+      assert(eat(TokenKind::Comma));
       StringResult<ast::ClosureParam> cp = parseClosureParam();
       if (!cp) {
         llvm::errs() << "failed to parse  closure param in closure parameters: "

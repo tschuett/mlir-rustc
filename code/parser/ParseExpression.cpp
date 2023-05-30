@@ -88,6 +88,15 @@ Parser::parseInfixExpression(std::shared_ptr<Expression> left,
   case TokenKind::Minus: {
     return parseArithmeticOrLogicalExpression(left, restrictions);
   }
+  case TokenKind::Star: {
+    return parseArithmeticOrLogicalExpression(left, restrictions);
+  }
+  case TokenKind::Shr: {
+    return parseArithmeticOrLogicalExpression(left, restrictions);
+  }
+  case TokenKind::Shl: {
+    return parseArithmeticOrLogicalExpression(left, restrictions);
+  }
   case TokenKind::Lt: {
     return parseComparisonExpression(left, restrictions);
   }

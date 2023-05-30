@@ -1,3 +1,5 @@
+#include "AST/Patterns/PatternNoTopAlt.h"
+
 #include "AST/MacroInvocationSemiStatement.h"
 #include "AST/OuterAttribute.h"
 #include "AST/PathExpression.h"
@@ -128,8 +130,33 @@ Parser::parseGroupedPattern() {
 StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseMacroInvocationOrPathOrStructOrTupleStructPattern() {
 
-  while (true) {
+  CheckPoint cp = getCheckPoint();
+
+  adt::Result<std::shared_ptr<ast::Expression>, std::string> path =
+      parsePathExpression();
+
+  if (!path) {
+    llvm::errs() << "failed to parse path in macro or path or struct or tuple "
+                    "struct pattern: "
+                 << path.getError() << "\n";
+    printFunctionStack();
+    exit(EXIT_FAILURE);
   }
+
+  if (check(TokenKind::Or)) {
+    recover(cp);
+    return parseMacroInvocationPattern();
+  } else if (check(TokenKind::ParenOpen)) {
+    recover(cp);
+    return parseTupleStructPattern();
+  } else if (check(TokenKind::BraceOpen)) {
+    recover(cp);
+    return parseStructPattern();
+  }
+
+  recover(cp);
+
+  return parsePathPattern();
 }
 
 StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
@@ -457,9 +484,10 @@ StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
   Location loc = getLocation();
 
-//  llvm::errs()
-//      << "parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern"
-//      << "\n";
+  //  llvm::errs()
+  //      <<
+  //      "parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern"
+  //      << "\n";
 
   CheckPoint point = getCheckPoint();
 
@@ -473,8 +501,10 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
     return parseIdentifierPattern();
   } else if (check(TokenKind::Identifier) && check(TokenKind::Semi, 1)) {
     return parseIdentifierPattern();
-//  } else if (check(TokenKind::Identifier) && check(TokenKind::PathSep, 1)) {
-//    return parseIdentifierPattern();
+    //  } else if (check(TokenKind::Identifier) && check(TokenKind::PathSep,
+    //  1))
+    //  {
+    //    return parseIdentifierPattern();
   } else if (check(TokenKind::Identifier) && check(TokenKind::Colon, 1)) {
     return parseIdentifierPattern();
   } else if (check(TokenKind::Identifier) && checkIsKeyword(1)) {
@@ -591,11 +621,12 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
 StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
 Parser::parsePatternNoTopAlt() {
 
-//  llvm::errs() << "parsePatternNoTopAlt: " << Token2String(getToken().getKind())
-//               << "\n";
-//  if (getToken().isIdentifier())
-//    llvm::errs() << "parsePatternNoTopAlt: " << getToken().getIdentifier()
-//                 << "\n";
+  //  llvm::errs() << "parsePatternNoTopAlt: " <<
+  //  Token2String(getToken().getKind())
+  //               << "\n";
+  //  if (getToken().isIdentifier())
+  //    llvm::errs() << "parsePatternNoTopAlt: " << getToken().getIdentifier()
+  //                 << "\n";
 
   if (check(TokenKind::And) || check(TokenKind::AndAnd)) {
     return parseReferencePattern();

@@ -426,6 +426,9 @@ public:
   adt::Result<std::shared_ptr<ast::Expression>, std::string>
   parsePathExpression();
 
+  adt::Result<std::shared_ptr<ast::types::TypeParamBound>, std::string>
+  parseTypePathOrTraitObjectType();
+
   adt::Result<ast::CallParams, std::string> parseCallParams(Restrictions);
 
   adt::Result<std::shared_ptr<ast::Expression>, std::string>

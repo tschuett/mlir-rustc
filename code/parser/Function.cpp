@@ -8,6 +8,7 @@
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_os_ostream.h>
@@ -534,6 +535,8 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
   assert(eat(TokenKind::Identifier));
 
   fun.setIdentifier(id.getIdentifier());
+
+  //llvm::errs() << "function: " << id.getIdentifier().toString() << "\n";
 
   if (check(TokenKind::Lt)) {
     StringResult<ast::GenericParams> genericParams = parseGenericParams();

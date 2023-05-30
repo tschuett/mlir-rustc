@@ -23,8 +23,8 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
   CheckPoint cp = getCheckPoint();
 
-  //  llvm::errs() << "parseTraitObjectTypeOrTypePathOrMacroInvocation"
-  //               << "\n";
+  llvm::errs() << "parseTraitObjectTypeOrTypePathOrMacroInvocation"
+               << "\n";
 
   size_t iterations = 0;
   while (true) {
@@ -60,7 +60,7 @@ Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
       return parseTypePath();
     } else if (check(TokenKind::Plus)) {
       recover(cp);
-      return parseTraitObjectType();
+      return parseTypePath();
     } else if (checkSimplePathSegment()) {
       assert(eatSimplePathSegment());
     } else if (checkLifetime()) {
@@ -175,6 +175,12 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>> Parser::
       "failed to parse "
       "TupleOrParensTypeOrTypePathOrMacroInvocationOrTrait"
       "ObjectTypeOrBareFunctionType");
+}
+
+adt::Result<std::shared_ptr<ast::types::TypeParamBound>, std::string>
+Parser::parseTypePathOrTraitObjectType() {
+
+  assert(false);
 }
 
 } // namespace rust_compiler::parser
