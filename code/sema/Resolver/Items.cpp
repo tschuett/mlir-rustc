@@ -205,6 +205,7 @@ void Resolver::resolveTraitItem(std::shared_ptr<ast::Trait> trait,
 void Resolver::resolveAssociatedItem(
     const ast::AssociatedItem &asso, const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
+
   resolveVisibility(asso.getVisibility());
 
   if (asso.hasTypeAlias()) {
@@ -215,12 +216,10 @@ void Resolver::resolveAssociatedItem(
     // resolveAssociatedConstantItem(asso.getConstantItem(), prefix,
     //                               canonicalPrefix);
   } else if (asso.hasFunction()) {
-    if (asso.getFunction()->getItemKind() == ItemKind::VisItem) {
-      resolveAssociatedFunction(
-          static_cast<Function *>(
-              std::static_pointer_cast<VisItem>(asso.getFunction()).get()),
-          prefix, canonicalPrefix);
-    }
+    resolveAssociatedFunction(
+        static_cast<Function *>(
+            std::static_pointer_cast<VisItem>(asso.getFunction()).get()),
+        prefix, canonicalPrefix);
   } else if (asso.hasMacroInvocationSemi()) {
     assert(false);
     // resolveAssociatedMacroInvocationSemi(asso.getMacroItem(), prefix,
@@ -257,6 +256,12 @@ void Resolver::resolveAssociatedMacroInvocationSemi(
 void Resolver::resolveAssociatedItemInTrait(
     const ast::AssociatedItem &asso, const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
+  llvm::errs() << "resolveAssociatedItem"
+               << "\n";
+  llvm::errs() << asso.hasMacroInvocationSemi() << "\n";
+  llvm::errs() << asso.hasTypeAlias() << "\n";
+  llvm::errs() << asso.hasConstantItem() << "\n";
+  llvm::errs() << asso.hasFunction() << "\n";
   if (asso.hasMacroInvocationSemi())
     resolveMacroInvocationSemiInTrait(
         static_cast<MacroInvocationSemiItem *>(asso.getMacroItem().get()),

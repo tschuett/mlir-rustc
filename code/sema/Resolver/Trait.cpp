@@ -58,21 +58,23 @@ void Resolver::resolveFunctionInTrait(
     resolveType(f->getReturnType(), prefix, canonicalPrefix);
 
   ast::FunctionParameters params = f->getParams();
-  if (params.hasSelfParam()) {
-    // should first
-    SelfParam self = params.getSelfParam();
-    SelfParamKind kind = self.getKind();
-    std::shared_ptr<ast::SelfParam> seFl = self.getSelf();
-    switch (kind) {
-    case SelfParamKind::ShorthandSelf: {
-      // FIXME
-      break;
-    }
-    case SelfParamKind::TypeSelf: {
-      resolveType(std::static_pointer_cast<TypedSelf>(seFl)->getType(), prefix,
-                  canonicalPrefix);
-      break;
-    }
+  if (f->hasParams()) {
+    if (params.hasSelfParam()) {
+      // should first
+      SelfParam self = params.getSelfParam();
+      SelfParamKind kind = self.getKind();
+      std::shared_ptr<ast::SelfParam> seFl = self.getSelf();
+      switch (kind) {
+      case SelfParamKind::ShorthandSelf: {
+        // FIXME
+        break;
+      }
+      case SelfParamKind::TypeSelf: {
+        resolveType(std::static_pointer_cast<TypedSelf>(seFl)->getType(),
+                    prefix, canonicalPrefix);
+        break;
+      }
+      }
     }
   }
   // handle maybe Self

@@ -48,31 +48,35 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
     returnTypeLoc = f->getLocation();
   }
 
-  FunctionParameters parameters = f->getParams();
-
-  assert(!parameters.hasSelfParam());
-
   std::vector<
       std::pair<std::shared_ptr<patterns::PatternNoTopAlt>, TyTy::BaseType *>>
       params;
-  for (auto &param : parameters.getParams()) {
-    switch (param.getKind()) {
-    case FunctionParamKind::Pattern: {
-      FunctionParamPattern pattern = param.getPattern();
-      assert(pattern.hasType() && "to be implemented");
-      TyTy::BaseType *paramType = checkType(pattern.getType());
-      assert(paramType->getKind() != TyTy::TypeKind::Error);
-      params.push_back({pattern.getPattern(), paramType});
-      tcx->insertType(param.getIdentity(), paramType);
-      checkPattern(pattern.getPattern(), paramType);
-      break;
-    }
-    case FunctionParamKind::DotDotDot: {
-      assert(false && "to be implemented");
-    }
-    case FunctionParamKind::Type: {
-      assert(false && "to be implemented");
-    }
+
+  if (f->hasParams()) {
+
+    FunctionParameters parameters = f->getParams();
+
+    assert(!parameters.hasSelfParam());
+
+    for (auto &param : parameters.getParams()) {
+      switch (param.getKind()) {
+      case FunctionParamKind::Pattern: {
+        FunctionParamPattern pattern = param.getPattern();
+        assert(pattern.hasType() && "to be implemented");
+        TyTy::BaseType *paramType = checkType(pattern.getType());
+        assert(paramType->getKind() != TyTy::TypeKind::Error);
+        params.push_back({pattern.getPattern(), paramType});
+        tcx->insertType(param.getIdentity(), paramType);
+        checkPattern(pattern.getPattern(), paramType);
+        break;
+      }
+      case FunctionParamKind::DotDotDot: {
+        assert(false && "to be implemented");
+      }
+      case FunctionParamKind::Type: {
+        assert(false && "to be implemented");
+      }
+      }
     }
   }
 
@@ -88,8 +92,8 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
   if (f->getQualifiers().hasExtern())
     flags |= FunctionType::FunctionTypeIsExtern;
   TyTy::FunctionType *funType =
-      new TyTy::FunctionType(f->getNodeId(), f->getName(),
-                             identity, flags, params, retType, substitutions);
+      new TyTy::FunctionType(f->getNodeId(), f->getName(), identity, flags,
+                             params, retType, substitutions);
 
   tcx->insertType(f->getIdentity(), funType);
 

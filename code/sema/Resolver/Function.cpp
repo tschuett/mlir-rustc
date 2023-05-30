@@ -10,7 +10,7 @@ using namespace rust_compiler::basic;
 
 namespace rust_compiler::sema::resolver {
 
-void Resolver::resolveFunction(ast::Function* fun,
+void Resolver::resolveFunction(ast::Function *fun,
                                const adt::CanonicalPath &prefix,
                                const adt::CanonicalPath &canonicalPrefix) {
 
@@ -41,35 +41,38 @@ void Resolver::resolveFunction(ast::Function* fun,
     resolveType(fun->getReturnType(), prefix, canonicalPrefix);
 
   FunctionParameters params = fun->getParams();
-  //assert(!params.hasSelfParam() && "to be implemented");
+  // assert(!params.hasSelfParam() && "to be implemented");
 
   std::vector<PatternBinding> bindings = {
       PatternBinding(PatternBoundCtx::Product, std::set<NodeId>())};
 
-  for (auto &parm : params.getParams()) {
-    switch (parm.getKind()) {
-    case FunctionParamKind::Pattern: {
-      FunctionParamPattern pattern = parm.getPattern();
-      if (pattern.hasType()) {
-        resolveType(pattern.getType(), prefix, canonicalPrefix);
-        resolvePatternDeclarationWithBindings(pattern.getPattern(),
-                                              RibKind::Parameter, bindings,
-                                              prefix, canonicalPrefix);
-      } else {
+  if (fun->hasParams()) {
+    for (auto &parm : params.getParams()) {
+      switch (parm.getKind()) {
+      case FunctionParamKind::Pattern: {
+        FunctionParamPattern pattern = parm.getPattern();
+        if (pattern.hasType()) {
+          resolveType(pattern.getType(), prefix, canonicalPrefix);
+          resolvePatternDeclarationWithBindings(pattern.getPattern(),
+                                                RibKind::Parameter, bindings,
+                                                prefix, canonicalPrefix);
+        } else {
+          assert(false && "to be implemented");
+        }
+        break;
+      }
+      case FunctionParamKind::DotDotDot: {
         assert(false && "to be implemented");
       }
-      break;
-    }
-    case FunctionParamKind::DotDotDot: {
-      assert(false && "to be implemented");
-    }
-    case FunctionParamKind::Type: {
-      assert(false && "to be implemented");
-    }
+      case FunctionParamKind::Type: {
+        assert(false && "to be implemented");
+      }
+      }
     }
   }
 
-  resolveExpression(fun->getBody(), prefix, canonicalPrefix);
+  if (fun->hasBody())
+    resolveExpression(fun->getBody(), prefix, canonicalPrefix);
 
   getNameScope().pop();
   getTypeScope().pop();
