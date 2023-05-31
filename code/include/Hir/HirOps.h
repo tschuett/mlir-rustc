@@ -1,18 +1,17 @@
 #pragma once
 
-#include "Hir/HirOpsInterfaces.h"
-
-#include "Hir/HirStruct.h"
 #include "Hir/HirEnum.h"
+#include "Hir/HirOpsInterfaces.h"
 #include "Hir/HirString.h"
-
-#include <mlir/Interfaces/InferTypeOpInterface.h>
+#include "Hir/HirStruct.h"
+#include "Hir/HirTypes.h"
 
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/OpImplementation.h>
 #include <mlir/IR/Operation.h>
 #include <mlir/IR/Region.h>
 #include <mlir/IR/ValueRange.h>
+#include <mlir/Interfaces/InferTypeOpInterface.h>
 #include <mlir/Interfaces/SideEffectInterfaces.h>
 #include <mlir/Rewrite/FrozenRewritePatternSet.h>
 #include <mlir/Transforms/GreedyPatternRewriteDriver.h>

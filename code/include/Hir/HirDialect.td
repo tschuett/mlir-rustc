@@ -34,6 +34,9 @@ def Hir_Dialect : Dialect {
                            "mlir::arith::ArithDialect",
                            "mlir::memref::MemRefDialect"
                           ];
+   let useDefaultTypePrinterParser = true;
+   let useDefaultAttributePrinterParser = true;
+   let isExtensible = 1;
 }
 
 #endif

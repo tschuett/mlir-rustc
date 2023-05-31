@@ -367,31 +367,30 @@ def StructConstantOp : Hir_Op<"struct_constant", [ConstantLike, Pure]> {
   let results = (outs Hir_StructType:$output);
 
   let assemblyFormat = "$value attr-dict `:` type($output)";
-
 }
 
 
 //===----------------------------------------------------------------------===//
-// StringConstantOp
+// ConstantOp
 //===----------------------------------------------------------------------===//
 
-def StringConstantOp : Hir_Op<"string_constant", [ConstantLike, Pure]> {
-  let summary = "string constant";
+def ConstantOp : Hir_Op<"constant", [ConstantLike, Pure]> {
+  let summary = "any attribute constant";
   let description = [{
-    Constant operation turns a literal string value into an SSA value. The data
-    is attached to the operation as a string attribute. For example:
+    Constant operation turns a literal expression attribute value into an SSA value. The data
+    is attached to the operation as an attribute. For example:
 
     ```mlir
-      %0 = hir.string_constant [
+      %0 = hir.constant [
         dense<[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]> : tensor<2x3xf64>
-      ] : !hir.string
+      ] : !hir.attribute
     ```
   }];
 
-  let arguments = (ins Builtin_StringAttr:$value);
-  let results = (outs Hir_StringType:$output);
+  let arguments = (ins AnyAttr:$value);
+  let results = (outs Hir_ConstantType:$output);
 
-  let assemblyFormat = "$value attr-dict `:` type($output)";
+  let assemblyFormat = "attr-dict `:` type($output)";
 }
 
 //===----------------------------------------------------------------------===//
@@ -533,6 +532,8 @@ def RangeToInclusiveExprOp : Hir_Op<"range_to_inclusive_expr", [Pure]> {
   let results = (outs AnyType:$output);
 
   //let assemblyFormat = "$output attr-dict  `:` functional-type(operands, results)";
+
+  //let hasCanonicalizer = 1;
 }
 
 #endif
