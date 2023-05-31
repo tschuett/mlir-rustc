@@ -4,6 +4,7 @@
 #include "AST/ConstParam.h"
 #include "AST/Enumeration.h"
 #include "AST/GenericArgs.h"
+#include "AST/TypeBoundWhereClauseItem.h"
 #include "AST/Types/ArrayType.h"
 #include "AST/Types/ReferenceType.h"
 #include "AST/Types/SliceType.h"
@@ -13,6 +14,7 @@
 #include "AST/Types/TypeParamBound.h"
 #include "AST/Types/TypeParamBounds.h"
 #include "AST/Types/TypePath.h"
+#include "AST/WhereClauseItem.h"
 #include "Basic/Ids.h"
 #include "Coercion.h"
 #include "PathProbing.h"
@@ -62,8 +64,45 @@ TypeResolver::checkType(std::shared_ptr<ast::types::TypeExpression> te) {
   return result;
 }
 
-void TypeResolver::checkWhereClause(const ast::WhereClause &) {
-  assert(false && "to be implemented");
+void TypeResolver::checkWhereClause(const ast::WhereClause &where) {
+  for (auto &wh : where.getItems()) {
+    switch (wh->getKind()) {
+    case WhereClauseItemKind::LifetimeWhereClauseItem: {
+      assert(false);
+      break;
+    }
+    case WhereClauseItemKind::TypeBoundWherClauseItem: {
+      auto typeItem = std::static_pointer_cast<TypeBoundWhereClauseItem>(wh);
+      auto type = typeItem->getType();
+      TyTy::BaseType *binding = checkType(type);
+
+      std::vector<TyTy::TypeBoundPredicate> specifiedBounds;
+      for (auto &bound : typeItem->getBounds().getBounds()) {
+        switch (bound->getKind()) {
+        case TypeParamBoundKind::Lifetime: {
+          break;
+        }
+        case TypeParamBoundKind::TraitBound: {
+          auto traitBound = std::static_pointer_cast<TraitBound>(bound);
+          TyTy::TypeBoundPredicate pred =
+              getPredicateFromBound(traitBound->getPath(), type.get());
+          if (!pred.isError())
+            specifiedBounds.push_back(std::move(pred));
+        }
+        }
+      }
+      binding->inheritBounds(specifiedBounds);
+
+      NodeId nodeId = type->getNodeId();
+      std::optional<NodeId> refType = tcx->lookupResolvedType(nodeId);
+      assert(refType.has_value());
+
+      std::optional<TyTy::BaseType *> lookup = tcx->lookupType(*refType);
+      assert(lookup.has_value());
+      (*lookup)->inheritBounds(specifiedBounds);
+    }
+    }
+  }
 }
 
 void TypeResolver::checkGenericParams(
@@ -493,7 +532,7 @@ TypeResolver::checkSliceType(std::shared_ptr<ast::types::SliceType> slice) {
   TyTy::BaseType *base = checkType(slice->getType());
 
   return new TyTy::SliceType(slice->getNodeId(), slice->getLocation(),
-                       TyTy::TypeVariable(base->getReference()));
+                             TyTy::TypeVariable(base->getReference()));
 }
 
 } // namespace rust_compiler::sema::type_checking
