@@ -32,10 +32,12 @@ def Hir_Dialect : Dialect {
                            "mlir::cf::ControlFlowDialect",
                            "mlir::func::FuncDialect",
                            "mlir::arith::ArithDialect",
-                           "mlir::memref::MemRefDialect"
+                           "mlir::memref::MemRefDialect",
+                           "mlir::vector::VectorDialect"
                           ];
-   let useDefaultTypePrinterParser = true;
-   let useDefaultAttributePrinterParser = true;
+
+//   let useDefaultTypePrinterParser = true;
+//   let useDefaultAttributePrinterParser = true;
    let isExtensible = 1;
 }
 

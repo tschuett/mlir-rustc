@@ -1,4 +1,6 @@
 
+#include "Hir/HirDialect.h"
+
 #include "Hir/HirEnum.h"
 #include "Hir/HirInterfaces.h"
 #include "Hir/HirOps.h"
@@ -9,6 +11,7 @@
 #include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/ControlFlow/IR/ControlFlow.h>
 #include <mlir/Dialect/MemRef/IR/MemRef.h>
+#include <mlir/Dialect/Vector/IR/VectorOps.h>
 #include <mlir/IR/BlockAndValueMapping.h>
 #include <mlir/IR/Builders.h>
 #include <mlir/IR/BuiltinTypes.h>
@@ -20,8 +23,6 @@
 #include <mlir/IR/Types.h>
 #include <mlir/Transforms/InliningUtils.h>
 #include <optional>
-
-#include "Hir/HirDialect.h"
 
 using namespace mlir;
 
