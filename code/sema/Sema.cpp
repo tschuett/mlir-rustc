@@ -40,7 +40,8 @@ void analyzeSemantics(std::shared_ptr<ast::Crate> &crate) {
 
   // monomorph
 
-  // which path points to which variable (let, static, const, or function param) or item?
+  // which path points to which variable (let, static, const, or function param)
+  // or item?
 }
 
 void Sema::analyze(std::shared_ptr<ast::Crate> &crate) {
@@ -115,6 +116,7 @@ void Sema::analyzeVisItem(std::shared_ptr<ast::VisItem> vis) {
     break;
   }
   case VisItemKind::Struct: {
+    analyzeStruct(std::static_pointer_cast<Struct>(vis).get());
     break;
   }
   case VisItemKind::Enumeration: {
@@ -136,6 +138,18 @@ void Sema::analyzeVisItem(std::shared_ptr<ast::VisItem> vis) {
     break;
   }
   case VisItemKind::ExternBlock: {
+    break;
+  }
+  }
+}
+
+void Sema::analyzeStruct(ast::Struct *str) {
+  switch (str->getKind()) {
+  case StructKind::StructStruct2: {
+    str->getVisibility();
+    break;
+  }
+  case StructKind::TupleStruct2: {
     break;
   }
   }

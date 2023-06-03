@@ -24,6 +24,7 @@
 #include "AST/PredicatePatternLoopExpression.h"
 #include "AST/Statement.h"
 #include "AST/Statements.h"
+#include "AST/Struct.h"
 #include "AST/StaticItem.h"
 #include "AST/StructExpression.h"
 #include "AST/Trait.h"
@@ -92,6 +93,7 @@ private:
   void analyzeStaticItem(ast::StaticItem *);
   void analyzeTrait(ast::Trait *);
   void analyzeFunction(ast::Function *);
+  void analyzeStruct(ast::Struct *);
 
   bool isReachable(std::shared_ptr<ast::VisItem>,
                    std::shared_ptr<ast::VisItem>);

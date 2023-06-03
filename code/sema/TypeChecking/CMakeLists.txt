@@ -22,6 +22,7 @@ add_library(TypeChecking
             Casting.cpp
             OperatorOverload.cpp
             MethodResolver.cpp
+            Resolver.cpp
            )
 
 target_include_directories(TypeChecking PRIVATE  ../../include)

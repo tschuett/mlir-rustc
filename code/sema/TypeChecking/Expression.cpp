@@ -877,8 +877,9 @@ TypeResolver::checkIndexExpression(std::shared_ptr<IndexExpression> index) {
     return arrayType->getElementType()->clone();
   }
 
-  std::optional<TyTy::BaseType *> overloaded = resolveOperatorOverload(
-      PropertyKind::INDEX, index.get(), arrayExprType, indexExprType);
+  std::optional<TyTy::BaseType *> overloaded =
+      resolveOperatorOverloadIndexTrait(index.get(), arrayExprType,
+                                        indexExprType);
 
   if (overloaded) {
 
