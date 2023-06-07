@@ -21,6 +21,9 @@ public:
   void setIndex(std::string_view i) { index = i; }
 
   std::shared_ptr<Expression> getTuple() const { return tuple; }
+  size_t getIndex() const {
+    return atoi(index.c_str());
+  }
 };
 
 } // namespace rust_compiler::ast
