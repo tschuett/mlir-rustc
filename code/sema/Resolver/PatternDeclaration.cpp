@@ -2,7 +2,10 @@
 
 #include "ADT/CanonicalPath.h"
 #include "AST/Patterns/IdentifierPattern.h"
+#include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/PatternWithoutRange.h"
+#include "AST/Patterns/TupleStructItems.h"
+#include "AST/Patterns/TupleStructPattern.h"
 #include "Resolver.h"
 
 #include <llvm/Support/FormatVariadic.h>
@@ -38,7 +41,7 @@ void PatternDeclaration::resolvePatternWithoutRange(
     break;
   }
   case PatternWithoutRangeKind::WildcardPattern: {
-    assert(false && "to be handled later");
+    break;
   }
   case PatternWithoutRangeKind::RestPattern: {
     assert(false && "to be handled later");
@@ -50,7 +53,9 @@ void PatternDeclaration::resolvePatternWithoutRange(
     assert(false && "to be handled later");
   }
   case PatternWithoutRangeKind::TupleStructPattern: {
-    assert(false && "to be handled later");
+    resolveTupleStructPattern(
+        std::static_pointer_cast<TupleStructPattern>(woRange));
+    break;
   }
   case PatternWithoutRangeKind::TuplePattern: {
     assert(false && "to be handled later");
@@ -77,6 +82,30 @@ void PatternDeclaration::resolveIdentifierPattern(
                 BindingTypeInfo(mut, id->hasRef(), id->getLocation()));
 }
 
+void PatternDeclaration::resolveTupleStructPattern(
+    std::shared_ptr<ast::patterns::TupleStructPattern> path) {
+  resolver->resolveExpression(path->getPath(), prefix, canonicalPrefix);
+
+  if (path->hasItems()) {
+    TupleStructItems items = path->getItems();
+    for (auto &pat : items.getPatterns()) {
+      for (auto &p : pat->getPatterns()) {
+        switch (p->getKind()) {
+        case PatternNoTopAltKind::RangePattern: {
+          assert(false);
+        }
+        case PatternNoTopAltKind::PatternWithoutRange: {
+          std::shared_ptr<ast::patterns::PatternWithoutRange> wo =
+              std::static_pointer_cast<ast::patterns::PatternWithoutRange>(p);
+          resolvePatternWithoutRange(wo);
+          break;
+        }
+        }
+      }
+    }
+  }
+}
+
 void PatternDeclaration::addNewBinding(const lexer::Identifier &name,
                                        basic::NodeId id, BindingTypeInfo bind) {
   assert(bindings.size() > 0);
@@ -85,9 +114,9 @@ void PatternDeclaration::addNewBinding(const lexer::Identifier &name,
   bool identifierProductBound = false;
 
   for (auto binding : bindings) {
-    if (binding.idents.find(id) != binding.idents.end()) {
-      identifierProductBound |= binding.ctx == PatternBoundCtx::Product;
-      identifierOrBound |= binding.ctx == PatternBoundCtx::Or;
+    if (binding.contains(id)) {
+      identifierProductBound |= binding.getCtx() == PatternBoundCtx::Product;
+      identifierOrBound |= binding.getCtx() == PatternBoundCtx::Or;
     }
   }
 
@@ -110,7 +139,7 @@ void PatternDeclaration::addNewBinding(const lexer::Identifier &name,
   }
 
   if (!identifierOrBound) {
-    bindings.back().idents.insert(id);
+    bindings.back().insert(id);
     resolver->getNameScope().insert(adt::CanonicalPath::newSegment(id, name),
                                     id, bind.getLocation(), rib);
   }

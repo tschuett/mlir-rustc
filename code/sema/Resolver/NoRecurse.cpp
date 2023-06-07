@@ -1,4 +1,5 @@
 #include "ADT/CanonicalPath.h"
+#include "AST/StructStruct.h"
 #include "Resolver.h"
 
 #include <memory>
@@ -36,11 +37,14 @@ void Resolver::resolveVisItemNoRecurse(
     break;
   }
   case VisItemKind::TypeAlias: {
-    assert(false);
+    resolveTypeAliasNoRecurse(
+        std::static_pointer_cast<TypeAlias>(visItem).get(), prefix,
+        canonicalPrefix);
     break;
   }
   case VisItemKind::Struct: {
-    assert(false);
+    resolveStructNoRecurse(std::static_pointer_cast<Struct>(visItem).get(),
+                           prefix, canonicalPrefix);
     break;
   }
   case VisItemKind::Enumeration: {
@@ -128,6 +132,74 @@ void Resolver::resolveTraitNoRecurse(
   NodeId currentModule = peekCurrentModuleScope();
   tyCtx->insertModuleChildItem(currentModule, segment);
   tyCtx->insertCanonicalPath(trait->getNodeId(), path);
+}
+
+void Resolver::resolveStructNoRecurse(
+    ast::Struct *str, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  switch (str->getKind()) {
+  case StructKind::StructStruct2: {
+    resolveStructStructNoRecurse(static_cast<ast::StructStruct *>(str), prefix,
+                                 canonicalPrefix);
+    break;
+  }
+  case StructKind::TupleStruct2: {
+    resolveTupleStructNoRecurse(static_cast<ast::TupleStruct *>(str), prefix,
+                                canonicalPrefix);
+    break;
+  }
+  }
+}
+
+void Resolver::resolveStructStructNoRecurse(
+    ast::StructStruct *str, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  CanonicalPath segment =
+      CanonicalPath::newSegment(str->getNodeId(), str->getIdentifier());
+  CanonicalPath path = prefix.append(segment);
+  CanonicalPath cpath = canonicalPrefix.append(segment);
+
+  /// FIXME
+  getTypeScope().insert(path, str->getNodeId(), str->getLocation(),
+                        RibKind::Type);
+
+  NodeId currentModule = peekCurrentModuleScope();
+  tyCtx->insertModuleChildItem(currentModule, segment);
+  tyCtx->insertCanonicalPath(str->getNodeId(), cpath);
+}
+
+void Resolver::resolveTupleStructNoRecurse(
+    ast::TupleStruct *str, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  CanonicalPath segment =
+      CanonicalPath::newSegment(str->getNodeId(), str->getName());
+  CanonicalPath path = prefix.append(segment);
+  CanonicalPath cpath = canonicalPrefix.append(segment);
+
+  /// FIXME
+  getTypeScope().insert(path, str->getNodeId(), str->getLocation(),
+                        RibKind::Type);
+
+  NodeId currentModule = peekCurrentModuleScope();
+  tyCtx->insertModuleChildItem(currentModule, segment);
+  tyCtx->insertCanonicalPath(str->getNodeId(), cpath);
+}
+
+void Resolver::resolveTypeAliasNoRecurse(
+    ast::TypeAlias *alias, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  CanonicalPath segment =
+      CanonicalPath::newSegment(alias->getNodeId(), alias->getIdentifier());
+  CanonicalPath path = prefix.append(segment);
+  CanonicalPath cpath = canonicalPrefix.append(segment);
+
+  /// FIXME
+  getTypeScope().insert(path, alias->getNodeId(), alias->getLocation(),
+                        RibKind::Type);
+
+  NodeId currentModule = peekCurrentModuleScope();
+  tyCtx->insertModuleChildItem(currentModule, segment);
+  tyCtx->insertCanonicalPath(alias->getNodeId(), cpath);
 }
 
 } // namespace rust_compiler::sema::resolver

@@ -23,6 +23,7 @@
 #include "AST/StructExprStruct.h"
 #include "AST/StructExprUnit.h"
 #include "AST/StructExpression.h"
+#include "AST/TupleIndexingExpression.h"
 #include "AST/UnsafeBlockExpression.h"
 #include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
@@ -137,7 +138,10 @@ void Resolver::resolveExpressionWithoutBlock(
         canonicalPrefix);
   }
   case ExpressionWithoutBlockKind::TupleIndexingExpression: {
-    assert(false && "to be handled later");
+    resolveTupleIndexingExpression(
+        std::static_pointer_cast<TupleIndexingExpression>(woBlock).get(),
+        prefix, canonicalPrefix);
+    break;
   }
   case ExpressionWithoutBlockKind::StructExpression: {
     resolveStructExpression(std::static_pointer_cast<StructExpression>(woBlock),
@@ -156,7 +160,10 @@ void Resolver::resolveExpressionWithoutBlock(
     break;
   }
   case ExpressionWithoutBlockKind::FieldExpression: {
-    assert(false && "to be handled later");
+    resolveFieldExpression(
+        std::static_pointer_cast<FieldExpression>(woBlock).get(), prefix,
+        canonicalPrefix);
+    break;
   }
   case ExpressionWithoutBlockKind::ClosureExpression: {
     resolveClosureExpression(
@@ -584,11 +591,14 @@ void Resolver::resolveStructExprFields(
 
   for (const StructExprField &field : fields.getFields()) {
     // FIXME: experiment
-    // getTypeScope().insert(segment, str->getNodeId(), str->getLocation(),
-    //                   RibKind::Type);
+    if (field.hasIdentifier()) {
+      CanonicalPath segment =
+          CanonicalPath::newSegment(field.getNodeId(), field.getIdentifier());
+      getNameScope().insert(segment, field.getNodeId(), field.getLocation(),
+                            RibKind::Type);
+    }
     if (field.hasExpression())
       resolveExpression(field.getExpression(), prefix, canonicalPrefix);
-    assert(false);
   }
 }
 
@@ -747,6 +757,18 @@ void Resolver::verifyAssignee(ast::ExpressionWithoutBlock *woBlock) {
 
 void Resolver::verifyAssignee(ast::ExpressionWithBlock *withBlock) {
   assert(false);
+}
+
+void Resolver::resolveFieldExpression(
+    ast::FieldExpression *field, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  resolveExpression(field->getField(), prefix, canonicalPrefix);
+}
+
+void Resolver::resolveTupleIndexingExpression(
+    ast::TupleIndexingExpression *tuple, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  resolveExpression(tuple->getTuple(), prefix, canonicalPrefix);
 }
 
 } // namespace rust_compiler::sema::resolver

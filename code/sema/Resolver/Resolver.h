@@ -13,6 +13,7 @@
 #include "AST/DereferenceExpression.h"
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/FieldExpression.h"
 #include "AST/Function.h"
 #include "AST/IfExpression.h"
 #include "AST/Implementation.h"
@@ -34,6 +35,7 @@
 #include "AST/Patterns/PathPattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/PatternWithoutRange.h"
+#include "AST/Patterns/TupleStructPattern.h"
 #include "AST/QualifiedPathInExpression.h"
 #include "AST/RangeExpression.h"
 #include "AST/ReturnExpression.h"
@@ -47,6 +49,7 @@
 #include "AST/Trait.h"
 #include "AST/TraitImpl.h"
 #include "AST/TupleExpression.h"
+#include "AST/TupleIndexingExpression.h"
 #include "AST/TupleStruct.h"
 #include "AST/TypeAlias.h"
 #include "AST/TypeCastExpression.h"
@@ -98,12 +101,19 @@ enum class PatternBoundCtx {
   Or,
 };
 
-struct PatternBinding {
+class PatternBinding {
   PatternBoundCtx ctx;
   std::set<basic::NodeId> idents;
 
+public:
   PatternBinding(PatternBoundCtx ctx, std::set<basic::NodeId> idents)
       : ctx(ctx), idents(idents) {}
+
+  bool contains(NodeId id) const { return idents.find(id) != idents.end(); }
+
+  PatternBoundCtx getCtx() const { return ctx; }
+
+  void insert(NodeId id) { idents.insert(id); }
 };
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/index.html
@@ -215,6 +225,10 @@ public:
 
   Scope &getNameScope() { return nameScope; }
 
+  void resolveExpression(std::shared_ptr<ast::Expression>,
+                         const adt::CanonicalPath &prefix,
+                         const adt::CanonicalPath &canonicalPrefix);
+
 private:
   // items no recurse
   void resolveVisItemNoRecurse(std::shared_ptr<ast::VisItem>,
@@ -226,6 +240,17 @@ private:
   void resolveFunctionNoRecurse(std::shared_ptr<ast::Function>,
                                 const adt::CanonicalPath &prefix,
                                 const adt::CanonicalPath &canonicalPrefix);
+  void resolveStructNoRecurse(ast::Struct *, const adt::CanonicalPath &prefix,
+                              const adt::CanonicalPath &canonicalPrefix);
+  void resolveStructStructNoRecurse(ast::StructStruct *,
+                                    const adt::CanonicalPath &prefix,
+                                    const adt::CanonicalPath &canonicalPrefix);
+  void resolveTupleStructNoRecurse(ast::TupleStruct *,
+                                   const adt::CanonicalPath &prefix,
+                                   const adt::CanonicalPath &canonicalPrefix);
+  void resolveTypeAliasNoRecurse(ast::TypeAlias *,
+                                 const adt::CanonicalPath &prefix,
+                                 const adt::CanonicalPath &canonicalPrefix);
   void resolveTraitNoRecurse(std::shared_ptr<ast::Trait> trait,
                              const adt::CanonicalPath &prefix,
                              const adt::CanonicalPath &canonicalPrefix);
@@ -292,9 +317,6 @@ private:
                               const adt::CanonicalPath &canonicalPrefix);
 
   // expressions
-  void resolveExpression(std::shared_ptr<ast::Expression>,
-                         const adt::CanonicalPath &prefix,
-                         const adt::CanonicalPath &canonicalPrefix);
   void resolveExpressionWithBlock(std::shared_ptr<ast::ExpressionWithBlock>,
                                   const adt::CanonicalPath &prefix,
                                   const adt::CanonicalPath &canonicalPrefix);
@@ -378,6 +400,13 @@ private:
   void resolveTupleExpression(ast::TupleExpression *,
                               const adt::CanonicalPath &prefix,
                               const adt::CanonicalPath &canonicalPrefix);
+  void resolveFieldExpression(ast::FieldExpression *,
+                              const adt::CanonicalPath &prefix,
+                              const adt::CanonicalPath &canonicalPrefix);
+  void
+  resolveTupleIndexingExpression(ast::TupleIndexingExpression *,
+                                 const adt::CanonicalPath &prefix,
+                                 const adt::CanonicalPath &canonicalPrefix);
 
   // types
   std::optional<basic::NodeId>
@@ -461,7 +490,8 @@ private:
       const adt::CanonicalPath &canonicalPrefix);
   void
   resolvePathPatternDeclaration(std::shared_ptr<ast::patterns::PathPattern>,
-                                RibKind, const adt::CanonicalPath &prefix,
+                                RibKind, std::vector<PatternBinding> &bindings,
+                                const adt::CanonicalPath &prefix,
                                 const adt::CanonicalPath &canonicalPrefix);
 
   // statements

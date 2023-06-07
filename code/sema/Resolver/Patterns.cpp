@@ -3,9 +3,13 @@
 #include "AST/PathExpression.h"
 #include "AST/PathInExpression.h"
 #include "AST/Patterns/IdentifierPattern.h"
+#include "AST/Patterns/Pattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/PatternWithoutRange.h"
+#include "AST/Patterns/TupleStructItems.h"
+#include "AST/Patterns/TupleStructPattern.h"
 #include "Basic/Ids.h"
+#include "PatternDeclaration.h"
 #include "Resolver.h"
 
 #include <memory>
@@ -98,7 +102,7 @@ void Resolver::resolvePatternDeclarationWithoutRange(
   }
   case PatternWithoutRangeKind::PathPattern: {
     resolvePathPatternDeclaration(std::static_pointer_cast<PathPattern>(pat),
-                                  rib, prefix, canonicalPrefix);
+                                  rib, bindings, prefix, canonicalPrefix);
     break;
   }
   case PatternWithoutRangeKind::MacroInvocation: {
@@ -109,7 +113,7 @@ void Resolver::resolvePatternDeclarationWithoutRange(
 
 void Resolver::resolvePathPatternDeclaration(
     std::shared_ptr<ast::patterns::PathPattern> pat, RibKind rib,
-    const adt::CanonicalPath &prefix,
+    std::vector<PatternBinding> &bindings, const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
   std::shared_ptr<ast::PathExpression> path =
       std::static_pointer_cast<PathExpression>(pat->getPath());
@@ -142,5 +146,6 @@ void Resolver::resolvePathPatternDeclaration(
   //    }
   //  }
 }
+
 
 } // namespace rust_compiler::sema::resolver
