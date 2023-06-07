@@ -23,6 +23,7 @@ public:
   void setLeft(std::shared_ptr<Expression> l) { expr = l; }
   void setIdentifier(const Identifier id) { identifier = id; }
 
+  Identifier getIdentifier() const { return identifier; }
   std::shared_ptr<Expression> getField() const { return expr; }
 };
 

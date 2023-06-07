@@ -19,6 +19,10 @@ public:
     patterns.push_back(pat);
   }
   void setTrailingComma() { trailingComma = true; }
+
+  std::vector<std::shared_ptr<ast::patterns::Pattern>> getPatterns() const {
+    return patterns;
+  }
 };
 
 } // namespace rust_compiler::ast::patterns

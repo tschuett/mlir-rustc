@@ -32,6 +32,8 @@ public:
   bool hasGuard() const { return guard.has_value(); }
 
   MatchArmGuard getGuard() const { return *guard; }
+
+  std::shared_ptr<ast::patterns::Pattern> getPattern() const { return pattern; }
 };
 
 } // namespace rust_compiler::ast

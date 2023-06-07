@@ -23,8 +23,8 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
   CheckPoint cp = getCheckPoint();
 
-  llvm::errs() << "parseTraitObjectTypeOrTypePathOrMacroInvocation"
-               << "\n";
+//  llvm::errs() << "parseTraitObjectTypeOrTypePathOrMacroInvocation"
+//               << "\n";
 
   size_t iterations = 0;
   while (true) {

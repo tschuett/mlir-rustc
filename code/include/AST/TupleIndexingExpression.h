@@ -17,7 +17,7 @@ public:
       : ExpressionWithoutBlock(
             loc, ExpressionWithoutBlockKind::TupleIndexingExpression){};
 
-  void setTuple(std::shared_ptr<Expression> t) { t = tuple; }
+  void setTuple(std::shared_ptr<Expression> t) { tuple = t; }
   void setIndex(std::string_view i) { index = i; }
 
   std::shared_ptr<Expression> getTuple() const { return tuple; }

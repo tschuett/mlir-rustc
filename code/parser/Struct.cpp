@@ -41,7 +41,7 @@ StringResult<ast::StructExprField> Parser::parseStructExprField() {
   field.setOuterAttributes(ot);
 
   if (checkIdentifier() && check(TokenKind::Colon, 1)) {
-    field.setIdentifier(getToken().getIdentifier().toString());
+    field.setIdentifier(getToken().getIdentifier());
     assert(eat(TokenKind::Identifier));
     if (!check(TokenKind::Colon)) {
       return StringResult<ast::StructExprField>(
@@ -80,7 +80,7 @@ StringResult<ast::StructExprField> Parser::parseStructExprField() {
     field.setExpression(expr.getValue());
     return StringResult<ast::StructExprField>(field);
   } else if (checkIdentifier()) {
-    field.setIdentifier(getToken().getIdentifier().toString());
+    field.setIdentifier(getToken().getIdentifier());
     return StringResult<ast::StructExprField>(field);
   } else {
     return StringResult<ast::StructExprField>(
@@ -441,6 +441,8 @@ StringResult<ast::StructFields> Parser::parseStructFields() {
       assert(eat(TokenKind::Comma));
       sfs.setTrailingComma();
       return StringResult<ast::StructFields>(sfs);
+    } else if (check(TokenKind::Comma) && !check(TokenKind::BraceClose, 1)) {
+      assert(eat(TokenKind::Comma));
     } else if (check(TokenKind::Eof)) {
       return StringResult<ast::StructFields>("failed to parse struct fields");
     }
@@ -482,6 +484,8 @@ StringResult<ast::StructField> Parser::parseStructField() {
   }
 
   if (!check(TokenKind::Identifier)) {
+    llvm::errs() << getToken().getLocation().toString()
+                 << " found: " << Token2String(getToken().getKind()) << "\n";
     return StringResult<ast::StructField>(
         "failed to parse identifier token in struct field");
   }

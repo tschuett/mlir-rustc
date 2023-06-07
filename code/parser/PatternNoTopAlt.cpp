@@ -259,8 +259,8 @@ Parser::parsePathPattern() {
   Location loc = getLocation();
   PathPattern path = {loc};
 
-  llvm::outs() << "parsePathPattern"
-               << "\n";
+//  llvm::outs() << "parsePathPattern"
+//               << "\n";
 
   StringResult<std::shared_ptr<ast::Expression>> pathExpr =
       parsePathExpression();
@@ -439,8 +439,8 @@ Parser::parseReferencePattern() {
         "failed to parse reference pattern");
   }
 
-  llvm::errs() << "parseRefencePattern"
-               << "\n";
+//  llvm::errs() << "parseRefencePattern"
+//               << "\n";
 
   Location loc = getLocation();
 

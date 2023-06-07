@@ -530,8 +530,8 @@ Parser::parseMethodCallExpression(std::shared_ptr<ast::Expression> receiver,
   Location loc = getLocation();
   MethodCallExpression call = {loc};
 
-  llvm::errs() << "parseMethodCallExpression"
-               << "\n";
+//  llvm::errs() << "parseMethodCallExpression"
+//               << "\n";
 
   call.setReceiver(receiver);
 
