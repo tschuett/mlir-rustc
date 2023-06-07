@@ -4,6 +4,7 @@
 #include "AST/ArrayElements.h"
 #include "AST/AssignmentExpression.h"
 #include "AST/BlockExpression.h"
+#include "AST/CallParams.h"
 #include "AST/ClosureExpression.h"
 #include "AST/ComparisonExpression.h"
 #include "AST/CompoundAssignmentExpression.h"
@@ -16,6 +17,10 @@
 #include "AST/RangeExpression.h"
 #include "AST/Scrutinee.h"
 #include "AST/Statement.h"
+#include "AST/StructExprField.h"
+#include "AST/StructExprFields.h"
+#include "AST/StructExprStruct.h"
+#include "AST/StructExpression.h"
 #include "Basic/Ids.h"
 #include "Casting.h"
 #include "Coercion.h"
@@ -29,13 +34,16 @@
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
 #include "Unification.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include "../ReturnExpressionSearcher.h"
 
 #include <cassert>
+#include <cstddef>
 #include <llvm/Support/ErrorHandling.h>
 #include <memory>
 #include <optional>
+#include <vector>
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::tyctx;
@@ -125,20 +133,21 @@ TyTy::BaseType *TypeResolver::checkExpressionWithoutBlock(
     assert(false && "to be implemented");
   }
   case ExpressionWithoutBlockKind::TupleIndexingExpression: {
-    assert(false && "to be implemented");
+    return checkTupleIndexingExpression(
+        std::static_pointer_cast<TupleIndexingExpression>(woBlock).get());
   }
   case ExpressionWithoutBlockKind::StructExpression: {
-    assert(false && "to be implemented");
+    return checkStructExpression(
+        static_cast<StructExpression *>(woBlock.get()));
   }
   case ExpressionWithoutBlockKind::CallExpression: {
     return checkCallExpression(static_cast<CallExpression *>(woBlock.get()));
-    assert(false && "to be implemented");
   }
   case ExpressionWithoutBlockKind::MethodCallExpression: {
     assert(false && "to be implemented");
   }
   case ExpressionWithoutBlockKind::FieldExpression: {
-    assert(false && "to be implemented");
+    return checkFieldExpression(static_cast<FieldExpression *>(woBlock.get()));
   }
   case ExpressionWithoutBlockKind::ClosureExpression: {
     return checkClosureExpression(
@@ -464,7 +473,9 @@ TyTy::BaseType *TypeResolver::checkIfLetExpression(
 TyTy::BaseType *TypeResolver::checkCallExpression(CallExpression *call) {
   TyTy::BaseType *functionType = checkExpression(call->getFunction());
 
-  TyTy::VariantDef variant = TyTy::VariantDef::getErrorNode();
+  llvm::errs() << functionType->toString() << "\n";
+
+  TyTy::VariantDef &variant = TyTy::VariantDef::getErrorNode();
   if (functionType->getKind() == TyTy::TypeKind::ADT) {
     TyTy::ADTType *adt = static_cast<TyTy::ADTType *>(functionType);
     if (adt->isEnum()) {
@@ -503,24 +514,24 @@ TyTy::BaseType *TypeResolver::checkCallExpression(TyTy::BaseType *functionType,
                                                   CallExpression *call,
                                                   TyTy::VariantDef &variant) {
 
-  std::vector<TyTy::Argument> arguments;
-  if (call->hasParameters()) {
-    CallParams params = call->getParameters();
-    for (auto &arg : params.getParams()) {
-      TyTy::BaseType *argumentExpressionType = checkExpression(arg);
-      if (argumentExpressionType->getKind() == TyTy::TypeKind::Error) {
-        assert(false);
-      }
-
-      TyTy::Argument a = {arg->getIdentity(), argumentExpressionType,
-                          arg->getLocation()};
-      arguments.push_back(a);
-    }
-  }
+  //  std::vector<TyTy::Argument> arguments;
+  //  if (call->hasParameters()) {
+  //    CallParams params = call->getParameters();
+  //    for (auto &arg : params.getParams()) {
+  //      TyTy::BaseType *argumentExpressionType = checkExpression(arg);
+  //      if (argumentExpressionType->getKind() == TyTy::TypeKind::Error) {
+  //        assert(false);
+  //      }
+  //
+  //      TyTy::Argument a = {arg->getIdentity(), argumentExpressionType,
+  //                          arg->getLocation()};
+  //      arguments.push_back(a);
+  //    }
+  //  }
 
   switch (functionType->getKind()) {
   case TyTy::TypeKind::ADT: {
-    assert(false);
+    return checkCallExpressionADT(functionType, call, variant);
   }
   case TyTy::TypeKind::Function: {
     return checkCallExpressionFn(functionType, call, variant);
@@ -1173,6 +1184,155 @@ bool TypeResolver::validateArithmeticType(
   }
 
   llvm_unreachable("all cases covered");
+}
+
+TyTy::BaseType *
+TypeResolver::checkStructExprStruct(ast::StructExprStruct *stru) {
+  TyTy::ADTType *adt;
+  TyTy::BaseType *path = checkExpression(stru->getName());
+  if (path->getKind() != TypeKind::ADT) {
+    assert(false);
+  }
+  adt = static_cast<TyTy::ADTType *>(path);
+  // FIXME TODO
+  return adt;
+}
+
+TyTy::BaseType *
+TypeResolver::checkStructExpression(ast::StructExpression *str) {
+  switch (str->getKind()) {
+  case StructExpressionKind::StructExprStruct: {
+    return checkStructExprStruct(static_cast<ast::StructExprStruct *>(str));
+  }
+  case StructExpressionKind::StructExprTuple: {
+    assert(false);
+  }
+  case StructExpressionKind::StructExprUnit: {
+    assert(false);
+  }
+  }
+}
+
+TyTy::BaseType *
+TypeResolver::checkFieldExpression(ast::FieldExpression *field) {
+  TyTy::BaseType *base = checkExpression(field->getField());
+
+  if (base->getKind() == TypeKind::Reference)
+    base = static_cast<TyTy::ReferenceType *>(base)->getBase();
+
+  if (base->getKind() != TypeKind::ADT) {
+    assert(false);
+  }
+
+  TyTy::ADTType *adt = static_cast<TyTy::ADTType *>(base);
+  assert(!adt->isEnum());
+  assert(adt->getNumberOfVariants() == 1);
+
+  TyTy::VariantDef *variant = adt->getVariant(0);
+
+  TyTy::StructFieldType *lookup = nullptr;
+  bool ok = variant->lookupField(field->getIdentifier(), &lookup, nullptr);
+  if (!ok) {
+    llvm::errs() << field->getIdentifier().toString() << "\n";
+    llvm::errs() << field->getLocation().toString() << "\n";
+    for (auto &var : adt->getVariants()) {
+      for (auto &field : var->getFields()) {
+        llvm::errs() << field->getName().toString() << "\n";
+      }
+    }
+    assert(false);
+  }
+
+  return lookup->getFieldType();
+}
+
+TyTy::BaseType *TypeResolver::checkTupleIndexingExpression(
+    ast::TupleIndexingExpression *tuple) {
+  TyTy::BaseType *tupleType = checkExpression(tuple->getTuple());
+  if (tupleType->getKind() == TypeKind::Error)
+    assert(false);
+
+  if (tupleType->getKind() == TypeKind::Reference)
+    tupleType = static_cast<TyTy::ReferenceType *>(tupleType)->getBase();
+
+  if (tupleType->getKind() != TypeKind::ADT and
+      tupleType->getKind() != TypeKind::Tuple) {
+    llvm::errs() << TypeKind2String(tupleType->getKind()) << "\n";
+    llvm::errs() << tuple->getLocation().toString() << "\n";
+    assert(false);
+  }
+
+  if (tupleType->getKind() == TypeKind::Tuple) {
+    TyTy::TupleType *tuple2 = static_cast<TyTy::TupleType *>(tupleType);
+    size_t tupleIndex = tuple->getIndex();
+    if (tupleIndex >= tuple2->getNumberOfFields()) {
+      assert(false);
+    }
+
+    TyTy::BaseType *fieldType = tuple2->getField(tupleIndex);
+    if (fieldType == nullptr)
+      assert(false);
+
+    return fieldType;
+  }
+
+  TyTy::ADTType *adt = static_cast<TyTy::ADTType *>(tupleType);
+  assert(!adt->isEnum());
+  assert(adt->getNumberOfVariants() == 1);
+  TyTy::VariantDef *variant = adt->getVariant(0);
+  size_t tupleIndex = tuple->getIndex();
+  if (tupleIndex >= variant->getNumberOfFields())
+    assert(false);
+
+  TyTy::StructFieldType *fieldType = variant->getFieldAt(tupleIndex);
+  if (fieldType == nullptr)
+    assert(false);
+
+  return fieldType->getFieldType();
+}
+
+TyTy::BaseType *
+TypeResolver::checkCallExpressionADT(TyTy::BaseType *functionType,
+                                     ast::CallExpression *call,
+                                     TyTy::VariantDef &variant) {
+  if (variant.getKind() != VariantKind::Tuple) {
+    llvm::errs() << call->getLocation().toString() << "\n";
+    if (variant.getKind() == VariantKind::Enum)
+      llvm::errs() << "enum"
+                   << "\n";
+    if (variant.getKind() == VariantKind::Struct)
+      llvm::errs() << "struct"
+                   << "\n";
+    if (variant.getKind() == VariantKind::Tuple)
+      llvm::errs() << "tuple"
+                   << "\n";
+    assert(false);
+  }
+
+  if (call->getNumberOfParams() != variant.getNumberOfFields())
+    assert(false);
+
+  if (call->hasParameters()) {
+    CallParams p = call->getParameters();
+    size_t i = 0;
+    for (auto &argument : p.getParams()) {
+      TyTy::StructFieldType *field = variant.getFieldAt(i);
+      TyTy::BaseType *fieldType = field->getFieldType();
+      TyTy::BaseType *arg = checkExpression(argument);
+      if (arg->getKind() == TypeKind::Error)
+        assert(false);
+      Coercion coerce = {tcx};
+      CoercionResult result =
+          coerce.coercion(fieldType, arg, argument->getLocation(), true);
+      assert(!result.isError());
+      ++i;
+    }
+
+    if (i != call->getNumberOfParams())
+      assert(false);
+  }
+
+  return functionType->clone();
 }
 
 } // namespace rust_compiler::sema::type_checking

@@ -3,6 +3,7 @@
 #include "Session/Session.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyTy.h"
+#include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/raw_ostream.h"
 
 #include <ios>
@@ -54,6 +55,7 @@ void Unification::emitFailedUnification() {
   llvm::errs() << rhs.getType()->toString() << "\n";
   llvm::errs() << lhs.getType()->toString() << "\n";
 
+  llvm::errs() << "@" << location.toString() << "\n";
   assert(false);
 }
 
@@ -185,83 +187,48 @@ TyTy::BaseType *Unification::expect(TyTy::BaseType *leftType,
 TyTy::BaseType *Unification::expectIntType(TyTy::IntType *left,
                                            TyTy::BaseType *right) {
   switch (right->getKind()) {
-  case TyTy::TypeKind::Bool: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Char: {
-    assert(false);
-  }
   case TyTy::TypeKind::Int: {
     TyTy::IntType *rightInt = static_cast<TyTy::IntType *>(right);
     if (rightInt->getIntKind() == left->getIntKind())
-      return new TyTy::IntType(left->getTypeReference(), left->getIntKind());
-    break;
-  }
-  case TyTy::TypeKind::Uint: {
-    assert(false);
-  }
-  case TyTy::TypeKind::USize: {
-    assert(false);
-  }
-  case TyTy::TypeKind::ISize: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Float: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Closure: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Function: {
-    assert(false);
+      return new TyTy::IntType(rightInt->getReference(),
+                               rightInt->getTypeReference(),
+                               rightInt->getIntKind());
+    return new ErrorType(0);
   }
   case TyTy::TypeKind::Inferred: {
-    assert(false);
+    TyTy::InferType *infer = static_cast<TyTy::InferType *>(right);
+    if (infer->getInferredKind() == TyTy::InferKind::Integral ||
+        infer->getInferredKind() == InferKind::General) {
+      infer->applyScalarTypeHint(*left);
+      return left->clone();
+    }
+    return new ErrorType(0);
   }
-  case TyTy::TypeKind::Never: {
-    assert(false);
+  case TyTy::TypeKind::Bool:
+  case TyTy::TypeKind::Char:
+  case TyTy::TypeKind::Uint:
+  case TyTy::TypeKind::ISize:
+  case TyTy::TypeKind::Float:
+  case TyTy::TypeKind::Closure:
+  case TyTy::TypeKind::Function:
+  case TyTy::TypeKind::USize:
+  case TyTy::TypeKind::Never:
+  case TyTy::TypeKind::Str:
+  case TyTy::TypeKind::Tuple:
+  case TyTy::TypeKind::Parameter:
+  case TyTy::TypeKind::ADT:
+  case TyTy::TypeKind::Array:
+  case TyTy::TypeKind::Projection:
+  case TyTy::TypeKind::Slice:
+  case TyTy::TypeKind::Dynamic:
+  case TyTy::TypeKind::PlaceHolder:
+  case TyTy::TypeKind::FunctionPointer:
+  case TyTy::TypeKind::RawPointer:
+  case TyTy::TypeKind::Reference:
+  case TyTy::TypeKind::Error:
+    return new ErrorType(0);
   }
-  case TyTy::TypeKind::Str: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Tuple: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Parameter: {
-    assert(false);
-  }
-  case TyTy::TypeKind::ADT: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Array: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Projection: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Slice: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Dynamic: {
-    assert(false);
-  }
-  case TyTy::TypeKind::PlaceHolder: {
-    assert(false);
-  }
-  case TyTy::TypeKind::FunctionPointer: {
-    assert(false);
-  }
-  case TyTy::TypeKind::RawPointer: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Reference: {
-    assert(false);
-  }
-  case TyTy::TypeKind::Error: {
-    assert(false);
-  }
-  }
-  assert(false);
+  llvm_unreachable("all cases covered");
 }
 
 TyTy::BaseType *Unification::expectUSizeType(TyTy::USizeType *left,
@@ -368,43 +335,18 @@ TyTy::BaseType *
 Unification::expectInferenceVariable(TyTy::InferType *left,
                                      TyTy::BaseType *rightType) {
   switch (rightType->getKind()) {
-  case TypeKind::Bool: {
-    assert(false);
-  }
-  case TypeKind::Char: {
-    assert(false);
-  }
-  case TypeKind::Int: {
-    assert(false);
-  }
-  case TypeKind::Uint: {
-    assert(false);
-  }
-  case TypeKind::USize: {
-    assert(false);
-  }
-  case TypeKind::ISize: {
-    assert(false);
-  }
-  case TypeKind::Float: {
-    assert(false);
-  }
-  case TypeKind::Closure: {
-    assert(false);
-  }
-  case TypeKind::Function: {
-    assert(false);
-  }
   case TypeKind::Inferred: {
-    TyTy::InferType *r = static_cast<TyTy::InferType*>(rightType);
+    TyTy::InferType *r = static_cast<TyTy::InferType *>(rightType);
     switch (left->getInferredKind()) {
     case InferKind::Integral: {
-      if (r->getInferredKind() == InferKind::Integral || r->getInferredKind() == InferKind::General)
+      if (r->getInferredKind() == InferKind::Integral ||
+          r->getInferredKind() == InferKind::General)
         return rightType->clone();
       return new TyTy::ErrorType(0);
     }
     case InferKind::Float: {
-      if (r->getInferredKind() == InferKind::Float || r->getInferredKind() == InferKind::General)
+      if (r->getInferredKind() == InferKind::Float ||
+          r->getInferredKind() == InferKind::General)
         return rightType->clone();
       return new TyTy::ErrorType(0);
     }
@@ -412,52 +354,56 @@ Unification::expectInferenceVariable(TyTy::InferType *left,
       return rightType->clone();
     }
     }
-  }
-  case TypeKind::Never: {
-    assert(false);
-  }
-  case TypeKind::Str: {
-    assert(false);
-  }
-  case TypeKind::Tuple: {
-    assert(false);
-  }
-  case TypeKind::Parameter: {
-    assert(false);
-  }
-  case TypeKind::ADT: {
-    assert(false);
-  }
-  case TypeKind::Array: {
-    assert(false);
-  }
-  case TypeKind::Slice: {
-    assert(false);
-  }
-  case TypeKind::Projection: {
-    assert(false);
-  }
-  case TypeKind::Dynamic: {
-    assert(false);
-  }
-  case TypeKind::PlaceHolder: {
-    assert(false);
-  }
-  case TypeKind::FunctionPointer: {
-    assert(false);
-  }
-  case TypeKind::RawPointer: {
-    assert(false);
+    return new ErrorType(0);
   }
   case TypeKind::Reference: {
     if (left->getInferredKind() == InferKind::General)
       return rightType->clone();
     return new ErrorType(0);
   }
-  case TypeKind::Error: {
-    assert(false);
+  case TypeKind::Int:
+  case TypeKind::Uint:
+  case TypeKind::USize:
+  case TypeKind::ISize: {
+    if (left->getInferredKind() == InferKind::General ||
+        left->getInferredKind() == InferKind::Integral) {
+      left->applyScalarTypeHint(*rightType);
+      return rightType->clone();
+    }
+    return new ErrorType(0);
+  }
+  case TypeKind::Float: {
+    if (left->getInferredKind() == InferKind::General ||
+        left->getInferredKind() == InferKind::Float) {
+      left->applyScalarTypeHint(*rightType);
+      return rightType->clone();
+    }
+    return new ErrorType(0);
+  }
+  case TypeKind::Bool:
+  case TypeKind::Char:
+  case TypeKind::Function:
+  case TypeKind::Never:
+  case TypeKind::Str:
+  case TypeKind::Tuple:
+  case TypeKind::Parameter:
+  case TypeKind::ADT:
+  case TypeKind::Array:
+  case TypeKind::Slice:
+  case TypeKind::Projection:
+  case TypeKind::Dynamic:
+  case TypeKind::PlaceHolder:
+  case TypeKind::FunctionPointer:
+  case TypeKind::Error:
+  case TypeKind::RawPointer:
+    return new ErrorType(0);
+  case TypeKind::Closure: {
+    if (left->getInferredKind() == InferKind::General)
+      return rightType->clone();
+    return new ErrorType(0);
   }
   }
+    return new ErrorType(0);
 }
 
 TyTy::BaseType *Unification::unifyWithSite(TyTy::WithLocation lhs,
@@ -483,6 +429,21 @@ TyTy::BaseType *Unification::expectRawPointer(TyTy::RawPointerType *pointer,
     }
     return new ErrorType(0);
   }
+  case TyTy::TypeKind::RawPointer: {
+    TyTy::RawPointerType *type = static_cast<TyTy::RawPointerType *>(rightType);
+
+    TyTy::BaseType *baseType = pointer->getBase();
+    TyTy::BaseType *otherBaseType = type->getBase();
+
+    TyTy::BaseType *resolved = Unification::unifyWithSite(
+        TyTy::WithLocation(baseType), TyTy::WithLocation(otherBaseType),
+        location, context);
+
+    if (resolved->getKind() == TypeKind::Error)
+      return new ErrorType(0);
+
+    return new ErrorType(0);
+  }
   case TyTy::TypeKind::USize:
   case TyTy::TypeKind::Bool:
   case TyTy::TypeKind::Char:
@@ -506,22 +467,7 @@ TyTy::BaseType *Unification::expectRawPointer(TyTy::RawPointerType *pointer,
   case TyTy::TypeKind::Reference:
   case TyTy::TypeKind::Error:
     return new ErrorType(0);
-  case TyTy::TypeKind::RawPointer:
-    TyTy::RawPointerType *type = static_cast<TyTy::RawPointerType *>(rightType);
-
-    TyTy::BaseType *baseType = pointer->getBase();
-    TyTy::BaseType *otherBaseType = type->getBase();
-
-    TyTy::BaseType *resolved = Unification::unifyWithSite(
-        TyTy::WithLocation(baseType), TyTy::WithLocation(otherBaseType),
-        location, context);
-
-    if (resolved->getKind() == TypeKind::Error)
-      return new ErrorType(0);
-
-    assert(false);
   }
-  return new ErrorType(0);
 }
 
 TyTy::BaseType *Unification::expectSlice(TyTy::SliceType *leftType,

@@ -1387,4 +1387,76 @@ TyTy::BaseType *SliceType::clone() const {
                        elementType.clone(), getCombinedReferences());
 }
 
+bool VariantDef::lookupField(lexer::Identifier ident,
+                             TyTy::StructFieldType **lookup, size_t *index) {
+  size_t i = 0;
+  for (auto &field : fields) {
+    if (field->getName() == ident) {
+      if (index != nullptr)
+        *index = i;
+
+      if (lookup != nullptr)
+        *lookup = field;
+
+      return true;
+    }
+    ++i;
+  }
+
+  return false;
+}
+
+std::string TypeKind2String(TypeKind kind) {
+  switch (kind) {
+  case TypeKind::Bool:
+    return "bool";
+  case TypeKind::Char:
+    return "char";
+  case TypeKind::Int:
+    return "int";
+  case TypeKind::Uint:
+    return "uint";
+  case TypeKind::USize:
+    return "usize";
+  case TypeKind::ISize:
+    return "isize";
+  case TypeKind::Float:
+    return "float";
+  case TypeKind::Closure:
+    return "closure";
+  case TypeKind::Function:
+    return "function";
+  case TypeKind::Inferred:
+    return "inferred";
+  case TypeKind::Never:
+    return "never";
+  case TypeKind::Str:
+    return "str";
+  case TypeKind::Tuple:
+    return "tuple";
+  case TypeKind::Parameter:
+    return "parameter";
+  case TypeKind::ADT:
+    return "adt";
+  case TypeKind::Array:
+    return "array";
+  case TypeKind::Slice:
+    return "slice";
+  case TypeKind::Projection:
+    return "projection";
+  case TypeKind::Dynamic:
+    return "dynamic";
+  case TypeKind::PlaceHolder:
+    return "placeholder";
+  case TypeKind::FunctionPointer:
+    return "functionpointer";
+  case TypeKind::RawPointer:
+    return "rawpointer";
+  case TypeKind::Reference:
+    return "reference";
+  case TypeKind::Error:
+    return "error";
+  }
+}
+
 } // namespace rust_compiler::tyctx::TyTy

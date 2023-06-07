@@ -17,6 +17,7 @@
 #include "TyCtx/TraitReference.h"
 #include "TypeIdentity.h"
 
+#include <optional>
 #include <set>
 #include <vector>
 
@@ -662,6 +663,7 @@ public:
   //  StructFieldType(basic::NodeId, std::string_view, TyTy::BaseType *,
   //                  Location loc);
 
+  Identifier getName() const { return identifier; }
   TyTy::BaseType *getFieldType() const { return type; }
 
   //  std::string toString() const override;
@@ -696,6 +698,9 @@ public:
   TyTy::StructFieldType *getFieldAt(size_t i) const { return fields[i]; }
 
   VariantDef *clone() const;
+
+  bool lookupField(lexer::Identifier, TyTy::StructFieldType **lookup,
+                   size_t *index);
 
   static VariantDef &getErrorNode() {
     static VariantDef node = {basic::UNKNOWN_NODEID, lexer::Identifier(""),
@@ -1030,5 +1035,7 @@ public:
 
   bool canEqual(const BaseType *other, bool emitErrors) const override;
 };
+
+std::string TypeKind2String(TypeKind kind);
 
 } // namespace rust_compiler::tyctx::TyTy

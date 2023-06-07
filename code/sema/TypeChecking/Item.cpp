@@ -40,7 +40,8 @@ void TypeResolver::checkVisItem(std::shared_ptr<ast::VisItem> v) {
     break;
   }
   case VisItemKind::TypeAlias: {
-    assert(false && "to be implemented");
+    checkTypeAlias(std::static_pointer_cast<TypeAlias>(v).get());
+    break;
   }
   case VisItemKind::Struct: {
     checkStruct(static_cast<ast::Struct *>(v.get()));
@@ -190,12 +191,23 @@ void TypeResolver::checkConstantItem(ast::ConstantItem *con) {
   TyTy::BaseType *type = checkType(con->getType());
   TyTy::BaseType *exprType = checkExpression(con->getInit());
 
-  TyTy::BaseType *result = coercionWithSite(con->getNodeId(),
-                   TyTy::WithLocation(type, con->getType()->getLocation()),
-                   TyTy::WithLocation(exprType, con->getInit()->getLocation()),
-                   con->getLocation(), tcx);
+  TyTy::BaseType *result = coercionWithSite(
+      con->getNodeId(), TyTy::WithLocation(type, con->getType()->getLocation()),
+      TyTy::WithLocation(exprType, con->getInit()->getLocation()),
+      con->getLocation(), tcx);
 
   tcx->insertType(con->getIdentity(), result);
+}
+
+void TypeResolver::checkTypeAlias(ast::TypeAlias *alias) {
+  if (alias->hasType()) {
+    TyTy::BaseType *actualType = checkType(alias->getType());
+
+    tcx->insertType(alias->getIdentity(), actualType);
+  }
+
+  if (alias->hasWhereClause())
+    checkWhereClause(alias->getWhereClause());
 }
 
 } // namespace rust_compiler::sema::type_checking

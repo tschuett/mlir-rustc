@@ -13,6 +13,7 @@
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/ExternalItem.h"
+#include "AST/FieldExpression.h"
 #include "AST/Function.h"
 #include "AST/GenericArgs.h"
 #include "AST/GenericParams.h"
@@ -36,8 +37,12 @@
 #include "AST/Patterns/RangePattern.h"
 #include "AST/RangeExpression.h"
 #include "AST/ReturnExpression.h"
+#include "AST/StructExprStruct.h"
+#include "AST/StructExpression.h"
 #include "AST/StructStruct.h"
+#include "AST/TupleIndexingExpression.h"
 #include "AST/TupleStruct.h"
+#include "AST/TypeAlias.h"
 #include "AST/TypeCastExpression.h"
 #include "AST/TypeParam.h"
 #include "AST/Types/ArrayType.h"
@@ -118,6 +123,7 @@ private:
   void checkFunction(std::shared_ptr<ast::Function> f);
   void checkStruct(ast::Struct *s);
   void checkConstantItem(ast::ConstantItem *);
+  void checkTypeAlias(ast::TypeAlias *);
 
   TyTy::BaseType *checkItemDeclaration(ast::ItemDeclaration *item);
   TyTy::BaseType *checkTrait(ast::Trait *s);
@@ -134,6 +140,8 @@ private:
       checkUnsafeBlockExpression(std::shared_ptr<ast::UnsafeBlockExpression>);
   TyTy::BaseType *checkLoopExpression(std::shared_ptr<ast::LoopExpression>);
   TyTy::BaseType *checkIteratorLoopExpression(ast::IteratorLoopExpression *);
+  TyTy::BaseType *checkStructExpression(ast::StructExpression *);
+  TyTy::BaseType *checkStructExprStruct(ast::StructExprStruct *);
 
   TyTy::BaseType *checkLiteral(std::shared_ptr<ast::LiteralExpression>);
   TyTy::BaseType *
@@ -144,6 +152,7 @@ private:
       std::shared_ptr<ast::ArithmeticOrLogicalExpression>);
   TyTy::BaseType *checkBorrowExpression(std::shared_ptr<ast::BorrowExpression>);
   TyTy::BaseType *checkIndexExpression(std::shared_ptr<ast::IndexExpression>);
+  TyTy::BaseType *checkTupleIndexingExpression(ast::TupleIndexingExpression *);
 
   TyTy::BaseType *
       checkTypeCastExpression(std::shared_ptr<ast::TypeCastExpression>);
@@ -161,6 +170,7 @@ private:
   TyTy::BaseType *checkNeverType(std::shared_ptr<ast::types::NeverType>);
   TyTy::BaseType *
       checkReferenceType(std::shared_ptr<ast::types::ReferenceType>);
+  TyTy::BaseType *checkFieldExpression(ast::FieldExpression *);
 
   TyTy::BaseType *
       checkExpressionStatement(std::shared_ptr<ast::ExpressionStatement>);
@@ -202,6 +212,9 @@ private:
                                       ast::CallExpression *,
                                       TyTy::VariantDef &);
   TyTy::BaseType *checkCallExpressionFn(TyTy::BaseType *functionType,
+                                        ast::CallExpression *,
+                                        TyTy::VariantDef &);
+  TyTy::BaseType *checkCallExpressionADT(TyTy::BaseType *functionType,
                                         ast::CallExpression *,
                                         TyTy::VariantDef &);
 
