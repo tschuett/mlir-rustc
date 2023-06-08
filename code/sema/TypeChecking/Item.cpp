@@ -189,14 +189,17 @@ void TypeResolver::checkInherentImpl(ast::InherentImpl *impl) { assert(false); }
 
 void TypeResolver::checkConstantItem(ast::ConstantItem *con) {
   TyTy::BaseType *type = checkType(con->getType());
-  TyTy::BaseType *exprType = checkExpression(con->getInit());
+  if (con->hasInit()) {
+    TyTy::BaseType *exprType = checkExpression(con->getInit());
 
-  TyTy::BaseType *result = coercionWithSite(
-      con->getNodeId(), TyTy::WithLocation(type, con->getType()->getLocation()),
-      TyTy::WithLocation(exprType, con->getInit()->getLocation()),
-      con->getLocation(), tcx);
+    TyTy::BaseType *result = coercionWithSite(
+        con->getNodeId(),
+        TyTy::WithLocation(type, con->getType()->getLocation()),
+        TyTy::WithLocation(exprType, con->getInit()->getLocation()),
+        con->getLocation(), tcx);
 
-  tcx->insertType(con->getIdentity(), result);
+    tcx->insertType(con->getIdentity(), result);
+  }
 }
 
 void TypeResolver::checkTypeAlias(ast::TypeAlias *alias) {

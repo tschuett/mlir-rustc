@@ -1459,4 +1459,46 @@ std::string TypeKind2String(TypeKind kind) {
   }
 }
 
+bool BaseType::isUnit() const {
+  const TyTy::BaseType *x = destructure();
+  switch (x->getKind()) {
+  case TypeKind::Bool:
+  case TypeKind::Char:
+  case TypeKind::Int:
+  case TypeKind::Uint:
+  case TypeKind::USize:
+  case TypeKind::ISize:
+  case TypeKind::Float:
+  case TypeKind::Closure:
+  case TypeKind::Function:
+  case TypeKind::Inferred:
+  case TypeKind::Str:
+  case TypeKind::Dynamic:
+  case TypeKind::Parameter:
+  case TypeKind::Array:
+  case TypeKind::Slice:
+  case TypeKind::Projection:
+  case TypeKind::PlaceHolder:
+  case TypeKind::FunctionPointer:
+  case TypeKind::RawPointer:
+  case TypeKind::Reference:
+  case TypeKind::Error:
+    return false;
+  case TypeKind::Never:
+    return true;
+  case TypeKind::Tuple:
+    return static_cast<const TupleType *>(x)->getNumberOfFields() == 0;
+  case TypeKind::ADT: {
+    const ADTType *adt = static_cast<const ADTType *>(x);
+    if (adt->isEnum())
+      return false;
+    for (const VariantDef *variant : adt->getVariants())
+      if (variant->getNumberOfFields() > 0)
+        return false;
+    return true;
+  }
+  }
+  llvm_unreachable("all cases covered");
+}
+
 } // namespace rust_compiler::tyctx::TyTy

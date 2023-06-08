@@ -122,6 +122,7 @@ public:
 
   bool hasSubstitutions() const { return substitutions.size() > 0; }
 
+  size_t getNumberOfSubstitutions() const { return substitutions.size(); }
   std::vector<SubstitutionParamMapping> &getSubstitutions() {
     return substitutions;
   }

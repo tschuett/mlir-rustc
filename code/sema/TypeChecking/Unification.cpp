@@ -2,11 +2,12 @@
 
 #include "Session/Session.h"
 #include "TyCtx/NodeIdentity.h"
+#include "TyCtx/Substitutions.h"
 #include "TyCtx/TyTy.h"
-#include "llvm/Support/ErrorHandling.h"
-#include "llvm/Support/raw_ostream.h"
 
 #include <ios>
+#include <llvm/Support/ErrorHandling.h>
+#include <llvm/Support/raw_ostream.h>
 #include <vector>
 
 using namespace rust_compiler::tyctx;
@@ -150,7 +151,7 @@ TyTy::BaseType *Unification::expect(TyTy::BaseType *leftType,
     assert(false);
   }
   case TyTy::TypeKind::ADT: {
-    assert(false);
+    return expectADT(static_cast<TyTy::ADTType *>(leftType), rightType);
   }
   case TyTy::TypeKind::Array: {
     return expectArray(static_cast<TyTy::ArrayType *>(leftType), rightType);
@@ -356,11 +357,6 @@ Unification::expectInferenceVariable(TyTy::InferType *left,
     }
     return new ErrorType(0);
   }
-  case TypeKind::Reference: {
-    if (left->getInferredKind() == InferKind::General)
-      return rightType->clone();
-    return new ErrorType(0);
-  }
   case TypeKind::Int:
   case TypeKind::Uint:
   case TypeKind::USize:
@@ -380,30 +376,31 @@ Unification::expectInferenceVariable(TyTy::InferType *left,
     }
     return new ErrorType(0);
   }
-  case TypeKind::Bool:
-  case TypeKind::Char:
-  case TypeKind::Function:
-  case TypeKind::Never:
-  case TypeKind::Str:
-  case TypeKind::Tuple:
-  case TypeKind::Parameter:
   case TypeKind::ADT:
+  case TypeKind::Str:
+  case TypeKind::Reference:
+  case TypeKind::RawPointer:
+  case TypeKind::Parameter:
   case TypeKind::Array:
   case TypeKind::Slice:
+  case TypeKind::Function:
+  case TypeKind::FunctionPointer:
+  case TypeKind::Tuple:
+  case TypeKind::Bool:
+  case TypeKind::Char:
+  case TypeKind::Never:
+  case TypeKind::PlaceHolder:
   case TypeKind::Projection:
   case TypeKind::Dynamic:
-  case TypeKind::PlaceHolder:
-  case TypeKind::FunctionPointer:
-  case TypeKind::Error:
-  case TypeKind::RawPointer:
-    return new ErrorType(0);
   case TypeKind::Closure: {
     if (left->getInferredKind() == InferKind::General)
       return rightType->clone();
     return new ErrorType(0);
   }
-  }
+  case TypeKind::Error:
     return new ErrorType(0);
+  }
+  llvm::llvm_unreachable_internal("all cases covered");
 }
 
 TyTy::BaseType *Unification::unifyWithSite(TyTy::WithLocation lhs,
@@ -699,6 +696,94 @@ TyTy::BaseType *Unification::expectStr(TyTy::StrType *leftType,
     return rightType->clone();
   }
   return new ErrorType(0);
+}
+
+TyTy::BaseType *Unification::expectADT(TyTy::ADTType *left,
+                                       TyTy::BaseType *rightType) {
+  switch (rightType->getKind()) {
+  case TyTy::TypeKind::Inferred: {
+    TyTy::InferType *infer = static_cast<TyTy::InferType *>(rightType);
+    if (infer->getInferredKind() == TyTy::InferKind::General)
+      return left->clone();
+    return new ErrorType(0);
+  }
+  case TyTy::TypeKind::ADT: {
+    TyTy::ADTType *right = static_cast<TyTy::ADTType *>(rightType);
+    if (left->getKind() != right->getKind())
+      return new ErrorType(0);
+    if (left->getIdentifier() != right->getIdentifier())
+      return new ErrorType(0);
+    if (left->getNumberOfVariants() != right->getNumberOfVariants())
+      return new ErrorType(0);
+    for (size_t i = 0; i < left->getNumberOfVariants(); ++i) {
+      TyTy::VariantDef *a = left->getVariant(i);
+      TyTy::VariantDef *b = right->getVariant(i);
+
+      if (a->getNumberOfFields() != b->getNumberOfFields())
+        return new ErrorType(0);
+
+      for (size_t j = 0; i < a->getNumberOfFields(); ++j) {
+        TyTy::StructFieldType *baseField = a->getFieldAt(j);
+        TyTy::StructFieldType *otherField = b->getFieldAt(j);
+
+        TyTy::BaseType *baseFieldType = baseField->getFieldType();
+        TyTy::BaseType *otherFieldType = otherField->getFieldType();
+
+        TyTy::BaseType *unifiedType = Unification::unifyWithSite(
+            TyTy::WithLocation(baseFieldType),
+            TyTy::WithLocation(otherFieldType), location, context);
+
+        if (unifiedType->getKind() == TypeKind::Error)
+          return new ErrorType(0);
+      }
+    }
+
+    if (right->isUnit() && left->isUnit()) {
+      if (right->getNumberOfSubstitutions() != left->getNumberOfSubstitutions())
+        return new ErrorType(0);
+
+      for (size_t i = 0; i < right->getNumberOfSubstitutions(); ++i) {
+        SubstitutionParamMapping &a = left->getSubstitutions()[i];
+        SubstitutionParamMapping &b = right->getSubstitutions()[i];
+
+        ParamType *pa = a.getParamType();
+        ParamType *pb = b.getParamType();
+
+        TyTy::BaseType *result = Unification::unifyWithSite(
+            TyTy::WithLocation(pa), TyTy::WithLocation(pb), location, context);
+
+        if (result->getKind() == TypeKind::Error)
+          return new TyTy::ErrorType(0);
+      }
+    }
+
+    return left->clone();
+  }
+  case TyTy::TypeKind::USize:
+  case TyTy::TypeKind::Bool:
+  case TyTy::TypeKind::Char:
+  case TyTy::TypeKind::Int:
+  case TyTy::TypeKind::ISize:
+  case TyTy::TypeKind::Float:
+  case TyTy::TypeKind::Closure:
+  case TyTy::TypeKind::Function:
+  case TyTy::TypeKind::Never:
+  case TyTy::TypeKind::Tuple:
+  case TyTy::TypeKind::Parameter:
+  case TyTy::TypeKind::Slice:
+  case TyTy::TypeKind::Projection:
+  case TyTy::TypeKind::Dynamic:
+  case TyTy::TypeKind::Array:
+  case TyTy::TypeKind::PlaceHolder:
+  case TyTy::TypeKind::FunctionPointer:
+  case TyTy::TypeKind::RawPointer:
+  case TyTy::TypeKind::Uint:
+  case TyTy::TypeKind::Reference:
+  case TyTy::TypeKind::Str:
+  case TyTy::TypeKind::Error:
+    return new ErrorType(0);
+  }
+  llvm_unreachable("all cases covered");
 }
 
 } // namespace rust_compiler::sema::type_checking

@@ -57,6 +57,8 @@ private:
                                    TyTy::BaseType *rightType);
   TyTy::BaseType *expectStr(TyTy::StrType *,
                                    TyTy::BaseType *rightType);
+  TyTy::BaseType *expectADT(TyTy::ADTType *,
+                                   TyTy::BaseType *rightType);
 
   void commit(TyTy::BaseType *leftType, TyTy::BaseType *rightType,
               TyTy::BaseType *result);

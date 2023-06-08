@@ -240,6 +240,8 @@ public:
   bool isBoundsCompatible(const BaseType &other, Location loc,
                           bool emitError) const;
 
+  bool isUnit() const;
+
   bool isConcrete() const;
 
   const BaseType *destructure() const;
@@ -746,8 +748,6 @@ public:
   unsigned getNumberOfSpecifiedBounds() const override;
 
   ADTKind getKind() const { return kind; }
-
-  bool isUnit() const;
 
   bool isEnum() const { return kind == ADTKind::Enum; };
 

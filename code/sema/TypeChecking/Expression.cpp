@@ -473,8 +473,6 @@ TyTy::BaseType *TypeResolver::checkIfLetExpression(
 TyTy::BaseType *TypeResolver::checkCallExpression(CallExpression *call) {
   TyTy::BaseType *functionType = checkExpression(call->getFunction());
 
-  llvm::errs() << functionType->toString() << "\n";
-
   TyTy::VariantDef &variant = TyTy::VariantDef::getErrorNode();
   if (functionType->getKind() == TyTy::TypeKind::ADT) {
     TyTy::ADTType *adt = static_cast<TyTy::ADTType *>(functionType);
