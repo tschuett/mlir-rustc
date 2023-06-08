@@ -38,6 +38,10 @@ Precedence Parser::getLeftBindingPower() {
     return Precedence::ArrayIndexing;
   case TokenKind::QMark:
     return Precedence::QuestionMark;
+  case TokenKind::Semi: // no power for your
+    return Precedence::Lowest;
+  case TokenKind::SquareClose: // no power for your
+    return Precedence::Lowest;
   case TokenKind::Dot: {
     if (getToken(1).isIdentifier() &&
         getToken(2).getKind() == TokenKind::ParenOpen)

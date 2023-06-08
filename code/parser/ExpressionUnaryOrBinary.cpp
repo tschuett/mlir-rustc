@@ -73,11 +73,11 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
          *  path '{' ident ':' [not a type]
          * otherwise, assume block expr and thus path */
 
-        llvm::errs() << "notABlock: " << notABlock << "\n"
-                     << "location:" << getToken().getLocation().toString()
-                     << "\n"
-                     << " canbeStruct: " << restrictions.canBeStructExpr
-                     << "\n";
+//        llvm::errs() << "notABlock: " << notABlock << "\n"
+//                     << "location:" << getToken().getLocation().toString()
+//                     << "\n"
+//                     << " canbeStruct: " << restrictions.canBeStructExpr
+//                     << "\n";
 
         if (!restrictions.canBeStructExpr && !notABlock)
           return StringResult<std::shared_ptr<ast::Expression>>(
