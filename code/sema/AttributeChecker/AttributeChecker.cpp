@@ -1,6 +1,7 @@
 #include "AttributeChecker.h"
 
 #include "AST/InnerAttribute.h"
+#include "AST/TypeAlias.h"
 #include "AST/VisItem.h"
 #include "AST/Struct.h"
 #include "AST/Trait.h"
@@ -53,7 +54,8 @@ void AttributeChecker::checkVisItem(VisItem *item) {
     break;
   }
   case VisItemKind::TypeAlias: {
-    assert(false);
+    checkTypeAlias(static_cast<TypeAlias*>(item));
+    break;
   }
   case VisItemKind::Struct: {
     checkStruct(static_cast<Struct*>(item));
