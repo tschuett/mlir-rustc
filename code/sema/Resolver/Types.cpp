@@ -1,5 +1,6 @@
 #include "ADT/CanonicalPath.h"
 #include "AST/PathIdentSegment.h"
+#include "AST/Types/ParenthesizedType.h"
 #include "AST/Types/TraitBound.h"
 #include "AST/Types/TraitObjectTypeOneBound.h"
 #include "AST/Types/TypeExpression.h"
@@ -7,9 +8,9 @@
 #include "AST/Types/TypeParamBound.h"
 #include "Basic/Ids.h"
 #include "Resolver.h"
-#include "llvm/Support/ErrorHandling.h"
 
 #include <cstdlib>
+#include <llvm/Support/ErrorHandling.h>
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
 
@@ -43,7 +44,9 @@ std::optional<NodeId> Resolver::resolveTypeNoBounds(
     const adt::CanonicalPath &canonicalPrefix) {
   switch (noBounds->getKind()) {
   case TypeNoBoundsKind::ParenthesizedType: {
-    assert(false && "to be handled later");
+    return resolveType(
+        std::static_pointer_cast<ParenthesizedType>(noBounds)->getType(),
+        prefix, canonicalPrefix);
   }
   case TypeNoBoundsKind::ImplTraitType: {
     assert(false && "to be handled later");
@@ -111,8 +114,8 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
 
   std::vector<TypePathSegment> segments = typePath->getSegments();
 
-//  llvm::errs() << "resolveRelativeTypePath: "
-//               << segments[0].getSegment().toString() << "\n";
+  //  llvm::errs() << "resolveRelativeTypePath: "
+  //               << segments[0].getSegment().toString() << "\n";
 
   // experiment
   //{
@@ -180,11 +183,11 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
       if (auto node = getTypeScope().lookup(path)) {
         insertResolvedType(segment.getNodeId(), *node);
         resolvedNodeId = *node;
-        //llvm::errs() << "it is a type:" << *node << "\n";
+        // llvm::errs() << "it is a type:" << *node << "\n";
       } else if (auto node = getNameScope().lookup(path)) {
         insertResolvedName(segment.getNodeId(), *node);
         resolvedNodeId = *node;
-        //llvm::errs() << "it is a name: " << *node << "\n";
+        // llvm::errs() << "it is a name: " << *node << "\n";
       } else if (ident.getKind() == PathIdentSegmentKind::self) {
         moduleScopeId = crateScopeId;
         previousResolveNodeId = moduleScopeId;
@@ -221,8 +224,8 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
     }
 
     bool didResolveSegment = resolvedNodeId != UNKNOWN_NODEID;
-//    llvm::errs() << "didResolveSegment:" << didResolveSegment << "\n";
-//    llvm::errs() << "i:" << i << "\n";
+    //    llvm::errs() << "didResolveSegment:" << didResolveSegment << "\n";
+    //    llvm::errs() << "i:" << i << "\n";
     if (didResolveSegment) {
       if (tyCtx->isModule(resolvedNodeId) || tyCtx->isCrate(resolvedNodeId)) {
         moduleScopeId = resolvedNodeId;

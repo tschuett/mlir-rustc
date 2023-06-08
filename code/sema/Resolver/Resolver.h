@@ -254,6 +254,18 @@ private:
   void resolveTraitNoRecurse(std::shared_ptr<ast::Trait> trait,
                              const adt::CanonicalPath &prefix,
                              const adt::CanonicalPath &canonicalPrefix);
+  void resolveImplementationNoRecurse(
+      std::shared_ptr<ast::Implementation> implementation,
+      const adt::CanonicalPath &prefix,
+      const adt::CanonicalPath &canonicalPrefix);
+  void resolveInherentImplNoRecurse(
+      std::shared_ptr<ast::InherentImpl> implementation,
+      const adt::CanonicalPath &prefix,
+      const adt::CanonicalPath &canonicalPrefix);
+  void resolveTraitImplNoRecurse(
+      std::shared_ptr<ast::TraitImpl> implementation,
+      const adt::CanonicalPath &prefix,
+      const adt::CanonicalPath &canonicalPrefix);
 
   // items
   void resolveVisItem(std::shared_ptr<ast::VisItem>,

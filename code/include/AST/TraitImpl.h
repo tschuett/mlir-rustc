@@ -28,12 +28,16 @@ public:
   TraitImpl(Location loc, std::optional<Visibility> vis)
       : Implementation(ImplementationKind::TraitImpl, loc, vis) {}
 
-  std::span<AssociatedItem> getAssociatedItems() const;
+  std::vector<AssociatedItem> getAssociatedItems() const {
+    return associatedItems;
+  }
 
   void setUnsafe() { unsafe = true; }
   void setGenericParams(const GenericParams &gp) { genericParams = gp; }
   void setNot() { notKw = true; }
-  void setTypePath(std::shared_ptr<ast::types::TypeExpression> tp) { typePath = tp; }
+  void setTypePath(std::shared_ptr<ast::types::TypeExpression> tp) {
+    typePath = tp;
+  }
   void setType(std::shared_ptr<ast::types::TypeExpression> te) { type = te; }
   void setInnerAttributes(std::span<InnerAttribute> i) {
     innerAttributes = {i.begin(), i.end()};

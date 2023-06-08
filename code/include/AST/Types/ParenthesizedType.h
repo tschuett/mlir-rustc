@@ -16,6 +16,8 @@ public:
       : TypeNoBounds(loc, TypeNoBoundsKind::ParenthesizedType) {}
 
   void setType(std::shared_ptr<ast::types::TypeExpression> t) { type = t; }
+
+  std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
 };
 
 } // namespace rust_compiler::ast::types

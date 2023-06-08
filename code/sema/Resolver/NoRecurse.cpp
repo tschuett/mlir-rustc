@@ -1,4 +1,7 @@
 #include "ADT/CanonicalPath.h"
+#include "AST/AssociatedItem.h"
+#include "AST/Implementation.h"
+#include "AST/InherentImpl.h"
 #include "AST/StructStruct.h"
 #include "Resolver.h"
 
@@ -69,7 +72,9 @@ void Resolver::resolveVisItemNoRecurse(
     break;
   }
   case VisItemKind::Implementation: {
-    assert(false);
+    resolveImplementationNoRecurse(
+        std::static_pointer_cast<Implementation>(visItem), prefix,
+        canonicalPrefix);
     break;
   }
   case VisItemKind::ExternBlock: {
@@ -113,19 +118,25 @@ void Resolver::resolveTraitNoRecurse(
                         RibKind::Trait);
 
   for (auto &asso : trait->getAssociatedItems()) {
-    if (asso.hasFunction()) {
+    switch (asso.getKind()) {
+    case AssociatedItemKind::MacroInvocationSemi: {
+      assert(false);
+    }
+    case AssociatedItemKind::TypeAlias: {
+      assert(false);
+    }
+    case AssociatedItemKind::ConstantItem: {
+      assert(false);
+    }
+    case AssociatedItemKind::Function: {
       auto fun = std::static_pointer_cast<Function>(asso.getFunction());
       CanonicalPath decl =
           CanonicalPath::newSegment(fun->getNodeId(), fun->getName());
       CanonicalPath path2 = path.append(decl);
       getNameScope().insert(path2, fun->getNodeId(), fun->getLocation(),
                             RibKind::Function);
-    } else if (asso.hasTypeAlias()) {
-      assert(false);
-    } else if (asso.hasConstantItem()) {
-      assert(false);
-    } else if (asso.hasMacroInvocationSemi()) {
-      assert(false);
+      break;
+    }
     }
   }
 
@@ -200,6 +211,70 @@ void Resolver::resolveTypeAliasNoRecurse(
   NodeId currentModule = peekCurrentModuleScope();
   tyCtx->insertModuleChildItem(currentModule, segment);
   tyCtx->insertCanonicalPath(alias->getNodeId(), cpath);
+}
+
+void Resolver::resolveImplementationNoRecurse(
+    std::shared_ptr<ast::Implementation> implementation,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  switch (implementation->getKind()) {
+  case ImplementationKind::InherentImpl: {
+    resolveInherentImplNoRecurse(
+        std::static_pointer_cast<InherentImpl>(implementation), prefix,
+        canonicalPrefix);
+    break;
+  }
+  case ImplementationKind::TraitImpl: {
+    resolveTraitImplNoRecurse(
+        std::static_pointer_cast<TraitImpl>(implementation), prefix,
+        canonicalPrefix);
+    break;
+  }
+  }
+}
+
+void Resolver::resolveInherentImplNoRecurse(
+    std::shared_ptr<ast::InherentImpl> implementation,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  for (AssociatedItem &asso : implementation->getAssociatedItems()) {
+    if (asso.hasConstantItem()) {
+      assert(false);
+    } else if (asso.hasFunction()) {
+      auto fun = std::static_pointer_cast<Function>(asso.getFunction());
+      CanonicalPath segment =
+          CanonicalPath::newSegment(fun->getNodeId(), fun->getName());
+      CanonicalPath path = prefix.append(segment);
+      getNameScope().insert(path, fun->getNodeId(), fun->getLocation(),
+                            RibKind::Function);
+    } else if (asso.hasMacroInvocationSemi()) {
+      assert(false);
+    } else if (asso.hasTypeAlias()) {
+      assert(false);
+    }
+  }
+}
+
+void Resolver::resolveTraitImplNoRecurse(
+    std::shared_ptr<ast::TraitImpl> implementation,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  for (AssociatedItem &asso : implementation->getAssociatedItems()) {
+    if (asso.hasConstantItem()) {
+      assert(false);
+    } else if (asso.hasFunction()) {
+      auto fun = std::static_pointer_cast<Function>(asso.getFunction());
+      CanonicalPath segment =
+          CanonicalPath::newSegment(fun->getNodeId(), fun->getName());
+      CanonicalPath path = prefix.append(segment);
+      getNameScope().insert(path, fun->getNodeId(), fun->getLocation(),
+                            RibKind::Function);
+    } else if (asso.hasMacroInvocationSemi()) {
+      assert(false);
+    } else if (asso.hasTypeAlias()) {
+      assert(false);
+    }
+  }
 }
 
 } // namespace rust_compiler::sema::resolver
