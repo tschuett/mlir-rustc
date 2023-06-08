@@ -291,6 +291,9 @@ Parser::parseCallExpression(std::shared_ptr<ast::Expression> e,
   Location loc = getLocation();
   CallExpression call = {loc};
 
+  llvm::errs() << "parseCallExpression@" << getToken().getLocation().toString()
+               << "\n";
+
   call.setFunction(e);
 
   if (!check(TokenKind::ParenOpen)) {
@@ -530,8 +533,8 @@ Parser::parseMethodCallExpression(std::shared_ptr<ast::Expression> receiver,
   Location loc = getLocation();
   MethodCallExpression call = {loc};
 
-//  llvm::errs() << "parseMethodCallExpression"
-//               << "\n";
+  //  llvm::errs() << "parseMethodCallExpression"
+  //               << "\n";
 
   call.setReceiver(receiver);
 

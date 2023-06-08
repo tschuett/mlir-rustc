@@ -481,6 +481,39 @@ Parser::parseStatementOrExpressionWithoutBlock() {
             ExpressionOrStatement(paren.getValue()));
       }
     }
+    case TokenKind::Lt: {
+      // qualified path and ...
+      Result<std::shared_ptr<ast::Expression>, std::string> woBlock =
+          parseExpressionWithoutBlock(outerAttr, restrictions);
+      if (!woBlock) {
+        // report block
+        llvm::errs()
+            << "failed to parse expression without block in statement or "
+               "expression without block: "
+            << woBlock.getError() << "\n";
+        // report error
+        std::string s =
+            llvm::formatv(
+                "{0}\n{1}",
+                "failed to parse expression without block in statement or "
+                "expression without block",
+                woBlock.getError())
+                .str();
+        return StringResult<ExpressionOrStatement>(s);
+      }
+      if (getToken().getKind() == TokenKind::Semi) {
+        assert(eat(TokenKind::Semi));
+        // eat and expression statement
+        ExpressionStatement stmt = {getLocation()};
+        stmt.setExprWoBlock(woBlock.getValue());
+        stmt.setTrailingSemi();
+        return StringResult<ExpressionOrStatement>(
+            ExpressionOrStatement(std::make_shared<ExpressionStatement>(stmt)));
+      } else {
+        return StringResult<ExpressionOrStatement>(
+            ExpressionOrStatement(woBlock.getValue()));
+      }
+    }
     default: {
       llvm::errs() << "unknown token in statement or expression without block: "
                    << Token2String(getToken().getKind()) << "\n";

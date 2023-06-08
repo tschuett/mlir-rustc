@@ -1,4 +1,5 @@
 #include "AST/OuterAttribute.h"
+#include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
 #include <llvm/Support/raw_ostream.h>
@@ -26,9 +27,8 @@ StringResult<std::shared_ptr<ast::Item>> Parser::parseItem() {
       return parseVisItem(ot);
     } else if (checkMacroItem()) {
       return parseMacroItem(ot);
-    } else {
-      return StringResult<std::shared_ptr<ast::Item>>("failed to parse item2");
     }
+    return StringResult<std::shared_ptr<ast::Item>>("failed to parse item2");
   }
 
   std::vector<OuterAttribute> outer;
@@ -38,6 +38,9 @@ StringResult<std::shared_ptr<ast::Item>> Parser::parseItem() {
     return parseMacroItem(outer);
   }
 
+  llvm::errs() << Token2String(getToken().getKind()) << "\n";
+  llvm::errs() << "failed to parse item1@"
+               << getToken().getLocation().toString() << "\n";
   return StringResult<std::shared_ptr<ast::Item>>("failed to parse item1");
 }
 

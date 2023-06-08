@@ -96,6 +96,10 @@ Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
       // terminator
       recover(cp);
       return parseTypePath();
+    } else if (checkKeyWord(KeyWordKind::KW_AS)) {
+      // terminator
+      recover(cp);
+      return parseTypePath();
     } else if (check(TokenKind::SquareClose)) {
       // terminator
       recover(cp);

@@ -209,6 +209,7 @@ Parser::parseTraitImpl(std::optional<ast::Visibility> vis) {
       return StringResult<std::shared_ptr<ast::Item>>(
           "failed to parse trait impl: eof");
     } else if (check(TokenKind::BraceClose)) {
+      assert(eat(TokenKind::BraceClose));
       // done
       return StringResult<std::shared_ptr<ast::Item>>(
           std::make_shared<TraitImpl>(impl));

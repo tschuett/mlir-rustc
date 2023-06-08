@@ -44,9 +44,9 @@ Parser::parseExpressionWithoutBlock(std::span<ast::OuterAttribute> outer,
   }
   // normal Token
   switch (getToken().getKind()) {
-  case TokenKind::Lt: {
-    return parseQualifiedPathInExpression();
-  }
+//  case TokenKind::Lt: {
+//    return parseQualifiedPathInExpression();
+//  }
 //  case TokenKind::SquareOpen: {
 //    return parseArrayExpression(outer);
 //  }

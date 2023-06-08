@@ -62,10 +62,10 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
       }
       case TokenKind::BraceOpen: {
         bool notABlock = getToken(1).isIdentifier() &&
-                             (getToken(2).getKind() == TokenKind::Comma ||
-                         (getToken(2).getKind() == TokenKind::Colon &&
-                             (getToken(4).getKind() == TokenKind::Comma ||
-                              !canTokenStartType(getToken(3)))));
+                         (getToken(2).getKind() == TokenKind::Comma ||
+                          (getToken(2).getKind() == TokenKind::Colon &&
+                           (getToken(4).getKind() == TokenKind::Comma ||
+                            !canTokenStartType(getToken(3)))));
 
         /* definitely not a block:
          *  path '{' ident ','
@@ -73,11 +73,13 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
          *  path '{' ident ':' [not a type]
          * otherwise, assume block expr and thus path */
 
-//        llvm::errs() << "notABlock: " << notABlock << "\n"
-//                     << "location:" << getToken().getLocation().toString()
-//                     << "\n"
-//                     << " canbeStruct: " << restrictions.canBeStructExpr
-//                     << "\n";
+        //        llvm::errs() << "notABlock: " << notABlock << "\n"
+        //                     << "location:" <<
+        //                     getToken().getLocation().toString()
+        //                     << "\n"
+        //                     << " canbeStruct: " <<
+        //                     restrictions.canBeStructExpr
+        //                     << "\n";
 
         if (!restrictions.canBeStructExpr && !notABlock)
           return StringResult<std::shared_ptr<ast::Expression>>(
@@ -314,6 +316,7 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
       }
     }
     default: {
+      llvm::errs() << getToken().getLocation().toString() << "\n";
       llvm::errs() << "parseUnaryExpressio2n: error unhandled token kind: "
                    << Token2String(getToken().getKind()) << "\n";
       std::string s =
