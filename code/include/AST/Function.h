@@ -50,7 +50,10 @@ public:
 
   void setIdentifier(const Identifier &id) { identifier = id; }
 
-  Identifier getName() const { return identifier; }
+  Identifier getName() const {
+    llvm::errs() << "fun: " << identifier.getLength() << "\n";
+    return identifier;
+  }
 
   bool hasReturnType() const { return returnType.has_value(); }
 

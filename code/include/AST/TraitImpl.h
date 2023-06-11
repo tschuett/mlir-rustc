@@ -46,6 +46,17 @@ public:
   void addAssociatedItem(const ast::AssociatedItem &as) {
     associatedItems.push_back(as);
   }
+
+  bool hasGenericParams() const { return genericParams.has_value(); }
+  GenericParams getGenericParams() const { return *genericParams; }
+
+  bool hasWhereClause() const { return whereClause.has_value(); }
+  WhereClause getWhereClause() const { return *whereClause; }
+
+  std::shared_ptr<types::TypeExpression> getType() const { return type; }
+  std::shared_ptr<ast::types::TypeExpression> getTypePath() const {
+    return typePath;
+  }
 };
 
 } // namespace rust_compiler::ast

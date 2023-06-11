@@ -1,6 +1,7 @@
 #include "Resolver.h"
 
 #include "ADT/CanonicalPath.h"
+#include "AST/AssociatedItem.h"
 #include "AST/ConstantItem.h"
 #include "AST/Enumeration.h"
 #include "AST/Implementation.h"
@@ -327,10 +328,89 @@ void Resolver::resolveInherentImpl(std::shared_ptr<ast::InherentImpl> implBlock,
   getNameScope().pop();
 }
 
-void Resolver::resolveTraitImpl(std::shared_ptr<ast::TraitImpl>,
+void Resolver::resolveTraitImpl(std::shared_ptr<ast::TraitImpl> impl,
                                 const adt::CanonicalPath &prefix,
                                 const adt::CanonicalPath &canonicalPrefix) {
-  assert(false && "to be handled later");
+  NodeId scopeNodeId = impl->getNodeId();
+
+  resolveVisibility(impl->getVisibility());
+  getNameScope().push(scopeNodeId);
+  getTypeScope().push(scopeNodeId);
+  getLabelScope().push(scopeNodeId);
+  pushNewNameRib(getNameScope().peek());
+  pushNewTypeRib(getTypeScope().peek());
+  pushNewLabelRib(getLabelScope().peek());
+
+  if (impl->hasGenericParams())
+    resolveGenericParams(impl->getGenericParams(), prefix, canonicalPrefix);
+
+  if (impl->hasWhereClause())
+    resolveWhereClause(impl->getWhereClause(), prefix, canonicalPrefix);
+
+  std::optional<basic::NodeId> path =
+      resolveType(impl->getTypePath(), prefix, canonicalPrefix);
+  if (!path) {
+    getNameScope().pop();
+    getTypeScope().pop();
+    getLabelScope().pop();
+    return;
+  }
+
+  std::optional<basic::NodeId> type =
+      resolveType(impl->getType(), prefix, canonicalPrefix);
+  if (!type) {
+    getNameScope().pop();
+    getTypeScope().pop();
+    getLabelScope().pop();
+    return;
+  }
+
+  std::optional<adt::CanonicalPath> canonTraitType =
+    resolveTypeToCanonicalPath(impl->getTypePath().get(), prefix, canonicalPrefix);
+  assert(canonTraitType.has_value());
+
+  std::optional<adt::CanonicalPath> canonImplType =
+    resolveTypeToCanonicalPath(impl->getType().get(), prefix, canonicalPrefix);
+  assert(canonImplType.has_value());
+
+  CanonicalPath implTypeSegment = *canonImplType;
+  CanonicalPath traitTypeSegment = *canonTraitType;
+
+  CanonicalPath projection = CanonicalPath::traitImplProjectionSegment(
+      impl->getNodeId(), traitTypeSegment, implTypeSegment);
+
+  CanonicalPath implPrefix = prefix.append(projection);
+
+  CanonicalPath canonicalProjection = CanonicalPath::traitImplProjectionSegment(
+      impl->getNodeId(), *canonTraitType, *canonImplType);
+
+  CanonicalPath cpath = CanonicalPath::createEmpty();
+
+  if (canonicalPrefix.getSize() <= 1) {
+    cpath = canonicalProjection;
+  } else {
+    std::string projectionString = canonicalProjection.asString();
+    std::string segmentBuffer =
+        "<impl " + projectionString.substr(1, projectionString.size() - 2) +
+        ">";
+    CanonicalPath segment =
+        CanonicalPath::newSegment(impl->getNodeId(), Identifier(segmentBuffer));
+    cpath = canonicalPrefix.append(segment);
+  }
+
+  CanonicalPath Self = CanonicalPath::getBigSelf(impl->getType()->getNodeId());
+  getTypeScope().insert(Self, impl->getType()->getNodeId(),
+                        impl->getType()->getLocation());
+
+  for (AssociatedItem &asso : impl->getAssociatedItems())
+    resolveAssociatedItem(asso, prefix, canonicalPrefix);
+
+  Rib *r = getTypeScope().peek();
+  r->clearName(Self, impl->getType()->getNodeId());
+
+  getNameScope().pop();
+  getTypeScope().pop();
+  getLabelScope().pop();
 }
 
 void Resolver::resolveVisibility(std::optional<ast::Visibility> vis) {
@@ -360,7 +440,7 @@ void Resolver::resolveVisibility(std::optional<ast::Visibility> vis) {
 }
 
 void Resolver::insertResolvedName(NodeId ref, NodeId def) {
-  //llvm::errs() << "insertResolvedName: " << ref << "->" << def << "\n";
+  // llvm::errs() << "insertResolvedName: " << ref << "->" << def << "\n";
   resolvedNames[ref] = def;
   getNameScope().appendReferenceForDef(ref, def);
   insertCapturedItem(def);

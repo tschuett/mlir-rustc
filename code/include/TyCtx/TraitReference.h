@@ -28,7 +28,9 @@ public:
                      TraitItemKind kind, ast::AssociatedItem *traitItem,
                      TyTy::BaseType *self,
                      std::vector<TyTy::SubstitutionParamMapping> substitutions,
-                     Location loc);
+                     Location loc)
+      : identifier(identifier), isOptional(isOptional), kind(kind),
+        item(traitItem), self(self), substitutions(substitutions), loc(loc) {}
 
   ast::AssociatedItem *getItem() const { return item; }
   basic::NodeId getNodeId() const { return item->getNodeId(); }
@@ -55,7 +57,7 @@ public:
 
   lexer::Identifier getIdentifier() const { return identifier; }
 
-  TraitItemKind getTraitItemKind() const { return kind;}
+  TraitItemKind getTraitItemKind() const { return kind; }
 
 private:
   lexer::Identifier identifier;

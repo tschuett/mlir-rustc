@@ -28,6 +28,8 @@ public:
   bool isASCII() const;
   bool isRawIdentifier() const;
 
+  size_t getLength() const { return storage.getLength(); }
+
   bool operator==(const Identifier &b) const { return storage == b.storage; }
 
   bool operator<(const Identifier &b) const {

@@ -1,4 +1,6 @@
 #include "ADT/CanonicalPath.h"
+#include "AST/GenericArg.h"
+#include "AST/GenericArgs.h"
 #include "AST/PathIdentSegment.h"
 #include "AST/Types/ParenthesizedType.h"
 #include "AST/Types/TraitBound.h"
@@ -6,6 +8,7 @@
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
 #include "AST/Types/TypeParamBound.h"
+#include "AST/Types/TypePath.h"
 #include "Basic/Ids.h"
 #include "Resolver.h"
 
@@ -13,10 +16,12 @@
 #include <llvm/Support/ErrorHandling.h>
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
+#include <optional>
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::ast::types;
 using namespace rust_compiler::basic;
+using namespace rust_compiler::adt;
 
 namespace rust_compiler::sema::resolver {
 
@@ -278,9 +283,26 @@ void Resolver::resolveTypePathFunction(const ast::types::TypePathFn &) {
   assert(false && "to be handled later");
 }
 
-std::optional<adt::CanonicalPath>
-Resolver::resolveTypeToCanonicalPath(ast::types::TypeExpression *) {
-  assert(false && "to be handled later");
+std::optional<adt::CanonicalPath> Resolver::resolveTypeToCanonicalPath(
+    ast::types::TypeExpression *expr, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  CanonicalPath result = CanonicalPath::createEmpty();
+  switch (expr->getKind()) {
+  case TypeExpressionKind::TypeNoBounds: {
+    bool success = resolveTypeNoBoundsToCanonicalPath(
+        static_cast<ast::types::TypeNoBounds *>(expr), result, prefix,
+        canonicalPrefix);
+    if (success)
+      return result;
+    return std::nullopt;
+  }
+  case TypeExpressionKind::ImplTraitType: {
+    assert(false);
+  }
+  case TypeExpressionKind::TraitObjectType: {
+    assert(false);
+  }
+  }
 }
 
 std::optional<basic::NodeId>
@@ -333,6 +355,129 @@ Resolver::resolveSliceType(std::shared_ptr<ast::types::SliceType> slice,
                            const adt::CanonicalPath &prefix,
                            const adt::CanonicalPath &canonicalPrefix) {
   return resolveType(slice->getType(), prefix, canonicalPrefix);
+}
+
+bool Resolver::resolveTypeNoBoundsToCanonicalPath(
+    ast::types::TypeNoBounds *noBounds, CanonicalPath &result,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  switch (noBounds->getKind()) {
+  case TypeNoBoundsKind::ParenthesizedType: {
+    assert(false);
+  }
+  case TypeNoBoundsKind::ImplTraitType: {
+    assert(false);
+  }
+  case TypeNoBoundsKind::ImplTraitTypeOneBound: {
+    assert(false);
+  }
+  case TypeNoBoundsKind::TraitObjectTypeOneBound: {
+    assert(false);
+  }
+  case TypeNoBoundsKind::TypePath: {
+    return resolveTypePathToCanonicalPath(
+        static_cast<ast::types::TypePath *>(noBounds), result, prefix,
+        canonicalPrefix);
+  }
+  case TypeNoBoundsKind::TupleType: {
+    assert(false);
+  }
+  case TypeNoBoundsKind::NeverType: {
+    assert(false);
+  }
+  case TypeNoBoundsKind::RawPointerType: {
+    assert(false);
+  }
+  case TypeNoBoundsKind::ReferenceType: {
+    assert(false);
+  }
+  case TypeNoBoundsKind::ArrayType: {
+    assert(false);
+  }
+  case TypeNoBoundsKind::SliceType: {
+    assert(false);
+  }
+  case TypeNoBoundsKind::InferredType: {
+    assert(false);
+  }
+  case TypeNoBoundsKind::QualifiedPathInType: {
+    assert(false);
+  }
+  case TypeNoBoundsKind::BareFunctionType: {
+    assert(false);
+  }
+  case TypeNoBoundsKind::MacroInvocation: {
+    assert(false);
+  }
+  }
+}
+
+bool Resolver::resolveTypePathToCanonicalPath(
+    ast::types::TypePath *path, CanonicalPath &result,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  NodeId resolvedNode = UNKNOWN_NODEID;
+  std::optional<NodeId> aName = tyCtx->lookupResolvedName(path->getNodeId());
+  if (aName) {
+    resolvedNode = *aName;
+  } else {
+    std::optional<NodeId> aType = tyCtx->lookupResolvedType(path->getNodeId());
+    if (aType)
+      resolvedNode = *aType;
+  }
+
+  if (resolvedNode == UNKNOWN_NODEID)
+    return false;
+
+  std::optional<CanonicalPath> canon = tyCtx->lookupCanonicalPath(resolvedNode);
+  if (canon) {
+    std::vector<TypePathSegment> segments = path->getSegments();
+    auto finalSegment = segments.back();
+    if (finalSegment.hasGenerics()) {
+      std::vector<CanonicalPath> args;
+      GenericArgs generics = finalSegment.getGenericArgs();
+      resolveGenericArgs(generics, prefix, canonicalPrefix);
+      for (auto &generic : generics.getArgs()) {
+        switch (generic.getKind()) {
+        case GenericArgKind::Lifetime:
+          break;
+        case GenericArgKind::Type: {
+          std::optional<CanonicalPath> arg = resolveTypeToCanonicalPath(
+              generic.getType().get(), prefix, canonicalPrefix);
+          if (arg)
+            args.push_back(*arg);
+          break;
+        }
+        case GenericArgKind::Const: {
+          break;
+        }
+        case GenericArgKind::Binding: {
+          break;
+        }
+        }
+      }
+
+      result = *canon;
+      if (!args.empty()) {
+        std::string buffer;
+        for (size_t i = 0; i < args.size(); ++i) {
+          bool hasNext = (i + 1) < args.size();
+          const CanonicalPath &arg = args[i];
+          buffer += arg.asString();
+          if (hasNext)
+            buffer += ", ";
+        }
+
+        std::string argSegment = "<" + buffer + ">";
+        CanonicalPath argumentSegment = CanonicalPath::newSegment(
+            finalSegment.getNodeId(), Identifier(argSegment));
+        result = result.append(argumentSegment);
+      }
+    } else {
+      result = *canon;
+    }
+  }
+  return true;
 }
 
 } // namespace rust_compiler::sema::resolver

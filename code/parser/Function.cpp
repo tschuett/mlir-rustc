@@ -536,7 +536,7 @@ Parser::parseFunction(std::optional<ast::Visibility> vis) {
 
   fun.setIdentifier(id.getIdentifier());
 
-  //llvm::errs() << "function: " << id.getIdentifier().toString() << "\n";
+  llvm::errs() << "function: " << id.getIdentifier().toString() << "\n";
 
   if (check(TokenKind::Lt)) {
     StringResult<ast::GenericParams> genericParams = parseGenericParams();

@@ -262,10 +262,9 @@ private:
       std::shared_ptr<ast::InherentImpl> implementation,
       const adt::CanonicalPath &prefix,
       const adt::CanonicalPath &canonicalPrefix);
-  void resolveTraitImplNoRecurse(
-      std::shared_ptr<ast::TraitImpl> implementation,
-      const adt::CanonicalPath &prefix,
-      const adt::CanonicalPath &canonicalPrefix);
+  void resolveTraitImplNoRecurse(std::shared_ptr<ast::TraitImpl> implementation,
+                                 const adt::CanonicalPath &prefix,
+                                 const adt::CanonicalPath &canonicalPrefix);
 
   // items
   void resolveVisItem(std::shared_ptr<ast::VisItem>,
@@ -375,7 +374,9 @@ private:
                                 const adt::CanonicalPath &prefix,
                                 const adt::CanonicalPath &canonicalPrefix);
   void resolveQualifiedPathInExpression(
-      std::shared_ptr<ast::QualifiedPathInExpression>);
+      std::shared_ptr<ast::QualifiedPathInExpression>,
+      const adt::CanonicalPath &prefix,
+      const adt::CanonicalPath &canonicalPrefix);
   void resolveArithmeticOrLogicalExpression(
       std::shared_ptr<ast::ArithmeticOrLogicalExpression>,
       const adt::CanonicalPath &prefix,
@@ -460,7 +461,19 @@ private:
                    const adt::CanonicalPath &canonicalPrefix);
 
   std::optional<adt::CanonicalPath>
-  resolveTypeToCanonicalPath(ast::types::TypeExpression *);
+  resolveTypeToCanonicalPath(ast::types::TypeExpression *,
+                             const adt::CanonicalPath &prefix,
+                             const adt::CanonicalPath &canonicalPrefix);
+  bool
+  resolveTypeNoBoundsToCanonicalPath(ast::types::TypeNoBounds *,
+                                     adt::CanonicalPath &result,
+                                     const adt::CanonicalPath &prefix,
+                                     const adt::CanonicalPath &canonicalPrefix);
+  bool
+  resolveTypePathToCanonicalPath(ast::types::TypePath *,
+                                 adt::CanonicalPath &result,
+                                 const adt::CanonicalPath &prefix,
+                                 const adt::CanonicalPath &canonicalPrefix);
 
   std::string resolveTypeToString(ast::types::TypeExpression *);
   std::string resolveTypeNoBoundsToString(ast::types::TypeNoBounds *);

@@ -24,6 +24,8 @@ public:
   void clear();
   void push_back(char);
 
+  size_t getLength() const { return storage.size(); }
+
   bool operator==(const Utf8String &b) const {
     if (storage.size() != b.storage.size())
       return false;

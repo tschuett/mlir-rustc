@@ -5,10 +5,10 @@
 
 namespace rust_compiler::ast {
 
-class QualifiedInPathType final : public Node {
-
-public:
-  QualifiedInPathType(Location loc) : Node(loc) {}
-};
+//class QualifiedPathInType final : public Node {
+//
+//public:
+//  QualifiedPathInType(Location loc) : Node(loc) {}
+//};
 
 } // namespace rust_compiler::ast

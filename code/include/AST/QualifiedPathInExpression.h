@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AST/PathExprSegment.h"
 #include "AST/PathExpression.h"
 #include "AST/Types/QualifiedPathType.h"
 
@@ -19,6 +20,9 @@ public:
   void setType(const ast::types::QualifiedPathType &ty) { type = ty; }
 
   void addSegment(const PathExprSegment &seg) { segments.push_back(seg); }
+
+  std::vector<PathExprSegment> getSegment() const { return segments; }
+  ast::types::QualifiedPathType getType() const { return type; }
 };
 
 } // namespace rust_compiler::ast

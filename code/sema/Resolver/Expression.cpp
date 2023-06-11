@@ -16,6 +16,7 @@
 #include "AST/PathExpression.h"
 #include "AST/PathIdentSegment.h"
 #include "AST/PathInExpression.h"
+#include "AST/QualifiedPathInType.h"
 #include "AST/RangeExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Statements.h"
@@ -29,12 +30,14 @@
 #include "Lexer/Identifier.h"
 #include "Resolver.h"
 
+#include <filesystem>
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
 
 using namespace rust_compiler::ast;
+using namespace rust_compiler::ast::types;
 using namespace rust_compiler::adt;
 using namespace rust_compiler::basic;
 
@@ -281,7 +284,8 @@ void Resolver::resolvePathExpression(
   }
   case PathExpressionKind::QualifiedPathInExpression: {
     resolveQualifiedPathInExpression(
-        std::static_pointer_cast<QualifiedPathInExpression>(path));
+        std::static_pointer_cast<QualifiedPathInExpression>(path), prefix,
+        canonicalPrefix);
     break;
   }
   }
@@ -413,8 +417,17 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path,
 }
 
 void Resolver::resolveQualifiedPathInExpression(
-    std::shared_ptr<ast::QualifiedPathInExpression>) {
-  assert(false && "to be handled later");
+    std::shared_ptr<ast::QualifiedPathInExpression> qual,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  QualifiedPathType root = qual->getType();
+  resolveType(root.getType(), prefix, canonicalPrefix);
+  if (root.hasPath())
+    resolveType(root.getPath(), prefix, canonicalPrefix);
+
+  for (PathExprSegment &segment : qual->getSegment())
+    if (segment.hasGenerics())
+      resolveGenericArgs(segment.getGenerics(), prefix, canonicalPrefix);
 }
 
 void Resolver::resolveBlockExpression(

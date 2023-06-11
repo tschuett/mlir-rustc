@@ -17,6 +17,10 @@ public:
 
   void setType(std::shared_ptr<ast::types::TypeExpression>);
   void setPath(std::shared_ptr<ast::types::TypeExpression>);
+
+  bool hasPath() const { return (bool)path; }
+  std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
+  std::shared_ptr<ast::types::TypeExpression> getPath() const { return path; }
 };
 
 } // namespace rust_compiler::ast::types

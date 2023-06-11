@@ -40,6 +40,7 @@
 #include "AST/StructExprStruct.h"
 #include "AST/StructExpression.h"
 #include "AST/StructStruct.h"
+#include "AST/TraitImpl.h"
 #include "AST/TupleIndexingExpression.h"
 #include "AST/TupleStruct.h"
 #include "AST/TypeAlias.h"
@@ -59,6 +60,7 @@
 #include "PathProbing.h"
 #include "Sema/Properties.h"
 #include "TyCtx/NodeIdentity.h"
+#include "TyCtx/Substitutions.h"
 #include "TyCtx/TraitReference.h"
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TyTy.h"
@@ -215,8 +217,8 @@ private:
                                         ast::CallExpression *,
                                         TyTy::VariantDef &);
   TyTy::BaseType *checkCallExpressionADT(TyTy::BaseType *functionType,
-                                        ast::CallExpression *,
-                                        TyTy::VariantDef &);
+                                         ast::CallExpression *,
+                                         TyTy::VariantDef &);
 
   TyTy::BaseType *
   resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
@@ -244,6 +246,7 @@ private:
                                             TyTy::BaseType *adjustedSelf);
   void checkImplementation(ast::Implementation *);
   void checkInherentImpl(ast::InherentImpl *);
+  void checkTraitImpl(ast::TraitImpl *);
   TyTy::ParamType *checkGenericParam(const ast::GenericParam &);
   TyTy::ParamType *checkGenericParamTypeParam(const ast::TypeParam &);
   TyTy::BaseType *
@@ -331,6 +334,32 @@ private:
   probeMethodResolver(TyTy::BaseType *receiver,
                       const ast::PathIdentSegment &segmentName,
                       bool autoDeref = false);
+
+  std::optional<std::vector<TyTy::SubstitutionParamMapping>>
+  resolveInherentImplSubstitutions(InherentImpl *impl);
+  std::optional<std::vector<TyTy::SubstitutionParamMapping>>
+  resolveTraitImplSubstitutions(TraitImpl *impl);
+
+  bool checkForUnconstrained(
+      const std::vector<TyTy::SubstitutionParamMapping> &paramsToConstrain,
+      const TyTy::SubstitutionArgumentMappings &constraintA,
+      const TyTy::SubstitutionArgumentMappings &constraintB,
+      const TyTy::BaseType *reference);
+
+  TyTy::BaseType *resolveInherentImplSelf(InherentImpl *);
+  TyTy::BaseType *resolveTraitImplSelf(InherentImpl *);
+
+  void validateTraitImplBlock(
+      TraitImpl *, TyTy::BaseType *self,
+      std::vector<TyTy::SubstitutionParamMapping> &substitutions);
+
+  void validateInherentImplBlock(
+      InherentImpl *, TyTy::BaseType *self,
+      std::vector<TyTy::SubstitutionParamMapping> &substitutions);
+
+  void checkImplementationItem(
+      ast::InherentImpl *impl, AssociatedItem &asso, TyTy::BaseType *self,
+      std::vector<TyTy::SubstitutionParamMapping> substitutions);
 };
 
 } // namespace rust_compiler::sema::type_checking

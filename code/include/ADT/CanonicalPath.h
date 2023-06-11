@@ -13,6 +13,7 @@
 namespace rust_compiler::adt {
 
 using namespace rust_compiler::lexer;
+using namespace rust_compiler::basic;
 
 class CanonicalPath {
   std::vector<std::pair<basic::NodeId, Identifier>> segments;
@@ -73,6 +74,14 @@ public:
       if (segments[i].second != other.segments[i].second)
         return false;
     return true;
+  }
+
+  static CanonicalPath
+  traitImplProjectionSegment(NodeId id, const CanonicalPath &traitSegment,
+                             const CanonicalPath &implTypeSegment) {
+    return CanonicalPath::newSegment(
+        id, Identifier("<" + implTypeSegment.asString() + " as " +
+                       traitSegment.asString() + ">"));
   }
 
   /// it ignores the node ids

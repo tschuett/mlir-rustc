@@ -1,8 +1,10 @@
 #include "ADT/CanonicalPath.h"
 #include "AST/AssociatedItem.h"
+#include "AST/Expression.h"
 #include "AST/Implementation.h"
 #include "AST/InherentImpl.h"
 #include "AST/StructStruct.h"
+#include "AST/VisItem.h"
 #include "Resolver.h"
 
 #include <memory>
@@ -129,7 +131,9 @@ void Resolver::resolveTraitNoRecurse(
       assert(false);
     }
     case AssociatedItemKind::Function: {
-      auto fun = std::static_pointer_cast<Function>(asso.getFunction());
+      std::shared_ptr<Function> fun = std::static_pointer_cast<Function>(asso.getFunction());
+      assert(fun->getKind() == VisItemKind::Function);
+      assert((bool)fun);
       CanonicalPath decl =
           CanonicalPath::newSegment(fun->getNodeId(), fun->getName());
       CanonicalPath path2 = path.append(decl);

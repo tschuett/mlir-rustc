@@ -600,7 +600,7 @@ StringResult<ast::types::QualifiedPathType> Parser::parseQualifiedPathType() {
 StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseQualifiedPathInType() {
   Location loc = getLocation();
-  QualifiedPathInType qual = {loc};
+  ast::types::QualifiedPathInType qual = {loc};
 
   StringResult<ast::types::QualifiedPathType> seg = parseQualifiedPathType();
   if (!seg) {

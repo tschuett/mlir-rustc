@@ -144,7 +144,6 @@ TraitReference *TypeResolver::resolveTrait(ast::Trait *trait) {
 TraitItemReference TypeResolver::resolveAssociatedItemInTraitToRef(
     AssociatedItem &item, TyTy::BaseType *self,
     const std::vector<TyTy::SubstitutionParamMapping> &substitutions) {
-  assert(false);
   if (item.hasFunction()) {
     std::shared_ptr<Function> fun =
         std::static_pointer_cast<Function>(item.getFunction());
@@ -156,6 +155,7 @@ TraitItemReference TypeResolver::resolveAssociatedItemInTraitToRef(
   } else if (item.hasConstantItem()) {
     assert(false);
   }
+  assert(false);
 }
 
 TyTy::ParamType *TypeResolver::checkGenericParam(const ast::GenericParam &gp) {
