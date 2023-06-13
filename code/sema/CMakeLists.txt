@@ -29,6 +29,8 @@ add_library(sema
            PlaceOrValue.cpp
            Types.cpp
            Properties.cpp
+           Struct.cpp
+           Attributes.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)

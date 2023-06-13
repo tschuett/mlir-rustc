@@ -27,6 +27,7 @@ StringResult<ast::TokenTree> Parser::parseTokenTree() {
       exit(EXIT_FAILURE);
     }
     tree.setTree(delimTokenTree.getValue());
+    return StringResult<ast::TokenTree>(tree);
   }
 
   tree.setToken(getToken());
@@ -104,8 +105,12 @@ Parser::parseDelimTokenTree() {
     }
   }
 
-  llvm::errs() << "failed to parse delim token tree" << "\n";
+  llvm::errs() << "failed to parse delim token tree"
+               << "\n";
   llvm::errs() << Token2String(getToken().getKind()) << "\n";
+  if (getToken().isIdentifier())
+    llvm::errs() << getToken().getIdentifier().toString() << "\n";
+  llvm::errs() << getToken().getLocation().toString() << "\n";
 
   return StringResult<std::shared_ptr<ast::DelimTokenTree>>(
       "failed to parse delim token tree");

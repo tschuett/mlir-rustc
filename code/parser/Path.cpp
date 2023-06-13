@@ -395,12 +395,12 @@ StringResult<std::shared_ptr<ast::types::TypeExpression>>
 Parser::parseTypePath() {
   Location loc = getLocation();
 
-//  llvm::errs() << "parseTypePath @ " << getToken().getLocation().toString()
-//               << "\n";
-//  llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind())
-//               << "\n";
-//  if (getToken().getKind() == TokenKind::Identifier)
-//    llvm::errs() << getToken().getIdentifier().toString() << "\n";
+  //  llvm::errs() << "parseTypePath @ " << getToken().getLocation().toString()
+  //               << "\n";
+  //  llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind())
+  //               << "\n";
+  //  if (getToken().getKind() == TokenKind::Identifier)
+  //    llvm::errs() << getToken().getIdentifier().toString() << "\n";
 
   class TypePath path = {loc};
 
@@ -427,8 +427,9 @@ Parser::parseTypePath() {
   path.addSegment(first.getValue());
 
   while (true) {
-//    llvm::errs() << "parseTypePath: " << Token2String(getToken().getKind())
-//                 << "\n";
+    //    llvm::errs() << "parseTypePath: " <<
+    //    Token2String(getToken().getKind())
+    //                 << "\n";
     if (check(TokenKind::Eof)) {
       // error
       return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
@@ -456,7 +457,7 @@ Parser::parseTypePath() {
     }
   }
 
-  //llvm::errs() << "parseTypePath: " << path.getSegments().size() << "\n";
+  // llvm::errs() << "parseTypePath: " << path.getSegments().size() << "\n";
 
   return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
       std::make_shared<ast::types::TypePath>(path));
@@ -477,15 +478,21 @@ StringResult<ast::SimplePath> Parser::parseSimplePath() {
   SimplePathSegment segment = {getLocation()};
   if (check(TokenKind::Identifier)) {
     segment.setIdentifier(getToken().getIdentifier());
+    assert(eat(TokenKind::Identifier));
   } else if (checkKeyWord(KeyWordKind::KW_SUPER)) {
     segment.setKeyWord(KeyWordKind::KW_SUPER);
+    assert(eatKeyWord(KeyWordKind::KW_SUPER));
   } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
     segment.setKeyWord(KeyWordKind::KW_SELFVALUE);
+    assert(eatKeyWord(KeyWordKind::KW_SELFVALUE));
   } else if (checkKeyWord(KeyWordKind::KW_CRATE)) {
     segment.setKeyWord(KeyWordKind::KW_CRATE);
+    assert(eatKeyWord(KeyWordKind::KW_CRATE));
   } else if (check(TokenKind::Dollar) &&
              checkKeyWord(KeyWordKind::KW_CRATE, 1)) {
     segment.setIdentifier(Identifier("$crate"));
+    assert(eat(TokenKind::Dollar));
+    assert(eatKeyWord(KeyWordKind::KW_CRATE));
   } else {
     // error: there are no empty paths
     std::string s =
@@ -515,15 +522,21 @@ StringResult<ast::SimplePath> Parser::parseSimplePath() {
 
       if (check(TokenKind::Identifier)) {
         segment.setIdentifier(getToken().getIdentifier());
+        assert(eat(TokenKind::Identifier));
       } else if (checkKeyWord(KeyWordKind::KW_SUPER)) {
         segment.setKeyWord(KeyWordKind::KW_SUPER);
+        assert(eatKeyWord(KeyWordKind::KW_SUPER));
       } else if (checkKeyWord(KeyWordKind::KW_SELFVALUE)) {
         segment.setKeyWord(KeyWordKind::KW_SELFVALUE);
+        assert(eatKeyWord(KeyWordKind::KW_SELFVALUE));
       } else if (checkKeyWord(KeyWordKind::KW_CRATE)) {
         segment.setKeyWord(KeyWordKind::KW_CRATE);
+        assert(eatKeyWord(KeyWordKind::KW_CRATE));
       } else if (check(TokenKind::Dollar) &&
                  checkKeyWord(KeyWordKind::KW_CRATE, 1)) {
         segment.setIdentifier(Identifier("$crate"));
+        assert(eat(TokenKind::Dollar));
+        assert(eatKeyWord(KeyWordKind::KW_CRATE));
       } else {
         std::string s =
             llvm::formatv("{0} {1}", "parseSimplePath; unknown token: ",

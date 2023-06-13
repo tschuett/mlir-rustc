@@ -42,8 +42,8 @@ public:
         return "self";
       if (kind == lexer::KeyWordKind::KW_CRATE)
         return "crate";
-      //      if (kind == lexer::KeyWordKind::KW_DOLLARCRATE)
-      //        return "$crate";
+      //if (kind == lexer::KeyWordKind::KW_DOLLARCRATE)
+      //  return "$crate";
       assert(false && "unknown keyword");
     }
     return getName().toString();

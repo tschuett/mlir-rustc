@@ -24,10 +24,12 @@
 #include "AST/PredicatePatternLoopExpression.h"
 #include "AST/Statement.h"
 #include "AST/Statements.h"
-#include "AST/Struct.h"
 #include "AST/StaticItem.h"
+#include "AST/Struct.h"
 #include "AST/StructExpression.h"
 #include "AST/Trait.h"
+#include "AST/Types/ImplTraitType.h"
+#include "AST/Types/TraitObjectType.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
 #include "AST/Types/Types.h"
@@ -35,6 +37,11 @@
 
 #include <map>
 #include <memory>
+
+namespace rust_compiler::ast {
+class StructStruct;
+class TupleStruct;
+} // namespace rust_compiler::ast
 
 namespace rust_compiler::sema {
 
@@ -94,6 +101,8 @@ private:
   void analyzeTrait(ast::Trait *);
   void analyzeFunction(ast::Function *);
   void analyzeStruct(ast::Struct *);
+  void analyzeStructStruct(ast::StructStruct *);
+  void analyzeTupleStruct(ast::TupleStruct *);
 
   bool isReachable(std::shared_ptr<ast::VisItem>,
                    std::shared_ptr<ast::VisItem>);
@@ -127,6 +136,13 @@ private:
   // types
   void walkType(ast::types::TypeExpression *);
   void walkTypeNoBounds(ast::types::TypeNoBounds *);
+
+  std::pair<size_t, size_t> getAlignmentAndSizeOfType(ast::types::TypeExpression*);
+  std::pair<size_t, size_t> getAlignmentAndSizeOfTypeNoBounds(ast::types::TypeNoBounds*);
+  std::pair<size_t, size_t> getAlignmentAndSizeOfImplTraitType(ast::types::ImplTraitType*);
+  std::pair<size_t, size_t> getAlignmentAndSizeOfTraitObjectType(ast::types::TraitObjectType*);
+
+  bool isReprAttribute(const ast::SimplePath&) const;
 };
 
 void analyzeSemantics(std::shared_ptr<ast::Crate> &ast);

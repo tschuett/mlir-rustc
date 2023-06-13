@@ -3,6 +3,7 @@
 #include "ADT/CanonicalPath.h"
 #include "AST/ConstParam.h"
 #include "AST/Enumeration.h"
+#include "AST/GenericArg.h"
 #include "AST/GenericArgs.h"
 #include "AST/TypeBoundWhereClauseItem.h"
 #include "AST/Types/ArrayType.h"
@@ -416,15 +417,22 @@ TyTy::TypeBoundPredicate TypeResolver::getPredicateFromBound(
   if (lastSegment.hasTypeFunction()) {
     assert(false);
   } else if (lastSegment.hasGenerics()) {
-    assert(false);
+    if (lastSegment.hasGenerics())
+      args = lastSegment.getGenericArgs();
   }
 
   if (associatedSelf != nullptr) {
-    assert(false);
+    GenericArgs tmp = args;
+    args = GenericArgs(path->getLocation());
+    GenericArg ga = {path->getLocation()};
+    ga.setType(std::make_shared<ast::types::TypeExpression>(*associatedSelf));
+    args.addArg(ga);
+    for (const GenericArg& ga: tmp.getArgs())
+      args.addArg(ga);
   }
 
   if (!args.isEmpty() || predicate.requiresGenericArgs())
-    predicate.applyGenericArgs(&args, associatedSelf != nullptr);
+    predicate.applyGenericArgs(&args, associatedSelf != nullptr, this);
 
   tcx->insertResolvedPredicate(typePath->getNodeId(), predicate);
 

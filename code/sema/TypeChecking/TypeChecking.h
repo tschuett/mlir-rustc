@@ -110,10 +110,10 @@ public:
   TyTy::BaseType *checkAssociatedItemPointer(ast::AssociatedItem *,
                                              ast::Implementation *);
 
-private:
-  // needed by substitutins.cpp in TyCtx
+  // FIXME: needed by substitutins.cpp in TyCtx
   TyTy::BaseType *checkType(std::shared_ptr<ast::types::TypeExpression>);
 
+private:
   std::optional<TyTy::BaseType *>
   checkFunctionTraitCall(CallExpression *, TyTy::BaseType *functionType);
   std::optional<tyctx::TyTy::FunctionTrait>
@@ -347,7 +347,7 @@ private:
       const TyTy::BaseType *reference);
 
   TyTy::BaseType *resolveInherentImplSelf(InherentImpl *);
-  TyTy::BaseType *resolveTraitImplSelf(InherentImpl *);
+  TyTy::BaseType *resolveTraitImplSelf(TraitImpl *);
 
   void validateTraitImplBlock(
       TraitImpl *, TyTy::BaseType *self,
@@ -357,8 +357,20 @@ private:
       InherentImpl *, TyTy::BaseType *self,
       std::vector<TyTy::SubstitutionParamMapping> &substitutions);
 
-  void checkImplementationItem(
+  void
+  checkTraitImplItem(ast::TraitImpl *impl, AssociatedItem &asso,
+                     TyTy::BaseType *self,
+                     std::vector<TyTy::SubstitutionParamMapping> substitutions);
+  void checkInherentImplItem(
       ast::InherentImpl *impl, AssociatedItem &asso, TyTy::BaseType *self,
+      std::vector<TyTy::SubstitutionParamMapping> substitutions);
+
+  TyTy::BaseType *checkImplementationFunction(
+      ast::TraitImpl *parent, ast::Function *, TyTy::BaseType *self,
+      std::vector<TyTy::SubstitutionParamMapping> substitutions);
+
+  TyTy::BaseType *checkImplementationFunction(
+      ast::InherentImpl *parent, ast::Function *, TyTy::BaseType *self,
       std::vector<TyTy::SubstitutionParamMapping> substitutions);
 };
 

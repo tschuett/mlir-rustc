@@ -8,6 +8,7 @@
 #include "AST/InherentImpl.h"
 #include "AST/Struct.h"
 #include "AST/StructField.h"
+#include "AST/TraitImpl.h"
 #include "AST/Types/TypePath.h"
 #include "AST/VisItem.h"
 #include "Coercion.h"
@@ -198,12 +199,25 @@ void TypeResolver::checkInherentImpl(ast::InherentImpl *impl) {
   TyTy::BaseType *self = resolveInherentImplSelf(impl);
 
   for (AssociatedItem &asso : impl->getAssociatedItems())
-    checkImplementationItem(impl, asso, self, *substitutions);
+    checkInherentImplItem(impl, asso, self, *substitutions);
 
   validateInherentImplBlock(impl, self, *substitutions);
 }
 
-void TypeResolver::checkTraitImpl(ast::TraitImpl *impl) { assert(false); }
+void TypeResolver::checkTraitImpl(ast::TraitImpl *impl) {
+  std::optional<std::vector<TyTy::SubstitutionParamMapping>> substitutions =
+      resolveTraitImplSubstitutions(impl);
+  if (!substitutions) {
+    assert(false);
+  }
+
+  TyTy::BaseType *self = resolveTraitImplSelf(impl);
+
+  for (AssociatedItem &asso : impl->getAssociatedItems())
+    checkTraitImplItem(impl, asso, self, *substitutions);
+
+  validateTraitImplBlock(impl, self, *substitutions);
+}
 
 void TypeResolver::checkConstantItem(ast::ConstantItem *con) {
   TyTy::BaseType *type = checkType(con->getType());
@@ -294,7 +308,7 @@ TyTy::BaseType *TypeResolver::resolveInherentImplSelf(InherentImpl *impl) {
   return checkType(impl->getType());
 }
 
-TyTy::BaseType *TypeResolver::resolveTraitImplSelf(InherentImpl *impl) {
+TyTy::BaseType *TypeResolver::resolveTraitImplSelf(TraitImpl *impl) {
   return checkType(impl->getType());
 }
 
@@ -310,10 +324,34 @@ void TypeResolver::validateInherentImplBlock(
   assert(false);
 }
 
-void TypeResolver::checkImplementationItem(
+void TypeResolver::checkTraitImplItem(
+    ast::TraitImpl *impl, AssociatedItem &asso, TyTy::BaseType *self,
+    std::vector<TyTy::SubstitutionParamMapping> substitutions) {
+  assert(false);
+}
+
+void TypeResolver::checkInherentImplItem(
     ast::InherentImpl *impl, AssociatedItem &asso, TyTy::BaseType *self,
     std::vector<TyTy::SubstitutionParamMapping> substitutions) {
   assert(false);
 }
+
+TyTy::BaseType *TypeResolver::checkImplementationFunction(
+    ast::TraitImpl *parent, ast::Function *, TyTy::BaseType *self,
+    std::vector<TyTy::SubstitutionParamMapping> substitutions) {
+  assert(false);
+}
+
+TyTy::BaseType *TypeResolver::checkImplementationFunction(
+    ast::InherentImpl *parent, ast::Function *, TyTy::BaseType *self,
+    std::vector<TyTy::SubstitutionParamMapping> substitutions) {
+  assert(false);
+}
+
+// TyTy::BaseType
+//   *TypeResolver::checkImplementationFunction(ast::TraitImpl *parent,
+//   ast::Function *, TyTy::BaseType *self,
+//   std::vector<TyTy::Substitutionparammapping> substitutions) { assert(false);
+//   }
 
 } // namespace rust_compiler::sema::type_checking

@@ -25,6 +25,9 @@
 #include <sstream>
 #include <vector>
 
+// FIXME
+#include "../sema/TypeChecking/TypeChecking.h"
+
 using namespace rust_compiler::adt;
 using namespace rust_compiler::tyctx;
 
@@ -1154,14 +1157,15 @@ bool TypeBoundPredicate::requiresGenericArgs() const {
 }
 
 void TypeBoundPredicate::applyGenericArgs(ast::GenericArgs *genericArgs,
-                                          bool hasAssociatedSelf) {
+                                          bool hasAssociatedSelf,
+                                          TypeResolver *resolver) {
   assert(!substitutions.empty());
   if (hasAssociatedSelf)
     usedArguments = SubstitutionArgumentMappings::empty();
   else
     assert(!usedArguments.isEmpty());
 
-  usedArguments = getMappingsFromGenericArgs(*genericArgs);
+  usedArguments = getMappingsFromGenericArgs(*genericArgs, resolver);
 
   errorFlag |= usedArguments.isError();
 

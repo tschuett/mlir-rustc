@@ -4,6 +4,8 @@
 #include "AST/Function.h"
 #include "AST/Item.h"
 #include "AST/Module.h"
+#include "AST/StructStruct.h"
+#include "AST/TupleStruct.h"
 #include "AST/VisItem.h"
 #include "AttributeChecker/AttributeChecker.h"
 #include "Resolver/Resolver.h"
@@ -146,10 +148,11 @@ void Sema::analyzeVisItem(std::shared_ptr<ast::VisItem> vis) {
 void Sema::analyzeStruct(ast::Struct *str) {
   switch (str->getKind()) {
   case StructKind::StructStruct2: {
-    str->getVisibility();
+    analyzeStructStruct(static_cast<ast::StructStruct*>(str));
     break;
   }
   case StructKind::TupleStruct2: {
+    analyzeTupleStruct(static_cast<ast::TupleStruct*>(str));
     break;
   }
   }

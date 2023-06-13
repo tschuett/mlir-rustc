@@ -21,6 +21,11 @@
 #include <set>
 #include <vector>
 
+// FIXME
+namespace rust_compiler::sema::type_checking {
+  class TypeResolver;
+}
+
 namespace rust_compiler::tyctx::TyTy {
 
 using namespace rust_compiler::adt;
@@ -69,7 +74,9 @@ public:
   TraitReference *get() const;
 
   bool requiresGenericArgs() const;
-  void applyGenericArgs(ast::GenericArgs *, bool hasAssociatedSelf);
+  // FIXME resolver
+  void applyGenericArgs(ast::GenericArgs *, bool hasAssociatedSelf,
+                        sema::type_checking::TypeResolver *);
 
   BaseType *
   handleSubstitions(SubstitutionArgumentMappings &mappings) override final {

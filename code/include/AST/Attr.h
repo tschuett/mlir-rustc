@@ -33,6 +33,7 @@ public:
 
   AttrInput *getInput() const { return attrInput.get(); }
 
+  SimplePath getPath() const { return path; }
 private:
   bool isParsedToMetaItem();
   bool hasAttrInput();

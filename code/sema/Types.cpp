@@ -1,6 +1,8 @@
 #include "AST/ConstantItem.h"
 #include "AST/Module.h"
 #include "AST/Types/ArrayType.h"
+#include "AST/Types/ImplTraitType.h"
+#include "AST/Types/TraitObjectType.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
 #include "Sema/Sema.h"
@@ -79,6 +81,36 @@ void Sema::walkTypeNoBounds(ast::types::TypeNoBounds *noBounds) {
     assert(false);
   }
   }
+}
+
+std::pair<size_t, size_t>
+Sema::getAlignmentAndSizeOfType(ast::types::TypeExpression *type) {
+  switch (type->getKind()) {
+  case TypeExpressionKind::TypeNoBounds:
+    return getAlignmentAndSizeOfTypeNoBounds(
+        static_cast<ast::types::TypeNoBounds *>(type));
+  case TypeExpressionKind::ImplTraitType:
+    return getAlignmentAndSizeOfImplTraitType(
+        static_cast<ast::types::ImplTraitType *>(type));
+  case TypeExpressionKind::TraitObjectType:
+    return getAlignmentAndSizeOfTraitObjectType(
+        static_cast<ast::types::TraitObjectType *>(type));
+  }
+}
+
+std::pair<size_t, size_t>
+Sema::getAlignmentAndSizeOfTypeNoBounds(ast::types::TypeNoBounds *) {
+  assert(false);
+}
+
+std::pair<size_t, size_t>
+Sema::getAlignmentAndSizeOfImplTraitType(ast::types::ImplTraitType *) {
+  assert(false);
+}
+
+std::pair<size_t, size_t>
+Sema::getAlignmentAndSizeOfTraitObjectType(ast::types::TraitObjectType *) {
+  assert(false);
 }
 
 } // namespace rust_compiler::sema

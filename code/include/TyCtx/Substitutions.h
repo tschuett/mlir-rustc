@@ -9,6 +9,11 @@
 #include <string>
 #include <vector>
 
+// FIXME
+namespace rust_compiler::sema::type_checking {
+class TypeResolver;
+}
+
 namespace rust_compiler::tyctx::TyTy {
 
 class BaseType;
@@ -27,6 +32,9 @@ public:
   bool needSubstitution() const;
 
   ParamType *getParamType() const { return param; }
+
+  bool hasDefaultType() const;
+  BaseType *getDefaultType() const;
 
   bool fillParamType(SubstitutionArgumentMappings &substMappings, Location loc);
 
@@ -138,8 +146,10 @@ public:
     return usedArguments;
   }
 
+  // FIXME: resolver
   SubstitutionArgumentMappings
-  getMappingsFromGenericArgs(ast::GenericArgs &args);
+  getMappingsFromGenericArgs(ast::GenericArgs &args,
+                             sema::type_checking::TypeResolver *);
 
   virtual BaseType *
   handleSubstitions(SubstitutionArgumentMappings &mappings) = 0;
@@ -150,9 +160,17 @@ public:
     return getNumberOfAssociatedBindings() > 0;
   }
 
+  size_t minRequiredSubstitutions() const;
+  size_t getNumberOfRequiredSubstitutions() const;
+
 protected:
   std::vector<SubstitutionParamMapping> substitutions;
   SubstitutionArgumentMappings usedArguments;
+
+private:
+  TyTy::BaseType *
+  resolveSubstitutionsMapper(TyTy::BaseType *base,
+                             TyTy::SubstitutionArgumentMappings &mappings);
 };
 
 } // namespace rust_compiler::tyctx::TyTy

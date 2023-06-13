@@ -51,6 +51,10 @@ public:
   void parseToMetaItem();
 
   std::unique_ptr<AttrInput> clone();
+
+  const std::vector<std::unique_ptr<MetaItemInner>>& getMetaItems() const {
+    return items;
+  }
 };
 
 } // namespace rust_compiler::ast
