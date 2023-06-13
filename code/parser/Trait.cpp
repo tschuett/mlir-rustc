@@ -2,14 +2,15 @@
 
 #include "ADT/Result.h"
 #include "AST/InherentImpl.h"
+#include "AST/OuterAttribute.h"
 #include "AST/TraitImpl.h"
 #include "AST/Types/TypeExpression.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
 
-#include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/FormatVariadic.h>
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
 using namespace rust_compiler::ast;
@@ -23,8 +24,8 @@ Parser::parseInherentImpl(std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   InherentImpl impl = {loc, vis};
 
-  //llvm::errs() << "parseInherentImpl"
-  //             << "\n";
+  // llvm::errs() << "parseInherentImpl"
+  //              << "\n";
 
   if (!checkKeyWord(KeyWordKind::KW_IMPL)) {
     return StringResult<std::shared_ptr<ast::Item>>(
@@ -232,7 +233,8 @@ Parser::parseTraitImpl(std::optional<ast::Visibility> vis) {
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseTrait(std::optional<ast::Visibility> vis) {
+Parser::parseTrait(std::span<OuterAttribute> outer,
+                   std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
   Trait trait = {loc, vis};

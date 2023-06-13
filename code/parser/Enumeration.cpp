@@ -99,7 +99,7 @@ StringResult<ast::EnumItem> Parser::parseEnumItem() {
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseEnumeration(std::optional<ast::Visibility> vis) {
+Parser::parseEnumeration(std::span<OuterAttribute> outer, std::optional<ast::Visibility> vis) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 

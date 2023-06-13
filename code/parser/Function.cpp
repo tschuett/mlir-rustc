@@ -2,6 +2,7 @@
 #include "AST/FunctionParam.h"
 #include "AST/FunctionQualifiers.h"
 #include "AST/FunctionReturnType.h"
+#include "AST/OuterAttribute.h"
 #include "AST/SelfParam.h"
 #include "AST/ShorthandSelf.h"
 #include "AST/TypedSelf.h"
@@ -493,7 +494,7 @@ StringResult<ast::FunctionReturnType> Parser::parseFunctionReturnType() {
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseFunction(std::optional<ast::Visibility> vis) {
+Parser::parseFunction(std::span<OuterAttribute> outer, std::optional<ast::Visibility> vis) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 

@@ -15,9 +15,10 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseTupleStruct(std::optional<ast::Visibility> vis) {
+Parser::parseTupleStruct(std::span<OuterAttribute> outer, std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   class TupleStruct stru = {loc, vis};
+  stru.setOuterAttributes(outer);
 
   if (!checkKeyWord(KeyWordKind::KW_STRUCT))
     return StringResult<std::shared_ptr<ast::Item>>(

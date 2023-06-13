@@ -319,9 +319,12 @@ StringResult<std::shared_ptr<ast::Expression>> Parser::parseStructExprStruct() {
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseStructStruct(std::optional<ast::Visibility> vis) {
+Parser::parseStructStruct(std::span<OuterAttribute> outer,
+                          std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   class StructStruct str = {loc, vis};
+
+  str.setOuterAttributes(outer);
 
   if (!checkKeyWord(KeyWordKind::KW_STRUCT))
     return StringResult<std::shared_ptr<ast::Item>>(

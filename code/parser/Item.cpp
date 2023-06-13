@@ -4,6 +4,7 @@
 #include "AST/Implementation.h"
 #include "AST/MacroInvocationSemiItem.h"
 #include "AST/MacroInvocationSemiStatement.h"
+#include "AST/OuterAttribute.h"
 #include "AST/StaticItem.h"
 #include "AST/Struct.h"
 #include "AST/StructStruct.h"
@@ -149,7 +150,7 @@ StringResult<ast::AssociatedItem> Parser::parseAssociatedItem() {
     if (checkKeyWord(KeyWordKind::KW_TYPE)) {
       // TypeAlias
       StringResult<std::shared_ptr<ast::Item>> typeAlias =
-          parseTypeAlias(vis.getValue());
+          parseTypeAlias({}, vis.getValue());
       if (!typeAlias) {
         llvm::errs() << "failed to parse type alias in associated item: "
                      << typeAlias.getError() << "\n";
@@ -162,7 +163,7 @@ StringResult<ast::AssociatedItem> Parser::parseAssociatedItem() {
                check(TokenKind::Colon, 2)) {
       // ConstantItem
       StringResult<std::shared_ptr<ast::Item>> constantItem =
-          parseConstantItem(vis.getValue());
+        parseConstantItem({}, vis.getValue());
       if (!constantItem) {
         llvm::errs() << "failed to parse constant item in associated item: "
                      << constantItem.getError() << "\n";
@@ -178,7 +179,7 @@ StringResult<ast::AssociatedItem> Parser::parseAssociatedItem() {
                checkKeyWord(KeyWordKind::KW_FN)) {
       // fun
       StringResult<std::shared_ptr<ast::Item>> fun =
-          parseFunction(vis.getValue());
+          parseFunction({}, vis.getValue());
       if (!fun) {
         llvm::errs() << "failed to parse function in associated item: "
                      << fun.getError() << "\n";
@@ -195,7 +196,7 @@ StringResult<ast::AssociatedItem> Parser::parseAssociatedItem() {
   } else if (checkKeyWord(KeyWordKind::KW_TYPE)) {
     // type alias
     StringResult<std::shared_ptr<ast::Item>> typeAlias =
-        parseTypeAlias(std::nullopt);
+      parseTypeAlias({}, std::nullopt);
     if (!typeAlias) {
       llvm::errs() << "failed to parse type alias in associated item: "
                    << typeAlias.getError() << "\n";
@@ -208,7 +209,7 @@ StringResult<ast::AssociatedItem> Parser::parseAssociatedItem() {
              check(TokenKind::Colon, 2)) {
     // constant item
     StringResult<std::shared_ptr<ast::Item>> constantItem =
-        parseConstantItem(std::nullopt);
+      parseConstantItem({}, std::nullopt);
     if (!constantItem) {
       llvm::errs() << "failed to parse constant item in associated item: "
                    << constantItem.getError() << "\n";
@@ -223,7 +224,8 @@ StringResult<ast::AssociatedItem> Parser::parseAssociatedItem() {
              checkKeyWord(KeyWordKind::KW_EXTERN) ||
              checkKeyWord(KeyWordKind::KW_FN)) {
     // fun
-    StringResult<std::shared_ptr<ast::Item>> fun = parseFunction(std::nullopt);
+    StringResult<std::shared_ptr<ast::Item>> fun =
+        parseFunction({}, std::nullopt);
     if (!fun) {
       llvm::errs() << "failed to parse function in associated item: "
                    << fun.getError() << "\n";
@@ -238,7 +240,8 @@ StringResult<ast::AssociatedItem> Parser::parseAssociatedItem() {
   return StringResult<ast::AssociatedItem>("failed to parse associated item");
 }
 
-StringResult<ast::ExternalItem> Parser::parseExternalItem() {
+StringResult<ast::ExternalItem>
+Parser::parseExternalItem(std::span<OuterAttribute> outer) {
   Location loc = getLocation();
 
   ExternalItem impl = {loc};
@@ -266,7 +269,7 @@ StringResult<ast::ExternalItem> Parser::parseExternalItem() {
     }
     if (checkKeyWord(KeyWordKind::KW_STATIC)) {
       StringResult<std::shared_ptr<ast::Item>> stat =
-          parseStaticItem(vis.getValue());
+          parseStaticItem(outer, vis.getValue());
       if (!stat) {
         llvm::errs() << "failed to parse static item in external item: "
                      << stat.getError() << "\n";
@@ -281,7 +284,7 @@ StringResult<ast::ExternalItem> Parser::parseExternalItem() {
                checkKeyWord(KeyWordKind::KW_FN) ||
                checkKeyWord(KeyWordKind::KW_UNSAFE)) {
       StringResult<std::shared_ptr<ast::Item>> fn =
-          parseFunction(vis.getValue());
+          parseFunction(outer, vis.getValue());
       if (!fn) {
         llvm::errs() << "failed to parse function in external item: "
                      << fn.getError() << "\n";
@@ -295,7 +298,7 @@ StringResult<ast::ExternalItem> Parser::parseExternalItem() {
     }
   } else if (checkKeyWord(KeyWordKind::KW_STATIC)) {
     StringResult<std::shared_ptr<ast::Item>> stat =
-        parseStaticItem(std::nullopt);
+        parseStaticItem(outer, std::nullopt);
     if (!stat) {
       llvm::errs() << "failed to parse static item in external item: "
                    << stat.getError() << "\n";
@@ -309,7 +312,8 @@ StringResult<ast::ExternalItem> Parser::parseExternalItem() {
              checkKeyWord(KeyWordKind::KW_EXTERN) ||
              checkKeyWord(KeyWordKind::KW_FN) ||
              checkKeyWord(KeyWordKind::KW_UNSAFE)) {
-    StringResult<std::shared_ptr<ast::Item>> fn = parseFunction(std::nullopt);
+    StringResult<std::shared_ptr<ast::Item>> fn =
+        parseFunction(outer, std::nullopt);
     if (!fn) {
       llvm::errs() << "failed to parse function item in external item: "
                    << fn.getError() << "\n";
@@ -336,7 +340,8 @@ StringResult<ast::ExternalItem> Parser::parseExternalItem() {
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseExternBlock(std::optional<ast::Visibility> vis) {
+Parser::parseExternBlock(std::span<OuterAttribute> outer,
+                         std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
   ExternBlock impl = {loc, vis};
@@ -389,7 +394,7 @@ Parser::parseExternBlock(std::optional<ast::Visibility> vis) {
       return StringResult<std::shared_ptr<ast::Item>>(
           std::make_shared<ExternBlock>(impl));
     } else {
-      StringResult<ast::ExternalItem> item = parseExternalItem();
+      StringResult<ast::ExternalItem> item = parseExternalItem(outer);
       if (!item) {
         llvm::errs() << "failed to parse external item in "
                         "external block: "
@@ -406,7 +411,8 @@ Parser::parseExternBlock(std::optional<ast::Visibility> vis) {
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseImplementation(std::optional<ast::Visibility> vis) {
+Parser::parseImplementation(std::span<OuterAttribute> outer,
+                            std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
   // llvm::errs() << "parseImplementation"
@@ -465,14 +471,15 @@ Parser::parseImplementation(std::optional<ast::Visibility> vis) {
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseTypeAlias(std::optional<ast::Visibility> vis) {
+Parser::parseTypeAlias(std::span<OuterAttribute> outer,
+                       std::optional<ast::Visibility> vis) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
   TypeAlias alias = {loc, vis};
 
-  //llvm::errs() << "parseTypeAlias"
-  //             << "\n";
+  // llvm::errs() << "parseTypeAlias"
+  //              << "\n";
 
   if (!checkKeyWord(KeyWordKind::KW_TYPE))
     return StringResult<std::shared_ptr<ast::Item>>(
@@ -593,7 +600,8 @@ Parser::parseTypeAlias(std::optional<ast::Visibility> vis) {
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseStaticItem(std::optional<ast::Visibility> vis) {
+Parser::parseStaticItem(std::span<OuterAttribute> outer,
+                        std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
   StaticItem stat = {loc, vis};
@@ -660,7 +668,8 @@ Parser::parseStaticItem(std::optional<ast::Visibility> vis) {
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseConstantItem(std::optional<ast::Visibility> vis) {
+Parser::parseConstantItem(std::span<OuterAttribute> outer,
+                          std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
   ConstantItem con = {loc, vis};
@@ -730,7 +739,8 @@ Parser::parseConstantItem(std::optional<ast::Visibility> vis) {
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseUnion(std::optional<ast::Visibility> vis) {
+Parser::parseUnion(std::span<OuterAttribute> outer,
+                   std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
 
   Union uni = {loc, vis};
@@ -795,7 +805,8 @@ Parser::parseUnion(std::optional<ast::Visibility> vis) {
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseStruct(std::optional<ast::Visibility> vis) {
+Parser::parseStruct(std::span<OuterAttribute> outer,
+                    std::optional<ast::Visibility> vis) {
   CheckPoint cp = getCheckPoint();
 
   if (!checkKeyWord(KeyWordKind::KW_STRUCT))
@@ -831,21 +842,21 @@ Parser::parseStruct(std::optional<ast::Visibility> vis) {
       exit(EXIT_FAILURE);
     }
     recover(cp);
-    return parseStructStruct(vis);
+    return parseStructStruct(outer, vis);
   }
 
   if (check(TokenKind::Semi)) {
     recover(cp);
-    return parseStructStruct(vis);
+    return parseStructStruct(outer, vis);
   }
 
   if (check(TokenKind::BraceOpen)) {
     recover(cp);
-    return parseStructStruct(vis);
+    return parseStructStruct(outer, vis);
   }
 
   recover(cp);
-  return parseTupleStruct(vis);
+  return parseTupleStruct(outer, vis);
 }
 
 } // namespace rust_compiler::parser

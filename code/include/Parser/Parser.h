@@ -79,6 +79,8 @@
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_parse/parser/struct.Parser.html#method.new
 namespace rust_compiler::parser {
 
+using namespace rust_compiler::ast;
+
 /// a checkpoint in a stream of tokens
 class CheckPoint {
   size_t offset = 0;
@@ -116,39 +118,52 @@ public:
 
   /// VisItems
   adt::Result<std::shared_ptr<ast::Item>, std::string>
-  parseMod(std::optional<ast::Visibility> vis);
+  parseMod(std::span<OuterAttribute> outer, std::optional<ast::Visibility> vis);
   adt::Result<std::shared_ptr<ast::Item>, std::string>
-  parseUseDeclaration(std::optional<ast::Visibility> vis);
+  parseUseDeclaration(std::span<OuterAttribute> outer,
+                      std::optional<ast::Visibility> vis);
   adt::Result<std::shared_ptr<ast::Item>, std::string>
-  parseTypeAlias(std::optional<ast::Visibility> vis);
+  parseTypeAlias(std::span<OuterAttribute> outer,
+                 std::optional<ast::Visibility> vis);
   adt::Result<std::shared_ptr<ast::Item>, std::string>
-  parseEnumeration(std::optional<ast::Visibility> vis);
+  parseEnumeration(std::span<OuterAttribute> outer,
+                   std::optional<ast::Visibility> vis);
   adt::Result<std::shared_ptr<ast::Item>, std::string>
-  parseUnion(std::optional<ast::Visibility> vis);
+  parseUnion(std::span<OuterAttribute> outer,
+             std::optional<ast::Visibility> vis);
   adt::Result<std::shared_ptr<ast::Item>, std::string>
-  parseStaticItem(std::optional<ast::Visibility> vis);
+  parseStaticItem(std::span<OuterAttribute> outer,
+                  std::optional<ast::Visibility> vis);
   adt::Result<std::shared_ptr<ast::Item>, std::string>
-  parseTrait(std::optional<ast::Visibility> vis);
+  parseTrait(std::span<OuterAttribute> outer,
+             std::optional<ast::Visibility> vis);
   adt::Result<std::shared_ptr<ast::Item>, std::string>
-  parseFunction(std::optional<ast::Visibility> vis);
+  parseFunction(std::span<OuterAttribute> outer,
+                std::optional<ast::Visibility> vis);
   adt::Result<std::shared_ptr<ast::Item>, std::string>
-  parseConstantItem(std::optional<ast::Visibility> vis);
+  parseConstantItem(std::span<OuterAttribute> outer,
+                    std::optional<ast::Visibility> vis);
   adt::Result<std::shared_ptr<ast::Item>, std::string>
-  parseExternBlock(std::optional<ast::Visibility> vis);
+  parseExternBlock(std::span<OuterAttribute> outer,
+                   std::optional<ast::Visibility> vis);
 
-  adt::Result<ast::ExternalItem, std::string> parseExternalItem();
+  adt::Result<ast::ExternalItem, std::string> parseExternalItem(std::span<OuterAttribute> outer);
 
   adt::Result<std::shared_ptr<ast::Item>, std::string>
-  parseStruct(std::optional<ast::Visibility> vis);
+  parseStruct(std::span<OuterAttribute> outer,
+              std::optional<ast::Visibility> vis);
   adt::Result<ast::StructFields, std::string> parseStructFields();
   adt::Result<ast::StructField, std::string> parseStructField();
   adt::Result<std::shared_ptr<ast::Item>, std::string>
-  parseStructStruct(std::optional<ast::Visibility> vis);
+  parseStructStruct(std::span<OuterAttribute> outer,
+                    std::optional<ast::Visibility> vis);
   adt::Result<std::shared_ptr<ast::Item>, std::string>
-  parseTupleStruct(std::optional<ast::Visibility> vis);
+  parseTupleStruct(std::span<OuterAttribute> outer,
+                   std::optional<ast::Visibility> vis);
 
   adt::Result<std::shared_ptr<ast::Item>, std::string>
-  parseImplementation(std::optional<ast::Visibility> vis);
+  parseImplementation(std::span<OuterAttribute> outer,
+                      std::optional<ast::Visibility> vis);
   adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseInherentImpl(std::optional<ast::Visibility> vis);
   adt::Result<std::shared_ptr<ast::Item>, std::string>

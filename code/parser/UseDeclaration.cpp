@@ -1,5 +1,6 @@
 #include "AST/UseDeclaration.h"
 
+#include "AST/OuterAttribute.h"
 #include "AST/UseTree.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
@@ -15,7 +16,8 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseUseDeclaration(std::optional<ast::Visibility> vis) {
+Parser::parseUseDeclaration(std::span<OuterAttribute> outer,
+                            std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   UseDeclaration use = {loc, vis};
 
@@ -26,8 +28,7 @@ Parser::parseUseDeclaration(std::optional<ast::Visibility> vis) {
         "failed to parse use keyword in use declarion");
   }
 
-  StringResult<ast::use_tree::UseTree> tree =
-      parseUseTree();
+  StringResult<ast::use_tree::UseTree> tree = parseUseTree();
   if (!tree) {
     llvm::errs() << "failed to parse simple path in macro invocation item: "
                  << tree.getError() << "\n";

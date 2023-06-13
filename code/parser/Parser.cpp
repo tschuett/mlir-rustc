@@ -307,7 +307,7 @@ lexer::Token Parser::getToken(uint8_t off) const {
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseVisItem(std::span<OuterAttribute>) {
+Parser::parseVisItem(std::span<OuterAttribute> outer) {
   std::optional<ast::Visibility> vis;
 
   if (checkKeyWord(lexer::KeyWordKind::KW_PUB)) {
@@ -324,59 +324,59 @@ Parser::parseVisItem(std::span<OuterAttribute>) {
 
   if (checkKeyWord(lexer::KeyWordKind::KW_CONST)) {
     if (checkKeyWord(lexer::KeyWordKind::KW_ASYNC, 1)) {
-      return parseFunction(vis);
+      return parseFunction(outer, vis);
     } else if (checkKeyWord(lexer::KeyWordKind::KW_UNSAFE, 1)) {
-      return parseFunction(vis);
+      return parseFunction(outer, vis);
     } else if (checkKeyWord(lexer::KeyWordKind::KW_EXTERN, 1)) {
-      return parseFunction(vis);
+      return parseFunction(outer, vis);
     } else if (checkKeyWord(lexer::KeyWordKind::KW_FN, 1)) {
-      return parseFunction(vis);
+      return parseFunction(outer, vis);
     } else {
-      return parseConstantItem(vis);
+      return parseConstantItem(outer, vis);
     }
   } else if (checkKeyWord(lexer::KeyWordKind::KW_ASYNC)) {
-    return parseFunction(vis);
+    return parseFunction(outer, vis);
   } else if (checkKeyWord(lexer::KeyWordKind::KW_UNSAFE)) {
     if (checkKeyWord(lexer::KeyWordKind::KW_TRAIT, 1)) {
-      return parseTrait(vis);
+      return parseTrait(outer, vis);
     } else if (checkKeyWord(lexer::KeyWordKind::KW_MOD, 1)) {
-      return parseMod(vis);
+      return parseMod(outer, vis);
     } else if (checkKeyWord(lexer::KeyWordKind::KW_IMPL, 1)) {
-      return parseImplementation(vis);
+      return parseImplementation(outer, vis);
     } else if (checkKeyWord(lexer::KeyWordKind::KW_EXTERN, 1)) {
-      return parseExternBlock(vis);
+      return parseExternBlock(outer, vis);
     }
 
-    return parseFunction(vis);
+    return parseFunction(outer, vis);
   } else if (checkKeyWord(lexer::KeyWordKind::KW_MOD)) {
-    return parseMod(vis);
+    return parseMod(outer, vis);
   } else if (checkKeyWord(lexer::KeyWordKind::KW_FN)) {
-    return parseFunction(vis);
+    return parseFunction(outer, vis);
   } else if (checkKeyWord(lexer::KeyWordKind::KW_USE)) {
-    return parseUseDeclaration(vis);
+    return parseUseDeclaration(outer, vis);
   } else if (checkKeyWord(lexer::KeyWordKind::KW_TYPE)) {
-    return parseTypeAlias(vis);
+    return parseTypeAlias(outer, vis);
   } else if (checkKeyWord(lexer::KeyWordKind::KW_STRUCT)) {
-    return parseStruct(vis);
+    return parseStruct(outer, vis);
   } else if (checkKeyWord(lexer::KeyWordKind::KW_ENUM)) {
-    return parseEnumeration(vis);
+    return parseEnumeration(outer, vis);
   } else if (checkKeyWord(lexer::KeyWordKind::KW_UNION)) {
-    return parseUnion(vis);
+    return parseUnion(outer, vis);
   } else if (checkKeyWord(lexer::KeyWordKind::KW_STATIC)) {
-    return parseStaticItem(vis);
+    return parseStaticItem(outer, vis);
   } else if (checkKeyWord(lexer::KeyWordKind::KW_TRAIT)) {
-    return parseTrait(vis);
+    return parseTrait(outer, vis);
   } else if (checkKeyWord(lexer::KeyWordKind::KW_IMPL)) {
-    return parseImplementation(vis);
+    return parseImplementation(outer, vis);
   } else if (checkKeyWord(lexer::KeyWordKind::KW_EXTERN)) {
-    return parseExternBlock(vis);
+    return parseExternBlock(outer, vis);
   }
   // complete?
   return StringResult<std::shared_ptr<ast::Item>>("failed to parse vis item");
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseMod(std::optional<ast::Visibility> vis) {
+Parser::parseMod(std::span<OuterAttribute> outer, std::optional<ast::Visibility> vis) {
 
   Location loc = getLocation();
 
