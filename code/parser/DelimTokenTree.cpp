@@ -42,6 +42,7 @@ Parser::parseDelimTokenTree() {
 
   if (check(TokenKind::ParenOpen)) {
     assert(eat(TokenKind::ParenOpen));
+    tree.setKind(DelimTokenTreeKind::Paren);
     while (true) {
       if (check(TokenKind::Eof)) {
         return StringResult<std::shared_ptr<ast::DelimTokenTree>>(
@@ -62,6 +63,7 @@ Parser::parseDelimTokenTree() {
       }
     }
   } else if (check(TokenKind::SquareOpen)) {
+    tree.setKind(DelimTokenTreeKind::Square);
     assert(eat(TokenKind::SquareOpen));
     while (true) {
       if (check(TokenKind::Eof)) {
@@ -83,6 +85,7 @@ Parser::parseDelimTokenTree() {
       }
     }
   } else if (check(TokenKind::BraceOpen)) {
+    tree.setKind(DelimTokenTreeKind::Brace);
     assert(eat(TokenKind::BraceOpen));
     while (true) {
       if (check(TokenKind::Eof)) {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/GenericParams.h"
+#include "AST/OuterAttribute.h"
 #include "AST/Struct.h"
 #include "AST/StructFields.h"
 #include "AST/WhereClause.h"

@@ -46,7 +46,26 @@ public:
       : literal(lit), loc(loc){};
 };
 
-class MetaItem : public MetaItemInner {};
+enum class MetaItemKind {
+  MetaNameValueString,
+  MetaListPaths,
+  MetaListNameValueString,
+  MetaWord,
+  MetaItemSequence,
+  MetaLiteralExpression,
+  MetaItemPathLit,
+  MetaItemPath
+};
+
+class MetaItem : public MetaItemInner {
+  MetaItemKind kind;
+
+public:
+  MetaItem(MetaItemKind kind) : kind(kind) {}
+  bool isMetaItem() const override { return true; }
+
+  MetaItemKind getKind() const { return kind; }
+};
 
 /// IDENTIFER = (STRING_LITERAL | RAW_STRING_LITERAL)
 class MetaNameValueString : public MetaItem {
@@ -57,13 +76,15 @@ class MetaNameValueString : public MetaItem {
 
 public:
   MetaNameValueString(const Identifier &key, Location lc, const Token &t)
-      : identifier(key), loc(lc), str(t) {}
+      : MetaItem(MetaItemKind::MetaNameValueString), identifier(key), loc(lc),
+        str(t) {}
 
   MetaItemInner *clone() override;
 
-  bool isKeyValuePair() const override { return true; }
+  std::optional<std::shared_ptr<MetaNameValueString>>
+  tryMetaNameValueString() const override;
 
-  std::unique_ptr<MetaNameValueString> tryMetaNameValueString() const override;
+  bool isKeyValuePair() const override { return true; }
 };
 
 class MetaListPaths : public MetaItem {
@@ -73,12 +94,11 @@ class MetaListPaths : public MetaItem {
 
 public:
   MetaListPaths(const Identifier &id, Location lc, std::span<SimplePath> path)
-      : ident(id), loc(lc) {
+      : MetaItem(MetaItemKind::MetaListPaths), ident(id), loc(lc) {
     paths = {path.begin(), path.end()};
   }
 
   MetaItemInner *clone() override;
-
   bool isKeyValuePair() const override { return false; }
 };
 
@@ -90,12 +110,11 @@ class MetaListNameValueString : public MetaItem {
 public:
   MetaListNameValueString(const Identifier &id, Location lc,
                           std::span<MetaNameValueString> kv)
-      : ident(id), loc(lc) {
+      : MetaItem(MetaItemKind::MetaListNameValueString), ident(id), loc(lc) {
     kvs = {kv.begin(), kv.end()};
   }
 
   MetaItemInner *clone() override;
-
   bool isKeyValuePair() const override { return false; }
 };
 
@@ -105,21 +124,24 @@ class MetaWord : public MetaItem {
   Location loc;
 
 public:
-  MetaWord(const Identifier &word, Location loc) : identifier(word), loc(loc) {}
+  MetaWord(const Identifier &word, Location loc)
+      : MetaItem(MetaItemKind::MetaWord), identifier(word), loc(loc) {}
 
   MetaItemInner *clone() override;
 
   bool isKeyValuePair() const override { return false; }
+  Identifier getIdentifier() const { return identifier; }
 };
 
 class MetaItemSequence : public MetaItem {
   SimplePath path;
-  std::vector<std::unique_ptr<MetaItemInner>> sequence;
+  std::vector<std::shared_ptr<MetaItemInner>> sequence;
 
 public:
   MetaItemSequence(SimplePath path,
-                   std::vector<std::unique_ptr<MetaItemInner>> sequence)
-      : path(std::move(path)), sequence(std::move(sequence)) {}
+                   std::vector<std::shared_ptr<MetaItemInner>> sequence)
+      : MetaItem(MetaItemKind::MetaItemSequence), path(std::move(path)),
+        sequence(std::move(sequence)) {}
 
   MetaItemInner *clone() override;
 
@@ -130,7 +152,8 @@ class MetaItemLiteralExpression : public MetaItem {
   AttributeLiteralExpression expr;
 
 public:
-  MetaItemLiteralExpression(AttributeLiteralExpression exp) : expr(exp) {}
+  MetaItemLiteralExpression(AttributeLiteralExpression exp)
+      : MetaItem(MetaItemKind::MetaLiteralExpression), expr(exp) {}
   MetaItemInner *clone() override;
 
   bool isKeyValuePair() const override { return false; }
@@ -142,7 +165,7 @@ class MetaItemPathLit : public MetaItem {
 
 public:
   MetaItemPathLit(SimplePath p, AttributeLiteralExpression exp)
-      : path(p), expr(exp){};
+      : MetaItem(MetaItemKind::MetaItemPathLit), path(p), expr(exp){};
 
   MetaItemInner *clone() override;
 
@@ -153,7 +176,8 @@ class MetaItemPath : public MetaItem {
   SimplePath path;
 
 public:
-  MetaItemPath(SimplePath path) : path(path) {}
+  MetaItemPath(SimplePath path)
+      : MetaItem(MetaItemKind::MetaItemPath), path(path) {}
 
   MetaItemInner *clone() override;
 
@@ -166,15 +190,15 @@ class AttributeParser {
   size_t offset;
 
 public:
-  AttributeParser(const std::vector<Token> ts) : ts(ts), offset(0) {}
+  AttributeParser(const std::vector<Token> &ts) : ts(ts), offset(0) {}
 
-  std::vector<std::unique_ptr<MetaItemInner>> parseMetaItemSequence();
+  std::vector<std::shared_ptr<MetaItemInner>> parseMetaItemSequence();
 
 private:
-  std::unique_ptr<MetaItemInner> parseMetaItemInner();
-  std::unique_ptr<MetaItem> parsePathMetaItem();
+  std::shared_ptr<MetaItemInner> parseMetaItemInner();
+  std::shared_ptr<MetaItem> parsePathMetaItem();
 
-  std::unique_ptr<MetaItemLiteralExpression> parseMetaItemLiteralExpression();
+  std::shared_ptr<MetaItemLiteralExpression> parseMetaItemLiteralExpression();
 
   std::optional<AttributeLiteral> parseLiteral();
   std::optional<SimplePath> parseSimplePath();
@@ -184,6 +208,8 @@ private:
   void skipToken(int i = 0);
 
   bool isMetaItemEnd(TokenKind kind);
+
+  bool check(TokenKind kind) { return peekToken().getKind() == kind; }
 };
 
 } // namespace rust_compiler::ast

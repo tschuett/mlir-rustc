@@ -18,20 +18,20 @@ class AttrInput : public Node {
   std::shared_ptr<DelimTokenTree> tree;
   std::shared_ptr<Expression> expr;
   AttrInputKind kind;
-  std::vector<std::unique_ptr<MetaItemInner>> items;
+  std::vector<std::shared_ptr<MetaItemInner>> items;
 
 public:
   AttrInput(Location loc) : Node(loc) {}
 
   AttrInputKind getKind() const;
 
-  AttrInput(const AttrInput &other);
+//  AttrInput(const AttrInput &other);
+//
+//  AttrInput &operator=(const AttrInput &other);
 
-  AttrInput &operator=(const AttrInput &other);
-
-  // default move semantics
-  AttrInput(AttrInput &&other) = default;
-  AttrInput &operator=(AttrInput &&other) = default;
+//  // default move semantics
+//  AttrInput(AttrInput &&other) = default;
+//  AttrInput &operator=(AttrInput &&other) = default;
 
   void setTokenTree(std::shared_ptr<DelimTokenTree> _tree) {
     tree = _tree;
@@ -43,16 +43,16 @@ public:
     kind = AttrInputKind::Expression;
   }
 
-  void setMetaItems(std::vector<std::unique_ptr<MetaItemInner>> items) {
-    this->items = std::move(items);
+  void setMetaItems(std::vector<std::shared_ptr<MetaItemInner>> items) {
+    this->items = items;
     kind = AttrInputKind::MetaItems;
   }
 
   void parseToMetaItem();
 
-  std::unique_ptr<AttrInput> clone();
+  //std::shared_ptr<AttrInput> clone();
 
-  const std::vector<std::unique_ptr<MetaItemInner>>& getMetaItems() const {
+  const std::vector<std::shared_ptr<MetaItemInner>>& getMetaItems() const {
     return items;
   }
 };

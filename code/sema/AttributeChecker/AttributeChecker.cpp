@@ -17,7 +17,8 @@ void AttributeChecker::checkCrate(std::shared_ptr<ast::Crate> crate) {
     Attr attr = inn.getAttr();
     attr.parseMetaItem();
 
-    [[maybe_unused]]AttrInput *input = attr.getInput();
+    if (attr.hasInput())
+      [[maybe_unused]]AttrInput input = attr.getInput();
   }
 
   std::vector<std::shared_ptr<Item>> items = crate->getItems();

@@ -6,7 +6,9 @@
 #include "Lexer/Identifier.h"
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
+#include "llvm/ADT/StringExtras.h"
 
+#include <cstdlib>
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <vector>
@@ -20,20 +22,24 @@ MetaItemInner *MetaItemPath::clone() { return new MetaItemPath(path); }
 
 MetaItemInner *MetaItemSequence::clone() {
   SimplePath newPath = path;
-  std::vector<std::unique_ptr<MetaItemInner>> newSequence;
+  std::vector<std::shared_ptr<MetaItemInner>> newSequence;
 
   for (unsigned i = 0; i < sequence.size(); ++i)
-    newSequence[i] = std::unique_ptr<MetaItemInner>(sequence[i]->clone());
+    newSequence[i] = std::shared_ptr<MetaItemInner>(sequence[i]->clone());
 
-  return new MetaItemSequence(newPath, std::move(newSequence));
+  return new MetaItemSequence(newPath, newSequence);
 }
 
-std::vector<std::unique_ptr<MetaItemInner>>
+std::vector<std::shared_ptr<MetaItemInner>>
 AttributeParser::parseMetaItemSequence() {
   size_t length = ts.size();
-  std::vector<std::unique_ptr<MetaItemInner>> metaItems;
+  std::vector<std::shared_ptr<MetaItemInner>> metaItems;
 
-  if (peekToken().getKind() != TokenKind::ParenOpen) {
+  llvm::errs() << "parseMetaItemSequence: " << length << "\n";
+//  for (const Token &token : ts)
+//    llvm::errs() << Token2String(token.getKind()) << "\n";
+
+  if (offset < length && peekToken().getKind() != TokenKind::ParenOpen) {
     llvm::errs() << peekToken().getLocation().toString()
                  << "missing ( in delim token tree"
                  << "\n";
@@ -41,32 +47,49 @@ AttributeParser::parseMetaItemSequence() {
   }
   skipToken();
 
-  while (offset < length && peekToken().getKind() != TokenKind::ParenClose) {
-    std::unique_ptr<MetaItemInner> inner = parseMetaItemInner();
-    if (inner == nullptr) {
+  while (offset < length &&
+         not(peekToken().getKind() == TokenKind::ParenClose &&
+             peekToken(1).getKind() == TokenKind::SquareClose)) {
+    if (check(TokenKind::ParenOpen) or check(TokenKind::SquareOpen) or
+        check(TokenKind::BraceOpen))
+      skipToken();
+    std::shared_ptr<MetaItemInner> inner = parseMetaItemInner();
+    if (not (bool)inner) {
       return {};
     }
     metaItems.push_back(std::move(inner));
 
-    if (peekToken().getKind() != TokenKind::Comma)
+    if (check(TokenKind::ParenClose) or check(TokenKind::SquareClose) or
+        check(TokenKind::BraceClose))
+      skipToken();
+
+    if (offset < length && peekToken().getKind() != TokenKind::Comma)
       break;
 
     skipToken();
   }
 
-  if (peekToken().getKind() != TokenKind::ParenClose) {
+  if (offset < length && peekToken().getKind() != TokenKind::ParenClose) {
     llvm::errs() << peekToken().getLocation().toString()
                  << ": missing ) in delim token tree"
                  << "\n";
+    llvm::errs() << Token2String(peekToken().getKind()) << "\n";
+    exit(EXIT_FAILURE);
     return {};
   }
 
   skipToken();
 
+  llvm::errs() << "parseMetaItemSequence2: " << metaItems.size() << "\n";
+
   return metaItems;
 }
 
-std::unique_ptr<MetaItemInner> AttributeParser::parseMetaItemInner() {
+/// MetaItemInner : MetaItem | Expression (literal)
+std::shared_ptr<MetaItemInner> AttributeParser::parseMetaItemInner() {
+  llvm::errs() << "parseMetaItemInner"
+               << "\n";
+
   if (not peekToken().isIdentifier()) {
     if (peekToken().isKeyWord()) {
       switch (peekToken().getKeyWordKind()) {
@@ -96,6 +119,9 @@ std::unique_ptr<MetaItemInner> AttributeParser::parseMetaItemInner() {
           return parsePathMetaItem();
         break;
       default: {
+        llvm::errs() << "unknown token :" << Token2String(peekToken().getKind())
+                     << " in parseMetaItemInner"
+                     << "\n";
       }
       }
     }
@@ -110,7 +136,7 @@ std::unique_ptr<MetaItemInner> AttributeParser::parseMetaItemInner() {
   if (isMetaItemEnd(peekToken(1).getKind())) {
     skipToken();
 
-    return std::unique_ptr<MetaWord>(new MetaWord(ident, identLoc));
+    return std::shared_ptr<MetaWord>(new MetaWord(ident, identLoc));
   }
 
   if (peekToken(1).getKind() == TokenKind::Eq) {
@@ -121,7 +147,7 @@ std::unique_ptr<MetaItemInner> AttributeParser::parseMetaItemInner() {
 
       skipToken(2);
 
-      return std::unique_ptr<MetaNameValueString>(
+      return std::shared_ptr<MetaNameValueString>(
           new MetaNameValueString(ident, identLoc, valueToken));
     } else {
       return parsePathMetaItem();
@@ -140,37 +166,37 @@ std::unique_ptr<MetaItemInner> AttributeParser::parseMetaItemInner() {
   if (peekToken().getKind() == TokenKind::Identifier)
     return parsePathMetaItem();
 
-  std::vector<std::unique_ptr<MetaItemInner>> metaItems =
+  std::vector<std::shared_ptr<MetaItemInner>> metaItems =
       parseMetaItemSequence();
 
   // try meta name value string
   std::vector<MetaNameValueString> metaNameValueStringItems;
   for (const auto &item : metaItems) {
-    std::unique_ptr<MetaNameValueString> convertedItem =
+    std::optional<std::shared_ptr<MetaNameValueString>> convertedItem =
         item->tryMetaNameValueString();
-    if (convertedItem == nullptr) {
+    if (!convertedItem) {
       metaNameValueStringItems.clear();
       break;
     }
   }
 
   if (!metaItems.empty())
-    return std::unique_ptr<MetaListNameValueString>(
+    return std::shared_ptr<MetaListNameValueString>(
         new MetaListNameValueString(ident, identLoc, metaNameValueStringItems));
 
   // try meta list paths
   std::vector<SimplePath> pathItems;
   for (const auto &item : metaItems) {
-    SimplePath convertedPath = item->tryPathItem();
-    if (convertedPath.isEmpty()) {
+    std::optional<SimplePath> convertedPath = item->tryPathItem();
+    if (!convertedPath) {
       pathItems.clear();
       break;
     }
-    pathItems.push_back(std::move(convertedPath));
+    pathItems.push_back(*convertedPath);
   }
 
   if (!pathItems.empty())
-    return std::unique_ptr<MetaListPaths>(
+    return std::shared_ptr<MetaListPaths>(
         new MetaListPaths(ident, identLoc, pathItems));
 
   llvm::errs() << "failed to parse any meta item inner"
@@ -179,7 +205,7 @@ std::unique_ptr<MetaItemInner> AttributeParser::parseMetaItemInner() {
   return nullptr;
 }
 
-std::unique_ptr<MetaItem> AttributeParser::parsePathMetaItem() {
+std::shared_ptr<MetaItem> AttributeParser::parsePathMetaItem() {
   std::optional<SimplePath> path = parseSimplePath();
   if (!path) {
     // report error
@@ -198,10 +224,10 @@ std::unique_ptr<MetaItem> AttributeParser::parsePathMetaItem() {
   }
 
   if (peekToken().getKind() == TokenKind::ParenOpen) {
-    std::vector<std::unique_ptr<MetaItemInner>> metaItems =
+    std::vector<std::shared_ptr<MetaItemInner>> metaItems =
         parseMetaItemSequence();
 
-    return std::unique_ptr<MetaItemSequence>(
+    return std::shared_ptr<MetaItemSequence>(
         new MetaItemSequence(*path, std::move(metaItems)));
   } else if (peekToken().getKind() == TokenKind::Eq) {
     skipToken();
@@ -217,10 +243,10 @@ std::unique_ptr<MetaItem> AttributeParser::parsePathMetaItem() {
     }
     AttributeLiteralExpression expr = {std::move(*lit), loc};
 
-    return std::unique_ptr<MetaItemPathLit>(
+    return std::shared_ptr<MetaItemPathLit>(
         new MetaItemPathLit(*path, std::move(expr)));
   } else if (peekToken().getKind() == TokenKind::Comma) {
-    return std::unique_ptr<MetaItemPath>(new MetaItemPath(*path));
+    return std::shared_ptr<MetaItemPath>(new MetaItemPath(*path));
   }
 
   // report error
@@ -328,6 +354,9 @@ std::optional<SimplePathSegment> AttributeParser::parseSimplePathSegment() {
       return segment;
     }
     default: {
+      llvm::errs() << "unknown token: " << Token2String(peekToken().getKind())
+                   << "in parseSimplePathSegment"
+                   << "\n";
     }
     }
   } else {
@@ -346,6 +375,9 @@ std::optional<SimplePathSegment> AttributeParser::parseSimplePathSegment() {
       }
       break;
     default: {
+      llvm::errs() << "unknown token: " << Token2String(peekToken().getKind())
+                   << "in parseSimplePathSegment"
+                   << "\n";
     }
     }
   }
@@ -357,15 +389,18 @@ std::optional<SimplePathSegment> AttributeParser::parseSimplePathSegment() {
   return std::nullopt;
 }
 
-std::unique_ptr<MetaItemLiteralExpression>
+std::shared_ptr<MetaItemLiteralExpression>
 AttributeParser::parseMetaItemLiteralExpression() {
   Location loc = peekToken().getLocation();
   auto lit = parseLiteral();
   if (!lit)
     return nullptr;
 
+  // eat the literal
+  skipToken();
+
   AttributeLiteralExpression expr = {*lit, loc};
-  return std::unique_ptr<MetaItemLiteralExpression>(
+  return std::shared_ptr<MetaItemLiteralExpression>(
       new MetaItemLiteralExpression(expr));
 }
 
@@ -399,9 +434,9 @@ MetaItemInner *MetaItemLiteralExpression::clone() {
   return new MetaItemLiteralExpression(expr);
 }
 
-std::unique_ptr<MetaNameValueString>
+std::optional<std::shared_ptr<MetaNameValueString>>
 MetaNameValueString::tryMetaNameValueString() const {
-  return std::unique_ptr<MetaNameValueString>(
+  return std::shared_ptr<MetaNameValueString>(
       new MetaNameValueString(identifier, loc, str));
 }
 

@@ -103,9 +103,9 @@ StringResult<ast::Attr> Parser::parseAttr() {
       printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    AttrInput input = attrInput.moveValue();
-    attr.setAttrInput(std::make_unique<AttrInput>(std::move(input)));
+    attr.setAttrInput(attrInput.getValue());
   }
+
   return StringResult<ast::Attr>(attr);
 }
 
