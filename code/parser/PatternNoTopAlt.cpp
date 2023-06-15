@@ -603,6 +603,14 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
       // terminator
       recover(point);
       return parsePathOrStructOrTupleStructPattern();
+    } else if (check(TokenKind::Ge)) {
+      // terminator
+      recover(point);
+      return parsePathOrStructOrTupleStructPattern();
+    } else if (check(TokenKind::FatArrow)) {
+      // terminator
+      recover(point);
+      return parsePathOrStructOrTupleStructPattern();
     } else {
       // error
       std::string s =

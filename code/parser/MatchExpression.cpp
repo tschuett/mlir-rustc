@@ -51,9 +51,6 @@ StringResult<ast::MatchArm> Parser::parseMatchArm() {
   Location loc = getLocation();
   MatchArm arm = {loc};
 
-  llvm::errs() << "parseMatchArm"
-               << "\n";
-
   if (checkOuterAttribute()) {
     StringResult<std::vector<ast::OuterAttribute>> outer =
         parseOuterAttributes();
@@ -110,9 +107,6 @@ StringResult<ast::MatchArms> Parser::parseMatchArms() {
   Location loc = getLocation();
   MatchArms arms = {loc};
 
-  llvm::errs() << "parseMatchArms"
-               << "\n";
-
   StringResult<ast::MatchArm> arm = parseMatchArm();
   if (!arm) {
     llvm::errs() << "failed to parse match arm in match arms: "
@@ -162,10 +156,6 @@ StringResult<ast::MatchArms> Parser::parseMatchArms() {
   }
 
   while (true) {
-    llvm::errs() << "parseMatchArms: " << Token2String(getToken().getKind())
-                 << "\n";
-    llvm::errs() << "parseMatchArms: " << Token2String(getToken(1).getKind())
-                 << "\n";
     if (check(TokenKind::Eof)) {
       // abort
       return StringResult<ast::MatchArms>("failed to parse match arms: eof");
@@ -238,9 +228,6 @@ StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseMatchExpression(std::span<ast::OuterAttribute>) {
   Location loc = getLocation();
   MatchExpression ma = {loc};
-
-  llvm::errs() << "parseMatchExpression"
-               << "\n";
 
   if (checkKeyWord(KeyWordKind::KW_MATCH)) {
     assert(eatKeyWord(KeyWordKind::KW_MATCH));

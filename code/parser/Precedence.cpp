@@ -36,6 +36,8 @@ Precedence Parser::getLeftBindingPower() {
     return Precedence::Mul;
   case TokenKind::SquareOpen:
     return Precedence::ArrayIndexing;
+  case TokenKind::Gt:
+    return Precedence::GreaterThan;
   case TokenKind::QMark:
     return Precedence::QuestionMark;
   case TokenKind::Semi: // no power for your

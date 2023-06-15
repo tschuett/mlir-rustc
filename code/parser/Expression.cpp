@@ -1296,6 +1296,7 @@ Parser::parseIfExpression(std::span<OuterAttribute>) {
   Result<std::shared_ptr<ast::Expression>, std::string> block =
       parseBlockExpression({});
   if (!block) {
+    llvm::errs() << Token2String(getToken().getKind()) << "\n";
     llvm::errs() << "failed to parse block in if expression: "
                  << block.getError() << "\n";
     printFunctionStack();

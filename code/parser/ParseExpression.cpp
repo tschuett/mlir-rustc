@@ -100,6 +100,9 @@ Parser::parseInfixExpression(std::shared_ptr<Expression> left,
   case TokenKind::Lt: {
     return parseComparisonExpression(left, restrictions);
   }
+  case TokenKind::Gt: {
+    return parseComparisonExpression(left, restrictions);
+  }
   case TokenKind::Eq: {
     return parseAssignmentExpression(left, outer, restrictions);
   }

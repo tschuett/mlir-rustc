@@ -500,6 +500,7 @@ Parser::parseFunction(std::span<OuterAttribute> outer, std::optional<ast::Visibi
 
   Function fun = {loc, vis};
 
+  fun.setOuterAttributes(outer);
   //  llvm::outs() << "parseFunction"
   //               << "\n";
 
@@ -537,7 +538,7 @@ Parser::parseFunction(std::span<OuterAttribute> outer, std::optional<ast::Visibi
 
   fun.setIdentifier(id.getIdentifier());
 
-  llvm::errs() << "function: " << id.getIdentifier().toString() << "\n";
+  //llvm::errs() << "function: " << id.getIdentifier().toString() << "\n";
 
   if (check(TokenKind::Lt)) {
     StringResult<ast::GenericParams> genericParams = parseGenericParams();

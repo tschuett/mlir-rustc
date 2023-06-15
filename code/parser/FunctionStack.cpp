@@ -13,7 +13,9 @@ void Parser::printFunctionStack() {
   }
 }
 
-  void Parser::pushFunction(std::string_view f) { functionStack.push(std::string(f)); }
+void Parser::pushFunction(std::string_view f) {
+  functionStack.push(std::string(f));
+}
 
 void Parser::popFunction(std::string_view f) {
   assert(functionStack.top() == f);
