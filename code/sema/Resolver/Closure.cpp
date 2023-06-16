@@ -1,7 +1,11 @@
+#include "ADT/CanonicalPath.h"
 #include "AST/ClosureParam.h"
 #include "AST/ClosureParameters.h"
+#include "AST/Patterns/PathPattern.h"
+#include "AST/Patterns/PatternNoTopAlt.h"
 #include "Resolver.h"
 
+#include <cstdlib>
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
@@ -19,8 +23,6 @@ void Resolver::resolveClosureExpression(
     std::shared_ptr<ast::ClosureExpression> closure,
     const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
-
-  assert(false && "to be handled later");
 
   NodeId scopeNodeId = closure->getNodeId();
 
@@ -65,6 +67,31 @@ void Resolver::resolveClosureParameter(
 
   if (param.hasType())
     resolveType(param.getType(), prefix, canonicalPrefix);
+
+  if (param.getPattern()->getKind() ==
+      patterns::PatternNoTopAltKind::PatternWithoutRange) {
+    if (std::static_pointer_cast<patterns::PatternWithoutRange>(
+            param.getPattern())
+            ->getWithoutRangeKind() ==
+        ast::patterns::PatternWithoutRangeKind::IdentifierPattern) {
+      auto ident =
+          static_pointer_cast<patterns::IdentifierPattern>(param.getPattern());
+      getNameScope().insert(
+          CanonicalPath::newSegment(ident->getNodeId(), ident->getIdentifier()),
+          ident->getNodeId(), ident->getLocation(), RibKind::Variable);
+    } else if (std::static_pointer_cast<patterns::PatternWithoutRange>(
+            param.getPattern())
+            ->getWithoutRangeKind() ==
+        ast::patterns::PatternWithoutRangeKind::PathPattern) {
+      //auto path =
+      //    static_pointer_cast<patterns::PathPattern>(param.getPattern());
+      llvm::errs() << "path pattern in resolveClosureParameter" << "\n";
+      exit(EXIT_FAILURE);
+    } else {
+      llvm::errs() << "unknown pattern in resolveClosureParameter" << "\n";
+      exit(EXIT_FAILURE);
+    }
+  }
 }
 
 } // namespace rust_compiler::sema::resolver

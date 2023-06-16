@@ -21,8 +21,6 @@ namespace rust_compiler::sema::type_checking {
 
 TyTy::BaseType *TypeResolver::checkClosureExpression(
     std::shared_ptr<ast::ClosureExpression> closure) {
-  assert(false && "to be implemented");
-
   TypeCheckContextItem &currentContext = peekContext();
   TyTy::FunctionType *currentFunction = currentContext.getContextType();
 
@@ -99,7 +97,9 @@ TypeResolver::inferClosureParam(patterns::PatternNoTopAlt *noTop) {
       assert(false);
     }
     case PatternWithoutRangeKind::IdentifierPattern: {
-      assert(false);
+      return new TyTy::InferType(noTop->getNodeId(), TyTy::InferKind::General,
+                                 TyTy::TypeHint::unknown(),
+                                 noTop->getLocation());
     }
     case PatternWithoutRangeKind::WildcardPattern: {
       assert(false);

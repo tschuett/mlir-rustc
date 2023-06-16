@@ -513,6 +513,8 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
     return parseIdentifierPattern();
   } else if (check(TokenKind::Identifier) && check(TokenKind::ParenClose, 1)) {
     return parseIdentifierPattern();
+  } else if (check(TokenKind::Identifier) && check(TokenKind::Or, 1)) {
+    return parseIdentifierPattern();
   }
 
   /*
@@ -608,6 +610,10 @@ Parser::parseRangeOrIdentifierOrStructOrTupleStructOrMacroInvocationPattern() {
       recover(point);
       return parsePathOrStructOrTupleStructPattern();
     } else if (check(TokenKind::FatArrow)) {
+      // terminator
+      recover(point);
+      return parsePathOrStructOrTupleStructPattern();
+    } else if (check(TokenKind::Or)) {
       // terminator
       recover(point);
       return parsePathOrStructOrTupleStructPattern();

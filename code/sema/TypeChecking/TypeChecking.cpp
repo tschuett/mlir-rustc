@@ -1,6 +1,7 @@
 #include "TypeChecking.h"
 
 #include "AST/MacroItem.h"
+#include "Basic/Ids.h"
 #include "Session/Session.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyCtx.h"
@@ -143,6 +144,20 @@ void TypeResolver::popReturnType() {
 TypeCheckContextItem &TypeResolver::peekContext() {
   assert(!returnTypeStack.empty());
   return returnTypeStack.back().first;
+}
+
+TyTy::FunctionType *TypeCheckContextItem::getContextType() {
+  NodeId id = basic::UNKNOWN_NODEID;
+  switch (kind) {
+  case ItemKind::Function:
+    id = std::get<ast::Function *>(item)->getNodeId();
+    break;
+  }
+
+  std::optional<TyTy::BaseType *> type =
+      rust_compiler::session::session->getTypeContext()->lookupType(id);
+  assert(type.has_value());
+  return static_cast<TyTy::FunctionType *>(*type);
 }
 
 } // namespace rust_compiler::sema::type_checking

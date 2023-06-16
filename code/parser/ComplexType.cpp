@@ -108,12 +108,18 @@ Parser::parseTraitObjectTypeOrTypePathOrMacroInvocation() {
       // terminator
       recover(cp);
       return parseTypePath();
+    } else if (check(TokenKind::Or)) {
+      // terminator
+      recover(cp);
+      return parseTypePath();
     }
     if (iterations > 10) {
       llvm::errs() << "failed parseTraitObjectTypeOrTypePathOrMacroInvocation()"
                    << "\n";
       llvm::errs() << "iterations limited exceed at "
                    << getToken().getLocation().toString() << "\n";
+      llvm::errs() << "iterations limited exceed with: "
+                   << Token2String(getToken().getKind()) << "\n";
       exit(EXIT_FAILURE);
     }
   }

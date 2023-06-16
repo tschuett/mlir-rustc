@@ -69,6 +69,7 @@
 
 #include <map>
 #include <memory>
+#include <variant>
 #include <vector>
 
 namespace rust_compiler::ast {
@@ -86,14 +87,18 @@ using namespace rust_compiler::ast;
 using namespace rust_compiler::tyctx;
 
 class TypeCheckContextItem {
-public:
-  TypeCheckContextItem(ast::Function *f) : fun(f) {}
+  enum ItemKind { Function };
 
-  ast::Function *getFunction() const { return fun; }
+public:
+  TypeCheckContextItem(ast::Function *f) : kind(ItemKind::Function), item(f) {}
+
+  ast::Function *getFunction() const { return std::get<ast::Function*>(item); }
   TyTy::FunctionType *getContextType();
 
 private:
-  ast::Function *fun;
+  ItemKind getKind() const { return kind; }
+  ItemKind kind;
+  std::variant<ast::Function *> item;
 };
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_hir_analysis/index.html
