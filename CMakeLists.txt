@@ -35,6 +35,10 @@ set(LLVM_TABLEGEN_EXE "${LLVM_DIR}/../../../bin/llvm-tblgen")
 
 message(STATUS "Using tablegen in: ${LLVM_TABLEGEN_EXE}")
 
+set(MLIR_TABLEGEN_EXE "${LLVM_DIR}/../../../bin/mlir-tblgen")
+
+message(STATUS "Using tablegen in: ${MLIR_TABLEGEN_EXE}")
+
 include(TableGen)
 include(AddLLVM)
 include(AddMLIR)
