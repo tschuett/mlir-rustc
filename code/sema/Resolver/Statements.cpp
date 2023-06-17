@@ -2,6 +2,7 @@
 #include "AST/ExpressionStatement.h"
 #include "AST/LetStatement.h"
 #include "AST/Statement.h"
+#include "PatternDeclaration.h"
 #include "Resolver.h"
 
 #include <memory>
@@ -49,8 +50,14 @@ void Resolver::resolveLetStatement(std::shared_ptr<ast::LetStatement> let,
   if (let->hasInit())
     resolveExpression(let->getInit(), prefix, canonicalPrefix);
 
-  resolvePatternDeclaration(let->getPattern(), RibKind::Variable, prefix,
-                            canonicalPrefix);
+  std::vector<PatternBinding> bindings = {
+      PatternBinding(PatternBoundCtx::Product, std::set<NodeId>())};
+
+  PatternDeclaration pat = {let->getPattern(), RibKind::Variable, bindings, this, prefix,
+                            canonicalPrefix};
+  pat.resolve();
+//  resolvePatternDeclaration(let->getPattern(), RibKind::Variable, prefix,
+//                            canonicalPrefix);
 
   if (let->hasType())
     resolveType(let->getType(), prefix, canonicalPrefix);

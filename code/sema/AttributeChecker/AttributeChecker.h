@@ -8,6 +8,7 @@ namespace rust_compiler::ast {
 class Struct;
 class Trait;
 class TypeAlias;
+class Enumeration;
 } // namespace rust_compiler::ast
 
 namespace rust_compiler::sema::attribute_checker {
@@ -27,6 +28,7 @@ private:
   void checkStruct(Struct *item);
   void checkTrait(Trait *);
   void checkTypeAlias(TypeAlias *);
+  void checkEnumeration(Enumeration *);
 };
 
 } // namespace rust_compiler::sema::attribute_checker

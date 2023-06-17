@@ -57,6 +57,9 @@ public:
     if (auto canPath = lookupCanonicalPath(id)) {
       if (canPath->isEqual(path))
         return;
+      llvm::errs() << "surprise in insertCanonicalPath: " << id << "\n";
+      llvm::errs() << "old: " << canPath->asString() << "\n";
+      llvm::errs() << "new: " << path.asString() << "\n";
       assert(canPath->getSize() >= path.getSize());
     }
     paths.emplace(id, path);
@@ -79,6 +82,14 @@ public:
     auto it = moduleChildItems.find(module);
     if (it == moduleChildItems.end())
       moduleChildItems.insert({module, {child}});
+    else
+      it->second.emplace_back(child);
+  }
+
+  void insertModuleChild(NodeId module, NodeId child) {
+    auto it = moduleChildMap.find(module);
+    if (it == moduleChildMap.end())
+      moduleChildMap.insert({module, {child}});
     else
       it->second.emplace_back(child);
   }
@@ -194,6 +205,8 @@ private:
   std::map<NodeId, std::pair<ast::ExternalItem *, NodeId>> externItemMappings;
 
   std::map<NodeId, std::vector<sema::Adjustment>> autoderefMappings;
+
+  //std::map<NodeId, std::vector<NodeId>> moduleChildMap;
 
   // TyTy
 

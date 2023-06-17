@@ -13,17 +13,16 @@
 
 namespace rust_compiler::ast {
 
-enum class EnumItemKind { Tuple, Struct, Discriminant };
+// enum class EnumItemKind { Tuple, Struct, Discriminant };
 
 class EnumItem : public Node {
   std::vector<OuterAttribute> outerAttributes;
   std::optional<Visibility> visibility;
   Identifier identifier;
-  std::optional<
-      std::variant<EnumItemTuple, EnumItemStruct, EnumItemDiscriminant>>
-      item;
+  std::optional<std::variant<EnumItemTuple, EnumItemStruct>> item;
+  std::optional<EnumItemDiscriminant> discriminant;
 
-  EnumItemKind kind;
+  // EnumItemKind kind;
 
 public:
   EnumItem(Location loc) : Node(loc) {}
@@ -34,26 +33,23 @@ public:
 
   void setVisibility(const Visibility &vis) { visibility = vis; }
 
-  void setIdentifier(const Identifier& i) { identifier = i; }
+  void setIdentifier(const Identifier &i) { identifier = i; }
 
-  void setEnumItemTuple(const EnumItemTuple &tu) {
-    item = tu;
-    kind = EnumItemKind::Tuple;
-  }
-  void setEnumItemStruct(const EnumItemStruct &st) {
-    item = st;
-    kind = EnumItemKind::Struct;
-  }
+  void setEnumItemTuple(const EnumItemTuple &tu) { item = tu; }
+  void setEnumItemStruct(const EnumItemStruct &st) { item = st; }
   void setEnumItemDiscriminant(const EnumItemDiscriminant &dis) {
-    item = dis;
-    kind = EnumItemKind::Discriminant;
+    discriminant = dis;
   }
 
-  EnumItemKind getKind() const { return kind; }
-
-  EnumItemDiscriminant getDiscriminant() const {
-    return std::get<EnumItemDiscriminant>(*item);
+  bool hasTuple() const {
+    return item.has_value() and std::holds_alternative<EnumItemTuple>(*item);
   }
+  bool hasStruct() const {
+    return item.has_value() and std::holds_alternative<EnumItemStruct>(*item);
+  }
+  bool hasDiscriminant() const { return discriminant.has_value(); }
+
+  EnumItemDiscriminant getDiscriminant() const { return *discriminant; }
   EnumItemStruct getStruct() const { return std::get<EnumItemStruct>(*item); }
   EnumItemTuple getTuple() const { return std::get<EnumItemTuple>(*item); }
 

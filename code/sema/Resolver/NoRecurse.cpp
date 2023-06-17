@@ -1,10 +1,16 @@
 #include "ADT/CanonicalPath.h"
 #include "AST/AssociatedItem.h"
+#include "AST/EnumItemDiscriminant.h"
+#include "AST/EnumItemStruct.h"
+#include "AST/EnumItemTuple.h"
+#include "AST/EnumItems.h"
+#include "AST/Enumeration.h"
 #include "AST/Expression.h"
 #include "AST/Implementation.h"
 #include "AST/InherentImpl.h"
 #include "AST/StructStruct.h"
 #include "AST/VisItem.h"
+#include "Basic/Ids.h"
 #include "Resolver.h"
 
 #include <memory>
@@ -53,7 +59,9 @@ void Resolver::resolveVisItemNoRecurse(
     break;
   }
   case VisItemKind::Enumeration: {
-    assert(false);
+    resolveEnumerationNoRecurse(
+        std::static_pointer_cast<Enumeration>(visItem).get(), prefix,
+        canonicalPrefix);
     break;
   }
   case VisItemKind::Union: {
@@ -131,7 +139,8 @@ void Resolver::resolveTraitNoRecurse(
       assert(false);
     }
     case AssociatedItemKind::Function: {
-      std::shared_ptr<Function> fun = std::static_pointer_cast<Function>(asso.getFunction());
+      std::shared_ptr<Function> fun =
+          std::static_pointer_cast<Function>(asso.getFunction());
       assert(fun->getKind() == VisItemKind::Function);
       assert((bool)fun);
       CanonicalPath decl =
@@ -279,6 +288,72 @@ void Resolver::resolveTraitImplNoRecurse(
       assert(false);
     }
   }
+}
+
+void Resolver::resolveEnumerationNoRecurse(
+    ast::Enumeration *enu, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  CanonicalPath decl =
+      CanonicalPath::newSegment(enu->getNodeId(), enu->getName());
+  CanonicalPath path = prefix.append(decl);
+  CanonicalPath cpath = canonicalPrefix.append(decl);
+
+  getTypeScope().insert(path, enu->getNodeId(), enu->getLocation(),
+                        RibKind::Type);
+
+  pushNewModuleScope(enu->getNodeId());
+
+  if (enu->hasEnumItems()) {
+    EnumItems it = enu->getEnumItems();
+    for (const auto &en : it.getItems()) {
+
+      if (en->hasStruct()) {
+        EnumItemStruct str = en->getStruct();
+        CanonicalPath decl2 =
+            CanonicalPath::newSegment(str.getNodeId(), en->getName());
+        CanonicalPath path2 = path.append(decl2);
+        CanonicalPath cpath2 = cpath.append(decl2);
+        getTypeScope().insert(path2, str.getNodeId(), str.getLocation(),
+                              RibKind::Type);
+        NodeId currentModule = peekCurrentModuleScope();
+        tyCtx->insertCanonicalPath(str.getNodeId(), cpath2);
+        tyCtx->insertModuleChildItem(str.getNodeId(), decl2);
+        tyCtx->insertModuleChild(currentModule, str.getNodeId());
+      } else if (en->hasTuple()) {
+        EnumItemTuple str = en->getTuple();
+        CanonicalPath decl2 =
+            CanonicalPath::newSegment(str.getNodeId(), en->getName());
+        CanonicalPath path2 = path.append(decl2);
+        CanonicalPath cpath2 = cpath.append(decl2);
+        getTypeScope().insert(path2, str.getNodeId(), str.getLocation(),
+                              RibKind::Type);
+        NodeId currentModule = peekCurrentModuleScope();
+        tyCtx->insertCanonicalPath(str.getNodeId(), cpath2);
+        tyCtx->insertModuleChildItem(str.getNodeId(), decl2);
+        tyCtx->insertModuleChild(currentModule, str.getNodeId());
+      }
+
+      if (en->hasDiscriminant()) {
+        EnumItemDiscriminant str = en->getDiscriminant();
+        CanonicalPath decl2 =
+            CanonicalPath::newSegment(str.getNodeId(), en->getName());
+        CanonicalPath path2 = path.append(decl2);
+        CanonicalPath cpath2 = cpath.append(decl2);
+        getTypeScope().insert(path2, str.getNodeId(), str.getLocation(),
+                              RibKind::Type);
+        NodeId currentModule = peekCurrentModuleScope();
+        tyCtx->insertCanonicalPath(str.getNodeId(), cpath2);
+        tyCtx->insertModuleChildItem(str.getNodeId(), decl2);
+        tyCtx->insertModuleChild(currentModule, str.getNodeId());
+      }
+    }
+  }
+
+  popModuleScope();
+
+  NodeId currentModule = peekCurrentModuleScope();
+  tyCtx->insertModuleChildItem(currentModule, decl);
+  tyCtx->insertCanonicalPath(enu->getNodeId(), cpath);
 }
 
 } // namespace rust_compiler::sema::resolver

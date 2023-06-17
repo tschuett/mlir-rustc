@@ -10,6 +10,7 @@
 #include "Parser/Restrictions.h"
 
 #include <cassert>
+#include <cstdlib>
 #include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::lexer;
@@ -50,6 +51,10 @@ StringResult<ast::EnumItem> Parser::parseEnumItem() {
   }
 
   if (!check(TokenKind::Identifier)) {
+    llvm::errs() << "failed to parse identifier token in enum item@"
+                 << getToken().getLocation().toString() << "\n";
+    llvm::errs() << Token2String(getToken().getKind()) << "\n";
+    exit(EXIT_FAILURE);
     return StringResult<ast::EnumItem>(
         "failed to parse identifier token in enum item");
   }
@@ -67,17 +72,6 @@ StringResult<ast::EnumItem> Parser::parseEnumItem() {
       exit(EXIT_FAILURE);
     }
     item.setEnumItemStruct(struc.getValue());
-  } else if (check(TokenKind::Eq)) {
-    // Dis
-    StringResult<ast::EnumItemDiscriminant> dis = parseEnumItemDiscriminant();
-    if (!dis) {
-      llvm::errs()
-          << "failed to parse enum item discriminatn tuple in enum item: "
-          << dis.getError() << "\n";
-      printFunctionStack();
-      exit(EXIT_FAILURE);
-    }
-    item.setEnumItemDiscriminant(dis.getValue());
   } else if (check(TokenKind::ParenOpen)) {
     // Tupl
     StringResult<ast::EnumItemTuple> tupl = parseEnumItemTuple();
@@ -88,18 +82,27 @@ StringResult<ast::EnumItem> Parser::parseEnumItem() {
       exit(EXIT_FAILURE);
     }
     item.setEnumItemTuple(tupl.getValue());
-  } else if (check(TokenKind::Comma)) {
-    // done?
+  }
 
-  } else {
-    // done ?
+  if (check(TokenKind::Eq)) {
+    // Dis
+    StringResult<ast::EnumItemDiscriminant> dis = parseEnumItemDiscriminant();
+    if (!dis) {
+      llvm::errs()
+        << "failed to parse enum item discriminatn tuple in enum item: "
+        << dis.getError() << "\n";
+      printFunctionStack();
+      exit(EXIT_FAILURE);
+    }
+    item.setEnumItemDiscriminant(dis.getValue());
   }
 
   return StringResult<ast::EnumItem>(item);
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseEnumeration(std::span<OuterAttribute> outer, std::optional<ast::Visibility> vis) {
+Parser::parseEnumeration(std::span<OuterAttribute> outer,
+                         std::optional<ast::Visibility> vis) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 

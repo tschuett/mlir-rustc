@@ -2,6 +2,7 @@
 #include "AST/InfiniteLoopExpression.h"
 #include "AST/LoopExpression.h"
 #include "Basic/Ids.h"
+#include "PatternDeclaration.h"
 #include "Resolver.h"
 
 #include <llvm/Support/raw_ostream.h>
@@ -80,8 +81,16 @@ void Resolver::resolveIteratorLoopExpression(
   pushNewTypeRib(getTypeScope().peek());
   pushNewLabelRib(getLabelScope().peek());
 
-  resolvePatternDeclaration(iter->getPattern(), RibKind::Variable, prefix,
-                            canonicalPrefix);
+  std::vector<PatternBinding> bindings = {
+      PatternBinding(PatternBoundCtx::Product, std::set<NodeId>())};
+
+  for (const auto &p : iter->getPattern()->getPatterns()) {
+    PatternDeclaration pat = {p,      RibKind::Variable, bindings, this,
+                              prefix, canonicalPrefix};
+    pat.resolve();
+  }
+  //  resolvePatternDeclaration(iter->getPattern(), RibKind::Variable, prefix,
+  //                            canonicalPrefix);
   resolveExpression(iter->getRHS(), prefix, canonicalPrefix);
   resolveExpression(iter->getBody(), prefix, canonicalPrefix);
 

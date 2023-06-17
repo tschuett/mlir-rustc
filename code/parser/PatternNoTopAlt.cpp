@@ -73,8 +73,8 @@ Parser::parseWildCardPattern() {
   Location loc = getLocation();
   WildcardPattern pat = {loc};
 
-  llvm::errs() << "parseWildcardPattern"
-               << "\n";
+  //llvm::errs() << "parseWildcardPattern"
+  //             << "\n";
 
   if (check(TokenKind::Underscore)) {
     assert(eat(TokenKind::Underscore));
@@ -283,8 +283,8 @@ StringResult<ast::patterns::TupleStructItems> Parser::parseTupleStructItems() {
   Location loc = getLocation();
   TupleStructItems items = {loc};
 
-  llvm::errs() << "parseTupleStructItems"
-               << "\n";
+//  llvm::errs() << "parseTupleStructItems"
+//               << "\n";
 
   StringResult<std::shared_ptr<ast::patterns::Pattern>> pattern =
       parsePattern();
@@ -340,8 +340,8 @@ Parser::parseTupleStructPattern() {
   Location loc = getLocation();
   TupleStructPattern pat = {loc};
 
-  llvm::errs() << "parseTupleStructPattern"
-               << "\n";
+//  llvm::errs() << "parseTupleStructPattern"
+//               << "\n";
 
   StringResult<std::shared_ptr<ast::Expression>> path = parsePathInExpression();
   if (!path) {

@@ -4,6 +4,7 @@
 #include "AST/Patterns/IdentifierPattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/TupleStructPattern.h"
+#include "AST/Patterns/StructPattern.h"
 #include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
 #include "Location.h"
@@ -53,12 +54,16 @@ public:
   void resolve();
 
 private:
+  void resolvePattern(
+      std::shared_ptr<ast::patterns::Pattern>);
   void resolvePatternWithoutRange(
       std::shared_ptr<ast::patterns::PatternWithoutRange>);
   void resolveIdentifierPattern(
       std::shared_ptr<ast::patterns::IdentifierPattern>);
   void resolveTupleStructPattern(
       std::shared_ptr<ast::patterns::TupleStructPattern>);
+  void resolveStructPattern(
+      std::shared_ptr<ast::patterns::StructPattern>);
 
   void addNewBinding(const lexer::Identifier &name, basic::NodeId id,
                      BindingTypeInfo bind);

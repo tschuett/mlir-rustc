@@ -14,6 +14,8 @@ public:
   EnumItemDiscriminant(Location loc) : Node(loc) {}
 
   void setExpression(std::shared_ptr<Expression> e) { expr = e; }
+
+  std::shared_ptr<Expression> getExpression() const { return expr; }
 };
 
 }; // namespace rust_compiler::ast

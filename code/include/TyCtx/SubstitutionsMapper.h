@@ -17,8 +17,12 @@ private:
 class SubstitutionsMapper {
 public:
   TyTy::BaseType *resolve(TyTy::BaseType *base, Location loc,
+                          sema::type_checking::TypeResolver *resolver,
                           ast::GenericArgs *generics = nullptr);
 
 private:
+  ast::GenericArgs *generics = nullptr;
+  Location loc;
 };
+
 } // namespace rust_compiler::tyctx

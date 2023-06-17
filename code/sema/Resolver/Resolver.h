@@ -16,6 +16,7 @@
 #include "AST/FieldExpression.h"
 #include "AST/Function.h"
 #include "AST/IfExpression.h"
+#include "AST/IfLetExpression.h"
 #include "AST/Implementation.h"
 #include "AST/IndexEpression.h"
 #include "AST/InfiniteLoopExpression.h"
@@ -254,6 +255,9 @@ private:
   void resolveTraitNoRecurse(std::shared_ptr<ast::Trait> trait,
                              const adt::CanonicalPath &prefix,
                              const adt::CanonicalPath &canonicalPrefix);
+  void resolveEnumerationNoRecurse(ast::Enumeration* ,
+                             const adt::CanonicalPath &prefix,
+                             const adt::CanonicalPath &canonicalPrefix);
   void resolveImplementationNoRecurse(
       std::shared_ptr<ast::Implementation> implementation,
       const adt::CanonicalPath &prefix,
@@ -350,6 +354,9 @@ private:
   void resolveIfExpression(std::shared_ptr<ast::IfExpression>,
                            const adt::CanonicalPath &prefix,
                            const adt::CanonicalPath &canonicalPrefix);
+  void resolveIfLetExpression(ast::IfLetExpression *,
+                              const adt::CanonicalPath &prefix,
+                              const adt::CanonicalPath &canonicalPrefix);
   void resolvePathExpression(std::shared_ptr<ast::PathExpression>,
                              const adt::CanonicalPath &prefix,
                              const adt::CanonicalPath &canonicalPrefix);
@@ -498,26 +505,36 @@ private:
                           const adt::CanonicalPath &canonicalPrefix);
 
   // patterns
-  void resolvePatternDeclarationWithBindings(
-      std::shared_ptr<ast::patterns::PatternNoTopAlt>, RibKind,
-      std::vector<PatternBinding> &bindings, const adt::CanonicalPath &prefix,
-      const adt::CanonicalPath &canonicalPrefix);
-  void
-  resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
-                            RibKind, const adt::CanonicalPath &prefix,
-                            const adt::CanonicalPath &canonicalPrefix);
-  void resolvePatternDeclaration(std::shared_ptr<ast::patterns::Pattern>,
-                                 RibKind, const adt::CanonicalPath &prefix,
-                                 const adt::CanonicalPath &canonicalPrefix);
-  void resolvePatternDeclarationWithoutRange(
-      std::shared_ptr<ast::patterns::PatternWithoutRange>, RibKind,
-      std::vector<PatternBinding> &bindings, const adt::CanonicalPath &prefix,
-      const adt::CanonicalPath &canonicalPrefix);
-  void
-  resolvePathPatternDeclaration(std::shared_ptr<ast::patterns::PathPattern>,
-                                RibKind, std::vector<PatternBinding> &bindings,
-                                const adt::CanonicalPath &prefix,
-                                const adt::CanonicalPath &canonicalPrefix);
+//  void resolvePatternDeclarationWithBindings(
+//      std::shared_ptr<ast::patterns::PatternNoTopAlt>, RibKind,
+//      std::vector<PatternBinding> &bindings, const adt::CanonicalPath &prefix,
+//      const adt::CanonicalPath &canonicalPrefix);
+//  void
+//  resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
+//                            RibKind, const adt::CanonicalPath &prefix,
+//                            const adt::CanonicalPath &canonicalPrefix);
+//  void resolvePatternDeclaration(std::shared_ptr<ast::patterns::Pattern>,
+//                                 RibKind, const adt::CanonicalPath &prefix,
+//                                 const adt::CanonicalPath &canonicalPrefix);
+//  void resolvePatternDeclarationWithoutRange(
+//      std::shared_ptr<ast::patterns::PatternWithoutRange>, RibKind,
+//      std::vector<PatternBinding> &bindings, const adt::CanonicalPath &prefix,
+//      const adt::CanonicalPath &canonicalPrefix);
+//  void
+//  resolvePathPatternDeclaration(std::shared_ptr<ast::patterns::PathPattern>,
+//                                RibKind, std::vector<PatternBinding> &bindings,
+//                                const adt::CanonicalPath &prefix,
+//                                const adt::CanonicalPath &canonicalPrefix);
+//  void
+//  resolveTupleStructPatternDeclaration(std::shared_ptr<ast::patterns::TupleStructPattern>,
+//                                RibKind, std::vector<PatternBinding> &bindings,
+//                                const adt::CanonicalPath &prefix,
+//                                const adt::CanonicalPath &canonicalPrefix);
+//  void
+//  resolveStructPatternDeclaration(std::shared_ptr<ast::patterns::StructPattern>,
+//                                RibKind, std::vector<PatternBinding> &bindings,
+//                                const adt::CanonicalPath &prefix,
+//                                const adt::CanonicalPath &canonicalPrefix);
 
   // statements
   void resolveStatement(std::shared_ptr<ast::Statement>,

@@ -170,7 +170,7 @@ StringResult<std::shared_ptr<ast::patterns::Pattern>> Parser::parsePattern() {
   Pattern pattern = {loc};
 
   if (check(TokenKind::Or)) {
-    assert(check(TokenKind::Or));
+    assert(eat(TokenKind::Or));
     pattern.setLeadingOr();
   }
 
@@ -192,7 +192,7 @@ StringResult<std::shared_ptr<ast::patterns::Pattern>> Parser::parsePattern() {
   pattern.addPattern(first.getValue());
 
   if (check(TokenKind::Or)) {
-    assert(check(TokenKind::Or));
+    assert(eat(TokenKind::Or));
 
     while (true) {
       StringResult<std::shared_ptr<ast::patterns::PatternNoTopAlt>>
@@ -212,7 +212,7 @@ StringResult<std::shared_ptr<ast::patterns::Pattern>> Parser::parsePattern() {
       }
       pattern.addPattern(patternNoTopAlt.getValue());
       if (check(TokenKind::Or)) {
-        assert(check(TokenKind::Or));
+        assert(eat(TokenKind::Or));
         continue;
       } else if (check(TokenKind::Eof)) {
         return StringResult<std::shared_ptr<ast::patterns::Pattern>>(

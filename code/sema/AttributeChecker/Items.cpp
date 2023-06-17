@@ -16,4 +16,6 @@ void AttributeChecker::checkTrait(Trait *) {}
 
 void AttributeChecker::checkTypeAlias(TypeAlias *) {}
 
+void AttributeChecker::checkEnumeration(Enumeration *) {}
+
 } // namespace rust_compiler::sema::attribute_checker

@@ -2,21 +2,48 @@ Pre-RFC: The Module in- and outliner
 
 # Inlining Take II
 
+The next inliner will do inlining and outlining at module level in one
+pass. Outlining might give more opportunities for inlining.
 
 
+```c
+Huge computesAlot(Huge *huge) {
+   if (likely) {
+     // less code
+   } else { // unlikely
+     // a lot of code
+   }
+}
+```
 
+Solution:
+1. outline else-branch
+2. inline function
 
+## InOutlinerState
 
-
-
+1. Functions
+  1. CallOps
+  2. Blocks
+     1. Instructions
+     2. Allocas
+  3. Controlflow Graph
+2. Callgraph
+3. 
 
 # PGO
 
-# LLVM Policy
+
+
+# Design Principles
 
 New passes are fat, do abstraction raising, state to state transforms,
-cost modeling, and write changes back to IR.
+cost modeling, and only write changes back to IR.
 
+Wegman and Zadeck presented an algorithm that combines *constant
+propagation* and *unreachable-code elimination*. IPSCCP in LLVM.
+Click and Cooper talked about fat passes, i.e., *constant
+propagation*, *value numbering*, and *uncreachable code elimination*.
 
 fat passes:
 @article{click1995combining,
@@ -48,3 +75,5 @@ fat passes:
     numpages = {30},
  }
 
+
+https://discourse.llvm.org/t/value-range-analysis-of-source-code-variables/62853

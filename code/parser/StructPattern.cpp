@@ -41,8 +41,8 @@ Parser::parseStructPatternFields() {
   fields.addPattern(first.getValue());
 
   while (true) {
-    llvm::errs() << "parseStructPatternfields loop: "
-                 << Token2String(getToken().getKind()) << "\n";
+    //llvm::errs() << "parseStructPatternfields loop: "
+    //             << Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Eof)) {
       return StringResult<ast::patterns::StructPatternFields>(
           "failed to parse struct pattern fields: eof");

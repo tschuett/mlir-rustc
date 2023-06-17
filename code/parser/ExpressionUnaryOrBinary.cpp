@@ -158,6 +158,7 @@ Parser::parseUnaryExpression(std::span<ast::OuterAttribute> outer,
       enteredFromUnary.enteredFromUnary = true;
       if (!restrictions.canBeStructExpr)
         enteredFromUnary.canBeStructExpr = false;
+      assert(eat(TokenKind::Star));
       StringResult<std::shared_ptr<Expression>> expr =
           parseExpression(Precedence::UnaryStar, {}, enteredFromUnary);
       if (expr) {

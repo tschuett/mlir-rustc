@@ -4,9 +4,11 @@
 #include "AST/Patterns/IdentifierPattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/PatternWithoutRange.h"
+#include "AST/Patterns/StructPatternElements.h"
 #include "AST/Patterns/TupleStructItems.h"
 #include "AST/Patterns/TupleStructPattern.h"
 #include "Resolver.h"
+#include "llvm/Support/ErrorHandling.h"
 
 #include <llvm/Support/FormatVariadic.h>
 #include <memory>
@@ -26,6 +28,23 @@ void PatternDeclaration::resolve() {
     assert(false && "to be handled later");
     break;
   }
+  }
+}
+
+void PatternDeclaration::resolvePattern(
+    std::shared_ptr<ast::patterns::Pattern> p) {
+  for (const auto &noTop : p->getPatterns()) {
+    switch (noTop->getKind()) {
+    case PatternNoTopAltKind::PatternWithoutRange: {
+      resolvePatternWithoutRange(
+          std::static_pointer_cast<PatternWithoutRange>(noTop));
+      break;
+    }
+    case PatternNoTopAltKind::RangePattern: {
+      assert(false && "to be handled later");
+      break;
+    }
+    }
   }
 }
 
@@ -50,7 +69,8 @@ void PatternDeclaration::resolvePatternWithoutRange(
     assert(false && "to be handled later");
   }
   case PatternWithoutRangeKind::StructPattern: {
-    assert(false && "to be handled later");
+    resolveStructPattern(std::static_pointer_cast<StructPattern>(woRange));
+    break;
   }
   case PatternWithoutRangeKind::TupleStructPattern: {
     resolveTupleStructPattern(
@@ -145,6 +165,45 @@ void PatternDeclaration::addNewBinding(const lexer::Identifier &name,
   }
 
   bindingInfoMap.insert({name, bind});
+}
+
+void PatternDeclaration::resolveStructPattern(
+    std::shared_ptr<ast::patterns::StructPattern> stru) {
+  ///
+  resolver->resolveExpression(stru->getPath(), prefix, canonicalPrefix);
+
+  if (stru->hasElements()) {
+    StructPatternElements el = stru->getElements();
+    if (el.hasFields()) {
+      StructPatternFields fie = el.getFields();
+      for (const StructPatternField &f : fie.getFields()) {
+        switch (f.getKind()) {
+        case StructPatternFieldKind::TupleIndex: {
+          llvm_unreachable("unreachable case");
+          break;
+        }
+        case StructPatternFieldKind::Identifier: {
+          Mutability mut =
+              f.isMut() ? Mutability::Mutable : Mutability::Immutable;
+          addNewBinding(f.getIdentifier(), f.getNodeId(),
+                        BindingTypeInfo(mut, f.isRef(), f.getLocation()));
+          if (f.hasPattern())
+              resolvePattern(f.getPattern());
+          break;
+        }
+        case StructPatternFieldKind::RefMut: {
+          Mutability mut =
+              f.isMut() ? Mutability::Mutable : Mutability::Immutable;
+          addNewBinding(f.getIdentifier(), f.getNodeId(),
+                        BindingTypeInfo(mut, f.isRef(), f.getLocation()));
+          if (f.hasPattern())
+              resolvePattern(f.getPattern());
+          break;
+        }
+        }
+      }
+    }
+  }
 }
 
 } // namespace rust_compiler::sema::resolver

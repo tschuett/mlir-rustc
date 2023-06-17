@@ -20,6 +20,10 @@ public:
   void setPath(std::shared_ptr<Expression> p) { path = p; }
 
   void setElements(StructPatternElements &el) { elements = el; }
+
+  std::shared_ptr<Expression> getPath() const { return path; }
+  bool hasElements() const { return elements.has_value(); };
+  StructPatternElements getElements() const { return *elements; }
 };
 
 } // namespace rust_compiler::ast::patterns

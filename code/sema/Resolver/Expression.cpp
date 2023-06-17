@@ -19,6 +19,7 @@
 #include "AST/QualifiedPathInType.h"
 #include "AST/RangeExpression.h"
 #include "AST/ReturnExpression.h"
+#include "AST/Scrutinee.h"
 #include "AST/Statements.h"
 #include "AST/StructBase.h"
 #include "AST/StructExprStruct.h"
@@ -28,6 +29,7 @@
 #include "AST/UnsafeBlockExpression.h"
 #include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
+#include "PatternDeclaration.h"
 #include "Resolver.h"
 
 #include <filesystem>
@@ -89,7 +91,10 @@ void Resolver::resolveExpressionWithBlock(
     break;
   }
   case ExpressionWithBlockKind::IfLetExpression: {
-    assert(false && "to be handled later");
+    resolveIfLetExpression(
+        std::static_pointer_cast<IfLetExpression>(withBlock).get(), prefix,
+        canonicalPrefix);
+    break;
   }
   case ExpressionWithBlockKind::MatchExpression: {
     resolveMatchExpression(std::static_pointer_cast<MatchExpression>(withBlock),
@@ -197,7 +202,8 @@ void Resolver::resolveExpressionWithoutBlock(
     assert(false && "to be handled later");
   }
   case ExpressionWithoutBlockKind::MacroInvocation: {
-    assert(false && "to be handled later");
+    // FIXME macro expansion
+    break;
   }
   }
 }
@@ -782,6 +788,41 @@ void Resolver::resolveTupleIndexingExpression(
     ast::TupleIndexingExpression *tuple, const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
   resolveExpression(tuple->getTuple(), prefix, canonicalPrefix);
+}
+
+void Resolver::resolveIfLetExpression(
+    ast::IfLetExpression *ifLet, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+
+  Scrutinee scrut = ifLet->getScrutinee();
+  resolveExpression(scrut.getExpression(), prefix, canonicalPrefix);
+
+  NodeId scopeNodeId = ifLet->getNodeId();
+  getNameScope().push(scopeNodeId);
+  getTypeScope().push(scopeNodeId);
+  getLabelScope().push(scopeNodeId);
+  pushNewNameRib(getNameScope().peek());
+  pushNewTypeRib(getTypeScope().peek());
+  pushNewLabelRib(getLabelScope().peek());
+
+  std::vector<PatternBinding> bindings = {
+      PatternBinding(PatternBoundCtx::Product, std::set<NodeId>())};
+
+  for (auto &path : ifLet->getPatterns()->getPatterns()) {
+    PatternDeclaration pat = {
+        path, RibKind::Variable, bindings, this, prefix,
+        canonicalPrefix};
+    pat.resolve();
+    //    resolvePatternDeclarationWithBindings(path, RibKind::Variable,
+    //    bindings,
+    //                                          prefix, canonicalPrefix);
+  }
+
+  resolveExpression(ifLet->getBlock(), prefix, canonicalPrefix);
+
+  getNameScope().pop();
+  getTypeScope().pop();
+  getLabelScope().pop();
 }
 
 } // namespace rust_compiler::sema::resolver

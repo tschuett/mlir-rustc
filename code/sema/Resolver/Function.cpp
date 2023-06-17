@@ -1,4 +1,5 @@
 #include "AST/FunctionParameters.h"
+#include "PatternDeclaration.h"
 #include "Resolver.h"
 
 #include <llvm/Support/raw_ostream.h>
@@ -53,9 +54,12 @@ void Resolver::resolveFunction(ast::Function *fun,
         FunctionParamPattern pattern = parm.getPattern();
         if (pattern.hasType()) {
           resolveType(pattern.getType(), prefix, canonicalPrefix);
-          resolvePatternDeclarationWithBindings(pattern.getPattern(),
-                                                RibKind::Parameter, bindings,
-                                                prefix, canonicalPrefix);
+          PatternDeclaration pat = {pattern.getPattern(), RibKind::Parameter,
+                                    bindings, this, prefix, canonicalPrefix};
+          pat.resolve();
+//          resolvePatternDeclarationWithBindings(pattern.getPattern(),
+//                                                RibKind::Parameter, bindings,
+//                                                prefix, canonicalPrefix);
         } else {
           assert(false && "to be implemented");
         }

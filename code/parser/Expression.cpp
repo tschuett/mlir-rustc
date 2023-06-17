@@ -628,8 +628,8 @@ Parser::parseComparisonExpression(std::shared_ptr<ast::Expression> lhs,
   Location loc = getLocation();
   ComparisonExpression comp = {loc};
 
-  llvm::errs() << "parse comparison expression"
-               << "\n";
+  // llvm::errs() << "parse comparison expression"
+  //              << "\n";
   comp.setLhs(lhs);
 
   Precedence pred;
@@ -793,11 +793,10 @@ Parser::parseGroupedExpression(Restrictions restrictions) {
   }
   group.setExpression(first.getValue());
 
-  if (!check(TokenKind::ParenClose)) {
+  if (!check(TokenKind::ParenClose))
     return Result<std::shared_ptr<ast::Expression>, std::string>(
         "failed to parse ) token in grouped expression");
-    assert(eat(TokenKind::ParenOpen));
-  }
+  assert(eat(TokenKind::ParenClose));
 
   return Result<std::shared_ptr<ast::Expression>, std::string>(
       std::make_shared<GroupedExpression>(group));

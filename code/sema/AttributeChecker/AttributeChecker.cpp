@@ -5,6 +5,7 @@
 #include "AST/VisItem.h"
 #include "AST/Struct.h"
 #include "AST/Trait.h"
+#include "AST/Enumeration.h"
 
 using namespace rust_compiler::ast;
 
@@ -63,7 +64,8 @@ void AttributeChecker::checkVisItem(VisItem *item) {
     break;
   }
   case VisItemKind::Enumeration: {
-    assert(false);
+    checkEnumeration(static_cast<Enumeration*>(item));
+    break;
   }
   case VisItemKind::Union: {
     assert(false);

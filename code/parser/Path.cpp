@@ -229,7 +229,8 @@ StringResult<ast::PathIdentSegment> Parser::parsePathIdentSegment() {
     assert(eat(TokenKind::Dollar));
     assert(eatKeyWord(KeyWordKind::KW_CRATE));
   } else {
-    llvm::errs() << Token2String(getToken().getKind()) << "\n";
+    llvm::errs() << "failed to parse path ident segment: "
+                 << Token2String(getToken().getKind()) << "\n";
     return StringResult<ast::PathIdentSegment>(
         "failed to parse path ident segment");
   }

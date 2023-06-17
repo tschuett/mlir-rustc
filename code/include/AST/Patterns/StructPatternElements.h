@@ -34,7 +34,7 @@ class StructPatternField : public Node {
   Identifier identifier;
   bool ref = false;
   bool mut = false;
-  std::shared_ptr<ast::patterns::Pattern> pattern;
+  std::optional<std::shared_ptr<ast::patterns::Pattern>> pattern;
 
 public:
   StructPatternField(Location loc) : Node(loc) {}
@@ -52,6 +52,16 @@ public:
 
   void setRef() { ref = true; }
   void setMut() { mut = true; }
+  bool isMut() const { return mut; }
+  bool isRef() const { return ref; }
+
+  std::shared_ptr<ast::patterns::Pattern> getPattern() const {
+    return *pattern;
+  }
+  bool hasPattern() const { return pattern.has_value(); }
+
+  StructPatternFieldKind getKind() const { return kind; }
+  Identifier getIdentifier() const { return identifier; }
 };
 
 class StructPatternFields : public Node {
@@ -61,6 +71,7 @@ public:
   StructPatternFields(Location loc) : Node(loc) {}
 
   void addPattern(const StructPatternField &f) { fields.push_back(f); }
+  std::vector<StructPatternField> getFields() const { return fields; }
 };
 
 class StructPatternElements : public Node {
@@ -73,6 +84,9 @@ public:
   void setEtCetera(const StructPatternEtCetera &et) { etCetera = et; }
 
   void setFields(const StructPatternFields &f) { fields = f; }
+
+  bool hasFields() const { return fields.has_value(); }
+  StructPatternFields getFields() const { return *fields; }
 };
 
 } // namespace rust_compiler::ast::patterns

@@ -32,6 +32,8 @@ Precedence Parser::getLeftBindingPower() {
     return Precedence::FunctionCall;
   case TokenKind::PlusEq:
     return Precedence::PlusAssign;
+  case TokenKind::EqEq:
+    return Precedence::Equal;
   case TokenKind::Star:
     return Precedence::Mul;
   case TokenKind::SquareOpen:
@@ -43,6 +45,8 @@ Precedence Parser::getLeftBindingPower() {
   case TokenKind::Semi: // no power for your
     return Precedence::Lowest;
   case TokenKind::SquareClose: // no power for your
+    return Precedence::Lowest;
+  case TokenKind::ParenClose: // no power for your
     return Precedence::Lowest;
   case TokenKind::Dot: {
     if (getToken(1).isIdentifier() &&

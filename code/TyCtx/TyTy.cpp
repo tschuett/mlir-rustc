@@ -80,8 +80,10 @@ bool BaseType::needsGenericSubstitutions() const {
 
 TypeVariable::TypeVariable(basic::NodeId id) : id(id) {
   TyCtx *context = rust_compiler::session::session->getTypeContext();
-  if (!context->lookupType(id))
+  if (!context->lookupType(id)) {
+    llvm::errs() << id << "\n";
     assert(false);
+  }
 }
 
 TyTy::BaseType *TypeVariable::getType() const {

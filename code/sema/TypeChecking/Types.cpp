@@ -326,13 +326,13 @@ TypeResolver::resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
     if (segs[i].hasGenerics()) {
       GenericArgs args = segs[i].getGenericArgs();
       SubstitutionsMapper mapper;
-      lookup = mapper.resolve(lookup, path->getLocation(), &args);
+      lookup = mapper.resolve(lookup, path->getLocation(), this, &args);
       if (lookup->getKind() == TyTy::TypeKind::Error)
         return new TyTy::ErrorType(segs[i].getNodeId());
     } else if (lookup->needsGenericSubstitutions()) {
       GenericArgs args = GenericArgs::empty();
       SubstitutionsMapper mapper;
-      lookup = mapper.resolve(lookup, path->getLocation(), &args);
+      lookup = mapper.resolve(lookup, path->getLocation(), this, &args);
     }
 
     *resolvedNodeId = refNodeId;

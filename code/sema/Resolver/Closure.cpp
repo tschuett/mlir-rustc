@@ -3,6 +3,7 @@
 #include "AST/ClosureParameters.h"
 #include "AST/Patterns/PathPattern.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
+#include "PatternDeclaration.h"
 #include "Resolver.h"
 
 #include <cstdlib>
@@ -62,8 +63,10 @@ void Resolver::resolveClosureParameter(
     const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
 
-  resolvePatternDeclarationWithBindings(param.getPattern(), RibKind::Parameter,
-                                        bindings, prefix, canonicalPrefix);
+  PatternDeclaration pat = {param.getPattern(), RibKind::Parameter,
+                            bindings, this, prefix, canonicalPrefix};
+//  resolvePatternDeclarationWithBindings(param.getPattern(), RibKind::Parameter,
+//                                        bindings, prefix, canonicalPrefix);
 
   if (param.hasType())
     resolveType(param.getType(), prefix, canonicalPrefix);

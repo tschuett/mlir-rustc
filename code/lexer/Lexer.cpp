@@ -324,6 +324,18 @@ std::optional<std::string> tryLexString(std::string_view code) {
     } else if (view[0] == ' ') {
       id.push_back(view[0]);
       view.remove_prefix(1);
+    } else if (view[0] == '{') {
+      id.push_back(view[0]);
+      view.remove_prefix(1);
+    } else if (view[0] == '}') {
+      id.push_back(view[0]);
+      view.remove_prefix(1);
+    } else if (view[0] == ':') {
+      id.push_back(view[0]);
+      view.remove_prefix(1);
+    } else if (view[0] == '?') {
+      id.push_back(view[0]);
+      view.remove_prefix(1);
     } else if (isdigit(view[0])) {
       id.push_back(view[0]);
       view.remove_prefix(1);

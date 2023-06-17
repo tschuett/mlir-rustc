@@ -10,6 +10,9 @@
 #include "AST/ComparisonExpression.h"
 #include "AST/CompoundAssignmentExpression.h"
 #include "AST/Crate.h"
+#include "AST/EnumItemDiscriminant.h"
+#include "AST/EnumItemStruct.h"
+#include "AST/EnumItemTuple.h"
 #include "AST/Expression.h"
 #include "AST/ExpressionStatement.h"
 #include "AST/ExternalItem.h"
@@ -92,7 +95,7 @@ class TypeCheckContextItem {
 public:
   TypeCheckContextItem(ast::Function *f) : kind(ItemKind::Function), item(f) {}
 
-  ast::Function *getFunction() const { return std::get<ast::Function*>(item); }
+  ast::Function *getFunction() const { return std::get<ast::Function *>(item); }
   TyTy::FunctionType *getContextType();
 
 private:
@@ -131,6 +134,17 @@ private:
   void checkStruct(ast::Struct *s);
   void checkConstantItem(ast::ConstantItem *);
   void checkTypeAlias(ast::TypeAlias *);
+  void checkEnumeration(ast::Enumeration *);
+  TyTy::VariantDef *checkEnumItem(EnumItem *, int64_t discriminant);
+  TyTy::VariantDef *checkEnumItemTuple(const EnumItemTuple &enuItem,
+                                       const Identifier &,
+                                       int64_t discriminant);
+  TyTy::VariantDef *checkEnumItemStruct(const EnumItemStruct &enuItem,
+                                        const Identifier &,
+                                        int64_t discriminant);
+  TyTy::VariantDef *
+  checkEnumItemDiscriminant(const EnumItemDiscriminant &enuItem,
+                            const Identifier &, int64_t discriminant);
 
   TyTy::BaseType *checkItemDeclaration(ast::ItemDeclaration *item);
   TyTy::BaseType *checkTrait(ast::Trait *s);

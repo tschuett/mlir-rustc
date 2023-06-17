@@ -25,9 +25,6 @@ StringResult<ast::StructExprField> Parser::parseStructExprField() {
   Location loc = getLocation();
   StructExprField field = {loc};
 
-  llvm::errs() << "parseStructExprField"
-               << "\n";
-
   StringResult<std::vector<ast::OuterAttribute>> outerAttributes =
       parseOuterAttributes();
   if (!outerAttributes) {
@@ -93,9 +90,6 @@ StringResult<ast::StructExprField> Parser::parseStructExprField() {
 StringResult<ast::StructExprFields> Parser::parseStructExprFields() {
   Location loc = getLocation();
   StructExprFields fields = {loc};
-
-  llvm::errs() << "parseStructExprFields"
-               << "\n";
 
   StringResult<StructExprField> first = parseStructExprField();
   if (!first) {
@@ -523,9 +517,6 @@ Parser::parseStructExpressionStructPratt(std::shared_ptr<ast::Expression> path,
   StructExprStruct str = {getLocation()};
   str.setPath(path);
 
-  llvm::errs() << "parseStructExpressionStructPratt"
-               << "\n";
-
   if (!check(TokenKind::BraceOpen)) {
     /// error
     return StringResult<std::shared_ptr<ast::Expression>>(
@@ -572,8 +563,6 @@ Parser::parseStructExpressionStructPratt(std::shared_ptr<ast::Expression> path,
 adt::StringResult<std::shared_ptr<ast::Expression>>
 Parser::parseStructExpressionTuplePratt(std::shared_ptr<ast::Expression> path,
                                         std::span<ast::OuterAttribute> outer) {
-  llvm::errs() << "parseStructExpressionTuplePratt"
-               << "\n";
   StructExprTuple tuple = {getLocation()};
   tuple.setPath(path);
 

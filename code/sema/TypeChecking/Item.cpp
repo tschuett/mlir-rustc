@@ -2,22 +2,32 @@
 #include "ADT/ScopedCanonicalPath.h"
 #include "AST/AssociatedItem.h"
 #include "AST/ConstantItem.h"
+#include "AST/EnumItemDiscriminant.h"
+#include "AST/EnumItemStruct.h"
+#include "AST/EnumItemTuple.h"
+#include "AST/Enumeration.h"
 #include "AST/Function.h"
 #include "AST/GenericParams.h"
 #include "AST/Implementation.h"
 #include "AST/InherentImpl.h"
+#include "AST/LiteralExpression.h"
 #include "AST/Struct.h"
 #include "AST/StructField.h"
+#include "AST/StructFields.h"
 #include "AST/TraitImpl.h"
 #include "AST/Types/TypePath.h"
 #include "AST/VisItem.h"
+#include "Basic/Ids.h"
 #include "Coercion.h"
+#include "Session/Session.h"
 #include "TyCtx/Substitutions.h"
 #include "TyCtx/TraitReference.h"
 #include "TyCtx/TyTy.h"
 #include "TyCtx/TypeIdentity.h"
 #include "TypeChecking.h"
+#include "Unification.h"
 
+#include <limits>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -52,7 +62,8 @@ void TypeResolver::checkVisItem(std::shared_ptr<ast::VisItem> v) {
     break;
   }
   case VisItemKind::Enumeration: {
-    assert(false && "to be implemented");
+    checkEnumeration(static_cast<ast::Enumeration *>(v.get()));
+    break;
   }
   case VisItemKind::Union: {
     assert(false && "to be implemented");
@@ -346,6 +357,166 @@ TyTy::BaseType *TypeResolver::checkImplementationFunction(
     ast::InherentImpl *parent, ast::Function *, TyTy::BaseType *self,
     std::vector<TyTy::SubstitutionParamMapping> substitutions) {
   assert(false);
+}
+
+void TypeResolver::checkEnumeration(ast::Enumeration *enu) {
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  if (enu->hasGenericParams())
+    checkGenericParams(enu->getGenericParams(), substitutions);
+
+  std::vector<TyTy::VariantDef *> variants;
+  int64_t discriminantValue = 0;
+  if (enu->hasEnumItems()) {
+    EnumItems items = enu->getEnumItems();
+    for (auto &item : items.getItems()) {
+      TyTy::VariantDef *fieldType =
+          checkEnumItem(item.get(), discriminantValue);
+
+      ++discriminantValue;
+      variants.push_back(fieldType);
+    }
+  }
+
+  std::optional<CanonicalPath> path =
+      tcx->lookupCanonicalPath(enu->getNodeId());
+  assert(path.has_value());
+
+  TypeIdentity ident = {*path, enu->getLocation()};
+
+  TyTy::BaseType *type =
+      new TyTy::ADTType(enu->getNodeId(), rust_compiler::basic::getNextNodeId(),
+                        enu->getName(), ident, TyTy::ADTKind::Enum,
+                        std::move(variants), std::move(substitutions));
+
+  tcx->insertType(enu->getIdentity(), type);
+}
+
+TyTy::VariantDef *TypeResolver::checkEnumItem(EnumItem *enuItem,
+                                              int64_t discriminant) {
+  assert(discriminant < std::numeric_limits<int64_t>::max());
+
+  if (enuItem->hasStruct()) {
+    return checkEnumItemStruct(enuItem->getStruct(), enuItem->getName(),
+                               discriminant);
+  } else if (enuItem->hasTuple()) {
+    return checkEnumItemTuple(enuItem->getTuple(), enuItem->getName(),
+                              discriminant);
+  }
+
+  if (enuItem->hasDiscriminant())
+    return checkEnumItemDiscriminant(enuItem->getDiscriminant(),
+                                     enuItem->getName(), discriminant);
+
+  LiteralExpression *discrimExpr = new LiteralExpression(enuItem->getLocation());
+  discrimExpr->setKind(LiteralExpressionKind::IntegerLiteral);
+  discrimExpr->setStorage(std::to_string(discriminant));
+
+  std::optional<TyTy::BaseType *> isize = tcx->lookupBuiltin("isize");
+  assert(isize.has_value());
+  tcx->insertType(enuItem->getIdentity(), *isize);
+
+  std::optional<CanonicalPath> canon =
+      tcx->lookupCanonicalPath(enuItem->getNodeId());
+  assert(canon.has_value());
+
+  TypeIdentity ident = {*canon, enuItem->getLocation()};
+
+  return new TyTy::VariantDef(enuItem->getNodeId(), enuItem->getName(), ident, discrimExpr);
+}
+
+TyTy::VariantDef *TypeResolver::checkEnumItemTuple(const EnumItemTuple &enuItem,
+                                                   const Identifier &name,
+                                                   int64_t discriminant) {
+  std::vector<TyTy::StructFieldType *> fields;
+  size_t idx = 0;
+  if (enuItem.hasTupleFiels()) {
+    TupleFields f = enuItem.getTupleFields();
+    for (const TupleField &t : f.getFields()) {
+      TyTy::BaseType *fieldType = checkType(t.getType());
+      TyTy::StructFieldType *typeField = new TyTy::StructFieldType(
+          t.getNodeId(), Identifier(std::to_string(idx)), fieldType,
+          t.getLocation());
+      fields.push_back(typeField);
+      tcx->insertType(t.getIdentity(), typeField->getFieldType());
+      ++idx;
+    }
+  }
+
+  LiteralExpression *discrimExpr = new LiteralExpression(enuItem.getLocation());
+  discrimExpr->setKind(LiteralExpressionKind::IntegerLiteral);
+  discrimExpr->setStorage(std::to_string(discriminant));
+
+  std::optional<TyTy::BaseType *> isize = tcx->lookupBuiltin("isize");
+  assert(isize.has_value());
+  tcx->insertType(enuItem.getIdentity(), *isize);
+
+  std::optional<CanonicalPath> canon =
+      tcx->lookupCanonicalPath(enuItem.getNodeId());
+  assert(canon.has_value());
+
+  TypeIdentity ident = {*canon, enuItem.getLocation()};
+
+  return new TyTy::VariantDef(enuItem.getNodeId(), name, ident,
+                              TyTy::VariantKind::Tuple, discrimExpr, fields);
+}
+
+TyTy::VariantDef *
+TypeResolver::checkEnumItemStruct(const EnumItemStruct &enuItem,
+                                  const Identifier &name,
+                                  int64_t discriminant) {
+  std::vector<TyTy::StructFieldType *> fields;
+  if (enuItem.hasFields()) {
+    StructFields filds = enuItem.getFields();
+    for (const StructField &f : filds.getFields()) {
+      TyTy::BaseType *fieldType = checkType(f.getType());
+      TyTy::StructFieldType *typeOfField = new TyTy::StructFieldType(
+          f.getNodeId(), f.getIdentifier(), fieldType, f.getLocation());
+      fields.push_back(typeOfField);
+      tcx->insertType(f.getIdentity(), typeOfField->getFieldType());
+    }
+  }
+
+  LiteralExpression *discrimExpr = new LiteralExpression(enuItem.getLocation());
+  discrimExpr->setKind(LiteralExpressionKind::IntegerLiteral);
+  discrimExpr->setStorage(std::to_string(discriminant));
+
+  std::optional<TyTy::BaseType *> isize = tcx->lookupBuiltin("isize");
+  assert(isize.has_value());
+  tcx->insertType(enuItem.getIdentity(), *isize);
+
+  std::optional<CanonicalPath> path =
+      tcx->lookupCanonicalPath(enuItem.getNodeId());
+  assert(path.has_value());
+
+  TypeIdentity ident = {*path, enuItem.getLocation()};
+
+  return new TyTy::VariantDef(enuItem.getNodeId(), name, ident,
+                              TyTy::VariantKind::Struct, discrimExpr, fields);
+}
+
+TyTy::VariantDef *
+TypeResolver::checkEnumItemDiscriminant(const EnumItemDiscriminant &enuItem,
+                                        const Identifier &name,
+                                        int64_t discriminant) {
+  TyTy::BaseType *capacityType = checkExpression(enuItem.getExpression());
+
+  TyTy::ISizeType *expectedType =
+      new TyTy::ISizeType(enuItem.getExpression()->getNodeId());
+  tcx->insertType(enuItem.getExpression()->getIdentity(), expectedType);
+
+  Unification::unifyWithSite(
+      TyTy::WithLocation(expectedType),
+      TyTy::WithLocation(capacityType, enuItem.getLocation()),
+      enuItem.getLocation(), tcx);
+
+  std::optional<CanonicalPath> path =
+      tcx->lookupCanonicalPath(enuItem.getNodeId());
+  assert(path.has_value());
+
+  TypeIdentity ident(*path, enuItem.getLocation());
+
+  return new TyTy::VariantDef(enuItem.getNodeId(), name, ident,
+                              enuItem.getExpression().get());
 }
 
 // TyTy::BaseType

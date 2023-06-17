@@ -6,6 +6,7 @@
 #include "AST/TypedSelf.h"
 #include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
+#include "PatternDeclaration.h"
 #include "Resolver.h"
 
 #include <memory>
@@ -88,9 +89,15 @@ void Resolver::resolveFunctionInTrait(
       FunctionParamPattern pattern = param.getPattern();
       if (pattern.hasType())
         resolveType(pattern.getType(), prefix, canonicalPrefix);
-      resolvePatternDeclarationWithBindings(pattern.getPattern(),
-                                            RibKind::Parameter, bindings,
-                                            prefix, canonicalPrefix);
+      PatternDeclaration pat = {
+          pattern.getPattern(), RibKind::Parameter, bindings, this, prefix,
+          canonicalPrefix};
+      pat.resolve();
+      //
+      //      resolvePatternDeclarationWithBindings(pattern.getPattern(),
+      //                                            RibKind::Parameter,
+      //                                            bindings, prefix,
+      //                                            canonicalPrefix);
       break;
     }
     case FunctionParamKind::DotDotDot: {
