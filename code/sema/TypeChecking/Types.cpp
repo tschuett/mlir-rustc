@@ -364,12 +364,14 @@ TypeResolver::resolveSegmentsType(basic::NodeId rootResolvedNodeId,
     bool probeImpls = !receiverIsGeneric;
     bool ignoreTraitItems = !receiverIsGeneric;
 
-    std::set<PathProbeCandidate> candidates = probeTypePath(
-        prevSegment, segs[i].getSegment(), probeImpls, false, ignoreTraitItems);
+    std::set<PathProbeCandidate> candidates = PathProbeType::probeTypePath(
+        prevSegment, segs[i].getSegment().getIdentifier(), probeImpls, false,
+        ignoreTraitItems, this);
 
     if (candidates.size() == 0) {
-      candidates = probeTypePath(prevSegment, segs[i].getSegment(), false,
-                                 probeBounds, ignoreTraitItems);
+      candidates = PathProbeType::probeTypePath(
+          prevSegment, segs[i].getSegment().getIdentifier(), false, probeBounds,
+          ignoreTraitItems, this);
 
       if (candidates.size() == 0) {
         // report error
@@ -404,7 +406,7 @@ TyTy::TypeBoundPredicate TypeResolver::getPredicateFromBound(
   if (lookup)
     return *lookup;
 
-  TraitReference *trait = resolveTraitPath(typePath);
+  TyTy::TraitReference *trait = resolveTraitPath(typePath);
   if (trait->isError())
     return TyTy::TypeBoundPredicate::error();
 
@@ -427,7 +429,7 @@ TyTy::TypeBoundPredicate TypeResolver::getPredicateFromBound(
     GenericArg ga = {path->getLocation()};
     ga.setType(std::make_shared<ast::types::TypeExpression>(*associatedSelf));
     args.addArg(ga);
-    for (const GenericArg& ga: tmp.getArgs())
+    for (const GenericArg &ga : tmp.getArgs())
       args.addArg(ga);
   }
 

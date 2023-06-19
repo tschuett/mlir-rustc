@@ -225,10 +225,14 @@ public:
   std::optional<basic::NodeId> lookupResolvedType(basic::NodeId nodeId);
 
   Scope &getNameScope() { return nameScope; }
+  Scope &getTypeScope() { return typeScope; }
 
   void resolveExpression(std::shared_ptr<ast::Expression>,
                          const adt::CanonicalPath &prefix,
                          const adt::CanonicalPath &canonicalPrefix);
+
+  void insertResolvedType(basic::NodeId refId, basic::NodeId defId);
+  void insertResolvedMisc(NodeId refId, NodeId defId);
 
 private:
   // items no recurse
@@ -255,9 +259,9 @@ private:
   void resolveTraitNoRecurse(std::shared_ptr<ast::Trait> trait,
                              const adt::CanonicalPath &prefix,
                              const adt::CanonicalPath &canonicalPrefix);
-  void resolveEnumerationNoRecurse(ast::Enumeration* ,
-                             const adt::CanonicalPath &prefix,
-                             const adt::CanonicalPath &canonicalPrefix);
+  void resolveEnumerationNoRecurse(ast::Enumeration *,
+                                   const adt::CanonicalPath &prefix,
+                                   const adt::CanonicalPath &canonicalPrefix);
   void resolveImplementationNoRecurse(
       std::shared_ptr<ast::Implementation> implementation,
       const adt::CanonicalPath &prefix,
@@ -505,36 +509,36 @@ private:
                           const adt::CanonicalPath &canonicalPrefix);
 
   // patterns
-//  void resolvePatternDeclarationWithBindings(
-//      std::shared_ptr<ast::patterns::PatternNoTopAlt>, RibKind,
-//      std::vector<PatternBinding> &bindings, const adt::CanonicalPath &prefix,
-//      const adt::CanonicalPath &canonicalPrefix);
-//  void
-//  resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
-//                            RibKind, const adt::CanonicalPath &prefix,
-//                            const adt::CanonicalPath &canonicalPrefix);
-//  void resolvePatternDeclaration(std::shared_ptr<ast::patterns::Pattern>,
-//                                 RibKind, const adt::CanonicalPath &prefix,
-//                                 const adt::CanonicalPath &canonicalPrefix);
-//  void resolvePatternDeclarationWithoutRange(
-//      std::shared_ptr<ast::patterns::PatternWithoutRange>, RibKind,
-//      std::vector<PatternBinding> &bindings, const adt::CanonicalPath &prefix,
-//      const adt::CanonicalPath &canonicalPrefix);
-//  void
-//  resolvePathPatternDeclaration(std::shared_ptr<ast::patterns::PathPattern>,
-//                                RibKind, std::vector<PatternBinding> &bindings,
-//                                const adt::CanonicalPath &prefix,
-//                                const adt::CanonicalPath &canonicalPrefix);
-//  void
-//  resolveTupleStructPatternDeclaration(std::shared_ptr<ast::patterns::TupleStructPattern>,
-//                                RibKind, std::vector<PatternBinding> &bindings,
-//                                const adt::CanonicalPath &prefix,
-//                                const adt::CanonicalPath &canonicalPrefix);
-//  void
-//  resolveStructPatternDeclaration(std::shared_ptr<ast::patterns::StructPattern>,
-//                                RibKind, std::vector<PatternBinding> &bindings,
-//                                const adt::CanonicalPath &prefix,
-//                                const adt::CanonicalPath &canonicalPrefix);
+  //  void resolvePatternDeclarationWithBindings(
+  //      std::shared_ptr<ast::patterns::PatternNoTopAlt>, RibKind,
+  //      std::vector<PatternBinding> &bindings, const adt::CanonicalPath
+  //      &prefix, const adt::CanonicalPath &canonicalPrefix);
+  //  void
+  //  resolvePatternDeclaration(std::shared_ptr<ast::patterns::PatternNoTopAlt>,
+  //                            RibKind, const adt::CanonicalPath &prefix,
+  //                            const adt::CanonicalPath &canonicalPrefix);
+  //  void resolvePatternDeclaration(std::shared_ptr<ast::patterns::Pattern>,
+  //                                 RibKind, const adt::CanonicalPath &prefix,
+  //                                 const adt::CanonicalPath &canonicalPrefix);
+  //  void resolvePatternDeclarationWithoutRange(
+  //      std::shared_ptr<ast::patterns::PatternWithoutRange>, RibKind,
+  //      std::vector<PatternBinding> &bindings, const adt::CanonicalPath
+  //      &prefix, const adt::CanonicalPath &canonicalPrefix);
+  //  void
+  //  resolvePathPatternDeclaration(std::shared_ptr<ast::patterns::PathPattern>,
+  //                                RibKind, std::vector<PatternBinding>
+  //                                &bindings, const adt::CanonicalPath &prefix,
+  //                                const adt::CanonicalPath &canonicalPrefix);
+  //  void
+  //  resolveTupleStructPatternDeclaration(std::shared_ptr<ast::patterns::TupleStructPattern>,
+  //                                RibKind, std::vector<PatternBinding>
+  //                                &bindings, const adt::CanonicalPath &prefix,
+  //                                const adt::CanonicalPath &canonicalPrefix);
+  //  void
+  //  resolveStructPatternDeclaration(std::shared_ptr<ast::patterns::StructPattern>,
+  //                                RibKind, std::vector<PatternBinding>
+  //                                &bindings, const adt::CanonicalPath &prefix,
+  //                                const adt::CanonicalPath &canonicalPrefix);
 
   // statements
   void resolveStatement(std::shared_ptr<ast::Statement>,
@@ -632,7 +636,6 @@ private:
   // void setUnitTypeNodeId(basic::NodeId id) { unitTyNodeId = id; }
 
   void insertResolvedName(basic::NodeId refId, basic::NodeId defId);
-  void insertResolvedType(basic::NodeId refId, basic::NodeId defId);
   void insertCapturedItem(basic::NodeId id);
 
   bool declNeedsCapture(basic::NodeId declRibNodeId,
@@ -656,7 +659,6 @@ private:
   }
 
   // Scopes
-  Scope &getTypeScope() { return typeScope; }
   Scope &getLabelScope() { return labelScope; }
   Scope &getMacroScope() { return macroScope; }
 
@@ -689,6 +691,7 @@ private:
   std::map<basic::NodeId, basic::NodeId> resolvedTypes;
   std::map<basic::NodeId, basic::NodeId> resolvedLabels;
   std::map<basic::NodeId, basic::NodeId> resolvedMacros;
+  std::map<basic::NodeId, basic::NodeId> miscResolvedItems;
 
   // closures
   void pushClosureContext(basic::NodeId);

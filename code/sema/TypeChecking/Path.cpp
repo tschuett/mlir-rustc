@@ -1,19 +1,29 @@
+#include "AST/AssociatedItem.h"
+#include "AST/EnumItem.h"
+#include "AST/Implementation.h"
 #include "AST/PathExprSegment.h"
 #include "AST/PathExpression.h"
 #include "AST/PathInExpression.h"
 #include "Basic/Ids.h"
+#include "PathProbing.h"
+#include "TyCtx/SubstitutionsMapper.h"
+#include "TyCtx/TraitReference.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
+#include "Unification.h"
 
 #include "../Resolver/Resolver.h"
 
 #include <cstddef>
+#include <cstdlib>
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
+#include <optional>
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::basic;
 using namespace rust_compiler::tyctx;
+using namespace rust_compiler::tyctx::TyTy;
 
 namespace rust_compiler::sema::type_checking {
 
@@ -68,16 +78,16 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
   NodeId refNodeId = UNKNOWN_NODEID;
 
   if (auto name = resolver->lookupResolvedName(path->getNodeId())) {
-    //llvm::errs() << "resolve root path: it is a name" << "\n";
+    // llvm::errs() << "resolve root path: it is a name" << "\n";
     refNodeId = *name;
   } else if (auto type = resolver->lookupResolvedType(path->getNodeId())) {
-    //llvm::errs() << "resolve root path: it is a type" << "\n";
+    // llvm::errs() << "resolve root path: it is a type" << "\n";
     refNodeId = *type;
   } else if (auto name = tcx->lookupResolvedName(path->getNodeId())) {
-    //llvm::errs() << "tcx:resolve root path: it is a name" << "\n";
+    // llvm::errs() << "tcx:resolve root path: it is a name" << "\n";
     refNodeId = *name;
   } else if (auto type = tcx->lookupResolvedType(path->getNodeId())) {
-    //llvm::errs() << "tcx:resolve root path: it is a type" << "\n";
+    // llvm::errs() << "tcx:resolve root path: it is a type" << "\n";
     refNodeId = *type;
   }
 
@@ -154,9 +164,139 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
 }
 
 TyTy::BaseType *TypeResolver::resolveSegmentsExpression(
-    basic::NodeId rootResolvedIt, std::span<PathExprSegment> segment,
-    size_t offset, TyTy::BaseType *typeSegment, tyctx::NodeIdentity, Location) {
-  assert(false && "to be implemented");
+    basic::NodeId rootResolvedIt, std::span<PathExprSegment> segments,
+    size_t offset, TyTy::BaseType *typeSegment, tyctx::NodeIdentity id,
+    Location) {
+  NodeId resolvedNodeId = rootResolvedIt;
+  TyTy::BaseType *prevSegment = typeSegment;
+  bool receiverIsGeneric = prevSegment->getKind() == TypeKind::Parameter;
+  for (size_t i = offset; i < segments.size(); ++i) {
+    PathExprSegment &seg = segments[i];
+    bool probeImpls = not receiverIsGeneric;
+
+    std::set<PathProbeCandidate> candidates = PathProbeType::probeTypePath(
+        prevSegment, seg.getIdent().getIdentifier(), probeImpls, false, true,
+        this);
+    if (candidates.size() == 0)
+      candidates = PathProbeType::probeTypePath(prevSegment,
+                                                seg.getIdent().getIdentifier(),
+                                                false, true, false, this);
+    if (candidates.size() == 0) {
+      llvm::errs() << "failed to resolve path segment using an impl probe"
+                   << "\n";
+      exit(EXIT_FAILURE);
+    }
+
+    if (candidates.size() > 1) {
+      llvm::errs() << "multiple candidates using an impl probe"
+                   << "\n";
+      exit(EXIT_FAILURE);
+    }
+
+    PathProbeCandidate candidate = *candidates.begin();
+
+    prevSegment = typeSegment;
+    typeSegment = const_cast<TyTy::BaseType *>(candidate.getType());
+
+    Implementation *associatedImplementation = nullptr;
+    if (candidate.isEnumCandidate()) {
+      TyTy::VariantDef *variant = candidate.getEnumVariant();
+
+      NodeId variantId = variant->getId();
+
+      std::optional<std::pair<Enumeration *, EnumItem *>> enumItem =
+          tcx->lookupEnumItem(variantId);
+      assert(enumItem.has_value());
+
+      resolvedNodeId = enumItem->second->getNodeId();
+
+      tcx->insertVariantDefinition(id.getNodeId(), variantId);
+
+    } else if (candidate.isImplCandidate()) {
+      resolvedNodeId = candidate.getImplNodeId();
+      associatedImplementation = candidate.getImplParent();
+    } else {
+      resolvedNodeId = candidate.getTraitNodeId();
+
+      Implementation *impl = candidate.getTraitImpl();
+      if (impl != nullptr) {
+        associatedImplementation = impl;
+      }
+    }
+
+    if (associatedImplementation != nullptr) {
+      NodeId implBlockId = associatedImplementation->getNodeId();
+
+      std::optional<AssociatedImplTrait *> associated =
+          tcx->lookupAssociatedTraitImpl(implBlockId);
+      assert(associated.has_value());
+      TyTy::BaseType *implBlockType = resolveImplBlockSelf(*(*associated));
+      if (implBlockType->needsGenericSubstitutions()) {
+        SubstitutionsMapper mapper;
+        implBlockType = mapper.resolve(implBlockType, seg.getLocation());
+      }
+
+      prevSegment = Unification::unifyWithSite(
+          TyTy::WithLocation(prevSegment), TyTy::WithLocation(implBlockType),
+          seg.getLocation(), tcx);
+      if (prevSegment->getKind() == TypeKind::Error) {
+        llvm::errs() << "resolveSegmentsExpression: unification failed"
+                     << "\n";
+        exit(EXIT_FAILURE);
+      }
+
+      if (associated) {
+        TraitImpl *impl = (*associated)->getImplementation();
+
+        std::shared_ptr<ast::types::TypeExpression> boundPath =
+            impl->getTypePath();
+
+        NodeId implicitId = rust_compiler::basic::getNextNodeId();
+        tcx->insertImplicitType(implicitId, implBlockType);
+
+        ast::types::TypeExpression *implicitSelfBound =
+            new ast::types::TypePath(Location::getEmptyLocation());
+
+        TyTy::TypeBoundPredicate predicate =
+            getPredicateFromBound(boundPath, implicitSelfBound);
+        implBlockType =
+            (*associated)->setupAssociatedTypes(prevSegment, predicate);
+      }
+    }
+
+    if (typeSegment->needsGenericSubstitutions()) {
+      if (!prevSegment->needsGenericSubstitutions()) {
+        assert(false);
+      }
+    }
+
+    if (seg.hasGenerics()) {
+      assert(false);
+    } else if (typeSegment->needsGenericSubstitutions() && !receiverIsGeneric) {
+      assert(false);
+    }
+  }
+
+  assert(resolvedNodeId != UNKNOWN_NODEID);
+
+  if (typeSegment->needsGenericSubstitutions() && !receiverIsGeneric) {
+    assert(false);
+  }
+
+  tcx->insertReceiver(id.getNodeId(), prevSegment);
+
+  if (resolver->getTypeScope().wasDeclDeclaredInCurrentScope(resolvedNodeId)) {
+    resolver->insertResolvedType(id.getNodeId(), resolvedNodeId);
+  } else {
+    resolver->insertResolvedMisc(id.getNodeId(), resolvedNodeId);
+  }
+
+  return typeSegment;
+}
+
+TyTy::BaseType *
+TypeResolver::resolveImplBlockSelf(const AssociatedImplTrait &) {
+  assert(false);
 }
 
 } // namespace rust_compiler::sema::type_checking

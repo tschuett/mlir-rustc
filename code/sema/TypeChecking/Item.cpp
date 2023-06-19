@@ -27,6 +27,7 @@
 #include "TypeChecking.h"
 #include "Unification.h"
 
+#include <cstdlib>
 #include <limits>
 #include <memory>
 #include <optional>
@@ -281,7 +282,7 @@ TypeResolver::resolveTraitImplSubstitutions(TraitImpl *impl) {
   if (impl->hasWhereClause())
     checkWhereClause(impl->getWhereClause());
 
-  std::optional<TraitReference *> traitRef = resolveTraitPath(
+  std::optional<TyTy::TraitReference *> traitRef = resolveTraitPath(
       std::static_pointer_cast<ast::types::TypePath>(impl->getTypePath()));
   if (!traitRef)
     return std::nullopt;
@@ -327,6 +328,18 @@ void TypeResolver::validateTraitImplBlock(
     TraitImpl *impl, TyTy::BaseType *self,
     std::vector<TyTy::SubstitutionParamMapping> &substitutions) {
   assert(false);
+
+//  if (is_trait_impl_block) {
+//    trait_reference->clear_associated_types();
+
+//    AssociatedImplTrait associated(trait_reference, specified_bound,
+//                                   &impl_block, self, context);
+//    tcx->insertAssociatedTraitImpl(impl_block.get_mappings().get_hirid(),
+//                                          std::move(associated));
+//    tcx->insertAssociatedImplMapping(
+//        trait_reference->get_mappings().get_hirid(), self,
+//        impl_block.get_mappings().get_hirid());
+//  }
 }
 
 void TypeResolver::validateInherentImplBlock(
@@ -407,7 +420,8 @@ TyTy::VariantDef *TypeResolver::checkEnumItem(EnumItem *enuItem,
     return checkEnumItemDiscriminant(enuItem->getDiscriminant(),
                                      enuItem->getName(), discriminant);
 
-  LiteralExpression *discrimExpr = new LiteralExpression(enuItem->getLocation());
+  LiteralExpression *discrimExpr =
+      new LiteralExpression(enuItem->getLocation());
   discrimExpr->setKind(LiteralExpressionKind::IntegerLiteral);
   discrimExpr->setStorage(std::to_string(discriminant));
 
@@ -417,11 +431,16 @@ TyTy::VariantDef *TypeResolver::checkEnumItem(EnumItem *enuItem,
 
   std::optional<CanonicalPath> canon =
       tcx->lookupCanonicalPath(enuItem->getNodeId());
-  assert(canon.has_value());
+  if (!canon) {
+    llvm::errs() << "checkEnumItem: failed to lookup canonical path for "
+                 << enuItem->getNodeId() << "\n";
+    exit(EXIT_FAILURE);
+  }
 
   TypeIdentity ident = {*canon, enuItem->getLocation()};
 
-  return new TyTy::VariantDef(enuItem->getNodeId(), enuItem->getName(), ident, discrimExpr);
+  return new TyTy::VariantDef(enuItem->getNodeId(), enuItem->getName(), ident,
+                              discrimExpr);
 }
 
 TyTy::VariantDef *TypeResolver::checkEnumItemTuple(const EnumItemTuple &enuItem,
@@ -429,7 +448,7 @@ TyTy::VariantDef *TypeResolver::checkEnumItemTuple(const EnumItemTuple &enuItem,
                                                    int64_t discriminant) {
   std::vector<TyTy::StructFieldType *> fields;
   size_t idx = 0;
-  if (enuItem.hasTupleFiels()) {
+  if (enuItem.hasTupleFields()) {
     TupleFields f = enuItem.getTupleFields();
     for (const TupleField &t : f.getFields()) {
       TyTy::BaseType *fieldType = checkType(t.getType());

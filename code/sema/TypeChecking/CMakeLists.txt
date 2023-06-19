@@ -23,6 +23,8 @@ add_library(TypeChecking
             OperatorOverload.cpp
             MethodResolver.cpp
             Resolver.cpp
+            TypeBoundsProbe.cpp
+            TraitResolver.cpp
            )
 
 target_include_directories(TypeChecking PRIVATE  ../../include)

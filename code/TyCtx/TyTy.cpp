@@ -35,6 +35,40 @@ namespace rust_compiler::tyctx::TyTy {
 
 static constexpr uint32_t MAX_RECURSION_DEPTH = 1024 * 16;
 
+static bool checkSubstitutions(SubstitutionArgumentMappings &mappings,
+                               StructFieldType *field) {
+  TyTy::BaseType *fieldType = field->getFieldType();
+  if (fieldType->getKind() == TypeKind::Parameter) {
+    ParamType *p = static_cast<ParamType *>(fieldType);
+
+    std::optional<SubstitutionArg> arg = mappings.getArgumentForSymbol(p);
+    if (arg) {
+      TyTy::BaseType *argType = (*arg).getType();
+      if (argType->getKind() == TypeKind::Parameter ||
+          argType->getKind() == TypeKind::Inferred) {
+        TyTy::BaseType *newField = argType->clone();
+        newField->setReference(fieldType->getReference());
+        field->setFieldType(newField);
+      } else {
+        field->getFieldType()->setTypeReference(argType->getReference());
+      }
+    }
+  } else if (fieldType->hasSubsititionsDefined() || !fieldType->isConcrete()) {
+    InternalSubstitutionsMapper mapper;
+    TyTy::BaseType *concrete = mapper.resolve(fieldType, mappings);
+    if (concrete->getKind() == TypeKind::Error) {
+      llvm::errs() << "failed to resolve field substitution type"
+                   << "\n";
+      return false;
+    }
+
+    TyTy::BaseType *newField = concrete->clone();
+    newField->setReference(fieldType->getReference());
+    field->setFieldType(newField);
+  }
+  return true;
+}
+
 bool BaseType::needsGenericSubstitutions() const {
   const TyTy::BaseType *x = destructure();
   switch (getKind()) {
@@ -79,7 +113,7 @@ bool BaseType::needsGenericSubstitutions() const {
 }
 
 TypeVariable::TypeVariable(basic::NodeId id) : id(id) {
-  TyCtx *context = rust_compiler::session::session->getTypeContext();
+  tyctx::TyCtx *context = rust_compiler::session::session->getTypeContext();
   if (!context->lookupType(id)) {
     llvm::errs() << id << "\n";
     assert(false);
@@ -87,7 +121,7 @@ TypeVariable::TypeVariable(basic::NodeId id) : id(id) {
 }
 
 TyTy::BaseType *TypeVariable::getType() const {
-  TyCtx *context = rust_compiler::session::session->getTypeContext();
+  tyctx::TyCtx *context = rust_compiler::session::session->getTypeContext();
   if (auto type = context->lookupType(id))
     return *type;
   assert(false);
@@ -484,8 +518,6 @@ std::string ParamType::toString() const {
 // }
 
 bool BaseType::isConcrete() const {
-  assert(false);
-
   switch (getKind()) {
   case TypeKind::Parameter:
   case TypeKind::Projection:
@@ -719,12 +751,12 @@ BaseType *BaseType::destructure() {
 }
 
 bool PlaceholderType::canResolve() const {
-  TyCtx *context = rust_compiler::session::session->getTypeContext();
+  tyctx::TyCtx *context = rust_compiler::session::session->getTypeContext();
   return context->lookupAssociatedTypeMapping(getTypeReference()).has_value();
 }
 
 BaseType *PlaceholderType::resolve() const {
-  TyCtx *context = rust_compiler::session::session->getTypeContext();
+  tyctx::TyCtx *context = rust_compiler::session::session->getTypeContext();
   std::optional<NodeId> result =
       context->lookupAssociatedTypeMapping(getTypeReference());
   assert(result.has_value());
@@ -886,7 +918,7 @@ StructFieldType *StructFieldType::clone() const {
 }
 
 BaseType *InferType::clone() const {
-  TyCtx *context = rust_compiler::session::session->getTypeContext();
+  tyctx::TyCtx *context = rust_compiler::session::session->getTypeContext();
 
   InferType *cloned =
       new InferType(rust_compiler::basic::getNextNodeId(), inferKind,
@@ -919,7 +951,7 @@ void ClosureType::setupFnOnceOutput() const {
 }
 
 TraitReference *TypeBoundPredicate::get() const {
-  TyCtx *context = rust_compiler::session::session->getTypeContext();
+  tyctx::TyCtx *context = rust_compiler::session::session->getTypeContext();
   std::optional<TraitReference *> ref = context->lookupTraitReference(id);
   assert(ref.has_value());
   return *ref;
@@ -1133,7 +1165,25 @@ BaseType *DynamicObjectType::clone() const {
 }
 
 ADTType *ADTType::handleSubstitions(SubstitutionArgumentMappings &mappings) {
-  assert(false);
+  ADTType *adt = static_cast<ADTType *>(clone());
+  adt->setReference(rust_compiler::basic::getNextNodeId());
+  adt->usedArguments = mappings;
+
+  for (auto &sub : adt->getSubstitutions()) {
+    std::optional<SubstitutionArg> arg =
+        mappings.getArgumentForSymbol(sub.getParamType());
+    if (arg)
+      sub.fillParamType(mappings, mappings.getLocation());
+  }
+
+  for (auto &variant : adt->getVariants()) {
+    if (variant->isDatalessVariant())
+      continue;
+    for (auto &field : variant->getFields())
+      if (checkSubstitutions(mappings, field))
+        return adt;
+  }
+  return adt;
 }
 
 bool BaseType::satisfiesBound(const TypeBoundPredicate &predicate) const {
@@ -1218,7 +1268,7 @@ TypeVariable TypeVariable::getImplicitInferVariable(Location loc) {
       new InferType(rust_compiler::basic::getNextNodeId(), InferKind::General,
                     TypeHint::unknown(), loc);
 
-  TyCtx *ctx = rust_compiler::session::session->getTypeContext();
+  tyctx::TyCtx *ctx = rust_compiler::session::session->getTypeContext();
   ctx->insertType(
       NodeIdentity(infer->getReference(),
                    rust_compiler::session::session->getCurrentCrateNum(), loc),
@@ -1505,6 +1555,31 @@ bool BaseType::isUnit() const {
   }
   }
   llvm_unreachable("all cases covered");
+}
+
+const BaseType *BaseType::getRoot() const {
+  // FIXME this needs to be it its own visitor class with a vector adjustments
+  const TyTy::BaseType *root = this;
+  if (getKind() == TypeKind::Reference) {
+    const ReferenceType *r = static_cast<const ReferenceType *>(root);
+    root = r->getBase()->getRoot();
+  } else if (getKind() == TypeKind::RawPointer) {
+    const RawPointerType *r = static_cast<const RawPointerType *>(root);
+    root = r->getBase()->getRoot();
+  }
+
+  // these are an unsize
+  else if (getKind() == TypeKind::Slice) {
+    const SliceType *r = static_cast<const SliceType *>(root);
+    root = r->getElementType()->getRoot();
+  }
+  // else if (get_kind () == TyTy::ARRAY)
+  //   {
+  //     const ArrayType *r = static_cast<const ArrayType *> (root);
+  //     root = r->get_element_type ()->get_root ();
+  //   }
+
+  return root;
 }
 
 } // namespace rust_compiler::tyctx::TyTy

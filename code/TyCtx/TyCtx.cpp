@@ -396,7 +396,8 @@ bool TyCtx::isTraitQueryInProgress(basic::NodeId id) const {
   return traitQueriesInProgress.find(id) != traitQueriesInProgress.end();
 }
 
-std::optional<TraitReference *> TyCtx::lookupTraitReference(basic::NodeId id) {
+std::optional<TyTy::TraitReference *>
+TyCtx::lookupTraitReference(basic::NodeId id) {
   auto it = traitContext.find(id);
   if (it == traitContext.end())
     return std::nullopt;
@@ -412,7 +413,7 @@ void TyCtx::traitQueryCompleted(basic::NodeId id) {
   traitQueriesInProgress.erase(id);
 }
 
-void TyCtx::insertTraitReference(basic::NodeId id, TraitReference &&ref) {
+void TyCtx::insertTraitReference(basic::NodeId id, TyTy::TraitReference &&ref) {
   assert(traitContext.find(id) == traitContext.end());
   traitContext.emplace(id, std::move(ref));
 }
@@ -434,6 +435,22 @@ void TyCtx::pushNewIteratorLoopContext(basic::NodeId id, Location loc) {
   TyTy::BaseType *inferVar = new TyTy::InferType(
       id, TyTy::InferKind::General, TyTy::TypeHint::unknown(), loc);
   loopTypeStack.push_back(inferVar);
+}
+
+std::optional<AssociatedImplTrait *>
+TyCtx::lookupAssociatedTraitImpl(NodeId id) {
+  auto it = associatedImplTraits.find(id);
+  if (it == associatedImplTraits.end())
+    return std::nullopt;
+  return &it->second;
+}
+
+void TyCtx::iterateImplementations(
+    llvm::function_ref<bool(NodeId, ast::Implementation *)> cb) {
+  for (auto it = implItemMapping.begin(); it != implItemMapping.end(); ++it) {
+    if (!cb(it->first, it->second))
+      return;
+  }
 }
 
 } // namespace rust_compiler::tyctx

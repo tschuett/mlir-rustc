@@ -67,6 +67,7 @@ public:
 
   size_t getSize() const { return segments.size(); }
 
+  /// Note that it ignores the NodeId
   bool isEqual(const CanonicalPath &other) {
     if (other.getSize() != getSize())
       return false;
@@ -87,6 +88,7 @@ public:
   /// it ignores the node ids
   bool isEqualByName(const CanonicalPath &b) const;
 
+  /// Note that it ignores the NodeId
   bool operator==(const CanonicalPath &b) const {
     if (segments.size() != b.segments.size())
       return false;
@@ -98,6 +100,7 @@ public:
     return true;
   }
 
+  /// Note that it ignores the NodeId
   bool operator<(const CanonicalPath &b) const {
     if (segments.size() < b.segments.size())
       return true;

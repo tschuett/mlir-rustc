@@ -106,6 +106,8 @@ public:
   size_t size() const { return mappings.size(); }
   bool isEmpty() const { return size() == 0; }
 
+  ParamSubstCallback getSubstCb() const { return paramSubstCallback; }
+
 private:
   std::vector<SubstitutionArg> mappings;
   std::map<lexer::Identifier, TyTy::BaseType *> bindingArgs;

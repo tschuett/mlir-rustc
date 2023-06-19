@@ -16,7 +16,7 @@ public:
 
   void setTupleFields(const TupleFields &tf) { fields = tf; }
 
-  bool hasTupleFiels() const { return fields.has_value(); }
+  bool hasTupleFields() const { return fields.has_value(); }
   TupleFields getTupleFields() const { return *fields; }
 };
 

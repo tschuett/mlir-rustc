@@ -121,6 +121,8 @@ public:
   // FIXME: needed by substitutins.cpp in TyCtx
   TyTy::BaseType *checkType(std::shared_ptr<ast::types::TypeExpression>);
 
+  std::optional<TyTy::BaseType *> queryType(basic::NodeId id);
+
 private:
   std::optional<TyTy::BaseType *>
   checkFunctionTraitCall(CallExpression *, TyTy::BaseType *functionType);
@@ -255,8 +257,6 @@ private:
                                             TyTy::BaseType *typeSegment,
                                             tyctx::NodeIdentity, Location);
 
-  std::optional<TyTy::BaseType *> queryType(basic::NodeId id);
-
   std::set<MethodCandidate> resolveMethodProbe(TyTy::BaseType *receiver,
                                                TyTy::FunctionTrait);
   TyTy::BaseType *checkMethodCallExpression(TyTy::FunctionType *, NodeIdentity,
@@ -320,7 +320,7 @@ private:
                         ast::types::TypeExpression *);
   TyTy::ParamType *checkTypeParam(const TypeParam &);
 
-  TraitReference *resolveTraitPath(std::shared_ptr<ast::types::TypePath>);
+  TyTy::TraitReference *resolveTraitPath(std::shared_ptr<ast::types::TypePath>);
 
   TyTy::SubstitutionArgumentMappings
   getUsedSubstitutionArguments(TyTy::BaseType *);
@@ -330,9 +330,9 @@ private:
 
   bool checkGenericParamsAndArgs(const ast::GenericParams &,
                                  const ast::GenericArgs &);
-  TraitReference *resolveTrait(ast::Trait *trait);
+  TyTy::TraitReference *resolveTrait(ast::Trait *trait);
 
-  TraitItemReference resolveAssociatedItemInTraitToRef(
+  TyTy::TraitItemReference resolveAssociatedItemInTraitToRef(
       AssociatedItem &, TyTy::BaseType *,
       const std::vector<TyTy::SubstitutionParamMapping> &);
 
@@ -391,6 +391,8 @@ private:
   TyTy::BaseType *checkImplementationFunction(
       ast::InherentImpl *parent, ast::Function *, TyTy::BaseType *self,
       std::vector<TyTy::SubstitutionParamMapping> substitutions);
+
+  TyTy::BaseType *resolveImplBlockSelf(const AssociatedImplTrait &);
 };
 
 } // namespace rust_compiler::sema::type_checking

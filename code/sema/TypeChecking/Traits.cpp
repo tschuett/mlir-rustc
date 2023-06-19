@@ -8,12 +8,12 @@ using namespace rust_compiler::ast;
 
 namespace rust_compiler::sema::type_checking {
 
-TraitReference *
+  TyTy::TraitReference *
 TypeResolver::resolveTraitPath(std::shared_ptr<ast::types::TypePath> path) {
   std::optional<Trait *> resolvedTraitReference = resolvePathToTrait(path);
 
   if (!resolvedTraitReference)
-    return &TraitReference::errorNode();
+    return &TyTy::TraitReference::errorNode();
 
   return resolveTrait(*resolvedTraitReference);
 }

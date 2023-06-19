@@ -4,6 +4,8 @@ add_library(TyCtx
            TraitReference.cpp
            Substitutions.cpp
            SubstitutionsMapper.cpp
+           AssociatedImplTrait.cpp
+           Bounds.cpp
            )
 
 target_include_directories(TyCtx PRIVATE  ../include)

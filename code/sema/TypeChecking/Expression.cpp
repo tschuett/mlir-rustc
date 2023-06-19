@@ -670,7 +670,7 @@ TypeResolver::checkFunctionTraitCall(CallExpression *expr,
   tcx->insertReceiver(expr->getNodeId(), functionType);
 
   PathProbeCandidate resolvedCandidate = candidate.getCandidate();
-  TyTy::BaseType *lookupType = resolvedCandidate.getType();
+  const TyTy::BaseType *lookupType = resolvedCandidate.getType();
   basic::NodeId resolvedNodeId = resolvedCandidate.isImplCandidate()
                                      ? resolvedCandidate.getImplNodeId()
                                      : resolvedCandidate.getTraitNodeId();
@@ -680,7 +680,8 @@ TypeResolver::checkFunctionTraitCall(CallExpression *expr,
     assert(false);
   }
 
-  TyTy::FunctionType *fn = static_cast<TyTy::FunctionType *>(lookupType);
+  const TyTy::FunctionType *fn =
+      static_cast<const TyTy::FunctionType *>(lookupType);
   if (!fn->isMethod()) {
     // report error
     assert(false);
@@ -708,8 +709,8 @@ TypeResolver::checkFunctionTraitCall(CallExpression *expr,
   args.push_back(a);
 
   TyTy::BaseType *functionReturnType = checkMethodCallExpression(
-      fn, expr->getIdentity(), args, expr->getLocation(), expr->getLocation(),
-      adjustedSelf);
+      const_cast<TyTy::FunctionType *>(fn), expr->getIdentity(), args,
+      expr->getLocation(), expr->getLocation(), adjustedSelf);
 
   if (functionReturnType == nullptr ||
       functionReturnType->getKind() == TyTy::TypeKind::Error) {
@@ -717,7 +718,7 @@ TypeResolver::checkFunctionTraitCall(CallExpression *expr,
     assert(false);
   }
 
-  tcx->insertOperatorOverLoad(expr->getNodeId(), fn);
+  tcx->insertOperatorOverLoad(expr->getNodeId(), const_cast<TyTy::FunctionType *>(fn));
   tcx->insertResolvedName(expr->getNodeId(), resolvedNodeId);
 
   return functionReturnType;

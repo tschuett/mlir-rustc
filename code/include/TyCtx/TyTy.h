@@ -13,6 +13,7 @@
 #include "Substitutions.h"
 #include "TyCtx/ItemIdentity.h"
 #include "TyCtx/NodeIdentity.h"
+#include "TyCtx/Predicate.h"
 #include "TyCtx/Substitutions.h"
 #include "TyCtx/TraitReference.h"
 #include "TypeIdentity.h"
@@ -23,7 +24,7 @@
 
 // FIXME
 namespace rust_compiler::sema::type_checking {
-  class TypeResolver;
+class TypeResolver;
 }
 
 namespace rust_compiler::tyctx::TyTy {
@@ -46,76 +47,6 @@ private:
   NodeIdentity ident;
   TyTy::BaseType *argumentType;
   Location loc;
-};
-
-class TypeBoundPredicate : public SubstitutionRef {
-public:
-  // hack for std::map
-  // TypeBoundPredicate() = default;
-  TypeBoundPredicate(TraitReference &ref, Location loc);
-  TypeBoundPredicate(basic::NodeId id,
-                     std::vector<SubstitutionParamMapping> substitutions,
-                     Location loc);
-  virtual ~TypeBoundPredicate() = default;
-
-  bool isError() const { return errorFlag; }
-
-  basic::NodeId getId() const { return id; }
-
-  lexer::Identifier getIdentifier() const { return get()->getIdentifier(); }
-
-  static TypeBoundPredicate error() {
-    TypeBoundPredicate p = TypeBoundPredicate(basic::UNKNOWN_NODEID, {},
-                                              Location::getEmptyLocation());
-    p.errorFlag = true;
-    return p;
-  }
-
-  TraitReference *get() const;
-
-  bool requiresGenericArgs() const;
-  // FIXME resolver
-  void applyGenericArgs(ast::GenericArgs *, bool hasAssociatedSelf,
-                        sema::type_checking::TypeResolver *);
-
-  BaseType *
-  handleSubstitions(SubstitutionArgumentMappings &mappings) override final {
-    return nullptr;
-  }
-
-  TypeBoundPredicateItem
-  lookupAssociatedItem(const lexer::Identifier &search) const;
-
-  size_t getNumberOfAssociatedBindings() const final;
-
-  std::string toString() const;
-
-private:
-  basic::NodeId id;
-  Location loc;
-  bool errorFlag = false;
-};
-
-class TypeBoundsMappings {
-public:
-  std::vector<TypeBoundPredicate> &getSpecifiedBounds() {
-    return specifiedBounds;
-  }
-
-  const std::vector<TypeBoundPredicate> &getSpecifiedBounds() const {
-    return specifiedBounds;
-  }
-
-  std::string rawBoundsToString() const;
-
-protected:
-  TypeBoundsMappings(std::vector<TypeBoundPredicate> specifiedBounds)
-      : specifiedBounds(specifiedBounds) {}
-
-  void addBound(const TypeBoundPredicate &predicate);
-
-private:
-  std::vector<TypeBoundPredicate> specifiedBounds;
 };
 
 /// https://rustc-dev-guide.rust-lang.org/ty.html
@@ -267,6 +198,9 @@ public:
 
   bool boundsCompatible(const BaseType *other, Location loc,
                         bool emitError) const;
+
+  // FIXME this will eventually go away
+  const BaseType *getRoot() const;
 
 protected:
   BaseType(basic::NodeId ref, basic::NodeId typeRef, TypeKind kind,
@@ -674,6 +608,7 @@ public:
 
   Identifier getName() const { return identifier; }
   TyTy::BaseType *getFieldType() const { return type; }
+  void setFieldType(TyTy::BaseType *fieldType) { type = fieldType; }
 
   //  std::string toString() const override;
   //  unsigned getNumberOfSpecifiedBounds() override;
@@ -700,6 +635,7 @@ public:
 
   VariantKind getKind() const { return kind; }
   basic::NodeId getId() const { return id; }
+  Identifier getIdentifier() const { return identifier; }
 
   std::vector<TyTy::StructFieldType *> getFields() const { return fields; }
   size_t getNumberOfFields() const { return fields.size(); }
@@ -711,6 +647,7 @@ public:
   bool lookupField(lexer::Identifier, TyTy::StructFieldType **lookup,
                    size_t *index);
 
+  bool isDatalessVariant() const { return kind == VariantKind::Enum; }
   static VariantDef &getErrorNode() {
     static VariantDef node = {basic::UNKNOWN_NODEID, lexer::Identifier(""),
                               TypeIdentity::empty(), nullptr};
@@ -764,6 +701,16 @@ public:
   BaseType *clone() const final override;
 
   size_t getNumberOfVariants() const { return variants.size(); }
+
+  bool lookupVariant(const Identifier &ident, VariantDef **found) const {
+    for (VariantDef *variant : variants) {
+      if (variant->getIdentifier() == ident) {
+        *found = variant;
+        return true;
+      }
+    }
+    return false;
+  }
 
   bool lookupVariantById(basic::NodeId id, VariantDef **found,
                          int *index = nullptr) {
@@ -907,7 +854,7 @@ public:
         parameters(params), resultType(resultType) {}
 
   TyTy::BaseType *getReturnType() const { return resultType.getType(); }
-  std::vector<TypeVariable> getParameters() const;
+  std::vector<TypeVariable> getParameters() const { return parameters; }
 
   BaseType *clone() const final override;
 

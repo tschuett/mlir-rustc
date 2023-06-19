@@ -6,6 +6,7 @@
 #include "AST/Types/TupleType.h"
 #include "Basic/Ids.h"
 #include "Sema/Autoderef.h"
+#include "TyCtx/AssociatedImplTrait.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TraitReference.h"
 #include "TyCtx/TyTy.h"
@@ -14,6 +15,7 @@
 #include <optional>
 #include <set>
 #include <vector>
+#include <llvm/ADT/STLFunctionalExtras.h>
 
 namespace rust_compiler::ast {
 class Module;
@@ -38,6 +40,7 @@ class TyCtx {
 public:
   TyCtx();
 
+  void iterateImplementations(llvm::function_ref<bool (NodeId, ast::Implementation*)> cb);
   void insertModule(ast::Module *);
   void insertItem(ast::Item *);
   void insertEnumeration(NodeId, ast::Enumeration *);
@@ -156,15 +159,25 @@ public:
   // traits
   void insertTraitQuery(basic::NodeId id);
   void traitQueryCompleted(basic::NodeId id);
-  std::optional<TraitReference *> lookupTraitReference(basic::NodeId id);
+  std::optional<TyTy::TraitReference *> lookupTraitReference(basic::NodeId id);
   bool isTraitQueryInProgress(basic::NodeId id) const;
-  void insertTraitReference(basic::NodeId id, TraitReference &&ref);
+  void insertTraitReference(basic::NodeId id, TyTy::TraitReference &&ref);
 
   void insertAssociatedTypeMapping(basic::NodeId id, basic::NodeId mapping);
 
   void pushNewIteratorLoopContext(basic::NodeId, Location loc);
   TyTy::BaseType *popLoopContext();
   TyTy::BaseType *peekLoopContext() const;
+
+  void insertAssociatedTraitImpl(NodeId id, AssociatedImplTrait &&associated);
+  std::optional<AssociatedImplTrait *> lookupAssociatedTraitImpl(NodeId id);
+
+  void insertAssociatedImplMapping(NodeId traitId,
+                                   const TyTy::BaseType *impl_Type,
+                                   NodeId implId);
+  std::optional<NodeId>
+  lookupAssociatedImplMappingForSelf(NodeId traitId,
+                                     const TyTy::BaseType *self);
 
 private:
   void generateBuiltins();
@@ -206,7 +219,7 @@ private:
 
   std::map<NodeId, std::vector<sema::Adjustment>> autoderefMappings;
 
-  //std::map<NodeId, std::vector<NodeId>> moduleChildMap;
+  // std::map<NodeId, std::vector<NodeId>> moduleChildMap;
 
   // TyTy
 
@@ -242,6 +255,7 @@ private:
   std::map<basic::NodeId, std::set<basic::NodeId>> closureCaptureMappings;
 
   std::map<NodeId, NodeId> associatedTypeMappings;
+  std::map<NodeId, AssociatedImplTrait> associatedImplTraits;
 
   std::map<NodeId, Location> locations;
   std::map<basic::NodeId, basic::NodeId> variants;
@@ -249,7 +263,7 @@ private:
   std::map<basic::NodeId, TyTy::FunctionType *> operatorOverloads;
 
   std::set<basic::NodeId> traitQueriesInProgress;
-  std::map<basic::NodeId, TraitReference> traitContext;
+  std::map<basic::NodeId, TyTy::TraitReference> traitContext;
 
   std::map<basic::NodeId, TyTy::TypeBoundPredicate> predicates;
 

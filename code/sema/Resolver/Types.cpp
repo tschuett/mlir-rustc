@@ -119,8 +119,8 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
 
   std::vector<TypePathSegment> segments = typePath->getSegments();
 
-  //  llvm::errs() << "resolveRelativeTypePath: "
-  //               << segments[0].getSegment().toString() << "\n";
+//  llvm::errs() << "resolveRelativeTypePath: "
+//               << segments[0].getSegment().toString() << "\n";
 
   // experiment
   //{
@@ -188,11 +188,11 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
       if (auto node = getTypeScope().lookup(path)) {
         insertResolvedType(segment.getNodeId(), *node);
         resolvedNodeId = *node;
-        // llvm::errs() << "it is a type:" << *node << "\n";
+        //llvm::errs() << "it is a type:" << *node << "\n";
       } else if (auto node = getNameScope().lookup(path)) {
         insertResolvedName(segment.getNodeId(), *node);
         resolvedNodeId = *node;
-        // llvm::errs() << "it is a name: " << *node << "\n";
+        //llvm::errs() << "it is a name: " << *node << "\n";
       } else if (ident.getKind() == PathIdentSegmentKind::self) {
         moduleScopeId = crateScopeId;
         previousResolveNodeId = moduleScopeId;

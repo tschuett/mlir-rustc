@@ -365,12 +365,12 @@ void Resolver::resolveTraitImpl(std::shared_ptr<ast::TraitImpl> impl,
     return;
   }
 
-  std::optional<adt::CanonicalPath> canonTraitType =
-    resolveTypeToCanonicalPath(impl->getTypePath().get(), prefix, canonicalPrefix);
+  std::optional<adt::CanonicalPath> canonTraitType = resolveTypeToCanonicalPath(
+      impl->getTypePath().get(), prefix, canonicalPrefix);
   assert(canonTraitType.has_value());
 
-  std::optional<adt::CanonicalPath> canonImplType =
-    resolveTypeToCanonicalPath(impl->getType().get(), prefix, canonicalPrefix);
+  std::optional<adt::CanonicalPath> canonImplType = resolveTypeToCanonicalPath(
+      impl->getType().get(), prefix, canonicalPrefix);
   assert(canonImplType.has_value());
 
   CanonicalPath implTypeSegment = *canonImplType;
@@ -610,6 +610,12 @@ void Scope::print() const {
 void Rib::print() const {
   for (auto &p : pathMappings)
     llvm::errs() << p.first.asString() << "\n";
+}
+
+void Resolver::insertResolvedMisc(NodeId ref, NodeId def) {
+  auto it = miscResolvedItems.find(ref);
+  assert(it == miscResolvedItems.end());
+  miscResolvedItems[ref] = def;
 }
 
 // std::vector<std::pair<std::string, ast::types::TypeExpression *>> &

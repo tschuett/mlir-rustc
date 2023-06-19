@@ -333,18 +333,28 @@ void Resolver::resolveEnumerationNoRecurse(
         tyCtx->insertModuleChild(currentModule, str.getNodeId());
       }
 
-      if (en->hasDiscriminant()) {
-        EnumItemDiscriminant str = en->getDiscriminant();
-        CanonicalPath decl2 =
-            CanonicalPath::newSegment(str.getNodeId(), en->getName());
-        CanonicalPath path2 = path.append(decl2);
-        CanonicalPath cpath2 = cpath.append(decl2);
-        getTypeScope().insert(path2, str.getNodeId(), str.getLocation(),
-                              RibKind::Type);
-        NodeId currentModule = peekCurrentModuleScope();
-        tyCtx->insertCanonicalPath(str.getNodeId(), cpath2);
-        tyCtx->insertModuleChildItem(str.getNodeId(), decl2);
-        tyCtx->insertModuleChild(currentModule, str.getNodeId());
+      //if (en->hasDiscriminant()) {
+      //  EnumItemDiscriminant str = en->getDiscriminant();
+      //  CanonicalPath decl2 =
+      //      CanonicalPath::newSegment(str.getNodeId(), en->getName());
+      //  CanonicalPath path2 = path.append(decl2);
+      //  CanonicalPath cpath2 = cpath.append(decl2);
+      //  getTypeScope().insert(path2, str.getNodeId(), str.getLocation(),
+      //                        RibKind::Type);
+      //  NodeId currentModule = peekCurrentModuleScope();
+      //  tyCtx->insertCanonicalPath(str.getNodeId(), cpath2);
+      //  tyCtx->insertModuleChildItem(str.getNodeId(), decl2);
+      //  tyCtx->insertModuleChild(currentModule, str.getNodeId());
+      //}
+
+      if (!en->hasStruct() and !en->hasTuple() and !en->hasDiscriminant()) {
+        CanonicalPath decl =
+            CanonicalPath::newSegment(en->getNodeId(), en->getName());
+
+        CanonicalPath pathEn = path.append(decl);
+        CanonicalPath cpathEn = cpath.append(decl);
+
+        tyCtx->insertCanonicalPath(en->getNodeId(), cpathEn);
       }
     }
   }

@@ -129,7 +129,7 @@ void Resolver::resolveEnumItem(std::shared_ptr<ast::EnumItem> enuIt,
     CanonicalPath path = prefix.append(decl);
     CanonicalPath cpath = canonicalPrefix.append(decl);
     tyCtx->insertCanonicalPath(tup.getNodeId(), cpath);
-    if (tup.hasTupleFiels()) {
+    if (tup.hasTupleFields()) {
       std::vector<TupleField> fields = tup.getTupleFields().getFields();
       for (const TupleField &tup : fields)
         resolveType(tup.getType(), prefix, canonicalPrefix);
@@ -138,11 +138,17 @@ void Resolver::resolveEnumItem(std::shared_ptr<ast::EnumItem> enuIt,
 
   if (enuIt->hasDiscriminant()) {
     EnumItemDiscriminant dis = enuIt->getDiscriminant();
+    resolveExpression(dis.getExpression(), prefix, canonicalPrefix);
+  }
+
+  if (!enuIt->hasStruct() and !enuIt->hasTuple()) {
     CanonicalPath decl =
-        CanonicalPath::newSegment(dis.getNodeId(), enuIt->getName());
+        CanonicalPath::newSegment(enuIt->getNodeId(), enuIt->getName());
+
     CanonicalPath path = prefix.append(decl);
     CanonicalPath cpath = canonicalPrefix.append(decl);
-    tyCtx->insertCanonicalPath(dis.getNodeId(), cpath);
+
+    tyCtx->insertCanonicalPath(enuIt->getNodeId(), cpath);
   }
 }
 

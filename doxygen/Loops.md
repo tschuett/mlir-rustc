@@ -34,6 +34,7 @@ for( unknown ) {
 
 Flatten the inner three loops? Unroll known small loops? Unswitch the
 ifs. Blindly run the loop passes (gcc or Clang?) against it? ...
+Probably none of them!
 
 GCC and LLVM both use loop passes to optimize loops. They both suffer
 from pass-ordering issues. In contrast VPlan and SLP both rely on abstraction
@@ -64,44 +65,38 @@ In addition to SCEV, [Block
 Frequency](https://llvm.org/docs/BlockFrequencyTerminology.html) can
 be used to identify hot resp. cold sub-loops.
 
+## Inlining and Outlining
+
+xxxx
+
 # VPlan
 
 Loop vectorization is a kind of loop optimization. Should there be in
 the end only one loop optimization pass that optimizes the loop nest
 including vectorization?
 
+# Design Principles
+
+New passes are fat, do abstraction raising, perform state to state
+transforms, cost modeling, and only write changes back to IR.
+
+Wegman and Zadeck presented an algorithm that combines *constant
+propagation* and *unreachable-code elimination*: IPSCCP in LLVM and
+MLIR.  Click and Cooper talked about fat passes, i.e., *constant
+propagation*, *value numbering*, and *uncreachable code
+elimination*. They showed that fat passes can be more powerful.
+
+# Open Questions:
+
+* Which data structure to represent the LoopPlan?
+* Which optmizations are performed on the LoopPlanner?
+* Merging efforts with VPlan?
+
 # Literature
 
 * [Loop Optimization Framework](https://arxiv.org/pdf/1811.00632.pdf)
 * [A Proposal for A Framework for More Effective Loop Optimization](https://llvm.org/devmtg/2020-09/slides/KruseFinkel-Proposal_for_A_Framework_for_More_Effective_Loop_Optimizations.pdf)
 * [Loop Optimizations in LLVM: The Good, The Bad, and The Ugly](https://llvm.org/devmtg/2018-10/slides/Kruse-LoopTransforms.pdf)
-
-fat passes:
-@article{click1995combining,
-  title={Combining analyses, combining optimizations},
-  author={Click, Cliff and Cooper, Keith D},
-  journal={ACM Transactions on Programming Languages and Systems (TOPLAS)},
-  volume={17},
-  number={2},
-  pages={181--196},
-  year={1995},
-  publisher={ACM New York, NY, USA}
-}
-
-@article{10.1145/103135.103136,
-    author = {Wegman, Mark N. and Zadeck, F. Kenneth},
-    title = {Constant Propagation with Conditional Branches},
-    year = {1991},
-    issue_date = {April 1991},
-    publisher = {Association for Computing Machinery},
-    address = {New York, NY, USA},
-    volume = {13},
-    number = {2},
-    issn = {0164-0925},
-    url = {https://doi.org/10.1145/103135.103136},
-    doi = {10.1145/103135.103136},
-    journal = {ACM Trans. Program. Lang. Syst.},
-    month = {apr},
-    pages = {181–210},
-    numpages = {30},
- }
+* [VPlan](https://llvm.org/docs/Proposals/VectorizationPlan.html)
+* [Automatic selection of high-order transformations in the IBM XL FORTRAN compilers](https://www.cs.rice.edu/~vs3/PDF/ibmjrd97.pdf)
+* [Lecture Notes on Loop Optimizations](https://www.cs.cmu.edu/~fp/courses/15411-f13/lectures/17-loopopt.pdf)

@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <map>
 #include <vector>
+#include <llvm/ADT/StringMap.h>
 
 // FIXME
 #include "../sema/TypeChecking/TypeChecking.h"
@@ -32,7 +33,28 @@ bool SubstitutionParamMapping::needSubstitution() const {
   return !param->isConcrete();
 }
 
-BaseType *SubstitutionRef::inferSubstitions(Location) { assert(false); }
+BaseType *SubstitutionRef::inferSubstitions(Location loc) {
+  std::vector<SubstitutionArg> args;
+  std::map<Identifier, TyTy::BaseType *> argumentMappings;
+  for (auto &p : getSubstitutions()) {
+    if (p.needSubstitution()) {
+      const Identifier& symbol = p.getParamType()->getSymbol();
+      auto it = argumentMappings.find(symbol);
+      if (it != argumentMappings.end()) {
+        args.push_back(SubstitutionArg(&p, it->second));
+      } else {
+        TypeVariable inferVar = TypeVariable::getImplicitInferVariable(loc);
+        args.push_back(SubstitutionArg(&p, inferVar.getType()));
+      }
+    } else {
+      args.push_back(SubstitutionArg(&p, p.getParamType()));
+    }
+  }
+
+  SubstitutionArgumentMappings inferArguments = {std::move(args), {}, loc};
+
+  return handleSubstitions(inferArguments);
+}
 
 std::string SubstitutionRef::substToString() const {
   std::string buffer;

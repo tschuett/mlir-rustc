@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Session/Session.h"
-#include "TyCtx.h"
-#include "TyTy.h"
-#include "llvm/Support/ErrorHandling.h"
+#include "TyCtx/TyCtx.h"
+#include "TyCtx/TyTy.h"
+#include <llvm/Support/ErrorHandling.h>
 
 namespace rust_compiler::tyctx::TyTy {
 
@@ -1051,7 +1051,7 @@ class DynamicCmp : public BaseCmp {
     if (it->getNumberOfSpecifiedBounds() != other->getNumberOfSpecifiedBounds())
       return false;
 
-    TyCtx *tcx = rust_compiler::session::session->getTypeContext();
+    tyctx::TyCtx *tcx = rust_compiler::session::session->getTypeContext();
     std::optional<Location> loc = tcx->lookupLocation(other->getReference());
     assert(loc.has_value());
     return it->boundsCompatible(other, *loc, false);

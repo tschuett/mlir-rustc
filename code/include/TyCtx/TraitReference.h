@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AST/AssociatedItem.h"
+#include "AST/Implementation.h"
 #include "AST/Trait.h"
 #include "Basic/Ids.h"
 #include "Lexer/Identifier.h"
@@ -15,9 +16,10 @@ class Function;
 
 namespace rust_compiler::tyctx::TyTy {
 class BaseType;
-}
+class TyCtx;
+} // namespace rust_compiler::tyctx::TyTy
 
-namespace rust_compiler::tyctx {
+namespace rust_compiler::tyctx::TyTy {
 
 enum class TraitItemKind { Function, Constant, TypeAlias, Error };
 
@@ -29,7 +31,7 @@ public:
                      TyTy::BaseType *self,
                      std::vector<TyTy::SubstitutionParamMapping> substitutions,
                      Location loc)
-      : identifier(identifier), isOptional(isOptional), kind(kind),
+      : identifier(identifier), isOptional2(isOptional), kind(kind),
         item(traitItem), self(self), substitutions(substitutions), loc(loc) {}
 
   ast::AssociatedItem *getItem() const { return item; }
@@ -59,9 +61,13 @@ public:
 
   TraitItemKind getTraitItemKind() const { return kind; }
 
+  Location getLocation() const { return loc; }
+
+  bool isOptional() const { return isOptional2; }
+
 private:
   lexer::Identifier identifier;
-  bool isOptional;
+  bool isOptional2;
   TraitItemKind kind;
   ast::AssociatedItem *item;
   TyTy::BaseType *self;
