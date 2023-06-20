@@ -209,25 +209,39 @@ TyCtx::lookupEnumItem(NodeId id) {
 }
 
 void TyCtx::insertEnumItem(ast::Enumeration *parent, ast::EnumItem *item) {
-  item->getNodeId();
   auto enumItem = lookupEnumItem(item->getNodeId());
   assert(not enumItem.has_value());
   NodeId id = item->getNodeId();
+  //llvm::errs() << "TyCtx::insertEnumItem " << id << "\n";
   enumItemsMappings[id] = {parent, item};
 }
 
 std::optional<ast::Implementation *>
 TyCtx::lookupImplementation(basic::NodeId id) {
-  auto it = implItemMapping.find(id);
-  if (it == implItemMapping.end())
+  auto it = implementationMappings.find(id);
+  if (it == implementationMappings.end())
     return std::nullopt;
 
   return it->second;
 }
 
-std::optional<ast::AssociatedItem *>
-TyCtx::lookupAssociatedItem(basic::NodeId implId) {
-  assert(false);
+void TyCtx::insertAssociatedItem(basic::NodeId implementationId,
+                                 ast::AssociatedItem *item) {
+  NodeId id = item->getNodeId();
+
+  associatedItemMappings[id] =
+      std::pair<NodeId, ast::AssociatedItem *>(implementationId, item);
+}
+
+std::optional<std::pair<NodeId, ast::AssociatedItem *>>
+TyCtx::lookupAssociatedItem(basic::NodeId assoId) {
+  auto it = associatedItemMappings.find(assoId);
+  if (it == associatedItemMappings.end())
+    return std::nullopt;
+
+  std::pair<NodeId, ast::AssociatedItem *> &ref = it->second;
+
+  return std::pair<NodeId, ast::AssociatedItem *>(it->first, ref.second);
 }
 
 std::optional<NodeId> TyCtx::lookupAssociatedTypeMapping(NodeId id) {
@@ -447,10 +461,33 @@ TyCtx::lookupAssociatedTraitImpl(NodeId id) {
 
 void TyCtx::iterateImplementations(
     llvm::function_ref<bool(NodeId, ast::Implementation *)> cb) {
-  for (auto it = implItemMapping.begin(); it != implItemMapping.end(); ++it) {
+  for (auto it = implementationMappings.begin();
+       it != implementationMappings.end(); ++it) {
     if (!cb(it->first, it->second))
       return;
   }
+}
+
+void TyCtx::iterateAssociatedItems(
+    llvm::function_ref<bool(NodeId, ast::Implementation *,
+                            ast::AssociatedItem *)>
+        cb) {
+  for (auto it = associatedItemMappings.begin();
+       it != associatedItemMappings.end(); ++it) {
+    NodeId assoId = it->first;
+    NodeId implementationId = it->second.first;
+    ast::AssociatedItem *assoItem = it->second.second;
+    std::optional<ast::Implementation *> impl =
+        lookupImplementation(implementationId);
+    if (!cb(assoId, *impl, assoItem))
+      return;
+  }
+}
+
+void TyCtx::insertEnumeration(NodeId enu, ast::Enumeration *enuM) {
+  //llvm::errs() << "TyCtx::insertEnumeration " << enu << "\n";
+
+  enumMappings[enu] = enuM;
 }
 
 } // namespace rust_compiler::tyctx

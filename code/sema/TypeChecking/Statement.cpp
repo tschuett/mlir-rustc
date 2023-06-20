@@ -58,8 +58,6 @@ TyTy::BaseType *TypeResolver::checkExpressionStatement(
 
 TyTy::BaseType *
 TypeResolver::checkLetStatement(std::shared_ptr<ast::LetStatement> let) {
-  //  assert(false && "to be implemented");
-
   std::shared_ptr<ast::patterns::PatternNoTopAlt> pattern = let->getPattern();
 
   TyTy::BaseType *initExprType = nullptr;

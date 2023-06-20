@@ -127,10 +127,13 @@ protected:
   void processPredicateForCandidates(const TyTy::TypeBoundPredicate &predicate,
                                      bool ignoreMandatoryTraitItems);
 
+  void processImplItemCandidate(NodeId id, ast::Implementation *item,
+                                ast::AssociatedItem *impl);
+
   TyTy::BaseType *receiver;
   adt::Identifier query;
   std::set<PathProbeCandidate> candidates;
-  ast::Implementation *currentImpl;
+  ast::AssociatedItem *currentImpl;
   NodeId specifiedTraitId;
   tyctx::TyCtx *context;
   TypeResolver *resolver;

@@ -173,6 +173,7 @@ void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
 void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
                               const adt::CanonicalPath &prefix,
                               const adt::CanonicalPath &canonicalPrefix) {
+  tyCtx->insertLocation(visItem->getNodeId(), visItem->getLocation());
   switch (visItem->getKind()) {
   case VisItemKind::Module: {
     std::shared_ptr<ast::Module> mod =
@@ -319,8 +320,8 @@ void Resolver::resolveInherentImpl(std::shared_ptr<ast::InherentImpl> implBlock,
   getTypeScope().insert(Self, implBlock->getType()->getNodeId(),
                         implBlock->getType()->getLocation());
 
-  for (auto asso : implBlock->getAssociatedItems())
-    resolveAssociatedItem(asso, implPrefix, cpath);
+  for (auto& asso : implBlock->getAssociatedItems())
+    resolveAssociatedItem(&asso, implPrefix, cpath, implBlock->getNodeId());
 
   getTypeScope().peek()->clearName(Self, implBlock->getType()->getNodeId());
 
@@ -403,7 +404,7 @@ void Resolver::resolveTraitImpl(std::shared_ptr<ast::TraitImpl> impl,
                         impl->getType()->getLocation());
 
   for (AssociatedItem &asso : impl->getAssociatedItems())
-    resolveAssociatedItem(asso, prefix, canonicalPrefix);
+    resolveAssociatedItem(&asso, prefix, canonicalPrefix, impl->getNodeId());
 
   Rib *r = getTypeScope().peek();
   r->clearName(Self, impl->getType()->getNodeId());

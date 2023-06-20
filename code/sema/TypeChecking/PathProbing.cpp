@@ -1,14 +1,18 @@
 #include "PathProbing.h"
 
+#include "AST/AssociatedItem.h"
 #include "AST/Implementation.h"
+#include "AST/InherentImpl.h"
 #include "AST/TraitImpl.h"
 #include "Basic/Ids.h"
 #include "TyCtx/Predicate.h"
 #include "TypeBoundsProbe.h"
+#include "TypeChecking.h"
 
 #include <llvm/Support/ErrorHandling.h>
 #include <vector>
 
+using namespace rust_compiler::ast;
 using namespace rust_compiler::tyctx::TyTy;
 
 namespace rust_compiler::sema::type_checking {
@@ -64,12 +68,88 @@ bool PathProbeType::isReceiverGeneric() {
          root->getKind() == TypeKind::Dynamic;
 }
 
-void PathProbeType::processImplItemsForCandidates() { assert(false); }
+void PathProbeType::processImplItemsForCandidates() {
+  context->iterateAssociatedItems(
+      [&](NodeId id, ast::Implementation *item,
+          ast::AssociatedItem *impl) mutable -> bool {
+        processImplItemCandidate(id, item, impl);
+        return true;
+      });
+}
+
+void PathProbeType::processImplItemCandidate(NodeId id,
+                                             ast::Implementation *item,
+                                             ast::AssociatedItem *impl) {
+  currentImpl = impl;
+  NodeId implTypeId;
+  switch (item->getKind()) {
+  case ImplementationKind::InherentImpl: {
+    implTypeId = static_cast<ast::InherentImpl *>(item)->getType()->getNodeId();
+    break;
+  }
+  case ImplementationKind::TraitImpl: {
+    implTypeId = static_cast<ast::TraitImpl *>(item)->getType()->getNodeId();
+    break;
+  }
+  }
+
+  std::optional<TyTy::BaseType *> implBlockType = resolver->queryType(implTypeId);
+  if (!implBlockType)
+    return;
+
+  if (!receiver->canEqual(*implBlockType, false))
+    if (!((*implBlockType)->canEqual(receiver, false)))
+      return;
+
+  // FIXME: item->visiit(this);
+  switch (item->getKind()) {
+  case ImplementationKind::InherentImpl: {
+    auto *inherent = static_cast<ast::InherentImpl *>(item);
+    for (AssociatedItem &asso : inherent->getAssociatedItems()) {
+      switch (asso.getKind()) {
+      case ast::AssociatedItemKind::MacroInvocationSemi: {
+        assert(false);
+      }
+      case ast::AssociatedItemKind::TypeAlias: {
+        assert(false);
+      }
+      case ast::AssociatedItemKind::ConstantItem: {
+        assert(false);
+      }
+      case ast::AssociatedItemKind::Function: {
+        assert(false);
+      }
+      }
+    }
+    break;
+  }
+  case ImplementationKind::TraitImpl: {
+    auto *trait = static_cast<ast::TraitImpl *>(item);
+    for (AssociatedItem &asso : trait->getAssociatedItems()) {
+      switch (asso.getKind()) {
+      case ast::AssociatedItemKind::MacroInvocationSemi: {
+        assert(false);
+      }
+      case ast::AssociatedItemKind::TypeAlias: {
+        assert(false);
+      }
+      case ast::AssociatedItemKind::ConstantItem: {
+        assert(false);
+      }
+      case ast::AssociatedItemKind::Function: {
+        assert(false);
+      }
+      }
+      break;
+    }
+  }
+  }
+}
 
 void PathProbeType::processEnumItemForCandidates(TyTy::ADTType *adt) {
   if (specifiedTraitId != UNKNOWN_NODEID)
     return;
-  TyTy::VariantDef * v;
+  TyTy::VariantDef *v;
   if (!adt->lookupVariant(query, &v))
     return;
 

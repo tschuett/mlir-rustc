@@ -11,11 +11,11 @@
 #include "TyCtx/TraitReference.h"
 #include "TyCtx/TyTy.h"
 
+#include <llvm/ADT/STLFunctionalExtras.h>
 #include <map>
 #include <optional>
 #include <set>
 #include <vector>
-#include <llvm/ADT/STLFunctionalExtras.h>
 
 namespace rust_compiler::ast {
 class Module;
@@ -40,13 +40,20 @@ class TyCtx {
 public:
   TyCtx();
 
-  void iterateImplementations(llvm::function_ref<bool (NodeId, ast::Implementation*)> cb);
+  void iterateImplementations(
+      llvm::function_ref<bool(NodeId, ast::Implementation *)> cb);
+  void
+  iterateAssociatedItems(llvm::function_ref<bool(NodeId, ast::Implementation *,
+                                                 ast::AssociatedItem *)>
+                             cb);
   void insertModule(ast::Module *);
   void insertItem(ast::Item *);
   void insertEnumeration(NodeId, ast::Enumeration *);
+  /// to find the Enumeration of an EnumItem
   void insertEnumItem(ast::Enumeration *, ast::EnumItem *);
   void insertImplementation(NodeId, ast::Implementation *);
   void insertReceiver(NodeId, TyTy::BaseType *);
+  void insertAssociatedItem(NodeId implementationId, ast::AssociatedItem *);
 
   ast::Module *lookupModule(basic::NodeId);
 
@@ -126,7 +133,9 @@ public:
   std::optional<ast::Item *> lookupItem(basic::NodeId);
   std::optional<ast::ExternalItem *> lookupExternalItem(basic::NodeId);
   std::optional<ast::Implementation *> lookupImplementation(basic::NodeId);
-  std::optional<ast::AssociatedItem *> lookupAssociatedItem(basic::NodeId);
+  // return implementationId and AssociatedItem for AssociatedItemId
+  std::optional<std::pair<NodeId, ast::AssociatedItem *>>
+      lookupAssociatedItem(basic::NodeId);
   std::optional<basic::NodeId> lookupVariantDefinition(basic::NodeId);
   std::optional<NodeId> lookupAssociatedTypeMapping(NodeId id);
 
@@ -212,10 +221,16 @@ private:
 
   std::map<NodeId, std::pair<ast::Enumeration *, ast::EnumItem *>>
       enumItemsMappings;
+  std::map<NodeId, ast::Enumeration *> enumMappings;
 
   std::map<NodeId, ast::Item *> itemMappings;
-  std::map<NodeId, ast::Implementation *> implItemMapping;
+  std::map<NodeId, ast::Implementation *> implementationMappings;
+  // associatedItem id -> {implementationId, AssociatedItem}
+  std::map<NodeId, std::pair<NodeId, ast::AssociatedItem *>>
+      associatedItemMappings;
   std::map<NodeId, std::pair<ast::ExternalItem *, NodeId>> externItemMappings;
+  std::map<NodeId, std::pair<NodeId, ast::Implementation *>>
+      hirImplItemMappings;
 
   std::map<NodeId, std::vector<sema::Adjustment>> autoderefMappings;
 

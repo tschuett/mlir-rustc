@@ -81,7 +81,7 @@ void Resolver::resolveEnumerationItem(
   CanonicalPath cpath = canonicalPrefix.append(decl);
 
   tyCtx->insertCanonicalPath(enu->getNodeId(), cpath);
-  // tyCtx->insertEnumeration(enu->getNodeId(), enu.get());
+  tyCtx->insertEnumeration(enu->getNodeId(), enu.get());
 
   resolveVisibility(enu->getVisibility());
 
@@ -98,7 +98,7 @@ void Resolver::resolveEnumerationItem(
     std::vector<std::shared_ptr<EnumItem>> it = enu->getEnumItems().getItems();
     for (const auto &i : it) {
       resolveEnumItem(i, path, cpath);
-      // tyCtx->insertEnumItem(enu.get(), i.get());
+      tyCtx->insertEnumItem(enu.get(), i.get());
     }
   }
 
@@ -206,25 +206,28 @@ void Resolver::resolveTraitItem(std::shared_ptr<ast::Trait> trait,
   getNameScope().pop();
 }
 
-void Resolver::resolveAssociatedItem(
-    const ast::AssociatedItem &asso, const adt::CanonicalPath &prefix,
-    const adt::CanonicalPath &canonicalPrefix) {
+void Resolver::resolveAssociatedItem(ast::AssociatedItem *asso,
+                                     const adt::CanonicalPath &prefix,
+                                     const adt::CanonicalPath &canonicalPrefix,
+                                     NodeId implementationId) {
 
-  resolveVisibility(asso.getVisibility());
+  resolveVisibility(asso->getVisibility());
 
-  if (asso.hasTypeAlias()) {
+  tyCtx->insertAssociatedItem(implementationId, asso);
+
+  if (asso->hasTypeAlias()) {
     assert(false);
     // resolveAssociatedTypeAlias(asso.getTypeAlias(), prefix, canonicalPrefix);
-  } else if (asso.hasConstantItem()) {
+  } else if (asso->hasConstantItem()) {
     assert(false);
     // resolveAssociatedConstantItem(asso.getConstantItem(), prefix,
     //                               canonicalPrefix);
-  } else if (asso.hasFunction()) {
+  } else if (asso->hasFunction()) {
     resolveAssociatedFunction(
         static_cast<Function *>(
-            std::static_pointer_cast<VisItem>(asso.getFunction()).get()),
+            std::static_pointer_cast<VisItem>(asso->getFunction()).get()),
         prefix, canonicalPrefix);
-  } else if (asso.hasMacroInvocationSemi()) {
+  } else if (asso->hasMacroInvocationSemi()) {
     assert(false);
     // resolveAssociatedMacroInvocationSemi(asso.getMacroItem(), prefix,
     //                                      canonicalPrefix);

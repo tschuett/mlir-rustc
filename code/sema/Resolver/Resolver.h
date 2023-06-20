@@ -325,9 +325,9 @@ private:
   void resolveTraitItem(std::shared_ptr<ast::Trait>,
                         const adt::CanonicalPath &prefix,
                         const adt::CanonicalPath &canonicalPrefix);
-  void resolveAssociatedItem(const ast::AssociatedItem &,
+  void resolveAssociatedItem(ast::AssociatedItem *,
                              const adt::CanonicalPath &prefix,
-                             const adt::CanonicalPath &canonicalPrefix);
+                             const adt::CanonicalPath &canonicalPrefix, NodeId implementationId);
   void resolveUnionItem(std::shared_ptr<ast::Union>,
                         const adt::CanonicalPath &prefix,
                         const adt::CanonicalPath &canonicalPrefix);

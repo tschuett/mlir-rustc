@@ -79,11 +79,11 @@ std::optional<TyTy::BaseType *> TypeResolver::queryType(basic::NodeId id) {
   // associated item
   std::optional<Implementation *> impl = tcx->lookupImplementation(id);
   if (impl) {
-    std::optional<AssociatedItem *> asso =
+    std::optional<std::pair<NodeId, AssociatedItem *>> asso =
         tcx->lookupAssociatedItem((*impl)->getNodeId());
     assert(asso.has_value());
 
-    TyTy::BaseType *result = checkAssociatedItemPointer(*asso, *impl);
+    TyTy::BaseType *result = checkAssociatedItemPointer((*asso).second, *impl);
     queryCompleted(id);
     return result;
   }

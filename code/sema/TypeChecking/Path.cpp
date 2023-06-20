@@ -206,6 +206,12 @@ TyTy::BaseType *TypeResolver::resolveSegmentsExpression(
 
       std::optional<std::pair<Enumeration *, EnumItem *>> enumItem =
           tcx->lookupEnumItem(variantId);
+      if (!enumItem) {
+        llvm::errs() << "failed to lookupEnumItem: " << variantId << "\n";
+        llvm::errs() << "segment: " << seg.getIdent().toString() << "\n";
+        llvm::errs() << "segment: " << seg.getIdent().getLocation().toString()
+                     << "\n";
+      }
       assert(enumItem.has_value());
 
       resolvedNodeId = enumItem->second->getNodeId();
