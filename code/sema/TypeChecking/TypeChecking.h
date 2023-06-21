@@ -38,6 +38,8 @@
 #include "AST/Patterns/PathPattern.h"
 #include "AST/Patterns/PatternWithoutRange.h"
 #include "AST/Patterns/RangePattern.h"
+#include "AST/Patterns/StructPattern.h"
+#include "AST/Patterns/TupleStructPattern.h"
 #include "AST/RangeExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/StructExprStruct.h"
@@ -221,6 +223,12 @@ private:
                     TyTy::BaseType *);
   TyTy::BaseType *checkPathPattern(std::shared_ptr<ast::patterns::PathPattern>,
                                    TyTy::BaseType *);
+  TyTy::BaseType *
+  checkTupleStructPattern(std::shared_ptr<ast::patterns::TupleStructPattern>,
+                          TyTy::BaseType *);
+  TyTy::BaseType *
+  checkStructPattern(std::shared_ptr<ast::patterns::StructPattern>,
+                     TyTy::BaseType *);
 
   TyTy::BaseType *checkTypeNoBounds(std::shared_ptr<ast::types::TypeNoBounds>);
   TyTy::BaseType *checkTypePath(std::shared_ptr<ast::types::TypePath>);

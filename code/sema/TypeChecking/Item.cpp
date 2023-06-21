@@ -26,6 +26,7 @@
 #include "TyCtx/TypeIdentity.h"
 #include "TypeChecking.h"
 #include "Unification.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include <cstdlib>
 #include <limits>
@@ -329,17 +330,17 @@ void TypeResolver::validateTraitImplBlock(
     std::vector<TyTy::SubstitutionParamMapping> &substitutions) {
   assert(false);
 
-//  if (is_trait_impl_block) {
-//    trait_reference->clear_associated_types();
+  //  if (is_trait_impl_block) {
+  //    trait_reference->clear_associated_types();
 
-//    AssociatedImplTrait associated(trait_reference, specified_bound,
-//                                   &impl_block, self, context);
-//    tcx->insertAssociatedTraitImpl(impl_block.get_mappings().get_hirid(),
-//                                          std::move(associated));
-//    tcx->insertAssociatedImplMapping(
-//        trait_reference->get_mappings().get_hirid(), self,
-//        impl_block.get_mappings().get_hirid());
-//  }
+  //    AssociatedImplTrait associated(trait_reference, specified_bound,
+  //                                   &impl_block, self, context);
+  //    tcx->insertAssociatedTraitImpl(impl_block.get_mappings().get_hirid(),
+  //                                          std::move(associated));
+  //    tcx->insertAssociatedImplMapping(
+  //        trait_reference->get_mappings().get_hirid(), self,
+  //        impl_block.get_mappings().get_hirid());
+  //  }
 }
 
 void TypeResolver::validateInherentImplBlock(
@@ -408,17 +409,17 @@ TyTy::VariantDef *TypeResolver::checkEnumItem(EnumItem *enuItem,
                                               int64_t discriminant) {
   assert(discriminant < std::numeric_limits<int64_t>::max());
 
-  if (enuItem->hasStruct()) {
+  if (enuItem->hasStruct())
     return checkEnumItemStruct(enuItem->getStruct(), enuItem->getName(),
                                discriminant);
-  } else if (enuItem->hasTuple()) {
+  else if (enuItem->hasTuple())
     return checkEnumItemTuple(enuItem->getTuple(), enuItem->getName(),
                               discriminant);
-  }
 
-  if (enuItem->hasDiscriminant())
-    return checkEnumItemDiscriminant(enuItem->getDiscriminant(),
-                                     enuItem->getName(), discriminant);
+  // FIXME
+  //  if (enuItem->hasDiscriminant())
+  //    return checkEnumItemDiscriminant(enuItem->getDiscriminant(),
+  //                                     enuItem->getName(), discriminant);
 
   LiteralExpression *discrimExpr =
       new LiteralExpression(enuItem->getLocation());
@@ -541,7 +542,8 @@ TypeResolver::checkEnumItemDiscriminant(const EnumItemDiscriminant &enuItem,
 // TyTy::BaseType
 //   *TypeResolver::checkImplementationFunction(ast::TraitImpl *parent,
 //   ast::Function *, TyTy::BaseType *self,
-//   std::vector<TyTy::Substitutionparammapping> substitutions) { assert(false);
+//   std::vector<TyTy::Substitutionparammapping> substitutions) {
+//   assert(false);
 //   }
 
 } // namespace rust_compiler::sema::type_checking

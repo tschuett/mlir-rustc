@@ -615,7 +615,8 @@ void Rib::print() const {
 
 void Resolver::insertResolvedMisc(NodeId ref, NodeId def) {
   auto it = miscResolvedItems.find(ref);
-  assert(it == miscResolvedItems.end());
+  if (it->second != def)
+    assert(it == miscResolvedItems.end());
   miscResolvedItems[ref] = def;
 }
 

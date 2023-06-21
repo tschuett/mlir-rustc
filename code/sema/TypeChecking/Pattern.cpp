@@ -2,14 +2,21 @@
 #include "AST/Patterns/PatternNoTopAlt.h"
 #include "AST/Patterns/PatternWithoutRange.h"
 #include "AST/Patterns/RangePattern.h"
+#include "AST/Patterns/StructPatternElements.h"
+#include "AST/Patterns/TupleStructItems.h"
+#include "Basic/Ids.h"
 #include "Lexer/Token.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
 
+#include <cstdlib>
+#include <llvm/Support/ErrorHandling.h>
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 
 using namespace rust_compiler::ast::patterns;
 using namespace rust_compiler::tyctx;
+using namespace rust_compiler::tyctx::TyTy;
 
 namespace rust_compiler::sema::type_checking {
 
@@ -75,10 +82,11 @@ TyTy::BaseType *TypeResolver::checkPatternWithoutRange(
     assert(false && "to be implemented");
   }
   case PatternWithoutRangeKind::StructPattern: {
-    assert(false && "to be implemented");
+    return checkStructPattern(std::static_pointer_cast<StructPattern>(pat), ty);
   }
   case PatternWithoutRangeKind::TupleStructPattern: {
-    assert(false && "to be implemented");
+    return checkTupleStructPattern(
+        std::static_pointer_cast<TupleStructPattern>(pat), ty);
   }
   case PatternWithoutRangeKind::TuplePattern: {
     assert(false && "to be implemented");
@@ -131,6 +139,154 @@ TypeResolver::checkPathPattern(std::shared_ptr<ast::patterns::PathPattern> pat,
     assert(false && "to be implemented");
   }
   }
+}
+
+TyTy::BaseType *TypeResolver::checkTupleStructPattern(
+    std::shared_ptr<ast::patterns::TupleStructPattern> pattern,
+    TyTy::BaseType *tuple) {
+  TyTy::BaseType *pathType = checkExpression(pattern->getPath());
+  if (pathType->getKind() != TypeKind::ADT) {
+    llvm::errs() << "expected tuple/struct pattern: " << pathType->toString()
+                 << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  TyTy::ADTType *adt = static_cast<TyTy::ADTType *>(pathType);
+
+  assert(adt->getNumberOfVariants() > 0);
+  TyTy::VariantDef *variant = adt->getVariant(0);
+  if (adt->isEnum()) {
+    std::optional<basic::NodeId> variantId =
+        tcx->lookupVariantDefinition(pattern->getPath()->getNodeId());
+    assert(variantId.has_value());
+    bool ok = adt->lookupVariantById(*variantId, &variant);
+    assert(ok);
+  }
+  if (variant->getKind() != TyTy::VariantKind::Tuple) {
+    llvm::errs() << "expected tuple struct or tuple variant"
+                 << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  if (pattern->hasItems()) {
+    TupleStructItems items = pattern->getItems();
+    for (const std::shared_ptr<ast::patterns::Pattern> &pat :
+         items.getPatterns()) {
+      size_t i = 0;
+      for (const std::shared_ptr<ast::patterns::PatternNoTopAlt> &noTop :
+           pat->getPatterns()) {
+        switch (noTop->getKind()) {
+        case PatternNoTopAltKind::RangePattern: {
+          llvm_unreachable("no such thing");
+          break;
+        }
+        case PatternNoTopAltKind::PatternWithoutRange: {
+          std::shared_ptr<ast::patterns::PatternWithoutRange> woRange =
+              std::static_pointer_cast<ast::patterns::PatternWithoutRange>(
+                  noTop);
+          TyTy::StructFieldType *field = variant->getFieldAt(i++);
+          TyTy::BaseType *fieldType = field->getFieldType();
+
+          tcx->insertType(woRange->getIdentity(), fieldType);
+          break;
+        }
+        }
+      }
+      // FIXME
+    }
+  }
+  return adt;
+}
+
+TyTy::BaseType *TypeResolver::checkStructPattern(
+    std::shared_ptr<ast::patterns::StructPattern> pattern,
+    TyTy::BaseType *type) {
+  TyTy::BaseType *patternType = checkExpression(pattern->getPath());
+
+  if (patternType->getKind() != TypeKind::ADT) {
+    llvm::errs() << "expected tuple/struct pattern: " << patternType->toString()
+                 << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  TyTy::ADTType *adt = static_cast<TyTy::ADTType *>(patternType);
+  assert(adt->getNumberOfVariants() > 0);
+  TyTy::VariantDef *variant = adt->getVariant(0);
+  if (adt->isEnum()) {
+
+    std::optional<NodeId> variantId =
+        tcx->lookupVariantDefinition(pattern->getPath()->getNodeId());
+    assert(variantId.has_value());
+    bool ok = adt->lookupVariantById(*variantId, &variant);
+    assert(ok);
+  }
+
+  if (variant->getKind() != TyTy::VariantKind::Struct) {
+    llvm::errs() << "expected struct variant"
+                 << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+  std::vector<Identifier> namedFields;
+  if (pattern->hasElements()) {
+    StructPatternElements el = pattern->getElements();
+    if (el.hasFields()) {
+      StructPatternFields fiels = el.getFields();
+      for (const StructPatternField &f : fiels.getFields()) {
+        switch (f.getKind()) {
+        case StructPatternFieldKind::TupleIndex: {
+          break;
+        }
+        case StructPatternFieldKind::Identifier: {
+          TyTy::StructFieldType *field = nullptr;
+          if (!variant->lookupField(f.getIdentifier(), &field, nullptr)) {
+            llvm::errs() << "variant " << variant->getIdentifier().toString()
+                         << "does not have field named " << f.getIdentifier().toString()
+                         << "\n";
+            break;
+          }
+
+          namedFields.push_back(f.getIdentifier());
+          TyTy::BaseType *fieldType = field->getFieldType();
+          checkPattern(f.getPattern(), fieldType);
+          tcx->insertType(f.getIdentity(), fieldType);
+          break;
+        }
+        case StructPatternFieldKind::RefMut: {
+          TyTy::StructFieldType *field = nullptr;
+          if (!variant->lookupField(f.getIdentifier(), &field, nullptr)) {
+            llvm::errs() << "variant " << variant->getIdentifier().toString()
+                         << "does not have field named " << f.getIdentifier().toString()
+                         << "\n";
+            break;
+          }
+
+          namedFields.push_back(f.getIdentifier());
+          TyTy::BaseType *fieldType = field->getFieldType();
+          tcx->insertType(f.getIdentity(), fieldType);
+          break;
+        }
+        }
+      }
+    }
+  }
+
+  if (namedFields.size() != variant->getNumberOfFields()) {
+    std::map<Identifier, bool> missingNames;
+    for (auto &field : variant->getFields())
+      missingNames[field->getName()] = true;
+
+    for (auto &named : namedFields)
+      missingNames.erase(named);
+
+    for (auto &name : missingNames) {
+      llvm::errs() << name.first.toString()
+                   << ": is not mentioned in the pattern"
+                   << "\n";
+    }
+  }
+
+  return adt;
 }
 
 } // namespace rust_compiler::sema::type_checking

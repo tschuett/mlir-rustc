@@ -139,12 +139,12 @@ SubstitutionsMapper::resolve(TyTy::BaseType *base, Location loc,
   case TypeKind::ADT: {
     TyTy::ADTType *concrete = nullptr;
     // TyTy::ADTType concrete = static_cast<TyTy::ADTType*>(base);
-    if (generics) {
+    if (!generics) {
       TyTy::BaseType *substs =
           static_cast<TyTy::ADTType *>(base)->inferSubstitions(loc);
       assert(substs->getKind() == TypeKind::ADT);
       return static_cast<TyTy::ADTType *>(substs);
-    } else {
+    } else { //  generics
       TyTy::SubstitutionArgumentMappings mappings =
           static_cast<TyTy::ADTType *>(base)->getMappingsFromGenericArgs(
               *generics, resolver);
@@ -189,9 +189,10 @@ SubstitutionsMapper::resolve(TyTy::BaseType *base, Location loc,
   assert(false);
 }
 
-TyTy::BaseType *SubstitutionsMapper::resolve(TyTy::BaseType *base,
-                                             Location loc) {
-  assert(false);
+TyTy::BaseType *
+SubstitutionsMapper::infer(TyTy::BaseType *base, Location loc,
+                             sema::type_checking::TypeResolver *resolver) {
+  return resolve(base, loc, resolver, nullptr);
 }
 
 } // namespace rust_compiler::tyctx

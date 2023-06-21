@@ -123,7 +123,7 @@ TyTy::BaseType *Unification::expect(TyTy::BaseType *leftType,
     return expectUSizeType(static_cast<TyTy::USizeType *>(leftType), rightType);
   }
   case TyTy::TypeKind::ISize: {
-    assert(false);
+    return expectISizeType(static_cast<TyTy::ISizeType *>(leftType), rightType);
   }
   case TyTy::TypeKind::Float: {
     assert(false);
@@ -270,6 +270,46 @@ TyTy::BaseType *Unification::expectUSizeType(TyTy::USizeType *left,
   case TyTy::TypeKind::Error:
     return new ErrorType(0);
   }
+  }
+  return new ErrorType(0);
+}
+
+TyTy::BaseType *Unification::expectISizeType(TyTy::ISizeType *left,
+                                             TyTy::BaseType *right) {
+  switch (right->getKind()) {
+  case TyTy::TypeKind::Inferred: {
+    TyTy::InferType *infer = static_cast<TyTy::InferType *>(right);
+    if (infer->getInferredKind() != TyTy::InferKind::Float) {
+      infer->applyScalarTypeHint(*left);
+      return left->clone();
+    }
+    assert(false);
+  }
+  case TyTy::TypeKind::ISize:
+    return right->clone();
+  case TyTy::TypeKind::Bool:
+  case TyTy::TypeKind::Char:
+  case TyTy::TypeKind::Int:
+  case TyTy::TypeKind::Uint:
+  case TyTy::TypeKind::USize:
+  case TyTy::TypeKind::Float:
+  case TyTy::TypeKind::Closure:
+  case TyTy::TypeKind::Function:
+  case TyTy::TypeKind::Never:
+  case TyTy::TypeKind::Str:
+  case TyTy::TypeKind::Tuple:
+  case TyTy::TypeKind::Parameter:
+  case TyTy::TypeKind::ADT:
+  case TyTy::TypeKind::Array:
+  case TyTy::TypeKind::Projection:
+  case TyTy::TypeKind::Slice:
+  case TyTy::TypeKind::Dynamic:
+  case TyTy::TypeKind::PlaceHolder:
+  case TyTy::TypeKind::FunctionPointer:
+  case TyTy::TypeKind::RawPointer:
+  case TyTy::TypeKind::Reference:
+  case TyTy::TypeKind::Error:
+    return new ErrorType(0);
   }
   return new ErrorType(0);
 }
@@ -722,7 +762,7 @@ TyTy::BaseType *Unification::expectADT(TyTy::ADTType *left,
       if (a->getNumberOfFields() != b->getNumberOfFields())
         return new ErrorType(0);
 
-      for (size_t j = 0; i < a->getNumberOfFields(); ++j) {
+      for (size_t j = 0; j < a->getNumberOfFields(); ++j) {
         TyTy::StructFieldType *baseField = a->getFieldAt(j);
         TyTy::StructFieldType *otherField = b->getFieldAt(j);
 

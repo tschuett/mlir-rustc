@@ -157,10 +157,36 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
     }
 
     // enum?
+    std::optional<std::pair<ast::Enumeration *, ast::EnumItem *>>
+        enumItemLookup = tcx->lookupEnumItem(seg.getNodeId());
+    if (enumItemLookup) {
+      if ((*enumItemLookup).first != nullptr &&
+          (*enumItemLookup).second != nullptr) {
+        // it is a legit enum
+        tcx->insertVariantDefinition(path->getNodeId(),
+                                     (*enumItemLookup).second->getNodeId());
+      }
+    }
 
-    assert(false && "to be implemented");
+    if (rootType != nullptr) {
+      if ((*lookup)->needsGenericSubstitutions())
+        if (!rootType->needsGenericSubstitutions()) {
+          assert(false);
+        }
+    }
+
+    if (seg.hasGenerics()) {
+      assert(false);
+    } else if ((*lookup)->needsGenericSubstitutions()) {
+      assert(false);
+    }
+
+    *resolvedNodeId = refNodeId;
+    *offset = *offset + 1;
+    rootType = *lookup;
   }
-  assert(false && "to be implemented");
+
+  return rootType;
 }
 
 TyTy::BaseType *TypeResolver::resolveSegmentsExpression(
@@ -211,6 +237,7 @@ TyTy::BaseType *TypeResolver::resolveSegmentsExpression(
         llvm::errs() << "segment: " << seg.getIdent().toString() << "\n";
         llvm::errs() << "segment: " << seg.getIdent().getLocation().toString()
                      << "\n";
+        llvm::errs() << "i: " << i << "\n";
       }
       assert(enumItem.has_value());
 
@@ -239,7 +266,7 @@ TyTy::BaseType *TypeResolver::resolveSegmentsExpression(
       TyTy::BaseType *implBlockType = resolveImplBlockSelf(*(*associated));
       if (implBlockType->needsGenericSubstitutions()) {
         SubstitutionsMapper mapper;
-        implBlockType = mapper.resolve(implBlockType, seg.getLocation());
+        implBlockType = mapper.infer(implBlockType, seg.getLocation(), this);
       }
 
       prevSegment = Unification::unifyWithSite(
@@ -279,7 +306,11 @@ TyTy::BaseType *TypeResolver::resolveSegmentsExpression(
     if (seg.hasGenerics()) {
       assert(false);
     } else if (typeSegment->needsGenericSubstitutions() && !receiverIsGeneric) {
-      assert(false);
+      Location loc = seg.getLocation();
+      SubstitutionsMapper mapper;
+      typeSegment = mapper.infer(typeSegment,loc, this);
+      if (typeSegment->getKind() == TypeKind::Error)
+        exit(EXIT_FAILURE);
     }
   }
 

@@ -41,6 +41,7 @@ public:
 private:
   TyTy::BaseType *expectIntType(TyTy::IntType *left, TyTy::BaseType *right);
   TyTy::BaseType *expectUSizeType(TyTy::USizeType *left, TyTy::BaseType *right);
+  TyTy::BaseType *expectISizeType(TyTy::ISizeType *left, TyTy::BaseType *right);
   TyTy::BaseType *expectTuple(TyTy::TupleType *left, TyTy::BaseType *right);
   TyTy::BaseType *expectInferenceVariable(TyTy::InferType *left,
                                           TyTy::BaseType *rightType);

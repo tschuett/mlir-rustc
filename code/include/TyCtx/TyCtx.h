@@ -50,7 +50,7 @@ public:
   void insertItem(ast::Item *);
   void insertEnumeration(NodeId, ast::Enumeration *);
   /// to find the Enumeration of an EnumItem
-  void insertEnumItem(ast::Enumeration *, ast::EnumItem *);
+  void insertEnumItem(ast::Enumeration *, ast::EnumItem *, NodeId id);
   void insertImplementation(NodeId, ast::Implementation *);
   void insertReceiver(NodeId, TyTy::BaseType *);
   void insertAssociatedItem(NodeId implementationId, ast::AssociatedItem *);

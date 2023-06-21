@@ -96,9 +96,14 @@ void Resolver::resolveEnumerationItem(
 
   if (enu->hasEnumItems()) {
     std::vector<std::shared_ptr<EnumItem>> it = enu->getEnumItems().getItems();
-    for (const auto &i : it) {
+    for (const std::shared_ptr<EnumItem> &i : it) {
       resolveEnumItem(i, path, cpath);
-      tyCtx->insertEnumItem(enu.get(), i.get());
+      if (i->hasStruct())
+        tyCtx->insertEnumItem(enu.get(), i.get(), i->getStruct().getNodeId());
+      else if (i->hasTuple())
+        tyCtx->insertEnumItem(enu.get(), i.get(), i->getTuple().getNodeId());
+      else
+        tyCtx->insertEnumItem(enu.get(), i.get(), i->getNodeId());
     }
   }
 
@@ -124,6 +129,7 @@ void Resolver::resolveEnumItem(std::shared_ptr<ast::EnumItem> enuIt,
     }
   } else if (enuIt->hasTuple()) {
     EnumItemTuple tup = enuIt->getTuple();
+    //llvm::errs() << "resolveEnumItemTuple: " << tup.getNodeId() << "\n";
     CanonicalPath decl =
         CanonicalPath::newSegment(tup.getNodeId(), enuIt->getName());
     CanonicalPath path = prefix.append(decl);
@@ -139,6 +145,11 @@ void Resolver::resolveEnumItem(std::shared_ptr<ast::EnumItem> enuIt,
   if (enuIt->hasDiscriminant()) {
     EnumItemDiscriminant dis = enuIt->getDiscriminant();
     resolveExpression(dis.getExpression(), prefix, canonicalPrefix);
+    CanonicalPath decl =
+        CanonicalPath::newSegment(dis.getNodeId(), enuIt->getName());
+    CanonicalPath path = prefix.append(decl);
+    CanonicalPath cpath = canonicalPrefix.append(decl);
+    tyCtx->insertCanonicalPath(dis.getNodeId(), cpath);
   }
 
   if (!enuIt->hasStruct() and !enuIt->hasTuple()) {

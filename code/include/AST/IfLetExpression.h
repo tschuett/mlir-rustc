@@ -38,7 +38,7 @@ public:
     kind = IfLetExpressionKind::ElseBlock;
   }
 
-  std::shared_ptr<ast::Expression> getTailBlock() const { return block; }
+  std::shared_ptr<ast::Expression> getTailBlock() const { return trailingBlock; }
 
   void setIf(std::shared_ptr<ast::Expression> _if) {
     trailingIf = _if;

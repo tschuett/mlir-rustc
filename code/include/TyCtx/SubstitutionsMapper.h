@@ -20,7 +20,8 @@ public:
                           sema::type_checking::TypeResolver *resolver,
                           ast::GenericArgs *generics = nullptr);
 
-  TyTy::BaseType *resolve(TyTy::BaseType *base, Location loc);
+  TyTy::BaseType *infer(TyTy::BaseType *base, Location loc,
+                          sema::type_checking::TypeResolver *resolver);
 
 private:
   ast::GenericArgs *generics = nullptr;

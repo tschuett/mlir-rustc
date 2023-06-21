@@ -4,6 +4,7 @@
 #include "AST/AssociatedItem.h"
 #include "AST/Crate.h"
 #include "AST/EnumItem.h"
+#include "AST/Enumeration.h"
 #include "AST/ExternalItem.h"
 #include "AST/Types/TypePath.h"
 #include "Basic/Ids.h"
@@ -208,10 +209,10 @@ TyCtx::lookupEnumItem(NodeId id) {
   return it->second;
 }
 
-void TyCtx::insertEnumItem(ast::Enumeration *parent, ast::EnumItem *item) {
+void TyCtx::insertEnumItem(ast::Enumeration *parent, ast::EnumItem *item,
+                           NodeId id) {
   auto enumItem = lookupEnumItem(item->getNodeId());
   assert(not enumItem.has_value());
-  NodeId id = item->getNodeId();
   //llvm::errs() << "TyCtx::insertEnumItem " << id << "\n";
   enumItemsMappings[id] = {parent, item};
 }
@@ -299,7 +300,8 @@ std::optional<basic::NodeId> TyCtx::lookupVariantDefinition(basic::NodeId id) {
 
 void TyCtx::insertVariantDefinition(basic::NodeId id, basic::NodeId variant) {
   auto it = variants.find(id);
-  assert(it == variants.end());
+  if (it->second != variant)
+    assert(it == variants.end());
 
   variants[id] = variant;
 }
@@ -485,7 +487,7 @@ void TyCtx::iterateAssociatedItems(
 }
 
 void TyCtx::insertEnumeration(NodeId enu, ast::Enumeration *enuM) {
-  //llvm::errs() << "TyCtx::insertEnumeration " << enu << "\n";
+  // llvm::errs() << "TyCtx::insertEnumeration " << enu << "\n";
 
   enumMappings[enu] = enuM;
 }

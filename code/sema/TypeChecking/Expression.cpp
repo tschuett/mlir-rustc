@@ -9,6 +9,7 @@
 #include "AST/ComparisonExpression.h"
 #include "AST/CompoundAssignmentExpression.h"
 #include "AST/ExpressionStatement.h"
+#include "AST/IfLetExpression.h"
 #include "AST/IteratorLoopExpression.h"
 #include "AST/LiteralExpression.h"
 #include "AST/LoopExpression.h"
@@ -91,7 +92,6 @@ TyTy::BaseType *TypeResolver::checkExpressionWithBlock(
     return checkIfExpression(std::static_pointer_cast<IfExpression>(withBlock));
   }
   case ast::ExpressionWithBlockKind::IfLetExpression: {
-    assert(false && "to be implemented");
     return checkIfLetExpression(
         std::static_pointer_cast<IfLetExpression>(withBlock));
   }
@@ -449,8 +449,6 @@ TyTy::BaseType *TypeResolver::checkComparisonExpression(
 
 TyTy::BaseType *TypeResolver::checkIfLetExpression(
     std::shared_ptr<ast::IfLetExpression> ifLet) {
-  assert(false);
-
   Scrutinee scrut = ifLet->getScrutinee();
   TyTy::BaseType *scrutineeType = checkExpression(scrut.getExpression());
 
@@ -464,10 +462,38 @@ TyTy::BaseType *TypeResolver::checkIfLetExpression(
                                ifLet->getLocation(), tcx);
   }
 
-  [[maybe_unused]] TyTy::BaseType *ifletBlock =
-      checkExpression(ifLet->getIfLet());
+  TyTy::BaseType *ifletBlock = checkExpression(ifLet->getBlock());
 
-  assert(false && "incomplete");
+  TyTy::BaseType *elseBlock = nullptr;
+
+  switch (ifLet->getKind()) {
+  case IfLetExpressionKind::NoElse: {
+    break;
+  }
+  case IfLetExpressionKind::ElseBlock: {
+    elseBlock = checkExpression(ifLet->getTailBlock());
+    break;
+  }
+  case IfLetExpressionKind::ElseIf: {
+    elseBlock = checkExpression(ifLet->getIf());
+    break;
+  }
+  case IfLetExpressionKind::ElseIfLet: {
+    elseBlock = checkExpression(ifLet->getIfLet());
+    break;
+  }
+  }
+
+  if (elseBlock == nullptr)
+    return TyTy::TupleType::getUnitType(ifLet->getNodeId());
+  else if (ifletBlock->getKind() == TypeKind::Never)
+    return ifletBlock;
+  else if (elseBlock && elseBlock->getKind() == TypeKind::Never)
+    return elseBlock;
+
+  return Unification::unifyWithSite(
+      TyTy::WithLocation(ifletBlock, ifLet->getBlock()->getLocation()),
+      TyTy::WithLocation(elseBlock), ifLet->getLocation(), tcx);
 }
 
 TyTy::BaseType *TypeResolver::checkCallExpression(CallExpression *call) {
@@ -718,7 +744,8 @@ TypeResolver::checkFunctionTraitCall(CallExpression *expr,
     assert(false);
   }
 
-  tcx->insertOperatorOverLoad(expr->getNodeId(), const_cast<TyTy::FunctionType *>(fn));
+  tcx->insertOperatorOverLoad(expr->getNodeId(),
+                              const_cast<TyTy::FunctionType *>(fn));
   tcx->insertResolvedName(expr->getNodeId(), resolvedNodeId);
 
   return functionReturnType;
