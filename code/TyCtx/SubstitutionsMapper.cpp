@@ -148,11 +148,10 @@ SubstitutionsMapper::resolve(TyTy::BaseType *base, Location loc,
       TyTy::SubstitutionArgumentMappings mappings =
           static_cast<TyTy::ADTType *>(base)->getMappingsFromGenericArgs(
               *generics, resolver);
-      if (mappings.isError()) {
+      if (mappings.isError())
         assert(false);
-        concrete =
-            static_cast<TyTy::ADTType *>(base)->handleSubstitions(mappings);
-      }
+      concrete =
+          static_cast<TyTy::ADTType *>(base)->handleSubstitions(mappings);
     }
     if (concrete != nullptr)
       return concrete;
@@ -191,7 +190,7 @@ SubstitutionsMapper::resolve(TyTy::BaseType *base, Location loc,
 
 TyTy::BaseType *
 SubstitutionsMapper::infer(TyTy::BaseType *base, Location loc,
-                             sema::type_checking::TypeResolver *resolver) {
+                           sema::type_checking::TypeResolver *resolver) {
   return resolve(base, loc, resolver, nullptr);
 }
 

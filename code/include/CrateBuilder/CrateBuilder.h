@@ -20,8 +20,10 @@
 #include "AST/MethodCallExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/Patterns/PatternNoTopAlt.h"
+#include "AST/QualifiedPathInExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Statement.h"
+#include "AST/StructExpression.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
 #include "AST/Types/TypePath.h"
@@ -47,6 +49,8 @@
 
 namespace rust_compiler::ast {
 class PathExpression;
+class PathInExpression;
+class QualifiedPathInExpression;
 class IteratorLoopExpression;
 } // namespace rust_compiler::ast
 
@@ -144,6 +148,9 @@ private:
   mlir::Value emitMethodCallExpression(ast::MethodCallExpression *expr);
   void emitReturnExpression(ast::ReturnExpression *expr);
   mlir::Value emitPathExpression(ast::PathExpression *expr);
+  mlir::Value emitPathInExpression(ast::PathInExpression *expr);
+  mlir::Value
+  emitQualifiedPathInExpression(ast::QualifiedPathInExpression *expr);
   mlir::Value emitIfExpression(ast::IfExpression *expr);
   mlir::Value emitIfLetExpression(ast::IfLetExpression *expr);
   mlir::Value emitComparePatternWithExpression(ast::patterns::Pattern *pattern,
@@ -157,6 +164,7 @@ private:
                                      ast::Expression *expr);
   mlir::Value emitLiteralExpression(ast::LiteralExpression *);
   mlir::Value emitArrayExpression(ast::ArrayExpression *array);
+  mlir::Value emitStructExpression(ast::StructExpression *stru);
   mlir::Value emitIteratorLoopExpression(ast::IteratorLoopExpression *loop);
 
   mlir::FunctionType getFunctionType(ast::Function *);

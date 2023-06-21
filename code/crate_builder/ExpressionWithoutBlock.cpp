@@ -5,8 +5,11 @@
 #include "AST/LiteralExpression.h"
 #include "AST/PathExpression.h"
 #include "AST/ReturnExpression.h"
+#include "AST/StructExprStruct.h"
+#include "AST/StructExpression.h"
 #include "CrateBuilder/CrateBuilder.h"
 #include "Hir/HirOps.h"
+#include "TyCtx/TyTy.h"
 
 #include <cassert>
 #include <memory>
@@ -65,8 +68,7 @@ CrateBuilder::emitExpressionWithoutBlock(ast::ExpressionWithoutBlock *expr) {
     break;
   }
   case ast::ExpressionWithoutBlockKind::StructExpression: {
-    assert(false && "to be implemented");
-    break;
+    return emitStructExpression(static_cast<StructExpression *>(expr));
   }
   case ast::ExpressionWithoutBlockKind::CallExpression: {
     ast::CallExpression *call = static_cast<ast::CallExpression *>(expr);
@@ -180,7 +182,7 @@ mlir::Value CrateBuilder::emitArrayExpression(ast::ArrayExpression *array) {
   assert((*type)->getKind() == TyTy::TypeKind::Array);
 
   TyTy::ArrayType *arrayType = static_cast<TyTy::ArrayType *>(*type);
-  mlir::Type elementType = convertTyTyToMLIR(arrayType->getElementType());
+  // mlir::Type elementType = convertTyTyToMLIR(arrayType->getElementType());
 
   if (array->hasArrayElements()) {
     ArrayElements els = array->getArrayElements();
@@ -188,19 +190,30 @@ mlir::Value CrateBuilder::emitArrayExpression(ast::ArrayExpression *array) {
     switch (els.getKind()) {
     case ArrayElementsKind::Repeated: {
 
+      mlir::Type elementType;
+      std::optional<mlir::Value> value = emitExpression(els.getValue().get());
+
+      //      if (isLiteralExpression(els.getValue().get())) {
+      //        elementType = xxx(arrayType->getElementType());
+      //      } else {
+      //        elementType = convertTyTyToMLIR(arrayType->getElementType());
+      //      }
+
+      assert(false);
       uint64_t count = foldAsUsizeExpression(els.getCount().get());
       std::vector<int64_t> shape = {static_cast<int64_t>(count)};
-      std::optional<mlir::Value> value = emitExpression(els.getValue().get());
       assert(value.has_value());
       return builder.create<mlir::vector::BroadcastOp>(
           getLocation(array->getLocation()),
           mlir::VectorType::get(shape, elementType, 0), *value);
     }
     case ArrayElementsKind::List: {
+      mlir::Type elementType;
 
       if (isLiteralExpression(els.getElements()[0].get())) {
-        //mlir::Type elementType = convertTyTyToMLIR(arrayType->getElementType());
         assert(false);
+      } else {
+        elementType = convertTyTyToMLIR(arrayType->getElementType());
       }
       assert(false);
 
@@ -233,6 +246,25 @@ mlir::Value CrateBuilder::emitArrayExpression(ast::ArrayExpression *array) {
   assert(false);
 
   // FIXME: always homogenous array
+}
+
+// Struct constructor
+mlir::Value CrateBuilder::emitStructExpression(ast::StructExpression *stru) {
+  switch (stru->getKind()) {
+  case StructExpressionKind::StructExprStruct: {
+    // StructExprStruct* expr = static_cast<StructExprStruct*>(stru);
+    // std::optional<TyTy::BaseType*> itemType =
+    // tyCtx->lookupType(expr->getName()->getNodeId());
+    assert(false);
+  }
+  case StructExpressionKind::StructExprTuple: {
+    assert(false);
+  }
+  case StructExpressionKind::StructExprUnit: {
+    assert(false);
+  }
+  }
+  assert(false);
 }
 
 } // namespace rust_compiler::crate_builder

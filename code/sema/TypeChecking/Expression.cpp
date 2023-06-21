@@ -173,7 +173,8 @@ TyTy::BaseType *TypeResolver::checkExpressionWithoutBlock(
     assert(false && "to be implemented");
   }
   case ExpressionWithoutBlockKind::MacroInvocation: {
-    assert(false && "to be implemented");
+    // assert(false && "to be implemented");
+    return new TyTy::ErrorType(0);
   }
   }
 }

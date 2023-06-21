@@ -308,7 +308,7 @@ TyTy::BaseType *TypeResolver::resolveSegmentsExpression(
     } else if (typeSegment->needsGenericSubstitutions() && !receiverIsGeneric) {
       Location loc = seg.getLocation();
       SubstitutionsMapper mapper;
-      typeSegment = mapper.infer(typeSegment,loc, this);
+      typeSegment = mapper.infer(typeSegment, loc, this);
       if (typeSegment->getKind() == TypeKind::Error)
         exit(EXIT_FAILURE);
     }
@@ -317,7 +317,11 @@ TyTy::BaseType *TypeResolver::resolveSegmentsExpression(
   assert(resolvedNodeId != UNKNOWN_NODEID);
 
   if (typeSegment->needsGenericSubstitutions() && !receiverIsGeneric) {
-    assert(false);
+    Location loc = segments.back().getLocation();
+    SubstitutionsMapper mapper;
+    typeSegment = mapper.infer(typeSegment, loc, this);
+    if (typeSegment->getKind() == TypeKind::Error)
+      exit(EXIT_FAILURE);
   }
 
   tcx->insertReceiver(id.getNodeId(), prevSegment);
