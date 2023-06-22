@@ -31,7 +31,8 @@ void Resolver::resolveVisItemNoRecurse(
                                               currentModule);
   switch (visItem->getKind()) {
   case VisItemKind::Module: {
-    assert(false);
+    resolveModuleNoRecurse(std::static_pointer_cast<Module>(visItem), prefix,
+                           canonicalPrefix);
     break;
   }
   case VisItemKind::ExternCrate: {
@@ -333,19 +334,19 @@ void Resolver::resolveEnumerationNoRecurse(
         tyCtx->insertModuleChild(currentModule, str.getNodeId());
       }
 
-      //if (en->hasDiscriminant()) {
-      //  EnumItemDiscriminant str = en->getDiscriminant();
-      //  CanonicalPath decl2 =
-      //      CanonicalPath::newSegment(str.getNodeId(), en->getName());
-      //  CanonicalPath path2 = path.append(decl2);
-      //  CanonicalPath cpath2 = cpath.append(decl2);
-      //  getTypeScope().insert(path2, str.getNodeId(), str.getLocation(),
-      //                        RibKind::Type);
-      //  NodeId currentModule = peekCurrentModuleScope();
-      //  tyCtx->insertCanonicalPath(str.getNodeId(), cpath2);
-      //  tyCtx->insertModuleChildItem(str.getNodeId(), decl2);
-      //  tyCtx->insertModuleChild(currentModule, str.getNodeId());
-      //}
+      // if (en->hasDiscriminant()) {
+      //   EnumItemDiscriminant str = en->getDiscriminant();
+      //   CanonicalPath decl2 =
+      //       CanonicalPath::newSegment(str.getNodeId(), en->getName());
+      //   CanonicalPath path2 = path.append(decl2);
+      //   CanonicalPath cpath2 = cpath.append(decl2);
+      //   getTypeScope().insert(path2, str.getNodeId(), str.getLocation(),
+      //                         RibKind::Type);
+      //   NodeId currentModule = peekCurrentModuleScope();
+      //   tyCtx->insertCanonicalPath(str.getNodeId(), cpath2);
+      //   tyCtx->insertModuleChildItem(str.getNodeId(), decl2);
+      //   tyCtx->insertModuleChild(currentModule, str.getNodeId());
+      // }
 
       if (!en->hasStruct() and !en->hasTuple() and !en->hasDiscriminant()) {
         CanonicalPath decl =
@@ -364,6 +365,31 @@ void Resolver::resolveEnumerationNoRecurse(
   NodeId currentModule = peekCurrentModuleScope();
   tyCtx->insertModuleChildItem(currentModule, decl);
   tyCtx->insertCanonicalPath(enu->getNodeId(), cpath);
+}
+
+void Resolver::resolveModuleNoRecurse(
+    std::shared_ptr<ast::Module> module, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  CanonicalPath mod =
+      CanonicalPath::newSegment(module->getNodeId(), module->getModuleName());
+  CanonicalPath path = prefix.append(mod);
+  CanonicalPath cpath = canonicalPrefix.append(mod);
+
+  getNameScope().insert(path, module->getNodeId(), module->getLocation(),
+                        RibKind::Module);
+
+  NodeId currentModule = peekCurrentModuleScope();
+  tyCtx->insertModuleChildItem(currentModule, mod);
+  tyCtx->insertModuleChild(currentModule, module->getNodeId());
+
+  pushNewModuleScope(module->getNodeId());
+
+  for (auto &item : module->getItems())
+    resolveItemNoRecurse(item, path, cpath);
+
+  popModuleScope();
+
+  tyCtx->insertCanonicalPath(module->getNodeId(), cpath);
 }
 
 } // namespace rust_compiler::sema::resolver

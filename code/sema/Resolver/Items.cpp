@@ -25,8 +25,36 @@ namespace rust_compiler::sema::resolver {
 void Resolver::resolveModule(std::shared_ptr<ast::Module> mod,
                              const adt::CanonicalPath &prefix,
                              const adt::CanonicalPath &canonicalPrefix) {
-  assert(false && "to be handled later");
   tyCtx->insertModule(mod.get());
+
+  CanonicalPath decl =
+      CanonicalPath::newSegment(mod->getNodeId(), mod->getModuleName());
+  CanonicalPath path = prefix.append(decl);
+  CanonicalPath cpath = canonicalPrefix.append(decl);
+  tyCtx->insertCanonicalPath(mod->getNodeId(), cpath);
+
+  resolveVisibility(mod->getVisibility());
+
+  NodeId scopeNodeId = mod->getNodeId();
+  getNameScope().push(scopeNodeId);
+  getTypeScope().push(scopeNodeId);
+  getLabelScope().push(scopeNodeId);
+  pushNewNameRib(getNameScope().peek());
+  pushNewTypeRib(getTypeScope().peek());
+  pushNewLabelRib(getLabelScope().peek());
+
+  for (auto &item : mod->getItems())
+    resolveItemNoRecurse(item, CanonicalPath::createEmpty(), cpath);
+
+  pushNewModuleScope(scopeNodeId);
+  for (auto &item : mod->getItems())
+    resolveItem(item, path, cpath);
+
+  popModuleScope();
+
+  getNameScope().pop();
+  getTypeScope().pop();
+  getLabelScope().pop();
 }
 
 void Resolver::resolveStaticItem(std::shared_ptr<ast::StaticItem> stat,
@@ -129,7 +157,7 @@ void Resolver::resolveEnumItem(std::shared_ptr<ast::EnumItem> enuIt,
     }
   } else if (enuIt->hasTuple()) {
     EnumItemTuple tup = enuIt->getTuple();
-    //llvm::errs() << "resolveEnumItemTuple: " << tup.getNodeId() << "\n";
+    // llvm::errs() << "resolveEnumItemTuple: " << tup.getNodeId() << "\n";
     CanonicalPath decl =
         CanonicalPath::newSegment(tup.getNodeId(), enuIt->getName());
     CanonicalPath path = prefix.append(decl);

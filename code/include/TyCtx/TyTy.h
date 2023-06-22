@@ -615,6 +615,8 @@ public:
 
   StructFieldType *clone() const;
 
+  std::string toString() const;
+
 private:
   basic::NodeId ref;
   TyTy::BaseType *type;
@@ -653,6 +655,10 @@ public:
                               TypeIdentity::empty(), nullptr};
     return node;
   }
+
+  std::string toString() const;
+
+  std::string VariantKind2String() const;
 
 private:
   basic::NodeId id;

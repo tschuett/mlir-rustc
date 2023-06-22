@@ -15,7 +15,8 @@ using namespace llvm;
 namespace rust_compiler::parser {
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseTupleStruct(std::span<OuterAttribute> outer, std::optional<ast::Visibility> vis) {
+Parser::parseTupleStruct(std::span<OuterAttribute> outer,
+                         std::optional<ast::Visibility> vis) {
   Location loc = getLocation();
   class TupleStruct stru = {loc, vis};
   stru.setOuterAttributes(outer);
@@ -177,7 +178,7 @@ Parser::parseTupleType() {
         std::make_shared<TupleType>(tuple));
   } else if (!check(TokenKind::ParenOpen)) {
     return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
-        "failed to parse ( token in trait");
+        "failed to parse ( token in tuple type");
   }
 
   assert(eat(TokenKind::ParenOpen));
@@ -193,14 +194,18 @@ Parser::parseTupleType() {
 
   if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
     assert(eat(TokenKind::Comma));
-    assert(eat(TokenKind::ParenOpen));
+    assert(eat(TokenKind::ParenClose));
     return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
         std::make_shared<TupleType>(tuple));
-  } else if (!check(TokenKind::ParenClose)) {
+  } else if (check(TokenKind::ParenClose)) {
+    assert(eat(TokenKind::ParenClose));
     return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
-        "failed to parse ) token in trait");
+        std::make_shared<TupleType>(tuple));
   }
 
+  if (!check(TokenKind::Comma))
+    return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+        "failed to parse , token in tuple type");
   assert(eat(TokenKind::Comma));
 
   while (true) {
@@ -215,17 +220,18 @@ Parser::parseTupleType() {
 
     if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
       assert(eat(TokenKind::Comma));
-      assert(eat(TokenKind::ParenOpen));
+      assert(eat(TokenKind::ParenClose));
       return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
           std::make_shared<TupleType>(tuple));
     } else if (check(TokenKind::Eof)) {
-      // abort
-      ///
+      return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
+          "failed to parse tuple type: eof");
     } else if (check(TokenKind::ParenClose)) {
+      assert(eat(TokenKind::ParenClose));
       return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
           std::make_shared<TupleType>(tuple));
     } else if (check(TokenKind::Comma)) {
-      continue;
+      assert(eat(TokenKind::Comma));
     }
   }
 }

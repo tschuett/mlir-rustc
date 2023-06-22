@@ -19,18 +19,17 @@ enum class ModuleKind { Module, ModuleTree };
 class Module : public VisItem {
   ModuleKind kind;
   bool unsafe = false;
-  ;
-  std::string identifier;
+  Identifier identifier;
   std::vector<InnerAttribute> innerAttributes;
   std::vector<std::shared_ptr<Item>> items;
 
 public:
   Module(rust_compiler::Location loc, std::optional<Visibility> vis,
-         ModuleKind kind, std::string_view modName)
-      : VisItem(loc, VisItemKind::Module, vis), kind(kind){};
+         ModuleKind kind, Identifier modName)
+    : VisItem(loc, VisItemKind::Module, vis), kind(kind), identifier(modName){};
 
   ModuleKind getModuleKind() const { return kind; }
-  std::string_view getModuleName() const { return identifier; }
+  Identifier getModuleName() const { return identifier; }
 
   void addItem(std::shared_ptr<Item> item);
 

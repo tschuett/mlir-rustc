@@ -130,7 +130,8 @@ enum class RibKind {
   Unkown,
   Type,
   Variable,
-  Trait
+  Trait,
+  Module
 };
 
 class Rib {
@@ -236,6 +237,9 @@ public:
 
 private:
   // items no recurse
+  void resolveItemNoRecurse(std::shared_ptr<ast::Item>,
+                            const adt::CanonicalPath &prefix,
+                            const adt::CanonicalPath &canonicalPrefix);
   void resolveVisItemNoRecurse(std::shared_ptr<ast::VisItem>,
                                const adt::CanonicalPath &prefix,
                                const adt::CanonicalPath &canonicalPrefix);
@@ -259,6 +263,9 @@ private:
   void resolveTraitNoRecurse(std::shared_ptr<ast::Trait> trait,
                              const adt::CanonicalPath &prefix,
                              const adt::CanonicalPath &canonicalPrefix);
+  void resolveModuleNoRecurse(std::shared_ptr<ast::Module> module,
+                              const adt::CanonicalPath &prefix,
+                              const adt::CanonicalPath &canonicalPrefix);
   void resolveEnumerationNoRecurse(ast::Enumeration *,
                                    const adt::CanonicalPath &prefix,
                                    const adt::CanonicalPath &canonicalPrefix);
@@ -275,6 +282,8 @@ private:
                                  const adt::CanonicalPath &canonicalPrefix);
 
   // items
+  void resolveItem(std::shared_ptr<ast::Item>, const adt::CanonicalPath &prefix,
+                   const adt::CanonicalPath &canonicalPrefix);
   void resolveVisItem(std::shared_ptr<ast::VisItem>,
                       const adt::CanonicalPath &prefix,
                       const adt::CanonicalPath &canonicalPrefix);
@@ -327,7 +336,8 @@ private:
                         const adt::CanonicalPath &canonicalPrefix);
   void resolveAssociatedItem(ast::AssociatedItem *,
                              const adt::CanonicalPath &prefix,
-                             const adt::CanonicalPath &canonicalPrefix, NodeId implementationId);
+                             const adt::CanonicalPath &canonicalPrefix,
+                             NodeId implementationId);
   void resolveUnionItem(std::shared_ptr<ast::Union>,
                         const adt::CanonicalPath &prefix,
                         const adt::CanonicalPath &canonicalPrefix);
@@ -449,6 +459,9 @@ private:
   std::optional<basic::NodeId>
   resolveArrayType(std::shared_ptr<ast::types::ArrayType>,
                    const adt::CanonicalPath &prefix,
+                   const adt::CanonicalPath &canonicalPrefix);
+  std::optional<basic::NodeId>
+  resolveTupleType(ast::types::TupleType *, const adt::CanonicalPath &prefix,
                    const adt::CanonicalPath &canonicalPrefix);
   std::optional<basic::NodeId>
   resolveReferenceType(std::shared_ptr<ast::types::ReferenceType>,

@@ -97,6 +97,40 @@ Resolver::Resolver() noexcept
       labelScope(Scope(tyCtx->getCurrentCrate())),
       macroScope(Scope(tyCtx->getCurrentCrate())) {}
 
+void Resolver::resolveItemNoRecurse(std::shared_ptr<ast::Item> item,
+                                    const adt::CanonicalPath &prefix,
+                                    const adt::CanonicalPath &canonicalPrefix) {
+  switch (item->getItemKind()) {
+  case ItemKind::VisItem: {
+    resolveVisItemNoRecurse(std::static_pointer_cast<VisItem>(item), prefix,
+                            canonicalPrefix);
+    break;
+  }
+  case ItemKind::MacroItem: {
+    resolveMacroItemNoRecurse(std::static_pointer_cast<MacroItem>(item), prefix,
+                              canonicalPrefix);
+    break;
+  }
+  }
+}
+
+void Resolver::resolveItem(std::shared_ptr<ast::Item> item,
+                           const adt::CanonicalPath &prefix,
+                           const adt::CanonicalPath &canonicalPrefix) {
+  switch (item->getItemKind()) {
+  case ItemKind::VisItem: {
+    resolveVisItem(std::static_pointer_cast<VisItem>(item), prefix,
+                   canonicalPrefix);
+    break;
+  }
+  case ItemKind::MacroItem: {
+    resolveMacroItem(std::static_pointer_cast<MacroItem>(item), prefix,
+                     canonicalPrefix);
+    break;
+  }
+  }
+}
+
 void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
   // lookup current crate name
   CrateNum cnum = tyCtx->getCurrentCrate();
@@ -134,20 +168,8 @@ void Resolver::resolveCrate(std::shared_ptr<ast::Crate> crate) {
   pushNewModuleScope(scopeNodeId);
 
   // only gather top-level
-  for (auto &item : crate->getItems()) {
-    switch (item->getItemKind()) {
-    case ItemKind::VisItem: {
-      resolveVisItemNoRecurse(std::static_pointer_cast<VisItem>(item),
-                              CanonicalPath::createEmpty(), cratePrefix);
-      break;
-    }
-    case ItemKind::MacroItem: {
-      resolveMacroItemNoRecurse(std::static_pointer_cast<MacroItem>(item),
-                                CanonicalPath::createEmpty(), cratePrefix);
-      break;
-    }
-    }
-  }
+  for (auto &item : crate->getItems())
+    resolveItemNoRecurse(item, CanonicalPath::createEmpty(), cratePrefix);
 
   // recursive
   for (auto &item : crate->getItems()) {
@@ -320,7 +342,7 @@ void Resolver::resolveInherentImpl(std::shared_ptr<ast::InherentImpl> implBlock,
   getTypeScope().insert(Self, implBlock->getType()->getNodeId(),
                         implBlock->getType()->getLocation());
 
-  for (auto& asso : implBlock->getAssociatedItems())
+  for (auto &asso : implBlock->getAssociatedItems())
     resolveAssociatedItem(&asso, implPrefix, cpath, implBlock->getNodeId());
 
   getTypeScope().peek()->clearName(Self, implBlock->getType()->getNodeId());

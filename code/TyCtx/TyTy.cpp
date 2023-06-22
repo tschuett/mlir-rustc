@@ -489,7 +489,7 @@ std::string ADTType::toString() const {
   std::string variantsBuffer;
   for (size_t i = 0; i < variants.size(); ++i) {
     [[maybe_unused]] TyTy::VariantDef *variant = variants[i];
-    // FIXME: variantsBuffer += variant->toString();
+    variantsBuffer += variant->toString();
     if ((i + 1) < variants.size())
       variantsBuffer += ", ";
   }
@@ -1580,6 +1580,38 @@ const BaseType *BaseType::getRoot() const {
   //   }
 
   return root;
+}
+
+std::string VariantDef::toString() const {
+  if (kind == VariantKind::Enum)
+    return identifier.toString() + " = ";// + discriminant->as_string();
+
+  std::string buffer;
+  for (size_t i = 0; i < fields.size(); ++i) {
+    buffer += fields.at(i)->toString();
+    if ((i + 1) < fields.size())
+      buffer += ", ";
+  }
+
+  if (kind == VariantKind::Tuple)
+    return identifier.toString() + " (" + buffer + ")";
+  else
+    return identifier.toString() + " {" + buffer + "}";
+}
+
+std::string VariantDef::VariantKind2String() const {
+  switch (kind) {
+  case VariantKind::Enum:
+    return "enum";
+  case VariantKind::Struct:
+    return "struct";
+  case VariantKind::Tuple:
+    return "tuple";
+  }
+}
+
+std::string StructFieldType::toString() const {
+  return identifier.toString() + ":" + getFieldType()->toString();
 }
 
 } // namespace rust_compiler::tyctx::TyTy

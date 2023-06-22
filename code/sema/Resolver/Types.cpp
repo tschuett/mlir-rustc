@@ -69,7 +69,8 @@ std::optional<NodeId> Resolver::resolveTypeNoBounds(
                                    prefix, canonicalPrefix);
   }
   case TypeNoBoundsKind::TupleType: {
-    assert(false && "to be handled later");
+    return resolveTupleType(std::static_pointer_cast<TupleType>(noBounds).get(),
+                            prefix, canonicalPrefix);
   }
   case TypeNoBoundsKind::NeverType: {
     assert(false && "to be handled later");
@@ -119,8 +120,8 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
 
   std::vector<TypePathSegment> segments = typePath->getSegments();
 
-//  llvm::errs() << "resolveRelativeTypePath: "
-//               << segments[0].getSegment().toString() << "\n";
+  //  llvm::errs() << "resolveRelativeTypePath: "
+  //               << segments[0].getSegment().toString() << "\n";
 
   // experiment
   //{
@@ -188,11 +189,11 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
       if (auto node = getTypeScope().lookup(path)) {
         insertResolvedType(segment.getNodeId(), *node);
         resolvedNodeId = *node;
-        //llvm::errs() << "it is a type:" << *node << "\n";
+        // llvm::errs() << "it is a type:" << *node << "\n";
       } else if (auto node = getNameScope().lookup(path)) {
         insertResolvedName(segment.getNodeId(), *node);
         resolvedNodeId = *node;
-        //llvm::errs() << "it is a name: " << *node << "\n";
+        // llvm::errs() << "it is a name: " << *node << "\n";
       } else if (ident.getKind() == PathIdentSegmentKind::self) {
         moduleScopeId = crateScopeId;
         previousResolveNodeId = moduleScopeId;
@@ -348,6 +349,15 @@ std::optional<basic::NodeId> Resolver::resolveRawPointerType(
     const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
   return resolveType(pointer->getType(), prefix, canonicalPrefix);
+}
+
+std::optional<basic::NodeId>
+Resolver::resolveTupleType(ast::types::TupleType *tuple,
+                           const adt::CanonicalPath &prefix,
+                           const adt::CanonicalPath &canonicalPrefix) {
+  for(auto&type: tuple->getTypes())
+        resolveType(type, prefix, canonicalPrefix);
+  return std::nullopt;
 }
 
 std::optional<basic::NodeId>

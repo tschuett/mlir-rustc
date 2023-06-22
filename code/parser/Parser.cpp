@@ -393,7 +393,7 @@ Parser::parseMod(std::span<OuterAttribute> outer, std::optional<ast::Visibility>
     // mod foo;
     assert(eatKeyWord(lexer::KeyWordKind::KW_MOD));
     Token token = getToken();
-    std::string modName = token.getIdentifier().toString();
+    Identifier modName = token.getIdentifier();
     assert(eat(lexer::TokenKind::Identifier));
     assert(eat(lexer::TokenKind::Semi));
 
@@ -411,7 +411,7 @@ Parser::parseMod(std::span<OuterAttribute> outer, std::optional<ast::Visibility>
       check(lexer::TokenKind::BraceOpen, 2)) {
     assert(eatKeyWord(lexer::KeyWordKind::KW_MOD));
     Token token = getToken();
-    std::string modName = token.getIdentifier().toString();
+    Identifier modName = token.getIdentifier();
     assert(eat(lexer::TokenKind::Identifier));
     assert(eat(lexer::TokenKind::BraceOpen));
     // mod foo {}

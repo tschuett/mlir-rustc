@@ -91,7 +91,9 @@ std::optional<TyTy::TypeBoundPredicate> TyCtx::lookupPredicate(NodeId id) {
   return it->second;
 }
 
-void TyCtx::insertModule(ast::Module *mod) { assert(false); }
+void TyCtx::insertModule(ast::Module *mod) {
+  modules[mod->getNodeId()] = mod;
+}
 
 ast::Module *TyCtx::lookupModule(basic::NodeId id) {
   auto it = modules.find(id);
