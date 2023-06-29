@@ -56,6 +56,7 @@
 #include "AST/TypeCastExpression.h"
 #include "AST/Types/ArrayType.h"
 #include "AST/Types/ImplTraitType.h"
+#include "AST/Types/ImplTraitTypeOneBound.h"
 #include "AST/Types/RawPointerType.h"
 #include "AST/Types/ReferenceType.h"
 #include "AST/Types/SliceType.h"
@@ -455,7 +456,9 @@ private:
   resolveRelativeTypePath(std::shared_ptr<ast::types::TypePath>,
                           const adt::CanonicalPath &prefix,
                           const adt::CanonicalPath &canonicalPrefix);
-  void resolveTypePathFunction(const ast::types::TypePathFn &);
+  void resolveTypePathFunction(const ast::types::TypePathFn &,
+                               const adt::CanonicalPath &prefix,
+                               const adt::CanonicalPath &canonicalPrefix);
   std::optional<basic::NodeId>
   resolveArrayType(std::shared_ptr<ast::types::ArrayType>,
                    const adt::CanonicalPath &prefix,
@@ -467,6 +470,11 @@ private:
   resolveReferenceType(std::shared_ptr<ast::types::ReferenceType>,
                        const adt::CanonicalPath &prefix,
                        const adt::CanonicalPath &canonicalPrefix);
+
+  std::optional<basic::NodeId> resolveImplTraitTypeOneBound(
+      std::shared_ptr<ast::types::ImplTraitTypeOneBound>,
+      const adt::CanonicalPath &prefix,
+      const adt::CanonicalPath &canonicalPrefix);
   std::optional<basic::NodeId> resolveTraitObjectTypeOneBound(
       std::shared_ptr<ast::types::TraitObjectTypeOneBound>,
       const adt::CanonicalPath &prefix,

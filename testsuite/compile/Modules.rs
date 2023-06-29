@@ -1,5 +1,7 @@
+trait Fn {}
+
 mod math {
-    type Complex = (f64, f64);
+    pub type Complex = (f64, f64);
 
     pub fn sin(f: f64) -> f64 {
         1.0
@@ -13,11 +15,23 @@ mod math {
 }
 
 mod generic {
-    trait Trait {}
+    pub trait Trait {}
+
+    struct Trades {}
+
+    impl Trait for Trades {}
+
+    impl Trades {
+        pub fn new() -> Self {
+            return Trades {};
+        }
+    }
 
     fn foo(arg: impl Trait) {}
 
-    fn bar() -> impl Trait {}
+    fn bar() -> impl Trait {
+        return Trades::new();
+    }
 
     fn foo2<T: Trait>(arg: T) {}
 
@@ -28,5 +42,7 @@ mod generic {
 
 fn main() {
     math::sin(5.0);
+
+    let complex: math::Complex;
     ()
 }

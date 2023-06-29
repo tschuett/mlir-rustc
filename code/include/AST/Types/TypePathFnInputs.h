@@ -17,6 +17,10 @@ public:
 
   void setTrailingComma() { trailingcomma = true; }
   void addType(std::shared_ptr<types::TypeExpression> t) { types.push_back(t); }
+
+  std::vector<std::shared_ptr<types::TypeExpression>> getTypes() const {
+    return types;
+  }
 };
 
 } // namespace rust_compiler::ast::types

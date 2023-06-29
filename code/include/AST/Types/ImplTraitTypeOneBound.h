@@ -1,7 +1,7 @@
 #pragma once
 
+#include "AST/Types/TraitBound.h"
 #include "AST/Types/TypeNoBounds.h"
-#include "AST/Types/TypeParamBounds.h"
 
 namespace rust_compiler::ast::types {
 
@@ -12,7 +12,9 @@ public:
   ImplTraitTypeOneBound(Location loc)
       : TypeNoBounds(loc, TypeNoBoundsKind::ImplTraitTypeOneBound) {}
 
-  void setBound(std::shared_ptr<ast::types::TypeParamBound> b) { bound = b; }
+  void setBound(std::shared_ptr<ast::types::TypeParamBound> tb) { bound = tb; }
+
+  std::shared_ptr<ast::types::TypeParamBound> getBound() const { return bound; }
 };
 
 } // namespace rust_compiler::ast::types

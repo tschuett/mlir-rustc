@@ -23,6 +23,12 @@ public:
   };
 
   void setType(std::shared_ptr<types::TypeExpression> ex) { type = ex; }
+
+  bool hasInputs() const { return typePathFnInputs.has_value(); }
+  bool hasType() const { return type.has_value(); }
+
+  std::shared_ptr<types::TypeExpression> getType() const { return *type; };
+  TypePathFnInputs getInputs() const { return *typePathFnInputs; }
 };
 
 } // namespace rust_compiler::ast::types

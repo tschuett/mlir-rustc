@@ -1,9 +1,9 @@
 #pragma once
 
+#include "ADT/Utf8String.h"
 #include "Lexer/Identifier.h"
 #include "Lexer/KeyWords.h"
 #include "Location.h"
-#include "ADT/Utf8String.h"
 
 #include <string>
 
@@ -14,6 +14,23 @@ namespace rust_compiler::lexer {
 
 using uint128_t = unsigned __int128;
 using int128_t = __int128;
+
+enum class TypeHint {
+  u8,
+  i8,
+  u16,
+  i16,
+  u32,
+  i32,
+  u64,
+  i64,
+  u128,
+  i128,
+  usize,
+  isize,
+  f32,
+  f64
+};
 
 enum class IntegerKind {
   I8,
@@ -89,15 +106,16 @@ enum class TokenKind {
   LIFETIME_OR_LABEL,
   // DollarUnderScore,
   CHAR_LITERAL,
-  //QUOTE_ESCAPE,
-  //ASCII_ESCAPE,
-  //UNICODE_ESCAPE,
+  // QUOTE_ESCAPE,
+  // ASCII_ESCAPE,
+  // UNICODE_ESCAPE,
   STRING_LITERAL,
   RAW_STRING_LITERAL,
   BYTE_LITERAL,
   BYTE_STRING_LITERAL,
   RAW_BYTE_STRING_LITERAL,
   INTEGER_LITERAL,
+  // DEC_LITERAL,
   FLOAT_LITERAL,
   //  RESERVED_NUMBER,
   Eof,
@@ -126,6 +144,7 @@ class Token {
   KeyWordKind kw;
   Identifier ident;
   adt::Utf8String utf8Storage;
+  std::optional<TypeHint> hint;
 
   //  std::variant<int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t,
   //  int64_t,
@@ -136,6 +155,10 @@ public:
   Token(rust_compiler::Location loc, TokenKind tk) : loc(loc), kind(tk){};
   Token(rust_compiler::Location loc, TokenKind tk, std::string_view id)
       : loc(loc), kind(tk), storage(id){};
+
+  Token(rust_compiler::Location loc, TokenKind tk, std::string_view id,
+        TypeHint hint)
+    : loc(loc), kind(tk), storage(id), hint(hint){};
 
   Token(rust_compiler::Location loc, KeyWordKind kw, std::string_view id)
       : loc(loc), kind(TokenKind::Keyword), storage(id), kw(kw){};
@@ -175,7 +198,7 @@ public:
   std::string getStorage() const { return storage; }
   adt::Utf8String getUtf8Storage() const { return utf8Storage; }
 
-  //std::string toString();
+  // std::string toString();
 
 private:
   std::string charToString() const;

@@ -56,9 +56,10 @@ std::optional<NodeId> Resolver::resolveTypeNoBounds(
   case TypeNoBoundsKind::ImplTraitType: {
     assert(false && "to be handled later");
   }
-  case TypeNoBoundsKind::ImplTraitTypeOneBound: {
-    assert(false && "to be handled later");
-  }
+  case TypeNoBoundsKind::ImplTraitTypeOneBound:
+    return resolveImplTraitTypeOneBound(
+        std::static_pointer_cast<ImplTraitTypeOneBound>(noBounds), prefix,
+        canonicalPrefix);
   case TypeNoBoundsKind::TraitObjectTypeOneBound: {
     return resolveTraitObjectTypeOneBound(
         std::static_pointer_cast<TraitObjectTypeOneBound>(noBounds), prefix,
@@ -138,7 +139,7 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
   //  }
   //}
 
-  assert(segments.size() == 1 && "to be handled later");
+  // assert(segments.size() == 1 && "to be handled later");
 
   for (unsigned i = 0; i < segments.size(); ++i) {
     TypePathSegment &segment = segments[i];
@@ -150,7 +151,7 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
       resolveGenericArgs(segment.getGenericArgs(), prefix, canonicalPrefix);
 
     if (segment.hasTypeFunction())
-      resolveTypePathFunction(segment.getTypePathFn());
+      resolveTypePathFunction(segment.getTypePathFn(), prefix, canonicalPrefix);
 
     if (i > 0 && ident.getKind() == PathIdentSegmentKind::self) {
       // report error
@@ -184,8 +185,9 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
 
     if (i == 0) {
       // NodeId resolvedNode = UNKNOWN_NODEID;
+      llvm::errs() << "lookups to come for: " << ident.toString() << "\n";
       adt::CanonicalPath path = adt::CanonicalPath::newSegment(
-          segment.getNodeId(), Identifier(ident.toString()));
+          ident.getNodeId(), Identifier(ident.toString()));
       if (auto node = getTypeScope().lookup(path)) {
         insertResolvedType(segment.getNodeId(), *node);
         resolvedNodeId = *node;
@@ -280,8 +282,17 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
   return resolvedNodeId;
 }
 
-void Resolver::resolveTypePathFunction(const ast::types::TypePathFn &) {
-  assert(false && "to be handled later");
+void Resolver::resolveTypePathFunction(
+    const ast::types::TypePathFn &fn, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  if (fn.hasInputs()) {
+    TypePathFnInputs inpt = fn.getInputs();
+    for (auto &type : inpt.getTypes())
+      resolveType(type, prefix, canonicalPrefix);
+  }
+
+  if (fn.hasType())
+    resolveType(fn.getType(), prefix, canonicalPrefix);
 }
 
 std::optional<adt::CanonicalPath> Resolver::resolveTypeToCanonicalPath(
@@ -355,8 +366,8 @@ std::optional<basic::NodeId>
 Resolver::resolveTupleType(ast::types::TupleType *tuple,
                            const adt::CanonicalPath &prefix,
                            const adt::CanonicalPath &canonicalPrefix) {
-  for(auto&type: tuple->getTypes())
-        resolveType(type, prefix, canonicalPrefix);
+  for (auto &type : tuple->getTypes())
+    resolveType(type, prefix, canonicalPrefix);
   return std::nullopt;
 }
 
@@ -365,6 +376,20 @@ Resolver::resolveSliceType(std::shared_ptr<ast::types::SliceType> slice,
                            const adt::CanonicalPath &prefix,
                            const adt::CanonicalPath &canonicalPrefix) {
   return resolveType(slice->getType(), prefix, canonicalPrefix);
+}
+
+std::optional<basic::NodeId> Resolver::resolveImplTraitTypeOneBound(
+    std::shared_ptr<ast::types::ImplTraitTypeOneBound> oneBound,
+    const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  std::shared_ptr<ast::types::TypeParamBound> tb = oneBound->getBound();
+  switch (tb->getKind()) {
+  case TypeParamBoundKind::Lifetime:
+    return std::nullopt;
+  case TypeParamBoundKind::TraitBound:
+    return resolveType(static_pointer_cast<TraitBound>(tb)->getPath(), prefix,
+                       canonicalPrefix);
+  }
 }
 
 bool Resolver::resolveTypeNoBoundsToCanonicalPath(

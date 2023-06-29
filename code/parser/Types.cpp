@@ -448,8 +448,7 @@ Parser::parseImplTraitTypeOneBound() {
   }
   assert(eatKeyWord(KeyWordKind::KW_IMPL));
 
-  StringResult<std::shared_ptr<ast::types::TypeParamBound>> bound =
-      parseTraitBound();
+  StringResult<std::shared_ptr<ast::types::TypeParamBound>> bound = parseTraitBound();
   if (!bound) {
     llvm::errs() << "failed to parse trait bound in impl trait type one bound: "
                  << bound.getError() << "\n";
@@ -831,8 +830,8 @@ StringResult<std::shared_ptr<ast::types::TypeParamBound>>
 Parser::parseTypeParamBound() {
   Location loc = getLocation();
 
-//  llvm::errs() << "parseTypeParamBound"
-//               << "\n";
+  //  llvm::errs() << "parseTypeParamBound"
+  //               << "\n";
 
   if (check(TokenKind::ParenOpen)) {
     StringResult<std::shared_ptr<ast::types::TypeParamBound>> trait =
@@ -909,8 +908,8 @@ StringResult<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
 
   TypeParamBounds bounds = {loc};
 
-//  llvm::errs() << "parseTypeParamBounds"
-//               << "\n";
+  //  llvm::errs() << "parseTypeParamBounds"
+  //               << "\n";
 
   StringResult<std::shared_ptr<ast::types::TypeParamBound>> first =
       parseTypeParamBound();
@@ -941,8 +940,9 @@ StringResult<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
       StringResult<std::shared_ptr<ast::types::TypeParamBound>> type =
           parseTypeParamBound();
       if (!type) {
-        llvm::errs() << "failed to parse type param bound in type param bounds: "
-                     << type.getError() << "\n";
+        llvm::errs()
+            << "failed to parse type param bound in type param bounds: "
+            << type.getError() << "\n";
         printFunctionStack();
         exit(EXIT_FAILURE);
       }
@@ -1112,8 +1112,8 @@ Parser::parseTraitBound() {
   Location loc = getLocation();
   TraitBound tr = {loc};
 
-//  llvm::errs() << "parseTraitBound"
-//               << "\n";
+  //  llvm::errs() << "parseTraitBound"
+  //               << "\n";
 
   if (check(TokenKind::ParenOpen)) {
     tr.setHasParenthesis();

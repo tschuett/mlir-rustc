@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ADT/Utf8String.h"
 #include "Lexer/TokenStream.h"
 
 #include <string_view>
@@ -15,11 +16,14 @@ class CheckPoint {
   uint32_t offset;
   uint32_t lineNumber;
   uint32_t columnNumber;
-public:
 
-  uint32_t getOffset() const { return offset;}
-  uint32_t getLineNumber() const { return lineNumber;}
-  uint32_t getColumnNumber() const { return columnNumber;}
+public:
+  CheckPoint(uint32_t offset, uint32_t lineNumber, uint32_t columnNumber)
+      : offset(offset), lineNumber(lineNumber), columnNumber(columnNumber) {}
+
+  uint32_t getOffset() const { return offset; }
+  uint32_t getLineNumber() const { return lineNumber; }
+  uint32_t getColumnNumber() const { return columnNumber; }
 };
 
 /// https://doc.rust-lang.org/reference/tokens.html
@@ -41,7 +45,7 @@ private:
   Token advanceToken();
 
   Token lexChar();
-  Token lexString();
+  // Token lexString();
   Token lexRawString();
   Token lexByte();
   Token lexByteString();
@@ -49,6 +53,7 @@ private:
   Token lexRawByteString();
   Token lexStringLiteral();
   Token lexRawDoubleQuotedString();
+  adt::Utf8String getRawByteStringContent();
   Token lexRawIdentifier();
 
   Token lexIntegerLiteral();
@@ -57,6 +62,7 @@ private:
   Token lexLifetimeToken();
   Token lexLifetimeOrLabel();
   Token lexLifetimeOrChar();
+  Token lexLifetime();
 
   Token lexNumericalLiteral();
   Token lexBinLiteral();
@@ -68,6 +74,8 @@ private:
   Token lexIdentifierOrKeyWord();
   Token lexIdentifierOrUnknownPrefix();
   Token lexFakeIdentifierOrUnknownPrefix();
+  adt::Utf8String getIdentifierOrKeyWord();
+  adt::Utf8String getNonKeyWordIdentifier();
 
   Location getLocation();
 
@@ -84,17 +92,40 @@ private:
   bool isIdContinue(int i = 0);
   UChar32 getUchar(int i = 0);
   void skip();
+  void skipN(unsigned count);
   UChar32 peek(int i = 0);
+
+  bool checkIntegerTypeHint();
+  bool checkFloatTypeHint();
+  TypeHint getTypeHint();
+
+  bool isASCIIForString(UChar32, UChar32);
+  bool isIsolatedCR();
+  bool isByteEscape();
+  bool isStringContinue();
+  bool isQuoteEscape();
+  bool isASCIIEscape();
+  bool isUnicodeEscape();
+  adt::Utf8String getUnicodeEscape();
+  unsigned char getASCIIEscape();
+  adt::Utf8String getQuoteEscape();
+
+  bool isNotALineBreak();
+  adt::Utf8String getNotALineBreak();
+
+  bool checkSuffix();
+  adt::Utf8String lexSuffixToUtf8();
+
+  bool maybeLineBreak(UChar32, UChar32);
 
   uint32_t lineNumber;
   uint32_t columnNumber;
 
   CheckPoint getCheckPoint() const;
-  void recover(const CheckPoint&);
+  void recover(const CheckPoint &);
 };
 
 } // namespace rust_compiler::lexer
-
 
 /*
 

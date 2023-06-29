@@ -60,16 +60,6 @@ void Rib::clearName(const adt::CanonicalPath &path, basic::NodeId id) {
     declsWithinRib.erase(ik);
 }
 
-std::optional<basic::NodeId> Rib::lookupName(const adt::CanonicalPath &ident) {
-  auto it = pathMappings.find(ident);
-  // llvm::errs() << "lookupName: " << ident.asString() << " " << (it ==
-  // pathMappings.end()) << "\n";
-  if (it == pathMappings.end())
-    return std::nullopt;
-
-  return it->second;
-}
-
 Rib *Scope::peek() { return stack.back(); }
 
 void Scope::push(NodeId id) { stack.push_back(new Rib(getCrateNum(), id)); }
@@ -470,19 +460,6 @@ void Resolver::insertResolvedName(NodeId ref, NodeId def) {
   tyCtx->insertResolvedName(ref, def);
 }
 
-std::optional<basic::NodeId> Scope::lookup(const adt::CanonicalPath &p) {
-  // llvm::errs() << "Scope::lookup: " << p.asString() << "\n";
-
-  for (auto r : stack) {
-    std::optional<NodeId> result = r->lookupName(p);
-    if (result)
-      return *result;
-  }
-  // llvm::errs() << "Scope::lookup: " << p.asString() << ": failed"
-  //              << "\n";
-  return std::nullopt;
-}
-
 void Rib::appendReferenceForDef(basic::NodeId ref, basic::NodeId def) {
   references[def].insert(ref);
 }
@@ -623,6 +600,29 @@ void Resolver::pushClosureContext(basic::NodeId id) {
 void Resolver::popClosureContext() {
   assert(!closureContext.empty());
   closureContext.pop_back();
+}
+
+std::optional<basic::NodeId> Rib::lookupName(const adt::CanonicalPath &ident) {
+  auto it = pathMappings.find(ident);
+  //  llvm::errs() << "rib::lookupName: " << ident.asString() << " "
+  //               << (it == pathMappings.end()) << "\n";
+  if (it == pathMappings.end())
+    return std::nullopt;
+
+  return it->second;
+}
+
+std::optional<basic::NodeId> Scope::lookup(const adt::CanonicalPath &p) {
+  // llvm::errs() << "Scope::lookup: " << p.asString() << "\n";
+
+  for (auto &rib : stack) {
+    std::optional<NodeId> result = rib->lookupName(p);
+    if (result)
+      return *result;
+  }
+  // llvm::errs() << "Scope::lookup: " << p.asString() << ": failed"
+  //              << "\n";
+  return std::nullopt;
 }
 
 void Scope::print() const {

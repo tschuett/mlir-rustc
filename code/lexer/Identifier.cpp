@@ -41,7 +41,7 @@ std::string Identifier::toString() const {
 Identifier::Identifier(std::string_view id) {
   storage.clear();
   for (char c : id)
-    storage.push_back(c);
+    storage.append(c);
 }
 
 } // namespace rust_compiler::lexer

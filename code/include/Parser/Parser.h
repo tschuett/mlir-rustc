@@ -147,7 +147,8 @@ public:
   parseExternBlock(std::span<OuterAttribute> outer,
                    std::optional<ast::Visibility> vis);
 
-  adt::Result<ast::ExternalItem, std::string> parseExternalItem(std::span<OuterAttribute> outer);
+  adt::Result<ast::ExternalItem, std::string>
+  parseExternalItem(std::span<OuterAttribute> outer);
 
   adt::Result<std::shared_ptr<ast::Item>, std::string>
   parseStruct(std::span<OuterAttribute> outer,
@@ -217,7 +218,7 @@ public:
   adt::Result<ast::types::TypePathFnInputs, std::string>
   parseTypePathFnInputs();
 
-  adt::Result<std::shared_ptr<ast::types::TypeParamBound>, std::string>
+  adt::StringResult<std::shared_ptr<ast::types::TypeParamBound>>
   parseTraitBound();
   adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
   parseBareFunctionType();
