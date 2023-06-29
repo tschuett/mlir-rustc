@@ -4,7 +4,6 @@ add_library(TypeChecking
             Function.cpp
             Types.cpp
             Expression.cpp
-            Unification.cpp
             Closure.cpp
             Statement.cpp
             Pattern.cpp
@@ -29,5 +28,12 @@ add_library(TypeChecking
 
 target_include_directories(TypeChecking PRIVATE  ../../include)
 
+llvm_map_components_to_libnames(llvm_libs support)
 
-target_link_libraries(TypeChecking )
+
+target_link_libraries(
+        TypeChecking
+        PRIVATE
+        ${llvm_libs}
+        TyCtx
+        )

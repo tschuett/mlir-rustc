@@ -10,8 +10,7 @@
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TyTy.h"
 
-// FIXME
-#include "../sema/TypeChecking/Unification.h"
+#include "TyCtx/Unification.h"
 
 #include <memory>
 #include <optional>

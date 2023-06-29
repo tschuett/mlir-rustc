@@ -106,7 +106,7 @@ TypeResolver::checkLetStatement(std::shared_ptr<ast::LetStatement> let) {
       // let x;
       TyTy::BaseType *inferType =
           new TyTy::InferType(let->getNodeId(), TyTy::InferKind::General,
-                              TypeHint::unknown(), let->getLocation());
+                              TyTy::TypeHint::unknown(), let->getLocation());
       checkPattern(pattern, inferType);
     }
   }

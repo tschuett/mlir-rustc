@@ -6,7 +6,7 @@
 
 #include <vector>
 
-namespace rust_compiler::sema::type_checking {
+namespace rust_compiler::tyctx {
 
 using namespace rust_compiler::tyctx;
 

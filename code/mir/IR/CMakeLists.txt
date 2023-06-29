@@ -11,6 +11,10 @@ target_include_directories(MirDialect PRIVATE ../../include)
 add_dependencies(MirDialect MirOpsIncGen)
 
 
-target_link_libraries(MirDialect MLIRLLVMDialect MLIRIR)
+target_link_libraries(MirDialect
+        PRIVATE
+        MLIRFuncDialect
+        MLIRLLVMDialect
+        MLIRIR)
 
 

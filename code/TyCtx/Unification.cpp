@@ -1,4 +1,4 @@
-#include "Unification.h"
+#include "TyCtx/Unification.h"
 
 #include "Session/Session.h"
 #include "TyCtx/NodeIdentity.h"
@@ -14,7 +14,7 @@ using namespace rust_compiler::tyctx;
 using namespace rust_compiler::tyctx::TyTy;
 using namespace rust_compiler::basic;
 
-namespace rust_compiler::sema::type_checking {
+namespace rust_compiler::tyctx {
 
 using namespace rust_compiler::tyctx;
 
@@ -826,4 +826,4 @@ TyTy::BaseType *Unification::expectADT(TyTy::ADTType *left,
   llvm_unreachable("all cases covered");
 }
 
-} // namespace rust_compiler::sema::type_checking
+} // namespace rust_compiler::tyctx

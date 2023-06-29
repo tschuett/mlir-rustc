@@ -14,7 +14,14 @@ target_include_directories(hir PRIVATE  ../include)
 
 llvm_map_components_to_libnames(llvm_libs Remarks)
 
-target_link_libraries(hir ${llvm_libs})
+target_link_libraries(hir
+        PRIVATE
+        ${llvm_libs}
+        MLIRFuncDialect
+        MLIRMemRefDialect
+        MLIRVectorDialect
+        MLIRIR
+        )
 
 
 

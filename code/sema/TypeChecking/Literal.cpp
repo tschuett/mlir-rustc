@@ -37,7 +37,7 @@ TypeResolver::checkLiteral(std::shared_ptr<ast::LiteralExpression> lit) {
   case ast::LiteralExpressionKind::IntegerLiteral: {
     /// need size and signess hints and integral
     return new TyTy::InferType(lit->getNodeId(), TyTy::InferKind::Integral,
-                               TypeHint::unknown(), lit->getLocation());
+                               TyTy::TypeHint::unknown(), lit->getLocation());
   }
   case ast::LiteralExpressionKind::FloatLiteral: {
     assert(false && "to be implemented");

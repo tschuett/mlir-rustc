@@ -74,4 +74,5 @@ target_link_libraries(
         PRIVATE
         Basic
         Session
+        lexer
         )
