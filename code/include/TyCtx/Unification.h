@@ -55,11 +55,11 @@ private:
   TyTy::BaseType *expectUint(TyTy::UintType *leftType,
                              TyTy::BaseType *rightType);
   TyTy::BaseType *expectReference(TyTy::ReferenceType *,
-                                   TyTy::BaseType *rightType);
-  TyTy::BaseType *expectStr(TyTy::StrType *,
-                                   TyTy::BaseType *rightType);
-  TyTy::BaseType *expectADT(TyTy::ADTType *,
-                                   TyTy::BaseType *rightType);
+                                  TyTy::BaseType *rightType);
+  TyTy::BaseType *expectStr(TyTy::StrType *, TyTy::BaseType *rightType);
+  TyTy::BaseType *expectADT(TyTy::ADTType *, TyTy::BaseType *rightType);
+  TyTy::BaseType *expectNever(TyTy::NeverType *leftType,
+                              TyTy::BaseType *rightType);
 
   void commit(TyTy::BaseType *leftType, TyTy::BaseType *rightType,
               TyTy::BaseType *result);
@@ -80,4 +80,4 @@ private:
   TyCtx *context;
 };
 
-} // namespace rust_compiler::sema::type_checking
+} // namespace rust_compiler::tyctx

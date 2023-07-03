@@ -14,8 +14,9 @@ class TyCtx;
 
 class AssociatedImplTrait {
 public:
- AssociatedImplTrait(TyTy::TraitReference *trait, TyTy::TypeBoundPredicate predicate,
-                      ast::TraitImpl *impl, TyTy::BaseType *self,
+  AssociatedImplTrait(TyTy::TraitReference *trait,
+                      TyTy::TypeBoundPredicate predicate, ast::TraitImpl *impl,
+                      TyTy::BaseType *self,
                       rust_compiler::tyctx::TyCtx *context)
       : trait(trait), predicate(predicate), impl(impl), self(self),
         context(context){};
@@ -26,7 +27,9 @@ public:
   setupAssociatedTypes(TyTy::BaseType *,
                        const TyTy::TypeBoundPredicate &predicate);
 
-  TyTy::BaseType *getSelf() { return self; }
+  TyTy::BaseType *getSelf() const { return self; }
+
+  ast::TraitImpl *getTraitImplementation() const { return impl; }
 
 private:
   TyTy::TraitReference *trait;

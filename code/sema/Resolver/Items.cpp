@@ -68,7 +68,7 @@ void Resolver::resolveStaticItem(std::shared_ptr<ast::StaticItem> stat,
 
   tyCtx->insertCanonicalPath(stat->getNodeId(), cpath);
 
-  resolveType(stat->getType(), prefix, canonicalPrefix);
+  resolveType(stat->getType(), path, cpath);
   if (stat->hasInit())
     resolveExpression(stat->getInit(), path, cpath);
 }
@@ -117,10 +117,10 @@ void Resolver::resolveEnumerationItem(
   getTypeScope().push(scopeNodeId);
 
   if (enu->hasGenericParams())
-    resolveGenericParams(enu->getGenericParams(), prefix, cpath);
+    resolveGenericParams(enu->getGenericParams(), path, cpath);
 
   if (enu->hasWhereClause())
-    resolveWhereClause(enu->getWhereClause(), prefix, canonicalPrefix);
+    resolveWhereClause(enu->getWhereClause(), path, cpath);
 
   if (enu->hasEnumItems()) {
     std::vector<std::shared_ptr<EnumItem>> it = enu->getEnumItems().getItems();
@@ -153,7 +153,7 @@ void Resolver::resolveEnumItem(std::shared_ptr<ast::EnumItem> enuIt,
     if (str.hasFields()) {
       std::vector<StructField> fields = str.getFields().getFields();
       for (const StructField &field : fields)
-        resolveType(field.getType(), prefix, canonicalPrefix);
+        resolveType(field.getType(), path, cpath);
     }
   } else if (enuIt->hasTuple()) {
     EnumItemTuple tup = enuIt->getTuple();
@@ -166,17 +166,17 @@ void Resolver::resolveEnumItem(std::shared_ptr<ast::EnumItem> enuIt,
     if (tup.hasTupleFields()) {
       std::vector<TupleField> fields = tup.getTupleFields().getFields();
       for (const TupleField &tup : fields)
-        resolveType(tup.getType(), prefix, canonicalPrefix);
+        resolveType(tup.getType(), path, cpath);
     }
   }
 
   if (enuIt->hasDiscriminant()) {
     EnumItemDiscriminant dis = enuIt->getDiscriminant();
-    resolveExpression(dis.getExpression(), prefix, canonicalPrefix);
     CanonicalPath decl =
         CanonicalPath::newSegment(dis.getNodeId(), enuIt->getName());
     CanonicalPath path = prefix.append(decl);
     CanonicalPath cpath = canonicalPrefix.append(decl);
+    resolveExpression(dis.getExpression(), path, cpath);
     tyCtx->insertCanonicalPath(dis.getNodeId(), cpath);
   }
 

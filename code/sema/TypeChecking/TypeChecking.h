@@ -46,6 +46,7 @@
 #include "AST/StructExpression.h"
 #include "AST/StructStruct.h"
 #include "AST/TraitImpl.h"
+#include "AST/TupleExpression.h"
 #include "AST/TupleIndexingExpression.h"
 #include "AST/TupleStruct.h"
 #include "AST/TypeAlias.h"
@@ -74,12 +75,14 @@
 
 #include <map>
 #include <memory>
+#include <stack>
 #include <variant>
 #include <vector>
 
 namespace rust_compiler::ast {
 class InherentImpl;
 class Trait;
+class MethodCallExpression;
 } // namespace rust_compiler::ast
 
 namespace rust_compiler::sema::resolver {
@@ -237,6 +240,7 @@ private:
 
   TyTy::BaseType *
       checkComparisonExpression(std::shared_ptr<ast::ComparisonExpression>);
+  TyTy::BaseType *checkTupleExpression(std::shared_ptr<ast::TupleExpression>);
   TyTy::BaseType *checkArrayType(std::shared_ptr<ast::types::ArrayType>);
   TyTy::BaseType *checkCallExpression(ast::CallExpression *);
   TyTy::BaseType *checkCallExpression(TyTy::BaseType *functionType,
@@ -248,6 +252,7 @@ private:
   TyTy::BaseType *checkCallExpressionADT(TyTy::BaseType *functionType,
                                          ast::CallExpression *,
                                          TyTy::VariantDef &);
+  TyTy::BaseType *checkMethodCallExpression(ast::MethodCallExpression *);
 
   TyTy::BaseType *
   resolveRootPathType(std::shared_ptr<ast::types::TypePath> path,
@@ -285,6 +290,10 @@ private:
   TyTy::BaseType *checkIntoIteratorElementType(TyTy::BaseType *);
   TyTy::BaseType *checkIntoIteratorElementType(ast::RangeExpression *);
 
+  TyTy::BaseType *resolveImplBlockSelfWithInference(
+      ast::Implementation *impl, Location loc,
+      TyTy::SubstitutionArgumentMappings *inferArguments);
+
   bool
   resolveOperatorOverload(ArithmeticOrLogicalExpressionKind,
                           std::shared_ptr<ast::ArithmeticOrLogicalExpression>,
@@ -301,11 +310,17 @@ private:
   TyTy::BaseType *peekReturnType();
   void pushReturnType(TypeCheckContextItem item, TyTy::BaseType *returnRype);
   void popReturnType();
+  void pushSmallSelf(TyTy::BaseType *self) { smallSelfStack.push(self); }
+  void popSmallSelf() { smallSelfStack.pop(); }
+  bool hasSmallSelf() { return smallSelfStack.size() > 0; }
+  TyTy::BaseType *getSmallSelf() { return smallSelfStack.top(); }
 
   TypeCheckContextItem &peekContext();
 
   std::vector<std::pair<TypeCheckContextItem, TyTy::BaseType *>>
       returnTypeStack;
+
+  std::stack<TyTy::BaseType *> smallSelfStack;
 
   bool haveFunctionContext() const { return not returnTypeStack.empty(); }
 
@@ -401,6 +416,14 @@ private:
       std::vector<TyTy::SubstitutionParamMapping> substitutions);
 
   TyTy::BaseType *resolveImplBlockSelf(const AssociatedImplTrait &);
+  TyTy::BaseType *resolveImplBlockSelf(const Implementation *);
+
+  std::vector<TyTy::SubstitutionParamMapping>
+  resolveImplBlockSubstitutions(ast::Implementation *impl, bool &failedFlag);
+  std::vector<TyTy::SubstitutionParamMapping>
+  resolveImplBlockSubstitutions(ast::InherentImpl *impl, bool &failedFlag);
+  std::vector<TyTy::SubstitutionParamMapping>
+  resolveImplBlockSubstitutions(ast::TraitImpl *impl, bool &failedFlag);
 };
 
 } // namespace rust_compiler::sema::type_checking

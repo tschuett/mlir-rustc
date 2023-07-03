@@ -13,6 +13,7 @@
 #include "AST/IteratorLoopExpression.h"
 #include "AST/LiteralExpression.h"
 #include "AST/LoopExpression.h"
+#include "AST/MethodCallExpression.h"
 #include "AST/OperatorExpression.h"
 #include "AST/PathExpression.h"
 #include "AST/RangeExpression.h"
@@ -22,6 +23,7 @@
 #include "AST/StructExprFields.h"
 #include "AST/StructExprStruct.h"
 #include "AST/StructExpression.h"
+#include "AST/TupleElements.h"
 #include "Basic/Ids.h"
 #include "Casting.h"
 #include "Coercion.h"
@@ -33,15 +35,16 @@
 #include "Session/Session.h"
 #include "TyCtx/NodeIdentity.h"
 #include "TyCtx/TyTy.h"
+#include "TyCtx/Unification.h"
 #include "TypeChecking.h"
-#include "Unification.h"
-#include "llvm/Support/raw_ostream.h"
 
 #include "../ReturnExpressionSearcher.h"
 
 #include <cassert>
 #include <cstddef>
+#include <cstdlib>
 #include <llvm/Support/ErrorHandling.h>
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -130,7 +133,8 @@ TyTy::BaseType *TypeResolver::checkExpressionWithoutBlock(
         std::static_pointer_cast<IndexExpression>(woBlock));
   }
   case ExpressionWithoutBlockKind::TupleExpression: {
-    assert(false && "to be implemented");
+    return checkTupleExpression(
+        std::static_pointer_cast<TupleExpression>(woBlock));
   }
   case ExpressionWithoutBlockKind::TupleIndexingExpression: {
     return checkTupleIndexingExpression(
@@ -144,7 +148,8 @@ TyTy::BaseType *TypeResolver::checkExpressionWithoutBlock(
     return checkCallExpression(static_cast<CallExpression *>(woBlock.get()));
   }
   case ExpressionWithoutBlockKind::MethodCallExpression: {
-    assert(false && "to be implemented");
+    return checkMethodCallExpression(
+        static_cast<MethodCallExpression *>(woBlock.get()));
   }
   case ExpressionWithoutBlockKind::FieldExpression: {
     return checkFieldExpression(static_cast<FieldExpression *>(woBlock.get()));
@@ -774,12 +779,6 @@ TypeResolver::checkPossibleFunctionTraitCallMethodName(
   return std::nullopt;
 }
 
-TyTy::BaseType *TypeResolver::checkMethodCallExpression(
-    TyTy::FunctionType *, NodeIdentity, std::vector<TyTy::Argument> &args,
-    Location call, Location receiver, TyTy::BaseType *adjustedSelf) {
-  assert(false);
-}
-
 TyTy::BaseType *TypeResolver::checkUnsafeBlockExpression(
     std::shared_ptr<ast::UnsafeBlockExpression> unsafe) {
   return checkExpression(unsafe->getBlock());
@@ -1360,6 +1359,29 @@ TypeResolver::checkCallExpressionADT(TyTy::BaseType *functionType,
   }
 
   return functionType->clone();
+}
+
+TyTy::BaseType *TypeResolver::checkTupleExpression(
+    std::shared_ptr<ast::TupleExpression> tuple) {
+  if (tuple->isUnit()) {
+    TyTy::BaseType *unit = tcx->lookupBuiltin("()");
+    if (!unit) {
+      llvm::errs() << tuple->getLocation().toString()
+                   << "@failed to lookup builtin unit type"
+                   << "\n";
+      exit(EXIT_FAILURE);
+    }
+    return unit;
+  }
+
+  TupleElements el = tuple->getElements();
+  std::vector<TyTy::TypeVariable> fields;
+  for(auto& tup: el.getElements()) {
+    TyTy::BaseType*fieldType = checkExpression(tup);
+    fields.push_back(TyTy::TypeVariable(fieldType->getReference()));
+  }
+
+  return new TyTy::TupleType(tuple->getNodeId(), tuple->getLocation(), std::move(fields));
 }
 
 } // namespace rust_compiler::sema::type_checking

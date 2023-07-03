@@ -7,29 +7,37 @@
 #include "AST/EnumItemTuple.h"
 #include "AST/Enumeration.h"
 #include "AST/Function.h"
+#include "AST/FunctionParameters.h"
 #include "AST/GenericParams.h"
 #include "AST/Implementation.h"
 #include "AST/InherentImpl.h"
 #include "AST/LiteralExpression.h"
+#include "AST/Patterns/IdentifierPattern.h"
+#include "AST/Patterns/PatternNoTopAlt.h"
+#include "AST/SelfParam.h"
+#include "AST/ShorthandSelf.h"
 #include "AST/Struct.h"
 #include "AST/StructField.h"
 #include "AST/StructFields.h"
 #include "AST/TraitImpl.h"
+#include "AST/TypedSelf.h"
 #include "AST/Types/TypePath.h"
 #include "AST/VisItem.h"
 #include "Basic/Ids.h"
 #include "Coercion.h"
+#include "Lexer/Identifier.h"
 #include "Session/Session.h"
+#include "TyCtx/NodeIdentity.h"
 #include "TyCtx/Substitutions.h"
 #include "TyCtx/TraitReference.h"
 #include "TyCtx/TyTy.h"
 #include "TyCtx/TypeIdentity.h"
+#include "TyCtx/Unification.h"
 #include "TypeChecking.h"
-#include "Unification.h"
-#include "llvm/Support/raw_ostream.h"
 
 #include <cstdlib>
 #include <limits>
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -122,6 +130,12 @@ void TypeResolver::checkStructStruct(ast::StructStruct *s) {
   if (s->hasStructFields()) {
     for (StructField &field : s->getFields().getFields()) {
       TyTy::BaseType *fieldType = checkType(field.getType());
+      if (fieldType == nullptr ||
+          fieldType->getKind() == TyTy::TypeKind::Error) {
+        llvm::errs() << "checkStructStruct failed @"
+                     << s->getLocation().toString() << "\n";
+        exit(EXIT_FAILURE);
+      }
       TyTy::StructFieldType *strField =
           new TyTy::StructFieldType(field.getNodeId(), field.getIdentifier(),
                                     fieldType, field.getLocation());
@@ -203,11 +217,16 @@ void TypeResolver::checkImplementation(ast::Implementation *impl) {
 }
 
 void TypeResolver::checkInherentImpl(ast::InherentImpl *impl) {
+  llvm::errs() << "checkInherentImpl"
+               << "\n";
   std::optional<std::vector<TyTy::SubstitutionParamMapping>> substitutions =
       resolveInherentImplSubstitutions(impl);
   if (!substitutions) {
     assert(false);
   }
+
+  TyTy::BaseType *type = checkType(impl->getType());
+  tcx->insertType(impl->getType()->getIdentity(), type);
 
   TyTy::BaseType *self = resolveInherentImplSelf(impl);
 
@@ -223,6 +242,12 @@ void TypeResolver::checkTraitImpl(ast::TraitImpl *impl) {
   if (!substitutions) {
     assert(false);
   }
+
+  TyTy::BaseType *type = checkType(impl->getType());
+  tcx->insertType(impl->getType()->getIdentity(), type);
+
+  TyTy::BaseType *typePath = checkType(impl->getTypePath());
+  tcx->insertType(impl->getTypePath()->getIdentity(), typePath);
 
   TyTy::BaseType *self = resolveTraitImplSelf(impl);
 
@@ -314,7 +339,55 @@ bool TypeResolver::checkForUnconstrained(
     const TyTy::SubstitutionArgumentMappings &constraintA,
     const TyTy::SubstitutionArgumentMappings &constraintB,
     const TyTy::BaseType *reference) {
-  assert(false);
+
+  bool checkResult = false;
+  bool checkCompleted =
+      tcx->haveCheckedForUnconstrained(reference->getReference(), &checkResult);
+  if (checkCompleted)
+    return checkResult;
+
+  std::set<basic::NodeId> symbolsToContrain;
+  std::map<NodeId, Location> symbolToLocation;
+  for (const auto &p : paramsToConstrain) {
+    NodeId ref = p.getParamType()->getReference();
+    symbolsToContrain.insert(ref);
+    symbolToLocation.insert({ref, p.getParamLocation()});
+  }
+
+  std::set<basic::NodeId> constrainedSymbols;
+  for (const auto &c : constraintA.getMappings()) {
+    TyTy::BaseType *arg = c.getType();
+    if (arg != nullptr) {
+      const TyTy::BaseType *p = arg->getRoot();
+      constrainedSymbols.insert(p->getTypeReference());
+    }
+  }
+
+  for (const auto &c : constraintB.getMappings()) {
+    TyTy::BaseType *arg = c.getType();
+    if (arg != nullptr) {
+      const TyTy::BaseType *p = arg->getRoot();
+      constrainedSymbols.insert(p->getTypeReference());
+    }
+  }
+
+  const TyTy::BaseType *root = reference->getRoot();
+  if (root->getKind() == TyTy::TypeKind::Parameter) {
+    const TyTy::ParamType *p = static_cast<const TyTy::ParamType *>(root);
+    constrainedSymbols.insert(p->getTypeReference());
+  }
+
+  bool unconstrained = false;
+  for (auto &sym : symbolsToContrain) {
+    if (constrainedSymbols.find(sym) == constrainedSymbols.end()) {
+      Location loc = symbolToLocation.at(sym);
+      unconstrained = true;
+    }
+  }
+
+  tcx->insertUnconstrainedCheckMarker(reference->getReference(), unconstrained);
+
+  return unconstrained;
 }
 
 TyTy::BaseType *TypeResolver::resolveInherentImplSelf(InherentImpl *impl) {
@@ -344,10 +417,8 @@ void TypeResolver::validateTraitImplBlock(
 }
 
 void TypeResolver::validateInherentImplBlock(
-    InherentImpl *, TyTy::BaseType *self,
-    std::vector<TyTy::SubstitutionParamMapping> &substitutions) {
-  assert(false);
-}
+    InherentImpl *impl, TyTy::BaseType *self,
+    std::vector<TyTy::SubstitutionParamMapping> &substitutions) {}
 
 void TypeResolver::checkTraitImplItem(
     ast::TraitImpl *impl, AssociatedItem &asso, TyTy::BaseType *self,
@@ -358,19 +429,151 @@ void TypeResolver::checkTraitImplItem(
 void TypeResolver::checkInherentImplItem(
     ast::InherentImpl *impl, AssociatedItem &asso, TyTy::BaseType *self,
     std::vector<TyTy::SubstitutionParamMapping> substitutions) {
-  assert(false);
+  switch (asso.getKind()) {
+  case AssociatedItemKind::MacroInvocationSemi: {
+    assert(false);
+  }
+  case AssociatedItemKind::TypeAlias: {
+    assert(false);
+  }
+  case AssociatedItemKind::ConstantItem: {
+    assert(false);
+  }
+  case AssociatedItemKind::Function: {
+    checkImplementationFunction(impl,
+                                static_cast<Function *>(static_cast<VisItem *>(
+                                    asso.getFunction().get())),
+                                self, substitutions);
+    break;
+  }
+  }
 }
 
 TyTy::BaseType *TypeResolver::checkImplementationFunction(
-    ast::TraitImpl *parent, ast::Function *, TyTy::BaseType *self,
+    ast::TraitImpl *parent, ast::Function *fun, TyTy::BaseType *self,
     std::vector<TyTy::SubstitutionParamMapping> substitutions) {
   assert(false);
 }
 
 TyTy::BaseType *TypeResolver::checkImplementationFunction(
-    ast::InherentImpl *parent, ast::Function *, TyTy::BaseType *self,
+    ast::InherentImpl *parent, ast::Function *fun, TyTy::BaseType *self,
     std::vector<TyTy::SubstitutionParamMapping> substitutions) {
-  assert(false);
+  if (fun->hasGenericParams())
+    checkGenericParams(fun->getGenericParams(), substitutions);
+
+  if (fun->hasWhereClause())
+    checkWhereClause(fun->getWhereClause());
+  TyTy::BaseType *returnType = nullptr;
+  if (!fun->hasReturnType()) {
+    returnType = TyTy::TupleType::getUnitType(fun->getNodeId());
+  } else {
+    TyTy::BaseType *resolved = checkType(fun->getReturnType());
+    if (resolved == nullptr) {
+      llvm::errs() << fun->getLocation().toString()
+                   << "@ failed to resolved return type"
+                   << "\n";
+      exit(EXIT_FAILURE);
+    }
+    returnType = resolved->clone();
+    returnType->setReference(fun->getReturnType()->getNodeId());
+  }
+
+  std::vector<
+      std::pair<std::shared_ptr<patterns::PatternNoTopAlt>, TyTy::BaseType *>>
+      params;
+  if (fun->isMethod()) {
+    SelfParam selfParam = fun->getParams().getSelfParam();
+    std::shared_ptr<patterns::IdentifierPattern> selfPattern =
+        std::make_shared<patterns::IdentifierPattern>(
+            patterns::IdentifierPattern(self->getLocation()));
+    selfPattern->setIdentifier(lexer::Identifier("self"));
+    // FIXME
+    // selfPattern->setRef();
+    // selfPattern->setRef()
+    TyTy::BaseType *selfType = nullptr;
+    switch (selfParam.getKind()) {
+    case SelfParamKind::ShorthandSelf: {
+      ShorthandSelf *hand =
+          std::static_pointer_cast<ShorthandSelf>(selfParam.getSelf()).get();
+      if (hand->isAnd())
+        selfPattern->setRef();
+      if (hand->isMut())
+        selfPattern->setMut();
+      if ((!hand->isMut() && !hand->isAnd()) || hand->isMut()) {
+        selfType = self->clone();
+      } else if (hand->isAnd() && !hand->isMut()) {
+        selfType = new TyTy::ReferenceType(
+            selfParam.getNodeId(), TyTy::TypeVariable(self->getReference()),
+            Mutability::Imm);
+      } else if (hand->isAnd() && hand->isMut()) {
+        selfType = new TyTy::ReferenceType(
+            selfParam.getNodeId(), TyTy::TypeVariable(self->getReference()),
+            Mutability::Mut);
+      }
+      break;
+    }
+    case SelfParamKind::TypeSelf: {
+      TypedSelf *self =
+          std::static_pointer_cast<TypedSelf>(selfParam.getSelf()).get();
+      selfType = checkType(self->getType());
+      if (self->isMut())
+        selfPattern->setMut();
+      break;
+    }
+    }
+    tcx->insertType(selfParam.getIdentity(), selfType);
+    params.push_back(
+        std::pair<std::shared_ptr<patterns::PatternNoTopAlt>, TyTy::BaseType *>(
+            selfPattern, selfType));
+  }
+
+  if (fun->hasParams()) {
+    FunctionParameters parameters = fun->getParams();
+    for (auto &param : parameters.getParams()) {
+      TyTy::BaseType *paramType = checkType(param.getType());
+      params.push_back(std::pair<std::shared_ptr<patterns::PatternNoTopAlt>,
+                                 TyTy::BaseType *>(
+          param.getPattern().getPattern().get(), paramType));
+      tcx->insertType(param.getIdentity(), paramType);
+      checkPattern(param.getPattern().getPattern(), paramType);
+    }
+  }
+
+  std::optional<CanonicalPath> canon =
+      tcx->lookupCanonicalPath(fun->getNodeId());
+  assert(canon.has_value());
+
+  TypeIdentity ident = {*canon, fun->getLocation()};
+
+  TyTy::FunctionType *funType = new TyTy::FunctionType(
+      fun->getNodeId(), fun->getName(), ident,
+      fun->isMethod() ? TyTy::FunctionType::FunctionTypeIsMethod
+                      : TyTy::FunctionType::FunctionTypeDefaultFlags,
+      params, returnType, std::move(substitutions));
+
+  tcx->insertType(fun->getIdentity(), funType);
+
+  TyTy::FunctionType *resolvedFunType = funType;
+  pushReturnType(TypeCheckContextItem(fun), resolvedFunType->getReturnType());
+
+  if (fun->hasBody()) {
+
+    pushSmallSelf(self);
+    TyTy::BaseType *blockExprType = checkExpression(fun->getBody());
+    popSmallSelf();
+
+    Location funReturnLoc = fun->hasReturnType()
+                                ? fun->getReturnType()->getLocation()
+                                : fun->getLocation();
+
+    Coercion coerce = {tcx};
+    coerce.coercion(funType->getReturnType(), blockExprType,
+                    fun->getBody()->getLocation(), false /*allowAutoderef*/);
+  }
+
+  popReturnType();
+
+  return funType;
 }
 
 void TypeResolver::checkEnumeration(ast::Enumeration *enu) {

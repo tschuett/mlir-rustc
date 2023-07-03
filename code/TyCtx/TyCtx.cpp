@@ -10,6 +10,7 @@
 #include "Basic/Ids.h"
 #include "Location.h"
 #include "TyCtx/TyTy.h"
+#include "llvm/Support/raw_ostream.h"
 
 // #include "../sema/TypeChecking/TypeChecking.h"
 
@@ -91,9 +92,7 @@ std::optional<TyTy::TypeBoundPredicate> TyCtx::lookupPredicate(NodeId id) {
   return it->second;
 }
 
-void TyCtx::insertModule(ast::Module *mod) {
-  modules[mod->getNodeId()] = mod;
-}
+void TyCtx::insertModule(ast::Module *mod) { modules[mod->getNodeId()] = mod; }
 
 ast::Module *TyCtx::lookupModule(basic::NodeId id) {
   auto it = modules.find(id);
@@ -215,25 +214,8 @@ void TyCtx::insertEnumItem(ast::Enumeration *parent, ast::EnumItem *item,
                            NodeId id) {
   auto enumItem = lookupEnumItem(item->getNodeId());
   assert(not enumItem.has_value());
-  //llvm::errs() << "TyCtx::insertEnumItem " << id << "\n";
+  // llvm::errs() << "TyCtx::insertEnumItem " << id << "\n";
   enumItemsMappings[id] = {parent, item};
-}
-
-std::optional<ast::Implementation *>
-TyCtx::lookupImplementation(basic::NodeId id) {
-  auto it = implementationMappings.find(id);
-  if (it == implementationMappings.end())
-    return std::nullopt;
-
-  return it->second;
-}
-
-void TyCtx::insertAssociatedItem(basic::NodeId implementationId,
-                                 ast::AssociatedItem *item) {
-  NodeId id = item->getNodeId();
-
-  associatedItemMappings[id] =
-      std::pair<NodeId, ast::AssociatedItem *>(implementationId, item);
 }
 
 std::optional<std::pair<NodeId, ast::AssociatedItem *>>
@@ -472,6 +454,14 @@ void TyCtx::iterateImplementations(
   }
 }
 
+void TyCtx::insertAssociatedItem(basic::NodeId implementationId,
+                                 ast::AssociatedItem *item) {
+  NodeId id = item->getNodeId();
+
+  associatedItemMappings[id] =
+      std::pair<NodeId, ast::AssociatedItem *>(implementationId, item);
+}
+
 void TyCtx::iterateAssociatedItems(
     llvm::function_ref<bool(NodeId, ast::Implementation *,
                             ast::AssociatedItem *)>
@@ -483,6 +473,10 @@ void TyCtx::iterateAssociatedItems(
     ast::AssociatedItem *assoItem = it->second.second;
     std::optional<ast::Implementation *> impl =
         lookupImplementation(implementationId);
+    assert(impl.has_value());
+    llvm::errs() << "iterateAssociatedItems: " << assoId << ":"
+                 << implementationId << ": " << assoItem->getNodeId() << ":"
+                 << (*impl)->getNodeId() << "\n";
     if (!cb(assoId, *impl, assoItem))
       return;
   }
@@ -492,6 +486,33 @@ void TyCtx::insertEnumeration(NodeId enu, ast::Enumeration *enuM) {
   // llvm::errs() << "TyCtx::insertEnumeration " << enu << "\n";
 
   enumMappings[enu] = enuM;
+}
+
+void TyCtx::insertImplementation(NodeId id, ast::Implementation *impl) {
+  implementationMappings[id] = impl;
+}
+
+std::optional<ast::Implementation *>
+TyCtx::lookupImplementation(basic::NodeId id) {
+  auto it = implementationMappings.find(id);
+  if (it == implementationMappings.end())
+    return std::nullopt;
+
+  return it->second;
+}
+
+void TyCtx::insertUnconstrainedCheckMarker(NodeId id, bool status) {
+  unconstrained[id] = status;
+}
+
+bool TyCtx::haveCheckedForUnconstrained(NodeId id, bool *result) {
+  auto it = unconstrained.find(id);
+  bool found = it != unconstrained.end();
+  if (!found)
+    return false;
+
+  *result = it->second;
+  return true;
 }
 
 } // namespace rust_compiler::tyctx

@@ -23,9 +23,14 @@ void Resolver::resolveMacroInvocationSemiInTrait(
 }
 
 void Resolver::resolveTypeAliasInTrait(
-    ast::TypeAlias *, const adt::CanonicalPath &prefix,
+    ast::TypeAlias *ta, const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
-  assert(false);
+  CanonicalPath decl = CanonicalPath::newSegment(ta->getNodeId(), ta->getIdentifier());
+  CanonicalPath path = prefix.append(decl);
+  CanonicalPath cpath = canonicalPrefix.append(decl);
+  getTypeScope().insert(path, ta->getNodeId(), ta->getLocation(), RibKind::Type);
+
+  tyCtx->insertCanonicalPath(ta->getNodeId(), cpath);
 }
 
 void Resolver::resolveConstantItemInTrait(

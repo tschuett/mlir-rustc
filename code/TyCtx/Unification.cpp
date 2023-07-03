@@ -139,7 +139,7 @@ TyTy::BaseType *Unification::expect(TyTy::BaseType *leftType,
                                    rightType);
   }
   case TyTy::TypeKind::Never: {
-    assert(false);
+    return expectNever(static_cast<TyTy::NeverType *>(leftType), rightType);
   }
   case TyTy::TypeKind::Str: {
     return expectStr(static_cast<TyTy::StrType *>(leftType), rightType);
@@ -808,6 +808,44 @@ TyTy::BaseType *Unification::expectADT(TyTy::ADTType *left,
   case TyTy::TypeKind::Closure:
   case TyTy::TypeKind::Function:
   case TyTy::TypeKind::Never:
+  case TyTy::TypeKind::Tuple:
+  case TyTy::TypeKind::Parameter:
+  case TyTy::TypeKind::Slice:
+  case TyTy::TypeKind::Projection:
+  case TyTy::TypeKind::Dynamic:
+  case TyTy::TypeKind::Array:
+  case TyTy::TypeKind::PlaceHolder:
+  case TyTy::TypeKind::FunctionPointer:
+  case TyTy::TypeKind::RawPointer:
+  case TyTy::TypeKind::Uint:
+  case TyTy::TypeKind::Reference:
+  case TyTy::TypeKind::Str:
+  case TyTy::TypeKind::Error:
+    return new ErrorType(0);
+  }
+  llvm_unreachable("all cases covered");
+}
+
+TyTy::BaseType *Unification::expectNever(TyTy::NeverType *leftType,
+                                         TyTy::BaseType *rightType) {
+  switch (rightType->getKind()) {
+  case TyTy::TypeKind::Inferred: {
+    TyTy::InferType *infer = static_cast<TyTy::InferType *>(rightType);
+    if (infer->getInferredKind() == TyTy::InferKind::General)
+      return leftType->clone();
+    return new ErrorType(0);
+  }
+  case TyTy::TypeKind::USize:
+  case TyTy::TypeKind::ADT:
+  case TyTy::TypeKind::Bool:
+  case TyTy::TypeKind::Char:
+  case TyTy::TypeKind::Int:
+  case TyTy::TypeKind::ISize:
+  case TyTy::TypeKind::Float:
+  case TyTy::TypeKind::Closure:
+  case TyTy::TypeKind::Function:
+  case TyTy::TypeKind::Never:
+    return rightType->clone();
   case TyTy::TypeKind::Tuple:
   case TyTy::TypeKind::Parameter:
   case TyTy::TypeKind::Slice:

@@ -33,13 +33,13 @@ void Resolver::resolveFunction(ast::Function *fun,
   pushNewLabelRib(getTypeScope().peek());
 
   if (fun->hasGenericParams())
-    resolveGenericParams(fun->getGenericParams(), prefix, canonicalPrefix);
+    resolveGenericParams(fun->getGenericParams(), path, cpath);
 
   if (fun->hasWhereClause())
-    resolveWhereClause(fun->getWhereClause(), prefix, canonicalPrefix);
+    resolveWhereClause(fun->getWhereClause(), path, cpath);
 
   if (fun->hasReturnType())
-    resolveType(fun->getReturnType(), prefix, canonicalPrefix);
+    resolveType(fun->getReturnType(), path, cpath);
 
   FunctionParameters params = fun->getParams();
   // assert(!params.hasSelfParam() && "to be implemented");
@@ -53,13 +53,18 @@ void Resolver::resolveFunction(ast::Function *fun,
       case FunctionParamKind::Pattern: {
         FunctionParamPattern pattern = parm.getPattern();
         if (pattern.hasType()) {
-          resolveType(pattern.getType(), prefix, canonicalPrefix);
-          PatternDeclaration pat = {pattern.getPattern(), RibKind::Parameter,
-                                    bindings, this, prefix, canonicalPrefix};
+          resolveType(pattern.getType(), path, cpath);
+          PatternDeclaration pat = {pattern.getPattern(),
+                                    RibKind::Parameter,
+                                    bindings,
+                                    this,
+                                    path,
+                                    cpath};
           pat.resolve();
-//          resolvePatternDeclarationWithBindings(pattern.getPattern(),
-//                                                RibKind::Parameter, bindings,
-//                                                prefix, canonicalPrefix);
+          //          resolvePatternDeclarationWithBindings(pattern.getPattern(),
+          //                                                RibKind::Parameter,
+          //                                                bindings, prefix,
+          //                                                canonicalPrefix);
         } else {
           assert(false && "to be implemented");
         }
@@ -76,7 +81,7 @@ void Resolver::resolveFunction(ast::Function *fun,
   }
 
   if (fun->hasBody())
-    resolveExpression(fun->getBody(), prefix, canonicalPrefix);
+    resolveExpression(fun->getBody(), path, cpath);
 
   getNameScope().pop();
   getTypeScope().pop();

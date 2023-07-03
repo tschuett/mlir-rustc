@@ -29,6 +29,8 @@ public:
 
   bool hasSelfParam() const { return selfParam.has_value(); }
   SelfParam getSelfParam() const { return *selfParam; }
+
+  bool isMethod() const { return hasSelfParam(); }
 };
 
 } // namespace rust_compiler::ast

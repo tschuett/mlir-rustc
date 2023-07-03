@@ -1,16 +1,23 @@
 #include "AST/AssociatedItem.h"
 #include "AST/EnumItem.h"
 #include "AST/Implementation.h"
+#include "AST/InherentImpl.h"
 #include "AST/PathExprSegment.h"
 #include "AST/PathExpression.h"
+#include "AST/PathIdentSegment.h"
 #include "AST/PathInExpression.h"
+#include "AST/TraitImpl.h"
+#include "AST/Types/TypeExpression.h"
 #include "Basic/Ids.h"
 #include "PathProbing.h"
+#include "TraitResolver.h"
+#include "TyCtx/Predicate.h"
+#include "TyCtx/Substitutions.h"
 #include "TyCtx/SubstitutionsMapper.h"
 #include "TyCtx/TraitReference.h"
 #include "TyCtx/TyTy.h"
+#include "TyCtx/Unification.h"
 #include "TypeChecking.h"
-#include "Unification.h"
 
 #include "../Resolver/Resolver.h"
 
@@ -19,6 +26,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
+#include <vector>
 
 using namespace rust_compiler::ast;
 using namespace rust_compiler::basic;
@@ -45,6 +53,13 @@ TyTy::BaseType *TypeResolver::checkPathInExpression(
 
   size_t offset = -1;
   NodeId resolvedNodeId = UNKNOWN_NODEID;
+
+  if (hasSmallSelf() && path->getSegments().size() == 1) {
+    if (path->getSegments()[0].getIdent().getKind() ==
+        PathIdentSegmentKind::self) {
+      return getSmallSelf();
+    }
+  }
 
   TyTy::BaseType *typeSegment =
       resolveRootPathExpression(path, &offset, &resolvedNodeId);
@@ -192,7 +207,7 @@ TyTy::BaseType *TypeResolver::resolveRootPathExpression(
 TyTy::BaseType *TypeResolver::resolveSegmentsExpression(
     basic::NodeId rootResolvedIt, std::span<PathExprSegment> segments,
     size_t offset, TyTy::BaseType *typeSegment, tyctx::NodeIdentity id,
-    Location) {
+    Location loc) {
   NodeId resolvedNodeId = rootResolvedIt;
   TyTy::BaseType *prevSegment = typeSegment;
   bool receiverIsGeneric = prevSegment->getKind() == TypeKind::Parameter;
@@ -201,14 +216,15 @@ TyTy::BaseType *TypeResolver::resolveSegmentsExpression(
     bool probeImpls = not receiverIsGeneric;
 
     std::set<PathProbeCandidate> candidates = PathProbeType::probeTypePath(
-        prevSegment, seg.getIdent().getIdentifier(), probeImpls, false, true,
-        this);
+        prevSegment, seg.getIdent().getIdentifier(), probeImpls,
+        false /*probeBounds*/, true /*ignoreMandatoryTraits*/, this);
     if (candidates.size() == 0)
-      candidates = PathProbeType::probeTypePath(prevSegment,
-                                                seg.getIdent().getIdentifier(),
-                                                false, true, false, this);
+      candidates = PathProbeType::probeTypePath(
+          prevSegment, seg.getIdent().getIdentifier(), false,
+          true /*probeBounds */, false /*ignoreMandatoryTraits*/, this);
     if (candidates.size() == 0) {
-      llvm::errs() << "failed to resolve path segment using an impl probe"
+      llvm::errs() << loc.toString()
+                   << "@failed to resolve path segment using an impl probe"
                    << "\n";
       exit(EXIT_FAILURE);
     }
@@ -262,38 +278,36 @@ TyTy::BaseType *TypeResolver::resolveSegmentsExpression(
 
       std::optional<AssociatedImplTrait *> associated =
           tcx->lookupAssociatedTraitImpl(implBlockId);
-      assert(associated.has_value());
-      TyTy::BaseType *implBlockType = resolveImplBlockSelf(*(*associated));
-      if (implBlockType->needsGenericSubstitutions()) {
-        SubstitutionsMapper mapper;
-        implBlockType = mapper.infer(implBlockType, seg.getLocation(), this);
+      // assert(associated.has_value());
+
+      auto mappings = TyTy::SubstitutionArgumentMappings::error();
+      TyTy::BaseType *implBlockType = resolveImplBlockSelfWithInference(
+          associatedImplementation, seg.getLocation(), &mappings);
+
+      if (!mappings.isError()) {
+        InternalSubstitutionsMapper mapper;
+        typeSegment = mapper.resolve(typeSegment, mappings);
       }
 
       prevSegment = Unification::unifyWithSite(
           TyTy::WithLocation(prevSegment), TyTy::WithLocation(implBlockType),
           seg.getLocation(), tcx);
-      if (prevSegment->getKind() == TypeKind::Error) {
-        llvm::errs() << "resolveSegmentsExpression: unification failed"
-                     << "\n";
-        exit(EXIT_FAILURE);
-      }
+
+      if (prevSegment->getKind() == TyTy::TypeKind::Error)
+        return new TyTy::ErrorType(0);
 
       if (associated) {
-        TraitImpl *impl = (*associated)->getImplementation();
-
-        std::shared_ptr<ast::types::TypeExpression> boundPath =
-            impl->getTypePath();
-
-        NodeId implicitId = rust_compiler::basic::getNextNodeId();
-        tcx->insertImplicitType(implicitId, implBlockType);
-
-        ast::types::TypeExpression *implicitSelfBound =
-            new ast::types::TypePath(Location::getEmptyLocation());
+        ast::types::TypeExpression *boundPath =
+            (*associated)->getTraitImplementation()->getTypePath().get();
+        TraitResolver traitResolver;
+        TraitReference *traitRef = traitResolver.resolve(boundPath);
+        assert(!traitRef->isError());
 
         TyTy::TypeBoundPredicate predicate =
-            getPredicateFromBound(boundPath, implicitSelfBound);
-        implBlockType =
-            (*associated)->setupAssociatedTypes(prevSegment, predicate);
+            implBlockType->lookupPredicate(traitRef->getNodeId());
+        if (!predicate.isError())
+          implBlockType =
+              (*associated)->setupAssociatedTypes(prevSegment, predicate);
       }
     }
 
@@ -338,6 +352,141 @@ TyTy::BaseType *TypeResolver::resolveSegmentsExpression(
 TyTy::BaseType *
 TypeResolver::resolveImplBlockSelf(const AssociatedImplTrait &) {
   assert(false);
+}
+
+TyTy::BaseType *TypeResolver::resolveImplBlockSelfWithInference(
+    ast::Implementation *impl, Location loc,
+    TyTy::SubstitutionArgumentMappings *inferArguments) {
+
+  bool failedFlag = false;
+  std::vector<TyTy::SubstitutionParamMapping> substitutions =
+      resolveImplBlockSubstitutions(impl, failedFlag);
+
+  if (failedFlag)
+    return new TyTy::ErrorType(impl->getNodeId());
+
+  TyTy::BaseType *self = resolveImplBlockSelf(impl);
+  if (substitutions.empty() || self->isConcrete())
+    return self;
+
+  std::vector<TyTy::SubstitutionArg> args;
+  for (auto &p : substitutions) {
+    if (p.needSubstitution()) {
+      TyTy::TypeVariable inferVar =
+          TyTy::TypeVariable::getImplicitInferVariable(loc);
+      args.push_back(TyTy::SubstitutionArg(&p, inferVar.getType()));
+    } else {
+      TyTy::ParamType *param = p.getParamType();
+      TyTy::BaseType *resolved = param->destructure();
+      args.push_back(TyTy::SubstitutionArg(&p, resolved));
+    }
+  }
+
+  *inferArguments =
+      TyTy::SubstitutionArgumentMappings(std::move(args), {}, loc);
+
+  InternalSubstitutionsMapper intern;
+
+  TyTy::BaseType *infer = intern.resolve(self, *inferArguments);
+
+  if (!infer->hasSubsititionsDefined()) {
+    for (auto &bound : infer->getSpecifiedBounds()) {
+      bound.handleSubstitions(*inferArguments);
+    }
+  }
+
+  return infer;
+}
+
+TyTy::BaseType *TypeResolver::resolveImplBlockSelf(const Implementation *impl) {
+  switch (impl->getKind()) {
+  case ImplementationKind::InherentImpl: {
+    return checkType(static_cast<const InherentImpl *>(impl)->getType());
+  }
+  case ImplementationKind::TraitImpl: {
+    return checkType(static_cast<const TraitImpl *>(impl)->getType());
+  }
+  }
+}
+
+std::vector<TyTy::SubstitutionParamMapping>
+TypeResolver::resolveImplBlockSubstitutions(ast::Implementation *impl,
+                                            bool &failedFlag) {
+  switch (impl->getKind()) {
+  case ImplementationKind::InherentImpl: {
+    return resolveImplBlockSubstitutions(static_cast<InherentImpl *>(impl),
+                                         failedFlag);
+  }
+  case ImplementationKind::TraitImpl: {
+    return resolveImplBlockSubstitutions(static_cast<TraitImpl *>(impl),
+                                         failedFlag);
+  }
+  }
+}
+
+std::vector<TyTy::SubstitutionParamMapping>
+TypeResolver::resolveImplBlockSubstitutions(ast::InherentImpl *impl,
+                                            bool &failedFlag) {
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  if (impl->hasGenericParams())
+    checkGenericParams(impl->getGenericParams(), substitutions);
+
+  if (impl->hasWhereClause())
+    checkWhereClause(impl->getWhereClause());
+
+  TyTy::TypeBoundPredicate specifiedBounds = TyTy::TypeBoundPredicate::error();
+
+  TyTy::BaseType *self = checkType(impl->getType());
+
+  if (!specifiedBounds.isError())
+    self->inheritBounds({specifiedBounds});
+
+  TyTy::SubstitutionArgumentMappings traitConstraints =
+      specifiedBounds.getSubstitutionArguments();
+  TyTy::SubstitutionArgumentMappings implConstraints =
+      getUsedSubstitutionArguments(self);
+
+  failedFlag = checkForUnconstrained(substitutions, traitConstraints,
+                                     implConstraints, self);
+
+  return substitutions;
+}
+
+std::vector<TyTy::SubstitutionParamMapping>
+TypeResolver::resolveImplBlockSubstitutions(ast::TraitImpl *impl,
+                                            bool &failedFlag) {
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+  if (impl->hasGenericParams())
+    checkGenericParams(impl->getGenericParams(), substitutions);
+
+  if (impl->hasWhereClause())
+    checkWhereClause(impl->getWhereClause());
+
+  TyTy::TypeBoundPredicate specifiedBounds = TyTy::TypeBoundPredicate::error();
+
+  TraitReference *traitReference = &TraitReference::errorNode();
+
+  TraitResolver traitResolver;
+  traitReference = traitResolver.resolve(impl->getTypePath().get());
+  assert(!traitReference->isError());
+
+  specifiedBounds =
+      getPredicateFromBound(impl->getTypePath(), impl->getType().get());
+
+  TyTy::BaseType *self = checkType(impl->getType());
+
+  if (!specifiedBounds.isError())
+    self->inheritBounds({specifiedBounds});
+
+  TyTy::SubstitutionArgumentMappings traitConstraints =
+      specifiedBounds.getSubstitutionArguments();
+  TyTy::SubstitutionArgumentMappings implConstraints =
+      getUsedSubstitutionArguments(self);
+
+  failedFlag = checkForUnconstrained(substitutions, traitConstraints,
+                                     implConstraints, self);
+
+  return substitutions;
 }
 
 } // namespace rust_compiler::sema::type_checking

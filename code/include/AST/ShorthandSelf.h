@@ -16,6 +16,9 @@ public:
 
   void setMut();
   void setAnd();
+
+  bool isMut() const { return mut; }
+  bool isAnd() const { return andP; }
 };
 
 } // namespace rust_compiler::ast

@@ -3,8 +3,8 @@
 #include "Session/Session.h"
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TyTy.h"
-#include "Unification.h"
-#include "llvm/Support/raw_ostream.h"
+#include "TyCtx/Unification.h"
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::tyctx;
 

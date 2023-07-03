@@ -261,6 +261,8 @@ void Resolver::resolveVisItem(std::shared_ptr<ast::VisItem> visItem,
 void Resolver::resolveImplementation(
     std::shared_ptr<ast::Implementation> impl, const adt::CanonicalPath &prefix,
     const adt::CanonicalPath &canonicalPrefix) {
+  tyCtx->insertImplementation(impl->getNodeId(), impl.get());
+  
   switch (impl->getKind()) {
   case ImplementationKind::InherentImpl: {
     resolveInherentImpl(std::static_pointer_cast<ast::InherentImpl>(impl),
@@ -306,20 +308,19 @@ void Resolver::resolveInherentImpl(std::shared_ptr<ast::InherentImpl> implBlock,
 
   // setup canonical paths
 
-  //  std::optional<CanonicalPath> selfCPath =
-  //      resolveTypeToCanonicalPath(implBlock->getType().get());
-  //  assert(selfCPath.has_value());
-  std::string typeName = resolveTypeToString(implBlock->getType().get());
+  std::optional<CanonicalPath> selfCPath =
+    resolveTypeToCanonicalPath(implBlock->getType().get(), prefix, canonicalPrefix);
+  assert(selfCPath.has_value());
+  // std::string typeName = resolveTypeToString(implBlock->getType().get());
 
-  CanonicalPath implType = CanonicalPath::newSegment(
-      implBlock->getType()->getNodeId(), Identifier(typeName));
+  CanonicalPath implType = *selfCPath;
   CanonicalPath implPrefix = prefix.append(implType);
   CanonicalPath cpath = CanonicalPath::createEmpty();
 
   if (canonicalPrefix.getSize() <= 1) {
-    cpath = implType;
+    cpath = *selfCPath;
   } else {
-    std::string segBuffer = "<impl " + typeName + ">";
+    std::string segBuffer = "<impl " + (*selfCPath).asString() + ">";
     CanonicalPath seg = CanonicalPath::newSegment(implBlock->getNodeId(),
                                                   lexer::Identifier(segBuffer));
     cpath = canonicalPrefix.append(seg);
@@ -328,14 +329,18 @@ void Resolver::resolveInherentImpl(std::shared_ptr<ast::InherentImpl> implBlock,
   // FIXME
 
   CanonicalPath Self = CanonicalPath::getBigSelf(implBlock->getNodeId());
+  //CanonicalPath self = CanonicalPath::getSmallSelf(implBlock->getNodeId());
 
   getTypeScope().insert(Self, implBlock->getType()->getNodeId(),
                         implBlock->getType()->getLocation());
+//  getTypeScope().insert(self, implBlock->getType()->getNodeId(),
+//                        implBlock->getType()->getLocation());
 
   for (auto &asso : implBlock->getAssociatedItems())
     resolveAssociatedItem(&asso, implPrefix, cpath, implBlock->getNodeId());
 
   getTypeScope().peek()->clearName(Self, implBlock->getType()->getNodeId());
+  //getTypeScope().peek()->clearName(self, implBlock->getType()->getNodeId());
 
   getTypeScope().pop();
   getNameScope().pop();

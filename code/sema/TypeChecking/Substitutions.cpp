@@ -1,7 +1,7 @@
 #include "AST/GenericParam.h"
 #include "TyCtx/TyTy.h"
 #include "TypeChecking.h"
-#include "Unification.h"
+#include "TyCtx/Unification.h"
 
 using namespace rust_compiler::tyctx::TyTy;
 

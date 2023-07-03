@@ -185,7 +185,7 @@ std::optional<NodeId> Resolver::resolveRelativeTypePath(
 
     if (i == 0) {
       // NodeId resolvedNode = UNKNOWN_NODEID;
-      llvm::errs() << "lookups to come for: " << ident.toString() << "\n";
+      //llvm::errs() << "lookups to come for: " << ident.toString() << "\n";
       adt::CanonicalPath path = adt::CanonicalPath::newSegment(
           ident.getNodeId(), Identifier(ident.toString()));
       if (auto node = getTypeScope().lookup(path)) {

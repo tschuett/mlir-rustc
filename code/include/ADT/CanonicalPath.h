@@ -35,11 +35,15 @@ public:
     return CanonicalPath::newSegment(id, Identifier("Self"));
   }
 
+  static CanonicalPath getSmallSelf(basic::NodeId id) {
+    return CanonicalPath::newSegment(id, Identifier("self"));
+  }
+
   std::string asString() const {
     std::string buf;
-    for (size_t i = 0; i < segments.size(); i++) {
+    for (size_t i = 0; i < segments.size(); ++i) {
       bool haveMore = (i + 1) < segments.size();
-      const std::string &seg = segments.at(i).second.toString();
+      const std::string &seg = segments[i].second.toString();
       buf += seg + (haveMore ? "::" : "");
     }
     return buf;
@@ -89,23 +93,26 @@ public:
   bool isEqualByName(const CanonicalPath &b) const;
 
   /// Note that it ignores the NodeId
-  bool operator==(const CanonicalPath &b) const {
-    if (segments.size() != b.segments.size())
+  bool operator==(const CanonicalPath &other) const {
+    if (segments.size() != other.segments.size())
       return false;
 
     for (unsigned i = 0; i < segments.size(); ++i)
-      if (segments[i].second != b.segments[i].second)
+      if (segments[i].second != other.segments[i].second)
         return false;
 
     return true;
   }
 
   /// Note that it ignores the NodeId
-  bool operator<(const CanonicalPath &b) const {
-    if (segments.size() < b.segments.size())
+  bool operator<(const CanonicalPath &other) const {
+    if (segments.size() < other.segments.size())
       return true;
+    if (segments.size() > other.segments.size())
+      return false;
+    // ==!
     for (unsigned i = 0; i < segments.size(); ++i)
-      if (segments[i].second < b.segments[i].second)
+      if (segments[i].second < other.segments[i].second)
         return true;
     return false;
   }

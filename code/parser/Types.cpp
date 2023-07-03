@@ -448,7 +448,8 @@ Parser::parseImplTraitTypeOneBound() {
   }
   assert(eatKeyWord(KeyWordKind::KW_IMPL));
 
-  StringResult<std::shared_ptr<ast::types::TypeParamBound>> bound = parseTraitBound();
+  StringResult<std::shared_ptr<ast::types::TypeParamBound>> bound =
+      parseTraitBound();
   if (!bound) {
     llvm::errs() << "failed to parse trait bound in impl trait type one bound: "
                  << bound.getError() << "\n";
@@ -935,6 +936,11 @@ StringResult<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
                 check(TokenKind::BraceOpen, 1) || check(TokenKind::Gt, 1))) {
       bounds.setTrailingPlus();
       return StringResult<ast::types::TypeParamBounds>(bounds);
+    } else if (check(TokenKind::Plus) && checkKeyWord(KeyWordKind::KW_WHERE, 1)) {
+      assert(eat(TokenKind::Plus));
+      return StringResult<ast::types::TypeParamBounds>(bounds);
+    } else if (checkKeyWord(KeyWordKind::KW_WHERE)) {
+      return StringResult<ast::types::TypeParamBounds>(bounds);
     } else if (check(TokenKind::Plus)) {
       assert(eat(TokenKind::Plus));
       StringResult<std::shared_ptr<ast::types::TypeParamBound>> type =
@@ -948,6 +954,10 @@ StringResult<ast::types::TypeParamBounds> Parser::parseTypeParamBounds() {
       }
       bounds.addTypeParamBound(type.getValue());
     } else {
+      llvm::errs() << getToken().getLocation().toString()
+                   << " @ failed to parse type param bounds"
+                   << "\n";
+      llvm::errs() << Token2String(getToken().getKind()) << "\n";
       return StringResult<ast::types::TypeParamBounds>(
           "failed to parse type param bounds");
     }

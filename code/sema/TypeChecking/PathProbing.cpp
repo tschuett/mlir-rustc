@@ -5,9 +5,11 @@
 #include "AST/InherentImpl.h"
 #include "AST/TraitImpl.h"
 #include "Basic/Ids.h"
+#include "Lexer/Identifier.h"
 #include "TyCtx/Predicate.h"
 #include "TypeBoundsProbe.h"
 #include "TypeChecking.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include <llvm/Support/ErrorHandling.h>
 #include <vector>
@@ -23,6 +25,8 @@ PathProbeType::probeTypePath(TyTy::BaseType *receiver, Identifier segment,
                              bool ignoreTraitItems, TypeResolver *resolver,
                              NodeId specifiedTraitId) {
   PathProbeType probe = {receiver, segment, specifiedTraitId, resolver};
+
+  llvm::errs() << receiver->toString() << "\n";
 
   if (probeImpls) {
     if (receiver->getKind() == TyTy::TypeKind::ADT) {
@@ -69,6 +73,9 @@ bool PathProbeType::isReceiverGeneric() {
 }
 
 void PathProbeType::processImplItemsForCandidates() {
+  llvm::errs() << "processImplItemsForCandidates"
+               << "\n";
+
   context->iterateAssociatedItems(
       [&](NodeId id, ast::Implementation *item,
           ast::AssociatedItem *impl) mutable -> bool {
@@ -79,7 +86,11 @@ void PathProbeType::processImplItemsForCandidates() {
 
 void PathProbeType::processImplItemCandidate(NodeId id,
                                              ast::Implementation *item,
+
                                              ast::AssociatedItem *impl) {
+  llvm::errs() << "processImplItemsCandidate: " << id << ": "
+               << item->getNodeId() << ":" << impl->getNodeId() << "\n";
+
   currentImpl = impl;
   NodeId implTypeId;
   switch (item->getKind()) {
@@ -93,13 +104,21 @@ void PathProbeType::processImplItemCandidate(NodeId id,
   }
   }
 
-  std::optional<TyTy::BaseType *> implBlockType = resolver->queryType(implTypeId);
-  if (!implBlockType)
+  std::optional<TyTy::BaseType *> implBlockType =
+      resolver->queryType(implTypeId);
+  if (!implBlockType) {
+    llvm::errs() << "queryType failed: " << implTypeId << "\n";
     return;
+  }
 
+  llvm::errs() << "check equality: " << (*implBlockType)->toString() << "\n";
+  llvm::errs() << "check equality: " << receiver->toString() << "\n";
   if (!receiver->canEqual(*implBlockType, false))
     if (!((*implBlockType)->canEqual(receiver, false)))
       return;
+
+  llvm::errs() << "switch over asso items"
+               << "\n";
 
   // FIXME: item->visiit(this);
   switch (item->getKind()) {
@@ -117,7 +136,22 @@ void PathProbeType::processImplItemCandidate(NodeId id,
         assert(false);
       }
       case ast::AssociatedItemKind::Function: {
-        assert(false);
+        auto fun = static_cast<Function *>(
+            static_cast<VisItem *>(asso.getFunction().get()));
+        lexer::Identifier name = fun->getName();
+        if (name == query) {
+          std::optional<TyTy::BaseType *> type =
+              resolver->queryType(fun->getNodeId());
+          assert(type.has_value());
+
+          PathProbeCandidate::ImplItem implItemCandidate = {&asso, item};
+
+          PathProbeCandidate candidate = {CandidateKind::ImplFunc, *type,
+                                          fun->getLocation(),
+                                          implItemCandidate};
+          candidates.insert(std::move(candidate));
+        }
+        break;
       }
       }
     }
@@ -163,6 +197,9 @@ void PathProbeType::processEnumItemForCandidates(TyTy::ADTType *adt) {
 
 void PathProbeType::processPredicateForCandidates(
     const TyTy::TypeBoundPredicate &predicate, bool ignoreMandatoryTraitItems) {
+
+  llvm::errs() << "processPredicateForCandidates"
+               << "\n";
   TraitReference *traitRef = predicate.get();
   TyTy::TypeBoundPredicateItem item = predicate.lookupAssociatedItem(query);
   if (item.isError())

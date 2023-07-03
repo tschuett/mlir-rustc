@@ -140,10 +140,10 @@ void Resolver::resolveExpressionWithoutBlock(
     break;
   }
   case ExpressionWithoutBlockKind::TupleExpression: {
-    assert(false && "to be handled later");
     resolveTupleExpression(
         std::static_pointer_cast<TupleExpression>(woBlock).get(), prefix,
         canonicalPrefix);
+    break;
   }
   case ExpressionWithoutBlockKind::TupleIndexingExpression: {
     resolveTupleIndexingExpression(
@@ -282,10 +282,10 @@ void Resolver::resolvePathExpression(
     const adt::CanonicalPath &canonicalPrefix) {
   switch (path->getPathExpressionKind()) {
   case PathExpressionKind::PathInExpression: {
-    auto result = resolvePathInExpression(
+    /*auto result =*/ resolvePathInExpression(
         std::static_pointer_cast<PathInExpression>(path), prefix,
         canonicalPrefix);
-    assert(result.has_value());
+    //assert(result.has_value());
     break;
   }
   case PathExpressionKind::QualifiedPathInExpression: {
@@ -332,6 +332,7 @@ Resolver::resolvePathInExpression(std::shared_ptr<ast::PathInExpression> path,
       continue;
     } else if (ident.getKind() == PathIdentSegmentKind::super) {
       if (moduleScopeId == crateScopeId) {
+        llvm::errs() << " cannot super at the crate scope" << "\n";
         // report error
         return std::nullopt;
       }

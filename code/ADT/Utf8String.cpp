@@ -1,10 +1,9 @@
 #include "ADT/Utf8String.h"
 
+#include <llvm/Support/raw_ostream.h>
 #include <unicode/uchar.h>
 #include <unicode/ucnv.h>
 #include <unicode/utext.h>
-
-#include <llvm/Support/raw_ostream.h>
 
 namespace rust_compiler::adt {
 
@@ -47,13 +46,13 @@ std::string Utf8String::toString() const {
     result.push_back(c);
   }
 
-  //llvm::errs() << "Utf8String::toString(): " << storage.size() << "\n";
+  // llvm::errs() << "Utf8String::toString(): " << storage.size() << "\n";
 
   return result;
 }
 
 void Utf8String::clear() { storage.clear(); }
 
-void Utf8String::push_back(char c) { storage.push_back(c); }
+void Utf8String::append(UChar32 c) { storage.push_back(c); }
 
 } // namespace rust_compiler::adt

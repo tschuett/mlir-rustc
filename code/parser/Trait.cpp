@@ -186,6 +186,9 @@ Parser::parseTraitImpl(std::optional<ast::Visibility> vis) {
   }
 
   if (!check(TokenKind::BraceOpen)) {
+    llvm::errs() << getToken().getLocation().toString()
+                 << "@ failed to parse { token in trait impl"
+                 << "\n";
     return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse { token in trait impl");
   }
@@ -268,23 +271,25 @@ Parser::parseTrait(std::span<OuterAttribute> outer,
     trait.setGenericParams(params.getValue());
   }
 
-  if (check(TokenKind::ParenOpen) && check(TokenKind::Colon, 1) &&
-      check(TokenKind::ParenClose, 2)) {
-    assert(eat(TokenKind::ParenOpen));
+  if (checkKeyWord(KeyWordKind::KW_WHERE)) {
+  } else if (check(TokenKind::BraceOpen)) {
+  } else if (check(TokenKind::Colon) &&
+             checkKeyWord(KeyWordKind::KW_WHERE, 1)) {
     assert(eat(TokenKind::Colon));
-    assert(eat(TokenKind::ParenClose));
-  } else if (check(TokenKind::ParenOpen) && check(TokenKind::Colon, 1) &&
-             !check(TokenKind::ParenClose, 2)) {
-    assert(eat(TokenKind::ParenOpen));
+  } else if (check(TokenKind::Colon) && check(TokenKind::BraceOpen, 1)) {
+    assert(eat(TokenKind::Colon));
+  } else if (check(TokenKind::Colon)) {
     assert(eat(TokenKind::Colon));
     StringResult<ast::types::TypeParamBounds> bounds = parseTypeParamBounds();
     if (!bounds) {
-      llvm::errs() << "failed to parse type param bounds in trait impl: "
+      llvm::errs() << getToken().getLocation().toString()
+                   << " @ failed to parse type param bounds in trait impl: "
                    << bounds.getError() << "\n";
+      llvm::errs() << Token2String(getToken().getKind()) << "\n";
       printFunctionStack();
       exit(EXIT_FAILURE);
     }
-    assert(eat(TokenKind::ParenClose));
+    //assert(eat(TokenKind::BraceClose));
     trait.setBounds(bounds.getValue());
   }
 
@@ -300,6 +305,9 @@ Parser::parseTrait(std::span<OuterAttribute> outer,
   }
 
   if (!check(TokenKind::BraceOpen)) {
+    llvm::errs() << getToken().getLocation().toString()
+                 << " @ failed to parse { token in trait"
+                 << "\n";
     return StringResult<std::shared_ptr<ast::Item>>(
         "failed to parse { token in trait");
   }

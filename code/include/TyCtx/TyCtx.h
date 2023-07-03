@@ -188,11 +188,16 @@ public:
   lookupAssociatedImplMappingForSelf(NodeId traitId,
                                      const TyTy::BaseType *self);
 
+  bool haveCheckedForUnconstrained(NodeId id, bool *result);
+  void insertUnconstrainedCheckMarker(NodeId id, bool status);
+
 private:
   void generateBuiltins();
 
   void setupBuiltin(std::string_view name, TyTy::BaseType *tyty);
   void setUnitTypeNodeId(basic::NodeId id) { unitTyNodeId = id; }
+
+  std::map<NodeId, bool> unconstrained;
 
   // basic::CrateNum crateNumIter = 7;
   // basic::NodeId nodeIdIter = 7;

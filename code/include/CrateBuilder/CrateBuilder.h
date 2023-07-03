@@ -166,6 +166,7 @@ private:
   mlir::Value emitArrayExpression(ast::ArrayExpression *array);
   mlir::Value emitStructExpression(ast::StructExpression *stru);
   mlir::Value emitIteratorLoopExpression(ast::IteratorLoopExpression *loop);
+  mlir::Value emitTupleStructConstructor(ast::CallExpression*expr);
 
   mlir::FunctionType getFunctionType(ast::Function *);
 

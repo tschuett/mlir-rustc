@@ -55,6 +55,10 @@ public:
                      Location loc, EnumItem enu)
       : kind(kind), type(type), loc(loc), candidate(enu) {}
 
+  PathProbeCandidate(CandidateKind kind, const TyTy::BaseType *type,
+                     Location loc, ImplItem impl)
+      : kind(kind), type(type), loc(loc), candidate(impl) {}
+
   bool isEnumCandidate() const {
     return std::holds_alternative<EnumItem>(candidate);
   }

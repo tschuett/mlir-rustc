@@ -9,6 +9,7 @@
 #include "AST/Implementation.h"
 #include "AST/InherentImpl.h"
 #include "AST/StructStruct.h"
+#include "AST/TypeAlias.h"
 #include "AST/VisItem.h"
 #include "Basic/Ids.h"
 #include "Resolver.h"
@@ -134,7 +135,12 @@ void Resolver::resolveTraitNoRecurse(
       assert(false);
     }
     case AssociatedItemKind::TypeAlias: {
-      assert(false);
+      std::shared_ptr<TypeAlias> ta =
+        std::static_pointer_cast<TypeAlias>(asso.getTypeAlias());
+      CanonicalPath decl = CanonicalPath::newSegment(ta->getNodeId(), ta->getIdentifier());
+      CanonicalPath path = prefix.append(decl);
+      getTypeScope().insert(path, ta->getNodeId(), ta->getLocation(), RibKind::Type);
+      break;
     }
     case AssociatedItemKind::ConstantItem: {
       assert(false);

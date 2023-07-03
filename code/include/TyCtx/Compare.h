@@ -3,6 +3,7 @@
 #include "Session/Session.h"
 #include "TyCtx/TyCtx.h"
 #include "TyCtx/TyTy.h"
+
 #include <llvm/Support/ErrorHandling.h>
 
 namespace rust_compiler::tyctx::TyTy {
@@ -26,31 +27,66 @@ class ADTCmp : public BaseCmp {
     const ADTType *foo = static_cast<const ADTType *>(it);
     const ADTType *bar = static_cast<const ADTType *>(other);
 
-    if (foo->getKind() != bar->getKind())
+    if (foo->getKind() != bar->getKind()) {
+      //llvm::errs() << "visitADT failed: mismatch in kind"
+      //             << "\n";
       return false;
+    }
 
-    if (foo->getIdentifier() != bar->getIdentifier())
+    if (foo->getIdentifier() != bar->getIdentifier()) {
+      //llvm::errs() << "visitADT failed: mismatch in identifier"
+      //             << "\n";
       return false;
+    }
 
-    if (foo->getNumberOfVariants() != bar->getNumberOfVariants())
+    if (foo->getNumberOfVariants() != bar->getNumberOfVariants()) {
+      //llvm::errs() << "visitADT failed: mismatch in number of variants"
+      //             << "\n";
+
       return false;
+    }
 
     for (size_t i = 0; i < bar->getNumberOfVariants(); ++i) {
       TyTy::VariantDef *a = foo->getVariant(i);
       TyTy::VariantDef *b = bar->getVariant(i);
 
-      if (a->getFields() != b->getFields())
+      if (a->getFields().size() != b->getFields().size()) {
+        //llvm::errs() << "visitADT failed: mismatch in fields size"
+        //             << "\n";
         return false;
+      }
+      if (a->getFields() != b->getFields()) {
+        //llvm::errs() << "visitADT failed: mismatch in fields"
+        //             << "\n";
+        return false;
+      }
 
-      for (size_t j = 0; i < a->getNumberOfFields(); ++j) {
+      for (size_t j = 0; j < a->getNumberOfFields(); ++j) {
         TyTy::StructFieldType *baseField = a->getFieldAt(j);
         TyTy::StructFieldType *otherField = b->getFieldAt(j);
+
+        if (!baseField) {
+          //llvm::errs() << "visitADT failed: baseField is null @  " << j << "of"
+          //             << a->getNumberOfFields() << "\n";
+          return false;
+        }
+
+        if (!otherField) {
+          //llvm::errs() << "visitADT failed: otherField is null"
+          //             << "\n";
+          return false;
+        }
 
         TyTy::BaseType *baseFieldType = baseField->getFieldType();
         TyTy::BaseType *otherFieldType = otherField->getFieldType();
 
-        if (!baseFieldType - canEqual(otherFieldType))
+        if (!baseFieldType->canEqual(otherFieldType, false /*emitErrors*/)) {
+          //llvm::errs()
+          //    << "visitADT failed: baseFieldType canEqual otherFieldType"
+          //    << "\n";
+
           return false;
+        }
       }
     }
     return true;

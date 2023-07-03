@@ -20,6 +20,9 @@ public:
     type = _type;
   }
   std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
+
+  bool isMut() const { return mut; }
+
 };
 
 } // namespace rust_compiler::ast

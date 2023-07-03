@@ -3,7 +3,7 @@
 #include "AST/Types/TypeExpression.h"
 #include "TyCtx/TraitReference.h"
 
-namespace rust_compiler::sema::TypeChecking {
+namespace rust_compiler::sema::type_checking {
 
 class TraitResolver {
 public:

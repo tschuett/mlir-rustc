@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Basic/Ids.h"
 #include "TyCtx/Substitutions.h"
 #include "TyCtx/TraitReference.h"
 
@@ -66,6 +67,8 @@ public:
 
   std::string rawBoundsToString() const;
 
+  TypeBoundPredicate lookupPredicate(basic::NodeId);
+  
 protected:
   TypeBoundsMappings(std::vector<TypeBoundPredicate> specifiedBounds)
       : specifiedBounds(specifiedBounds) {}

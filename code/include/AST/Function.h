@@ -50,9 +50,7 @@ public:
 
   void setIdentifier(const Identifier &id) { identifier = id; }
 
-  Identifier getName() const {
-    return identifier;
-  }
+  Identifier getName() const { return identifier; }
 
   bool hasReturnType() const { return returnType.has_value(); }
 
@@ -72,6 +70,12 @@ public:
   FunctionParameters getParams() { return *functionParameters; }
 
   FunctionQualifiers getQualifiers() const { return qualifiers; }
+
+  bool isMethod() const {
+    if (functionParameters)
+      return (*functionParameters).isMethod();
+    return false;
+  }
 };
 
 } // namespace rust_compiler::ast

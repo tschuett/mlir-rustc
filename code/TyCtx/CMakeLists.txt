@@ -7,6 +7,7 @@ add_library(TyCtx
            AssociatedImplTrait.cpp
            Bounds.cpp
            Unification.cpp
+           Predicate.cpp
            )
 
 target_include_directories(TyCtx PRIVATE  ../include)

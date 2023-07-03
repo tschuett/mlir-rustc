@@ -38,6 +38,8 @@ public:
 
   bool fillParamType(SubstitutionArgumentMappings &substMappings, Location loc);
 
+  Location getParamLocation() const;
+
 private:
   ast::TypeParam generic;
   ParamType *param;

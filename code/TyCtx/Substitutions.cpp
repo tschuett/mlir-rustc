@@ -7,9 +7,9 @@
 #include "TyCtx/TypeIdentity.h"
 
 #include <cstddef>
+#include <llvm/ADT/StringMap.h>
 #include <map>
 #include <vector>
-#include <llvm/ADT/StringMap.h>
 
 // FIXME
 #include "../sema/TypeChecking/TypeChecking.h"
@@ -38,7 +38,7 @@ BaseType *SubstitutionRef::inferSubstitions(Location loc) {
   std::map<Identifier, TyTy::BaseType *> argumentMappings;
   for (auto &p : getSubstitutions()) {
     if (p.needSubstitution()) {
-      const Identifier& symbol = p.getParamType()->getSymbol();
+      const Identifier &symbol = p.getParamType()->getSymbol();
       auto it = argumentMappings.find(symbol);
       if (it != argumentMappings.end()) {
         args.push_back(SubstitutionArg(&p, it->second));
@@ -330,6 +330,10 @@ bool SubstitutionParamMapping::hasDefaultType() const {
 BaseType *SubstitutionParamMapping::getDefaultType() const {
   TypeVariable var = {generic.getType()->getNodeId()};
   return var.getType();
+}
+
+Location SubstitutionParamMapping::getParamLocation() const {
+  return param->getLocation();
 }
 
 } // namespace rust_compiler::tyctx::TyTy

@@ -56,7 +56,7 @@ void TypeResolver::checkFunction(std::shared_ptr<ast::Function> f) {
 
     FunctionParameters parameters = f->getParams();
 
-    assert(!parameters.hasSelfParam());
+    //assert(!parameters.hasSelfParam());
 
     for (auto &param : parameters.getParams()) {
       switch (param.getKind()) {

@@ -10,7 +10,7 @@ class Utf8String {
   /// an array of UChar32
   std::vector<UChar32> storage;
 
-  size_t size = 0;
+  // size_t size = 0;
 
 public:
   Utf8String() = default;
@@ -22,9 +22,17 @@ public:
   std::string toString() const;
 
   void clear();
-  void push_back(char);
 
   size_t getLength() const { return storage.size(); }
+
+  bool isEqualASCII(std::string_view ascii) const {
+    if (storage.size() != ascii.size())
+      return false;
+    for (unsigned i = 0; i < storage.size(); ++i)
+      if (storage[i] != ascii[i])
+        return false;
+    return true;
+  }
 
   bool operator==(const Utf8String &b) const {
     if (storage.size() != b.storage.size())
@@ -45,6 +53,12 @@ public:
       if (storage[i] < b.storage[i])
         return true;
     return false;
+  }
+
+  Utf8String &operator+=(const Utf8String &rhs) {
+    for (size_t i = 0; i < rhs.storage.size(); ++i)
+      storage.push_back(rhs.storage[i]);
+    return *this;
   }
 };
 

@@ -43,7 +43,12 @@ llvm::Expected<std::shared_ptr<ast::VisItem>> Parser::parseVisItem() {
     // fun or constant item
   } else if (checkKeyWord(lexer::KeyWordKind::KW_ASYNC)) {
     // fun
+  } else if (checkKeyWord(lexer::KeyWordKind::KW_MOD)) {
+    return parseModule(vis);
   } else if (checkKeyWord(lexer::KeyWordKind::KW_UNSAFE)) {
+    if (checkKeyWord(KeyWordKind::KW_MOD), 1) {
+      return parseModule(vis);
+    }
     // fun or trait or mod or traitimpl or extern block
   } else if (checkKeyWord(lexer::KeyWordKind::KW_FN)) {
     return parseFunction(vis);

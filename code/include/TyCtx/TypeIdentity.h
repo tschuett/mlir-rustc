@@ -23,6 +23,8 @@ public:
   }
 
   Location getLocation() const { return loc; }
+
+  adt::CanonicalPath getPath() const { return path; }
 };
 
 } // namespace rust_compiler::tyctx
