@@ -26,7 +26,7 @@ PathProbeType::probeTypePath(TyTy::BaseType *receiver, Identifier segment,
                              NodeId specifiedTraitId) {
   PathProbeType probe = {receiver, segment, specifiedTraitId, resolver};
 
-  llvm::errs() << receiver->toString() << "\n";
+  //llvm::errs() << receiver->toString() << "\n";
 
   if (probeImpls) {
     if (receiver->getKind() == TyTy::TypeKind::ADT) {
@@ -73,8 +73,8 @@ bool PathProbeType::isReceiverGeneric() {
 }
 
 void PathProbeType::processImplItemsForCandidates() {
-  llvm::errs() << "processImplItemsForCandidates"
-               << "\n";
+//  llvm::errs() << "processImplItemsForCandidates"
+//               << "\n";
 
   context->iterateAssociatedItems(
       [&](NodeId id, ast::Implementation *item,
@@ -88,8 +88,8 @@ void PathProbeType::processImplItemCandidate(NodeId id,
                                              ast::Implementation *item,
 
                                              ast::AssociatedItem *impl) {
-  llvm::errs() << "processImplItemsCandidate: " << id << ": "
-               << item->getNodeId() << ":" << impl->getNodeId() << "\n";
+//  llvm::errs() << "processImplItemsCandidate: " << id << ": "
+//               << item->getNodeId() << ":" << impl->getNodeId() << "\n";
 
   currentImpl = impl;
   NodeId implTypeId;
@@ -111,14 +111,14 @@ void PathProbeType::processImplItemCandidate(NodeId id,
     return;
   }
 
-  llvm::errs() << "check equality: " << (*implBlockType)->toString() << "\n";
-  llvm::errs() << "check equality: " << receiver->toString() << "\n";
+//  llvm::errs() << "check equality: " << (*implBlockType)->toString() << "\n";
+//  llvm::errs() << "check equality: " << receiver->toString() << "\n";
   if (!receiver->canEqual(*implBlockType, false))
     if (!((*implBlockType)->canEqual(receiver, false)))
       return;
 
-  llvm::errs() << "switch over asso items"
-               << "\n";
+//  llvm::errs() << "switch over asso items"
+//               << "\n";
 
   // FIXME: item->visiit(this);
   switch (item->getKind()) {

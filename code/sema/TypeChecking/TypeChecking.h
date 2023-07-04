@@ -63,6 +63,7 @@
 #include "AST/UnsafeBlockExpression.h"
 #include "AST/WhereClause.h"
 #include "Basic/Ids.h"
+#include "Lexer/Identifier.h"
 #include "PathProbing.h"
 #include "Sema/Properties.h"
 #include "TyCtx/NodeIdentity.h"
@@ -424,6 +425,18 @@ private:
   resolveImplBlockSubstitutions(ast::InherentImpl *impl, bool &failedFlag);
   std::vector<TyTy::SubstitutionParamMapping>
   resolveImplBlockSubstitutions(ast::TraitImpl *impl, bool &failedFlag);
+
+  void collectMethodCallCandidates(NodeId id, ast::Implementation *item,
+                                   ast::AssociatedItem *impl);
+
+  struct MethodCallCandidate {
+    ast::Function *fun;
+    ast::Implementation *impl;
+  };
+
+  TyTy::BaseType *methodCallReceiver;
+  lexer::Identifier methodCallFunQuery;
+  std::vector<MethodCallCandidate> methodCallCandidates;
 };
 
 } // namespace rust_compiler::sema::type_checking

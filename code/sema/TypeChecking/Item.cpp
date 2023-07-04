@@ -217,8 +217,8 @@ void TypeResolver::checkImplementation(ast::Implementation *impl) {
 }
 
 void TypeResolver::checkInherentImpl(ast::InherentImpl *impl) {
-  llvm::errs() << "checkInherentImpl"
-               << "\n";
+//  llvm::errs() << "checkInherentImpl"
+//               << "\n";
   std::optional<std::vector<TyTy::SubstitutionParamMapping>> substitutions =
       resolveInherentImplSubstitutions(impl);
   if (!substitutions) {

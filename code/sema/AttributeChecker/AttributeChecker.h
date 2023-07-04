@@ -9,6 +9,9 @@ class Struct;
 class Trait;
 class TypeAlias;
 class Enumeration;
+class Implementation;
+class InherentImpl;
+class TraitImpl;
 } // namespace rust_compiler::ast
 
 namespace rust_compiler::sema::attribute_checker {
@@ -29,6 +32,9 @@ private:
   void checkTrait(Trait *);
   void checkTypeAlias(TypeAlias *);
   void checkEnumeration(Enumeration *);
+  void checkImplementation(Implementation *);
+  void checkInherentImpl(InherentImpl *);
+  void checkTraitImpl(TraitImpl *);
 };
 
 } // namespace rust_compiler::sema::attribute_checker

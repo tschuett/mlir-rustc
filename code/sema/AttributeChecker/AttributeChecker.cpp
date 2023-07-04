@@ -6,6 +6,7 @@
 #include "AST/Struct.h"
 #include "AST/Trait.h"
 #include "AST/Enumeration.h"
+#include "AST/Implementation.h"
 
 using namespace rust_compiler::ast;
 
@@ -81,7 +82,8 @@ void AttributeChecker::checkVisItem(VisItem *item) {
     break;
   }
   case VisItemKind::Implementation: {
-    assert(false);
+    checkImplementation(static_cast<Implementation*>(item));
+    break;
   }
   case VisItemKind::ExternBlock: {
     assert(false);
