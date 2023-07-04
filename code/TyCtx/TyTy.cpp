@@ -320,7 +320,18 @@ std::string ErrorType::toString() const { return "error"; }
 
 TyTy::BaseType *FunctionType::getReturnType() const { return returnType; }
 
-std::string FunctionType::toString() const { assert(false); }
+std::string FunctionType::toString() const {
+  std::string paramsStr = "";
+  for (auto &param : parameters) {
+    auto pattern = param.first;
+    auto type = param.second;
+    paramsStr += /*pattern->toString()*/ + " " + type->toString();
+    paramsStr += ",";
+  }
+
+  std::string retStr = returnType->toString();
+  return "fn" + substToString() + " (" + paramsStr + ") -> " + retStr;
+}
 
 unsigned NeverType::getNumberOfSpecifiedBounds() const { return 0; }
 
@@ -1584,7 +1595,7 @@ const BaseType *BaseType::getRoot() const {
 
 std::string VariantDef::toString() const {
   if (kind == VariantKind::Enum)
-    return identifier.toString() + " = ";// + discriminant->as_string();
+    return identifier.toString() + " = "; // + discriminant->as_string();
 
   std::string buffer;
   for (size_t i = 0; i < fields.size(); ++i) {

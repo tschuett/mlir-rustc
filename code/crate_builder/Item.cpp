@@ -1,5 +1,6 @@
 #include "AST/Item.h"
 
+#include "AST/Implementation.h"
 #include "AST/Module.h"
 #include "AST/VisItem.h"
 #include "CrateBuilder/CrateBuilder.h"
@@ -43,7 +44,7 @@ void CrateBuilder::emitVisItem(VisItem *visItem) {
     break;
   }
   case VisItemKind::Struct: {
-    // FIXME
+    emitStruct(static_cast<ast::Struct *>(visItem));
     break;
   }
   case VisItemKind::Enumeration: {
@@ -62,7 +63,7 @@ void CrateBuilder::emitVisItem(VisItem *visItem) {
     break;
   }
   case VisItemKind::Implementation: {
-    // FIXME
+    emitImplementation(static_cast<ast::Implementation *>(visItem));
     break;
   }
   case VisItemKind::ExternBlock: {

@@ -20,6 +20,7 @@ add_library(crate_builder
            MatchIfLetPattern.cpp
            ConstantEvaluator.cpp
            Owner.cpp
+           Struct.cpp
            )
 
 

@@ -29,11 +29,6 @@ std::optional<mlir::Value> CrateBuilder::emitExpression(ast::Expression *expr) {
   }
 }
 
-mlir::Value
-CrateBuilder::emitMethodCallExpression(ast::MethodCallExpression *expr) {
-  assert(false);
-}
-
 void CrateBuilder::emitReturnExpression(ast::ReturnExpression *expr) {
   if (expr->hasTailExpression()) {
     std::optional<mlir::Value> result =
@@ -54,6 +49,7 @@ mlir::Value CrateBuilder::emitPathInExpression(ast::PathInExpression *expr) {
   std::optional<TyTy::BaseType *> type = tyCtx->lookupType(expr->getNodeId());
   if (type) {
   }
+  assert(false);
   std::optional<basic::NodeId> id = tyCtx->lookupName(expr->getNodeId());
   if (id) {
     auto it = symbolTable.begin(*id);

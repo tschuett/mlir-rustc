@@ -3,6 +3,7 @@
 #include "ADT/ScopedHashTable.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/ArrayExpression.h"
+#include "AST/AssociatedItem.h"
 #include "AST/BlockExpression.h"
 #include "AST/CallExpression.h"
 #include "AST/ComparisonExpression.h"
@@ -12,6 +13,8 @@
 #include "AST/Function.h"
 #include "AST/IfExpression.h"
 #include "AST/IfLetExpression.h"
+#include "AST/Implementation.h"
+#include "AST/InherentImpl.h"
 #include "AST/ItemDeclaration.h"
 #include "AST/IteratorLoopExpression.h"
 #include "AST/LetStatement.h"
@@ -33,6 +36,11 @@
 #include "Hir/HirDialect.h"
 #include "Session/Session.h"
 #include "TyCtx/TyCtx.h"
+#include "AST/Struct.h"
+#include "AST/StructStruct.h"
+#include "AST/TupleStruct.h"
+
+#include "StructType.h"
 
 #include <cstdint>
 #include <llvm/ADT/ScopedHashTable.h>
@@ -129,6 +137,15 @@ private:
   void emitVisItem(ast::VisItem *vis);
   void emitFunction(ast::Function *fun);
   void emitModule(ast::Module *);
+  void emitStruct(ast::Struct *);
+  void emitStructStruct(ast::StructStruct *);
+  void emitTupleStruct(ast::TupleStruct *);
+  void emitImplementation(ast::Implementation *);
+  void emitInherentImpl(ast::InherentImpl *);
+  void emitTraitImpl(ast::TraitImpl *);
+  void emitInherentAssoItem(ast::InherentImpl*, ast::AssociatedItem&);
+  void emitInherentMethod(ast::Function *, ast::InherentImpl*);
+  mlir::FunctionType getMethodType(ast::Function *fun, mlir::MemRefType memRef);
   std::optional<mlir::Value> emitBlockExpression(ast::BlockExpression *);
   std::optional<mlir::Value> emitStatements(ast::Statements);
   std::optional<mlir::Value> emitExpression(ast::Expression *expr);
@@ -166,7 +183,7 @@ private:
   mlir::Value emitArrayExpression(ast::ArrayExpression *array);
   mlir::Value emitStructExpression(ast::StructExpression *stru);
   mlir::Value emitIteratorLoopExpression(ast::IteratorLoopExpression *loop);
-  mlir::Value emitTupleStructConstructor(ast::CallExpression*expr);
+  mlir::Value emitTupleStructConstructor(ast::CallExpression *expr);
 
   mlir::FunctionType getFunctionType(ast::Function *);
 

@@ -474,9 +474,9 @@ void TyCtx::iterateAssociatedItems(
     std::optional<ast::Implementation *> impl =
         lookupImplementation(implementationId);
     assert(impl.has_value());
-    llvm::errs() << "iterateAssociatedItems: " << assoId << ":"
-                 << implementationId << ": " << assoItem->getNodeId() << ":"
-                 << (*impl)->getNodeId() << "\n";
+//    llvm::errs() << "iterateAssociatedItems: " << assoId << ":"
+//                 << implementationId << ": " << assoItem->getNodeId() << ":"
+//                 << (*impl)->getNodeId() << "\n";
     if (!cb(assoId, *impl, assoItem))
       return;
   }
