@@ -2,6 +2,7 @@
 #define HirOps
 
 include "mlir/Interfaces/ControlFlowInterfaces.td"
+include "mlir/Interfaces/LoopLikeInterface.td"
 include "mlir/IR/BuiltinAttributes.td"
 include "HirDialect.td"
 include "HirTypes.td"
@@ -31,7 +32,7 @@ def ErrorPropagationOp : Hir_Op<"question_mark", []> {
 //===----------------------------------------------------------------------===//
 
 def PredicateLoopExpressionOp : Hir_Op<"while",
-  []> {
+  [LoopLikeOpInterface]> {
   let summary = "a Rust while op.";
 
   let description = [{
@@ -44,6 +45,8 @@ def PredicateLoopExpressionOp : Hir_Op<"while",
 
   let extraClassDeclaration = [{
     mlir::Value getConditionValue() { return getRhs(); }
+
+    mlir::Region& getLoopBody()  { return getRegion();}
   }];
 
 
@@ -55,11 +58,15 @@ def PredicateLoopExpressionOp : Hir_Op<"while",
 //===----------------------------------------------------------------------===//
 
 def InfiniteLoopOp : Hir_Op<"loop",
-  []> {
+  [LoopLikeOpInterface]> {
   let summary = "a Rust loop op.";
 
   let description = [{
   Rust InfiniteLoopExpressionn
+  }];
+
+  let extraClassDeclaration = [{
+    mlir::Region& getLoopBody()  { return getRegion();}
   }];
 
   let regions = (region AnyRegion:$region);
@@ -325,48 +332,52 @@ def Hir_AssignOp : Hir_Op<"assign", [MemoryEffects<[MemWrite]>]> {
 // StructAccessOp
 //===----------------------------------------------------------------------===//
 
-def StructAccessOp : Hir_Op<"struct_access", [Pure]> {
-  let summary = "struct access";
-  let description = [{
-    Access the Nth element of a value returning a struct type.
-  }];
-
-  let arguments = (ins Hir_StructType:$input, I64Attr:$index);
-  let results = (outs AnyType:$output);
-
-  let assemblyFormat = [{
-    $input `[` $index `]` attr-dict `:` type($input) `->` type($output)
-  }];
-
-  // Allow building a StructAccessOp with just a struct value and an index.
-  let builders = [
-    OpBuilder<(ins "mlir::Value":$input, "size_t":$index)>
-  ];
-}
+//def StructAccessOp : Hir_Op<"struct_access", [Pure]> {
+//  let summary = "struct access";
+//  let description = [{
+//    Access the Nth element of a value returning a struct type.
+//  }];
+//
+//  let arguments = (ins Hir_StructType:$input, I64Attr:$index);
+//  let results = (outs AnyType:$output);
+//
+//  let assemblyFormat = [{
+//    $input `[` $index `]` attr-dict `:` type($input) `->` type($output)
+//  }];
+//
+//  // Allow building a StructAccessOp with just a struct value and an index.
+//  let builders = [
+//    OpBuilder<(ins "mlir::Value":$input, "size_t":$index)>
+//  ];
+//}
 
 
 //===----------------------------------------------------------------------===//
-// StructConstantOp
+// StructConstructorOp
 //===----------------------------------------------------------------------===//
 
-def StructConstantOp : Hir_Op<"struct_constant", [ConstantLike, Pure]> {
+def StructConstructorOp : Hir_Op<"struct_constructor", [Pure]> {
   let summary = "struct constant";
   let description = [{
     Constant operation turns a literal struct value into an SSA value. The data
-    is attached to the operation as an attribute. The struct constant is encoded
+    is attached to the operation as input values. The struct constant is encoded
     as an array of other constant values. For example:
 
     ```mlir
-      %0 = hir.struct_constant [
+      %0 = hir.struct_constructor [
         dense<[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]> : tensor<2x3xf64>
       ] : !hir.struct<tensor<*xf64>>
     ```
   }];
 
-  let arguments = (ins ArrayAttr:$value);
-  let results = (outs Hir_StructType:$output);
+  let arguments = (ins
+                  Builtin_StringAttr:$path,
+                  Variadic<AnyType>:$value
+                  );
 
-  let assemblyFormat = "$value attr-dict `:` type($output)";
+  let results = (outs AnyType:$output);
+
+//  let assemblyFormat = "$path $value attr-dict `:` type($output)";
 }
 
 

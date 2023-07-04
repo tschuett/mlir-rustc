@@ -12,6 +12,7 @@
 #include <mlir/IR/Region.h>
 #include <mlir/IR/ValueRange.h>
 #include <mlir/Interfaces/InferTypeOpInterface.h>
+#include <mlir/Interfaces/LoopLikeInterface.h>
 #include <mlir/Interfaces/SideEffectInterfaces.h>
 #include <mlir/Rewrite/FrozenRewritePatternSet.h>
 #include <mlir/Transforms/GreedyPatternRewriteDriver.h>

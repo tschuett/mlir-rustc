@@ -32,10 +32,6 @@ def Hir_ConstantType : Hir_Type<"Constant", "const"> {
   //let genVerifyDecl = 1;
 }
 
-def Hir_StructType :
-    DialectType<Hir_Dialect, CPred<"$_self.isa<StructType>()">,
-                "Hir struct type">;
-
 def Hir_EnumType :
     DialectType<Hir_Dialect, CPred<"$_self.isa<EnumType>()">,
                 "Hir enum type">;
