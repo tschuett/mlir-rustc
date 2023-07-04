@@ -18,7 +18,7 @@ public:
             loc, ExpressionWithoutBlockKind::MethodCallExpression),
         method(loc) {}
 
-  PathExprSegment getPath() const;
+  PathExprSegment getPath() const { return method; }
 
   void setReceiver(std::shared_ptr<Expression> re) { receiver = re; }
   void setSegment(const PathExprSegment &seg) { method = seg; }
