@@ -1,10 +1,7 @@
 #pragma once
 
-#include "AST/AST.h"
-#include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
 #include "AST/Types/TypePathSegment.h"
-#include "AST/Types/Types.h"
 
 #include <vector>
 

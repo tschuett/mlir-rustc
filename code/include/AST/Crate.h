@@ -31,7 +31,7 @@ public:
   /// how?
   void merge(std::shared_ptr<ast::Module> module, adt::CanonicalPath path);
 
-  std::vector<std::shared_ptr<Item>> getItems() { return items; }
+  std::vector<std::shared_ptr<Item>> getItems() const { return items; }
 
   std::string getCrateName() const;
 

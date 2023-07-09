@@ -25,7 +25,7 @@ public:
   };
   void setStatements(const Statements &_stmts) { stmts = _stmts; }
 
-  Statements getExpressions() { return stmts; }
+  Statements getExpressions() const { return stmts; }
 };
 
 } // namespace rust_compiler::ast

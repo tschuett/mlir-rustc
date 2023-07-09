@@ -1,11 +1,16 @@
 #include "ConstantEvaluation/ConstantEvaluation.h"
 
+#include "AST/ArithmeticOrLogicalExpression.h"
+#include "AST/ComparisonExpression.h"
+#include "AST/ConstantItem.h"
 #include "AST/Expression.h"
 #include "AST/LiteralExpression.h"
+#include "AST/OperatorExpression.h"
 #include "AST/PathExpression.h"
 #include "AST/VisItem.h"
-#include "AST/ConstantItem.h"
+#include "llvm/Support/raw_ostream.h"
 
+#include <cstdlib>
 #include <llvm/ADT/APInt.h>
 
 using namespace rust_compiler::ast;
@@ -23,19 +28,43 @@ uint64_t ConstantEvaluation::foldAsUsize(const ast::Expression *expr) {
   }
 }
 
-uint64_t ConstantEvaluation::foldAsUsize(const ast::ExpressionWithBlock *) {}
+uint64_t
+ConstantEvaluation::foldAsUsize(const ast::ExpressionWithBlock *withBlock) {
+  switch (withBlock->getWithBlockKind()) {
+  case ExpressionWithBlockKind::BlockExpression: {
+    break;
+  }
+  case ExpressionWithBlockKind::UnsafeBlockExpression: {
+    break;
+  }
+  case ExpressionWithBlockKind::LoopExpression: {
+    break;
+  }
+  case ExpressionWithBlockKind::IfExpression: {
+    break;
+  }
+  case ExpressionWithBlockKind::IfLetExpression: {
+    break;
+  }
+  case ExpressionWithBlockKind::MatchExpression: {
+    break;
+  }
+  }
+
+  llvm::errs() << "trying to fold an expression with block"
+               << "\n";
+  exit(EXIT_FAILURE);
+}
+
 uint64_t
 ConstantEvaluation::foldAsUsize(const ast::ExpressionWithoutBlock *expr) {
   switch (expr->getWithoutBlockKind()) {
-  case ExpressionWithoutBlockKind::LiteralExpression: {
+  case ExpressionWithoutBlockKind::LiteralExpression:
     return foldAsUsize(static_cast<const LiteralExpression *>(expr));
-  }
-  case ExpressionWithoutBlockKind::PathExpression: {
+  case ExpressionWithoutBlockKind::PathExpression:
     return foldAsUsize(static_cast<const PathExpression *>(expr));
-  }
-  case ExpressionWithoutBlockKind::OperatorExpression: {
-    break;
-  }
+  case ExpressionWithoutBlockKind::OperatorExpression:
+    return foldAsUsize(static_cast<const OperatorExpression *>(expr));
   case ExpressionWithoutBlockKind::GroupedExpression: {
     break;
   }
@@ -91,6 +120,10 @@ ConstantEvaluation::foldAsUsize(const ast::ExpressionWithoutBlock *expr) {
     break;
   }
   }
+
+  llvm::errs() << "trying to fold an expression without block"
+               << "\n";
+  exit(EXIT_FAILURE);
 }
 
 uint64_t ConstantEvaluation::foldAsUsize(const ast::LiteralExpression *lit) {
@@ -133,7 +166,6 @@ uint64_t ConstantEvaluation::foldAsUsize(const ast::PathExpression *path) {
     }
     case OwnerKind::Item: {
       return foldAsUsize((*owner).getItem());
-      assert(false);
     }
     }
     assert(false);
@@ -205,6 +237,111 @@ uint64_t ConstantEvaluation::foldAsUsize(const ast::ConstantItem *con) {
     return init;
   }
   assert(false);
+}
+
+uint64_t ConstantEvaluation::foldAsUsize(const ast::OperatorExpression *ops) {
+  switch (ops->getKind()) {
+  case OperatorExpressionKind::BorrowExpression: {
+    break;
+  }
+  case OperatorExpressionKind::DereferenceExpression: {
+    break;
+  }
+  case OperatorExpressionKind::ErrorPropagationExpression: {
+    break;
+  }
+  case OperatorExpressionKind::NegationExpression: {
+    break;
+  }
+  case OperatorExpressionKind::ArithmeticOrLogicalExpression:
+    return foldAsUsize(static_cast<const ArithmeticOrLogicalExpression *>(ops));
+  case OperatorExpressionKind::ComparisonExpression:
+    return foldAsUsize(static_cast<const ComparisonExpression *>(ops));
+  case OperatorExpressionKind::LazyBooleanExpression: {
+    break;
+  }
+  case OperatorExpressionKind::TypeCastExpression: {
+    break;
+  }
+  case OperatorExpressionKind::AssignmentExpression: {
+    break;
+  }
+  case OperatorExpressionKind::CompoundAssignmentExpression: {
+    break;
+  }
+  }
+
+  llvm::errs() << "trying to fold an operator expression"
+               << "\n";
+  exit(EXIT_FAILURE);
+}
+
+uint64_t ConstantEvaluation::foldAsUsize(
+    const ast::ArithmeticOrLogicalExpression *arith) {
+  switch (arith->getKind()) {
+  case ArithmeticOrLogicalExpressionKind::Addition: {
+    break;
+  }
+  case ArithmeticOrLogicalExpressionKind::Subtraction: {
+    break;
+  }
+  case ArithmeticOrLogicalExpressionKind::Multiplication: {
+    break;
+  }
+  case ArithmeticOrLogicalExpressionKind::Division: {
+    break;
+  }
+  case ArithmeticOrLogicalExpressionKind::Remainder: {
+    break;
+  }
+  case ArithmeticOrLogicalExpressionKind::BitwiseAnd: {
+    break;
+  }
+  case ArithmeticOrLogicalExpressionKind::BitwiseOr: {
+    break;
+  }
+  case ArithmeticOrLogicalExpressionKind::BitwiseXor: {
+    break;
+  }
+  case ArithmeticOrLogicalExpressionKind::LeftShift: {
+    break;
+  }
+  case ArithmeticOrLogicalExpressionKind::RightShift: {
+    break;
+  }
+  }
+
+  llvm::errs() << "trying to fold an arithmetic or logical expression"
+               << "\n";
+  exit(EXIT_FAILURE);
+}
+
+uint64_t
+ConstantEvaluation::foldAsUsize(const ast::ComparisonExpression *comp) {
+  switch (comp->getKind()) {
+  case ComparisonExpressionKind::Equal: {
+    break;
+  }
+  case ComparisonExpressionKind::NotEqual: {
+    break;
+  }
+  case ComparisonExpressionKind::GreaterThan: {
+    break;
+  }
+  case ComparisonExpressionKind::LessThan: {
+    break;
+  }
+  case ComparisonExpressionKind::GreaterThanOrEqualTo: {
+    break;
+  }
+  case ComparisonExpressionKind::LessThanOrEqualTo: {
+    break;
+  }
+  }
+
+  llvm::errs() << "trying to fold an comparison expression"
+               << "\n";
+  exit(EXIT_FAILURE);
 }
 
 } // namespace rust_compiler::constant_evaluation

@@ -34,7 +34,7 @@ public:
 
   bool hasBody() const { return body.has_value(); }
 
-  std::shared_ptr<Expression> getBody() { return *body; }
+  std::shared_ptr<Expression> getBody() const { return *body; }
 
   void setQualifiers(FunctionQualifiers qualifiers);
 

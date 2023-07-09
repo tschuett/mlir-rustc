@@ -5,8 +5,6 @@
 #include "AST/Implementation.h"
 #include "AST/InnerAttribute.h"
 #include "AST/Types/TypeExpression.h"
-#include "AST/Types/TypePath.h"
-#include "AST/Types/Types.h"
 #include "AST/WhereClause.h"
 
 #include <optional>
