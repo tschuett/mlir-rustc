@@ -20,5 +20,7 @@ add_subdirectory(Lir)
 add_subdirectory(Frontend)
 add_subdirectory(TyCtx)
 add_subdirectory(Session)
+add_subdirectory(Mangler)
+add_subdirectory(ConstantEvaluation)
 
 
