@@ -52,7 +52,7 @@ bool Parser::checkMaybeNamedParamLeadingComma() {
   return false;
 }
 
-StringResult<ast::types::FunctionParametersMaybeNamedVariadic>
+StringResult<std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>
 Parser::parseMaybeNamedFunctionParameters() {
   Location loc = getLocation();
   MaybeNamedFunctionParameters maybe = {loc};
@@ -69,24 +69,28 @@ Parser::parseMaybeNamedFunctionParameters() {
                       "function parameters: ",
                       namedParam.getError())
             .str();
-    return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(s);
+    return StringResult<
+        std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(s);
   }
   maybe.addParameter(namedParam.getValue());
 
   while (true) {
     if (check(TokenKind::Eof)) {
-      return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+      return StringResult<
+          std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
           "failed to parse maybe named function parameters: eof");
     } else if (check(TokenKind::ParenClose)) {
       // done
-      return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
-          maybe);
+      return StringResult<
+          std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
+          std::make_shared<MaybeNamedFunctionParameters>(maybe));
     } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
       // done
       assert(eat(TokenKind::Comma));
       maybe.setTrailingComma();
-      return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
-          maybe);
+      return StringResult<
+          std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
+          std::make_shared<MaybeNamedFunctionParameters>(maybe));
     } else if (check(TokenKind::Comma)) {
       assert(eat(TokenKind::Comma));
       StringResult<ast::types::MaybeNamedParam> namedParam =
@@ -103,20 +107,23 @@ Parser::parseMaybeNamedFunctionParameters() {
                 "function parameters: ",
                 namedParam.getError())
                 .str();
-        return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+        return StringResult<
+            std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
             s);
       }
       maybe.addParameter(namedParam.getValue());
     } else {
-      return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+      return StringResult<
+          std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
           "failed to parse maybe named function parameters");
     }
   }
-  return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+  return StringResult<
+      std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
       "failed to parse maybe named function parameters: eof");
 }
 
-StringResult<ast::types::FunctionParametersMaybeNamedVariadic>
+StringResult<std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>
 Parser::parseMaybeNamedFunctionParametersVariadic() {
   Location loc = getLocation();
   MaybeNamedFunctionParametersVariadic maybe = {loc};
@@ -134,19 +141,22 @@ Parser::parseMaybeNamedFunctionParametersVariadic() {
                       "function parameters variadic: ",
                       namedParam.getError())
             .str();
-    return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(s);
+    return StringResult<
+        std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(s);
   }
   maybe.addParameter(namedParam.getValue());
 
   while (true) {
     if (check(TokenKind::Eof)) {
-      return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+      return StringResult<
+          std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
           "failed to parse maybe named function parameters variadic: eof");
     } else if (check(TokenKind::DotDotDot) && check(TokenKind::ParenClose, 1)) {
       // done
       assert(eat(TokenKind::DotDotDot));
-      return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
-          maybe);
+      return StringResult<
+          std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
+          std::make_shared<MaybeNamedFunctionParametersVariadic>(maybe));
     } else if (check(TokenKind::Comma) && checkOuterAttribute(1)) {
       assert(eat(TokenKind::Comma));
       StringResult<std::vector<ast::OuterAttribute>> outer =
@@ -165,7 +175,8 @@ Parser::parseMaybeNamedFunctionParametersVariadic() {
                 "function parameters variadic: ",
                 outer.getError())
                 .str();
-        return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+        return StringResult<
+            std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
             s);
       }
       std::vector<ast::OuterAttribute> out = outer.getValue();
@@ -187,16 +198,19 @@ Parser::parseMaybeNamedFunctionParametersVariadic() {
                 "function parameters variadic: ",
                 namedParam.getError())
                 .str();
-        return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+        return StringResult<
+            std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
             s);
       }
       maybe.addParameter(namedParam.getValue());
     } else {
-      return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+      return StringResult<
+          std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
           "failed to parse maybe named function parameters variadic");
     }
   }
-  return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+  return StringResult<
+      std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
       "failed to parse maybe named function parameters: eof");
 }
 
@@ -253,7 +267,7 @@ StringResult<ast::types::MaybeNamedParam> Parser::parseMaybeNamedParam() {
   return StringResult<ast::types::MaybeNamedParam>(param);
 }
 
-StringResult<ast::types::FunctionParametersMaybeNamedVariadic>
+StringResult<std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>
 Parser::parseFunctionParametersMaybeNamedVariadic() {
   CheckPoint cp = getCheckPoint();
 
@@ -271,7 +285,7 @@ Parser::parseFunctionParametersMaybeNamedVariadic() {
             "maybe varadic pattern: ",
             namedParam.getError())
             .str();
-    return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(s);
+    return StringResult<std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(s);
   }
   while (true) {
     llvm::errs() << "parseFunctionParametersMaybeNamedVariadic "
@@ -279,16 +293,16 @@ Parser::parseFunctionParametersMaybeNamedVariadic() {
     if (getToken().isIdentifier())
       llvm::errs() << getToken().getIdentifier().toString() << "\n";
     if (check(TokenKind::Eof)) {
-      return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+      return StringResult<std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
           "failed to parse in function parameters maybe named variadic: "
           "eof");
     } else if (check(TokenKind::Comma) && check(TokenKind::ParenClose, 1)) {
       recover(cp);
-      return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+      return StringResult<std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
           parseMaybeNamedFunctionParameters());
     } else if (check(TokenKind::ParenClose)) {
       recover(cp);
-      return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+      return StringResult<std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
           parseMaybeNamedFunctionParameters());
     } else if (checkMaybeNamedParamLeadingComma()) {
       // assert(eat(TokenKind::Comma));
@@ -307,21 +321,22 @@ Parser::parseFunctionParametersMaybeNamedVariadic() {
                 "maybe varadic pattern: ",
                 namedParam.getError())
                 .str();
-        return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+        return StringResult<std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
             s);
         // exit(EXIT_FAILURE);
       }
     } else if (check(TokenKind::Comma) && checkOuterAttribute(1)) {
       recover(cp);
-      return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+      return StringResult<std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
           parseMaybeNamedFunctionParametersVariadic());
     } else if (check(TokenKind::Comma) && check(TokenKind::DotDotDot, 1)) {
       recover(cp);
-      return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+      return StringResult<std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
           parseMaybeNamedFunctionParametersVariadic());
     }
   }
-  return StringResult<ast::types::FunctionParametersMaybeNamedVariadic>(
+  return StringResult<
+      std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>>(
       "failed to parse in function parameters maybe named variadic");
 }
 
@@ -437,8 +452,8 @@ Parser::parseBareFunctionType() {
     return StringResult<std::shared_ptr<ast::types::TypeExpression>>(
         std::make_shared<BareFunctionType>(bare));
   } else {
-    StringResult<FunctionParametersMaybeNamedVariadic> varadic =
-        parseFunctionParametersMaybeNamedVariadic();
+    StringResult<std::shared_ptr<FunctionParametersMaybeNamedVariadic>>
+        varadic = parseFunctionParametersMaybeNamedVariadic();
     if (!varadic) {
       llvm::errs() << "failed to parse function parameters maybe named "
                       "variadic in parse "

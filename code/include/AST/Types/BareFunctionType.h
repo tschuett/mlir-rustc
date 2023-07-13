@@ -1,12 +1,10 @@
 #pragma once
 
 #include "AST/Abi.h"
-#include "AST/GenericParams.h"
 #include "AST/OuterAttribute.h"
 #include "AST/Types/ForLifetimes.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
-#include "llvm/Frontend/OpenMP/OMPConstants.h"
 
 #include <memory>
 #include <optional>
@@ -93,6 +91,10 @@ public:
   void setType(std::shared_ptr<ast::types::TypeExpression> no) {
     noBounds = no;
   }
+
+  std::shared_ptr<ast::types::TypeExpression> getType() const {
+    return noBounds;
+  }
 };
 
 class FunctionTypeQualifiers : public Node {
@@ -105,13 +107,14 @@ public:
   bool isUnsafe() const { return unsafe; }
   void setUnsafe() { unsafe = true; }
   void setAbi(const Abi &ab) { abi = ab; }
+  bool hasAbi() const { return abi.has_value(); }
+  Abi getAbi() const { return *abi;}
 };
 
 class BareFunctionType : public TypeNoBounds {
   std::optional<ForLifetimes> forLifetimes;
   FunctionTypeQualifiers qualifiers;
-  //std::string identifier;
-  std::optional<FunctionParametersMaybeNamedVariadic> params;
+  std::optional<std::shared_ptr<FunctionParametersMaybeNamedVariadic>> params;
 
   std::optional<BareFunctionReturnType> returnType;
 
@@ -129,9 +132,19 @@ public:
   void setReturnType(const ast::types::BareFunctionReturnType &ret) {
     returnType = ret;
   }
-  void setParameters(const FunctionParametersMaybeNamedVariadic &par) {
+  void
+  setParameters(std::shared_ptr<FunctionParametersMaybeNamedVariadic> par) {
     params = par;
   }
+
+  FunctionTypeQualifiers getQualifiers() const { return qualifiers; }
+  bool hasParameters() const { return params.has_value(); }
+  std::shared_ptr<FunctionParametersMaybeNamedVariadic> getParameters() const {
+    return *params;
+  }
+
+  bool hasReturnType() const { return returnType.has_value(); }
+  BareFunctionReturnType getReturnType() const { return *returnType; }
 };
 
 } // namespace rust_compiler::ast::types

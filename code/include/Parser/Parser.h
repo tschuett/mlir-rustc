@@ -537,7 +537,8 @@ public:
   adt::Result<ast::ClosureParameters, std::string> parseClosureParameters();
   adt::Result<ast::ClosureParam, std::string> parseClosureParam();
 
-  adt::Result<ast::types::FunctionParametersMaybeNamedVariadic, std::string>
+  adt::Result<std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>,
+              std::string>
   parseFunctionParametersMaybeNamedVariadic();
 
   adt::Result<ast::types::MaybeNamedParam, std::string> parseMaybeNamedParam();
@@ -571,9 +572,11 @@ public:
   adt::Result<ast::ArrayElements, std::string>
   parseArrayElements(std::span<ast::OuterAttribute>, Restrictions restrictions);
 
-  adt::Result<ast::types::FunctionParametersMaybeNamedVariadic, std::string>
+  adt::Result<std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>,
+              std::string>
   parseMaybeNamedFunctionParameters();
-  adt::Result<ast::types::FunctionParametersMaybeNamedVariadic, std::string>
+  adt::Result<std::shared_ptr<ast::types::FunctionParametersMaybeNamedVariadic>,
+              std::string>
   parseMaybeNamedFunctionParametersVariadic();
 
   adt::Result<std::shared_ptr<ast::types::TypeExpression>, std::string>
