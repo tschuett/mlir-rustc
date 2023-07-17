@@ -1,8 +1,6 @@
 #pragma once
 
-#include "AST/Types/Lifetime.h"
 #include "AST/Types/TypeNoBounds.h"
-#include "AST/Types/Types.h"
 #include "Basic/Mutability.h"
 
 #include <memory>
@@ -31,6 +29,9 @@ public:
   }
 
   bool isMutable() const { return mut; }
+
+  bool hasLifetime() const { return lifetime.has_value(); }
+  ast::Lifetime getLifetime() const { return *lifetime; }
 
   basic::Mutability getMut() const {
     return mut ? basic::Mutability::Mut : basic::Mutability::Imm;

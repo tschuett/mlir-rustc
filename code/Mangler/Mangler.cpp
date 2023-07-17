@@ -5,18 +5,25 @@
 #include "AST/Implementation.h"
 #include "AST/InherentImpl.h"
 #include "AST/Module.h"
+#include "AST/PathIdentSegment.h"
 #include "AST/Struct.h"
 #include "AST/StructStruct.h"
 #include "AST/TraitImpl.h"
 #include "AST/Types/ArrayType.h"
+#include "AST/Types/BareFunctionType.h"
+#include "AST/Types/ReferenceType.h"
+#include "AST/Types/SliceType.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
 #include "AST/Types/TypePath.h"
+#include "AST/Types/TypePathSegment.h"
 #include "AST/VisItem.h"
 #include "Lexer/Identifier.h"
-#include "llvm/Support/ErrorHandling.h"
+#include "TyCtx/TyTy.h"
 
 #include <llvm/Support/raw_ostream.h>
+#include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 
@@ -162,21 +169,21 @@ std::string Mangler::mangle(std::span<const ast::VisItem *> path,
   llvm::raw_string_ostream mangled(result);
 
   mangled << "_R0";
-  for (const std::string& tag: tags)
+  for (const std::string &tag : tags)
     mangled << tag;
 
   mangled << mangledName.str();
 
   // vendor-specific-suffix
-  mangled << "rust_compiler";
+  mangled << "$rust_compiler";
 
   return mangled.str();
 }
 
-std::string Mangler::mangleType(ast::types::TypeExpression *type) {
+std::string Mangler::mangleType(const ast::types::TypeExpression *type) {
   switch (type->getKind()) {
   case TypeExpressionKind::TypeNoBounds: {
-    TypeNoBounds *noBounds = static_cast<TypeNoBounds *>(type);
+    const TypeNoBounds *noBounds = static_cast<const TypeNoBounds *>(type);
     switch (noBounds->getKind()) {
     case TypeNoBoundsKind::ParenthesizedType:
       break;
@@ -185,44 +192,52 @@ std::string Mangler::mangleType(ast::types::TypeExpression *type) {
     case TypeNoBoundsKind::ImplTraitTypeOneBound:
       break;
     case TypeNoBoundsKind::TraitObjectTypeOneBound:
+      // FIXME: dyn
       break;
     case TypeNoBoundsKind::TypePath: {
-      TypePath *path = static_cast<TypePath *>(type);
+      const TypePath *path = static_cast<const TypePath *>(type);
       return mangleTypePath(path);
-      break;
     }
     case TypeNoBoundsKind::TupleType: {
-      break;
+      const TupleType *tuple = static_cast<const TupleType *>(type);
+      return mangleTupleType(tuple);
     }
     case TypeNoBoundsKind::NeverType: {
-      break;
+      const TypePath *path = static_cast<const TypePath *>(type);
+      return mangleTypePath(path);
     }
     case TypeNoBoundsKind::RawPointerType: {
-      break;
+      const RawPointerType *pointer = static_cast<const RawPointerType *>(type);
+      return mangleRawPointerType(pointer);
     }
     case TypeNoBoundsKind::ReferenceType: {
-      break;
+      const ReferenceType *refer = static_cast<const ReferenceType *>(type);
+      return mangleReferenceType(refer);
     }
     case TypeNoBoundsKind::ArrayType: {
-      ArrayType *array = static_cast<ArrayType *>(type);
+      const ArrayType *array = static_cast<const ArrayType *>(type);
       std::string result;
+      uint64_t N = evaluator.foldAsUsize(array->getExpression().get());
       llvm::raw_string_ostream mangled(result);
-      //mangled << "A" << mangleType(array->getType().get()) << 
+      mangled << "A" << mangleType(array->getType().get()) << mangleConst(N);
       return mangled.str();
-      break;
     }
     case TypeNoBoundsKind::SliceType: {
-      llvm_unreachable("no slice types");
-      break;
+      const SliceType *slice = static_cast<const SliceType *>(type);
+      std::string result;
+      llvm::raw_string_ostream mangled(result);
+      mangled << "S" << mangleType(slice->getType().get());
+      return mangled.str();
     }
     case TypeNoBoundsKind::InferredType:
-      llvm_unreachable("no infered types");
       break;
     case TypeNoBoundsKind::QualifiedPathInType: {
+      // FIXME path
       break;
     }
     case TypeNoBoundsKind::BareFunctionType: {
-      break;
+      return mangleBareFunctionType(
+          static_cast<const ast::types::BareFunctionType *>(type));
     }
     case TypeNoBoundsKind::MacroInvocation:
       break;
@@ -233,11 +248,181 @@ std::string Mangler::mangleType(ast::types::TypeExpression *type) {
     break;
   }
   case TypeExpressionKind::TraitObjectType: {
+    // FIXME: dyn
     break;
   }
   }
+
+  return mangleBackref();
 }
 
-std::string Mangler::mangleTypePath(ast::types::TypePath *) {}
+std::string Mangler::mangleTypePath(const ast::types::TypePath *path) {
+  if (path->getNrOfSegments() == 1) {
+    std::optional<std::string> maybeBasicType =
+        tryBasicType(path->getSegments()[0]);
+    if (maybeBasicType)
+      return *maybeBasicType;
+  }
+  for (const TypePathSegment &seg : path->getSegments()) {
+    seg.getSegment();
+  }
+}
+
+std::string Mangler::mangleConst(uint64_t c) {
+  std::stringstream stream;
+  stream << std::hex << c << "_";
+  std::string result(stream.str());
+  return result;
+}
+
+std::string
+Mangler::mangleBareFunctionType(const ast::types::BareFunctionType *funType) {
+  std::string result;
+  llvm::raw_string_ostream mangled(result);
+  mangled << "F" /*<< mangleType(slice->getType().get())*/;
+
+  FunctionTypeQualifiers quals = funType->getQualifiers();
+  if (quals.isUnsafe())
+    mangled << "U";
+  if (quals.hasAbi())
+    mangled << "K" << quals.getAbi().getAbi();
+
+  if (funType->hasParameters()) {
+    std::shared_ptr<FunctionParametersMaybeNamedVariadic> params =
+        funType->getParameters();
+    switch (params->getKind()) {
+    case FunctionParametersMaybeNamedVariadicKind::
+        MaybeNamedFunctionParameters: {
+      auto par = std::static_pointer_cast<MaybeNamedFunctionParameters>(params);
+      break;
+    }
+    case FunctionParametersMaybeNamedVariadicKind::
+        MaybeNamedFunctionParametersVariadic: {
+      auto par = std::static_pointer_cast<MaybeNamedFunctionParametersVariadic>(
+          params);
+      break;
+    }
+    }
+  }
+
+  if (funType->hasReturnType()) {
+    BareFunctionReturnType ret = funType->getReturnType();
+    mangled << "E" << mangleType(ret.getType().get());
+  }
+  return mangled.str();
+}
+
+std::optional<std::string>
+Mangler::tryBasicType(const ast::types::TypePathSegment &seg) {
+  if (seg.hasGenerics())
+    return std::nullopt;
+  if (seg.hasTypeFunction())
+    return std::nullopt;
+  PathIdentSegment ident = seg.getSegment();
+  if (ident.getKind() != PathIdentSegmentKind::Identifier)
+    return std::nullopt;
+  std::string id = ident.getIdentifier().toString();
+
+  if (id == "i8")
+    return "a";
+  else if (id == "bool")
+    return "b";
+  else if (id == "char")
+    return "c";
+  else if (id == "f64")
+    return "d";
+  else if (id == "str")
+    return "e";
+  else if (id == "f32")
+    return "f";
+  else if (id == "u8")
+    return "h";
+  else if (id == "isize")
+    return "i";
+  else if (id == "usize")
+    return "j";
+  else if (id == "i32")
+    return "l";
+  else if (id == "u32")
+    return "m";
+  else if (id == "i128")
+    return "n";
+  else if (id == "u128")
+    return "o";
+  else if (id == "i16")
+    return "s";
+  else if (id == "u16")
+    return "t";
+  else if (id == "()")
+    return "u";
+  else if (id == "...")
+    return "v";
+  else if (id == "i64")
+    return "x";
+  else if (id == "u64")
+    return "y";
+  else if (id == "!")
+    return "z";
+  else if (id == "_")
+    return "p";
+
+  return std::nullopt;
+}
+
+std::string Mangler::mangleTupleType(const ast::types::TupleType *tuple) {
+  std::string result;
+  llvm::raw_string_ostream mangled(result);
+  mangled << "T";
+  for (auto &type : tuple->getTypes())
+    mangled << mangleType(type.get());
+  mangled << "E";
+
+  return mangled.str();
+}
+
+std::string
+Mangler::mangleRawPointerType(const ast::types::RawPointerType *pointer) {
+  std::string result;
+  llvm::raw_string_ostream mangled(result);
+  if (pointer->isMut())
+    mangled << "O";
+  else if (pointer->isConst())
+    mangled << "P";
+
+  mangled << mangleType(pointer->getType().get());
+
+  return mangled.str();
+}
+
+std::string
+Mangler::mangleReferenceType(const ast::types::ReferenceType *refer) {
+  std::string result;
+  llvm::raw_string_ostream mangled(result);
+
+  if (refer->isMutable())
+    mangled << "Q";
+  else
+    mangled << "R";
+
+  if (refer->hasLifetime())
+    mangled << mangleLifetime(refer->getLifetime());
+
+  mangled << mangleType(refer->getReferencedType().get());
+
+  return mangled.str();
+}
+
+std::string Mangler::mangleLifetime(const ast::Lifetime &l) {
+  std::string result;
+  llvm::raw_string_ostream mangled(result);
+
+  mangled << "L";
+
+  // FIXME XX
+
+  return mangled.str();
+}
+
+std::string Mangler::mangleBackref() {}
 
 } // namespace rust_compiler::mangler

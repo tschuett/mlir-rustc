@@ -21,6 +21,7 @@ public:
     typePathSegments.push_back(seg);
   }
 
+  size_t getNrOfSegments() const { return typePathSegments.size(); }
   std::vector<TypePathSegment> getSegments() const { return typePathSegments; }
 };
 

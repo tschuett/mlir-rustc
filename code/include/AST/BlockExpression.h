@@ -1,6 +1,5 @@
 #pragma once
 
-#include "AST/AST.h"
 #include "AST/Expression.h"
 #include "AST/InnerAttribute.h"
 #include "AST/Statements.h"

@@ -9,10 +9,10 @@
 #include "Lexer/KeyWords.h"
 #include "Lexer/Token.h"
 #include "Parser/Parser.h"
-#include "llvm/Support/raw_ostream.h"
 
 #include <llvm/Support/FormatVariadic.h>
 #include <llvm/Support/raw_os_ostream.h>
+#include <llvm/Support/raw_ostream.h>
 #include <memory>
 #include <optional>
 
@@ -313,7 +313,8 @@ StringResult<ast::FunctionParamPattern> Parser::parseFunctionParamPattern() {
   }
   if (!check(TokenKind::Colon)) {
     // error
-    llvm::errs() << "failed to parse : token in function param pattern: "
+    llvm::errs() << getToken().getLocation().toString()
+                 << "failed to parse : token in function param pattern: "
                  << Token2String(getToken().getKind()) << "\n";
     std::string s = "failed to parse : token in function param pattern";
     return StringResult<ast::FunctionParamPattern>(s);
@@ -494,7 +495,8 @@ StringResult<ast::FunctionReturnType> Parser::parseFunctionReturnType() {
 }
 
 StringResult<std::shared_ptr<ast::Item>>
-Parser::parseFunction(std::span<OuterAttribute> outer, std::optional<ast::Visibility> vis) {
+Parser::parseFunction(std::span<OuterAttribute> outer,
+                      std::optional<ast::Visibility> vis) {
   ParserErrorStack raai = {this, __PRETTY_FUNCTION__};
   Location loc = getLocation();
 
@@ -538,7 +540,7 @@ Parser::parseFunction(std::span<OuterAttribute> outer, std::optional<ast::Visibi
 
   fun.setIdentifier(id.getIdentifier());
 
-  //llvm::errs() << "function: " << id.getIdentifier().toString() << "\n";
+  // llvm::errs() << "function: " << id.getIdentifier().toString() << "\n";
 
   if (check(TokenKind::Lt)) {
     StringResult<ast::GenericParams> genericParams = parseGenericParams();
@@ -611,7 +613,8 @@ Parser::parseFunction(std::span<OuterAttribute> outer, std::optional<ast::Visibi
                  << Token2String(getToken().getKind()) << "\n";
     if (check(TokenKind::Identifier))
       llvm::errs() << getToken().getIdentifier().toString() << "\n";
-    std::string s = llvm::formatv("failed to parse body in function: no { token").str();
+    std::string s =
+        llvm::formatv("failed to parse body in function: no { token").str();
     return StringResult<std::shared_ptr<ast::Item>>(s);
   }
 
