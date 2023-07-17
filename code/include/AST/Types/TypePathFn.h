@@ -1,10 +1,7 @@
 #pragma once
 
 #include "AST/AST.h"
-#include "AST/GenericArgs.h"
-#include "AST/Types/TypePathFn.h"
 #include "AST/Types/TypePathFnInputs.h"
-#include "AST/Types/Types.h"
 
 #include <optional>
 #include <vector>

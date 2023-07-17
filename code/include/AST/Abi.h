@@ -14,6 +14,8 @@ public:
   Abi(Location loc) : Node(loc) {}
 
   void setString(std::string_view abi_) { abi = abi_; }
+
+  std::string getAbi() const { return abi; }
 };
 
 } // namespace rust_compiler::ast

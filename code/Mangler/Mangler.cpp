@@ -2,6 +2,7 @@
 
 #include "AST/Crate.h"
 #include "AST/Function.h"
+#include "AST/GenericArgsConst.h"
 #include "AST/Implementation.h"
 #include "AST/InherentImpl.h"
 #include "AST/Module.h"
@@ -256,27 +257,35 @@ std::string Mangler::mangleType(const ast::types::TypeExpression *type) {
   return mangleBackref();
 }
 
-std::string Mangler::mangleTypePath(const ast::types::TypePath *path) {
+std::string Mangler::mangleTypePath(const ast::types::TypePath *path)  {
   if (path->getNrOfSegments() == 1) {
     std::optional<std::string> maybeBasicType =
         tryBasicType(path->getSegments()[0]);
     if (maybeBasicType)
       return *maybeBasicType;
   }
+  std::string result;
+  llvm::raw_string_ostream mangled(result);
+  // mangled << "F" /*<< mangleType(slice->getType().get())*/;
   for (const TypePathSegment &seg : path->getSegments()) {
-    seg.getSegment();
+    mangled << manglePathIdentSegment(seg.getSegment());
+    if (seg.hasGenerics())
+      mangled << mangleGenericArgs(seg.getGenericArgs());
+    if (seg.hasTypeFunction())
+      mangled << mangleTypePathFunction(seg.getTypePathFn());
   }
+  return mangled.str();
 }
 
-std::string Mangler::mangleConst(uint64_t c) {
+std::string Mangler::mangleConst(uint64_t c) const {
   std::stringstream stream;
   stream << std::hex << c << "_";
   std::string result(stream.str());
   return result;
 }
 
-std::string
-Mangler::mangleBareFunctionType(const ast::types::BareFunctionType *funType) {
+std::string Mangler::mangleBareFunctionType(
+    const ast::types::BareFunctionType *funType) {
   std::string result;
   llvm::raw_string_ostream mangled(result);
   mangled << "F" /*<< mangleType(slice->getType().get())*/;
@@ -313,7 +322,7 @@ Mangler::mangleBareFunctionType(const ast::types::BareFunctionType *funType) {
 }
 
 std::optional<std::string>
-Mangler::tryBasicType(const ast::types::TypePathSegment &seg) {
+Mangler::tryBasicType(const ast::types::TypePathSegment &seg) const {
   if (seg.hasGenerics())
     return std::nullopt;
   if (seg.hasTypeFunction())
@@ -395,7 +404,7 @@ Mangler::mangleRawPointerType(const ast::types::RawPointerType *pointer) {
 }
 
 std::string
-Mangler::mangleReferenceType(const ast::types::ReferenceType *refer) {
+Mangler::mangleReferenceType(const ast::types::ReferenceType *refer)  {
   std::string result;
   llvm::raw_string_ostream mangled(result);
 
@@ -412,7 +421,7 @@ Mangler::mangleReferenceType(const ast::types::ReferenceType *refer) {
   return mangled.str();
 }
 
-std::string Mangler::mangleLifetime(const ast::Lifetime &l) {
+std::string Mangler::mangleLifetime(const ast::Lifetime &l) const {
   std::string result;
   llvm::raw_string_ostream mangled(result);
 
@@ -423,6 +432,58 @@ std::string Mangler::mangleLifetime(const ast::Lifetime &l) {
   return mangled.str();
 }
 
-std::string Mangler::mangleBackref() {}
+std::string Mangler::mangleBackref() const {}
+
+std::string
+Mangler::manglePathIdentSegment(const ast::PathIdentSegment &) const {}
+
+std::string Mangler::mangleGenericArgs(const ast::GenericArgs &args) {
+  std::string result;
+  llvm::raw_string_ostream mangled(result);
+
+  for (const auto &arg : args.getArgs())
+    mangled << mangleGenericArg(arg);
+
+  return mangled.str();
+}
+
+std::string
+Mangler::mangleTypePathFunction(const ast::types::TypePathFn &) const {}
+
+std::string Mangler::mangleGenericArg(const ast::GenericArg &arg) {
+  switch (arg.getKind()) {
+  case GenericArgKind::Lifetime: {
+    return mangleLifetime(arg.getLifetime());
+  }
+  case GenericArgKind::Type: {
+    return mangleType(arg.getType().get());
+  }
+  case GenericArgKind::Const: {
+    std::string result;
+    llvm::raw_string_ostream mangled(result);
+    mangled << "K" << mangleGenericArgsConst(arg.getConst());
+    return mangled.str();
+  }
+  case GenericArgKind::Binding: {
+    // FIXME: unsupported?
+    return "";
+  }
+  }
+}
+
+std::string
+Mangler::mangleGenericArgsConst(const ast::GenericArgsConst &cons) const {
+  switch (cons.getKind()) {
+  case GenericArgsConstKind::BlockExpression: {
+    break;
+  }
+  case GenericArgsConstKind::LiteralExpression: {
+    break;
+  }
+  case GenericArgsConstKind::SimplePathSegment: {
+    break;
+  }
+  }
+}
 
 } // namespace rust_compiler::mangler

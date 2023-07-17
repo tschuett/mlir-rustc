@@ -45,6 +45,7 @@ public:
   std::shared_ptr<ast::types::TypeExpression> getType() const { return type; }
   GenericArgsBinding getBinding() const { return *binding; }
   GenericArgsConst getConst() const { return *argsConst; }
+  ast::Lifetime getLifetime() const { return *lifetime; }
 };
 
 } // namespace rust_compiler::ast

@@ -1,7 +1,10 @@
 #pragma once
 
+#include "AST/GenericArgsConst.h"
+#include "AST/PathIdentSegment.h"
 #include "AST/Types/RawPointerType.h"
 #include "AST/Types/ReferenceType.h"
+#include "AST/Types/TypePathFn.h"
 #include "ConstantEvaluation/ConstantEvaluation.h"
 
 #include <llvm/Support/raw_ostream.h>
@@ -47,17 +50,23 @@ public:
 private:
   std::string mangle(std::span<const ast::VisItem *> path, ast::Crate *crate);
 
-  std::string mangleType(const ast::types::TypeExpression *);
+  /// not const because of ConstantEvaluation is not const
+  std::string mangleType(const ast::types::TypeExpression *) ;
   std::string mangleTypePath(const ast::types::TypePath *);
-  std::string mangleConst(uint64_t);
+  std::string mangleConst(uint64_t) const;
   std::string mangleBareFunctionType(const ast::types::BareFunctionType *);
 
-  std::optional<std::string> tryBasicType(const ast::types::TypePathSegment &);
+  std::optional<std::string> tryBasicType(const ast::types::TypePathSegment &) const;
   std::string mangleTupleType(const ast::types::TupleType *);
   std::string mangleRawPointerType(const ast::types::RawPointerType *);
-  std::string mangleReferenceType(const ast::types::ReferenceType *);
-  std::string mangleLifetime(const ast::Lifetime& );
-  std::string mangleBackref();
+  std::string mangleReferenceType(const ast::types::ReferenceType *) ;
+  std::string mangleLifetime(const ast::Lifetime &) const;
+  std::string mangleBackref() const;
+  std::string manglePathIdentSegment(const ast::PathIdentSegment &) const;
+  std::string mangleGenericArgs(const ast::GenericArgs &);
+  std::string mangleTypePathFunction(const ast::types::TypePathFn &) const;
+  std::string mangleGenericArg(const ast::GenericArg &);
+  std::string mangleGenericArgsConst(const ast::GenericArgsConst &) const;
 };
 
 } // namespace rust_compiler::mangler
