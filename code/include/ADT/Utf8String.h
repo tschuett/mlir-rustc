@@ -10,8 +10,6 @@ class Utf8String {
   /// an array of UChar32
   std::vector<UChar32> storage;
 
-  // size_t size = 0;
-
 public:
   Utf8String() = default;
 
@@ -60,6 +58,8 @@ public:
       storage.push_back(rhs.storage[i]);
     return *this;
   }
+
+  std::vector<uint8_t> getAsBytes() const;
 };
 
 } // namespace rust_compiler::adt

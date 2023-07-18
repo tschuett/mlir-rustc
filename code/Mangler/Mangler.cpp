@@ -47,6 +47,20 @@ namespace rust_compiler::mangler {
 //                                    ast::Crate *crate,
 //                                    ast::ClosureExpression *closure) {}
 
+constexpr llvm::StringLiteral
+    CODES("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
+
+static std::string toBase62(int value) {
+  std::string str;
+
+  do {
+    str.insert(0, std::string(1, CODES[value % 62]));
+    value /= 62;
+  } while (value > 0);
+
+  return str;
+}
+
 std::string Mangler::mangle(std::span<const ast::VisItem *> path,
                             ast::Crate *crate) {
   std::vector<std::string> tags;
@@ -66,12 +80,7 @@ std::string Mangler::mangle(std::span<const ast::VisItem *> path,
     case VisItemKind::Module: {
       const ast::Module *module = static_cast<const Module *>(it);
       Identifier name = module->getModuleName();
-      if (name.isASCII()) {
-        std::string ascii = name.toString();
-        mangledName << std::to_string(ascii.size()) << ascii;
-      } else {
-        // FIXME
-      }
+      mangledName << mangleIdentifier(name);
       tags.push_back("Nt");
       break;
     }
@@ -85,12 +94,7 @@ std::string Mangler::mangle(std::span<const ast::VisItem *> path,
     case VisItemKind::Function: {
       const Function *fun = static_cast<const Function *>(it);
       Identifier name = fun->getName();
-      if (name.isASCII()) {
-        std::string ascii = name.toString();
-        mangledName << std::to_string(ascii.size()) << ascii;
-      } else {
-        // FIXME
-      }
+      mangledName << mangleIdentifier(name);
       tags.push_back("Nv");
       break;
     }
@@ -103,11 +107,7 @@ std::string Mangler::mangle(std::span<const ast::VisItem *> path,
       case StructKind::StructStruct2: {
         const StructStruct *struc2 = static_cast<const StructStruct *>(stru);
         Identifier name = struc2->getIdentifier();
-        if (name.isASCII()) {
-          std::string ascii = name.toString();
-          mangledName << std::to_string(ascii.size()) << ascii;
-        } else {
-        }
+        mangledName << mangleIdentifier(name);
         tags.push_back("Nu");
         break;
       }
@@ -257,7 +257,7 @@ std::string Mangler::mangleType(const ast::types::TypeExpression *type) {
   return mangleBackref();
 }
 
-std::string Mangler::mangleTypePath(const ast::types::TypePath *path)  {
+std::string Mangler::mangleTypePath(const ast::types::TypePath *path) {
   if (path->getNrOfSegments() == 1) {
     std::optional<std::string> maybeBasicType =
         tryBasicType(path->getSegments()[0]);
@@ -284,8 +284,8 @@ std::string Mangler::mangleConst(uint64_t c) const {
   return result;
 }
 
-std::string Mangler::mangleBareFunctionType(
-    const ast::types::BareFunctionType *funType) {
+std::string
+Mangler::mangleBareFunctionType(const ast::types::BareFunctionType *funType) {
   std::string result;
   llvm::raw_string_ostream mangled(result);
   mangled << "F" /*<< mangleType(slice->getType().get())*/;
@@ -404,7 +404,7 @@ Mangler::mangleRawPointerType(const ast::types::RawPointerType *pointer) {
 }
 
 std::string
-Mangler::mangleReferenceType(const ast::types::ReferenceType *refer)  {
+Mangler::mangleReferenceType(const ast::types::ReferenceType *refer) {
   std::string result;
   llvm::raw_string_ostream mangled(result);
 
@@ -432,10 +432,18 @@ std::string Mangler::mangleLifetime(const ast::Lifetime &l) const {
   return mangled.str();
 }
 
-std::string Mangler::mangleBackref() const {}
+std::string Mangler::mangleBackref() const {
+  static int backCounter = 10;
+  return toBase62(backCounter++);
+}
 
 std::string
-Mangler::manglePathIdentSegment(const ast::PathIdentSegment &) const {}
+Mangler::manglePathIdentSegment(const ast::PathIdentSegment &segment) const {
+  if (segment.getKind() == PathIdentSegmentKind::Identifier)
+    return mangleIdentifier(segment.getIdentifier());
+
+  return segment.toString();
+}
 
 std::string Mangler::mangleGenericArgs(const ast::GenericArgs &args) {
   std::string result;
@@ -448,7 +456,10 @@ std::string Mangler::mangleGenericArgs(const ast::GenericArgs &args) {
 }
 
 std::string
-Mangler::mangleTypePathFunction(const ast::types::TypePathFn &) const {}
+Mangler::mangleTypePathFunction(const ast::types::TypePathFn &) const {
+  // FIXME: unsupported?
+  return "";
+}
 
 std::string Mangler::mangleGenericArg(const ast::GenericArg &arg) {
   switch (arg.getKind()) {
@@ -484,6 +495,26 @@ Mangler::mangleGenericArgsConst(const ast::GenericArgsConst &cons) const {
     break;
   }
   }
+  // FIXME: how?
+  return "";
+}
+
+std::string Mangler::mangleIdentifier(const Identifier &ident) const {
+  static int disambiguator = 10;
+
+  std::vector<uint8_t> bytes = ident.getAsBytes();
+
+  std::string result;
+  llvm::raw_string_ostream mangled(result);
+
+  // FIXME
+  mangled << "s" << toBase62(disambiguator++) << "u"
+          << std::to_string(bytes.size()) << "_";
+
+  for (uint8_t byte : bytes)
+    mangled << byte;
+
+  return mangled.str();
 }
 
 } // namespace rust_compiler::mangler

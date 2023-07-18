@@ -4,6 +4,7 @@
 #include <unicode/uchar.h>
 #include <unicode/ucnv.h>
 #include <unicode/utext.h>
+#include <unicode/utf8.h>
 
 namespace rust_compiler::adt {
 
@@ -54,5 +55,20 @@ std::string Utf8String::toString() const {
 void Utf8String::clear() { storage.clear(); }
 
 void Utf8String::append(UChar32 c) { storage.push_back(c); }
+
+std::vector<uint8_t> Utf8String::getAsBytes() const {
+  std::vector<uint8_t> result;
+
+  for (const UChar32 c : storage) {
+    U8_LENGTH(c);
+    uint32_t character = c;
+    for (unsigned i = 0; i < U8_LENGTH(c); ++i) {
+      result.push_back(character & 0xFF);
+      character = character >> 8;
+    }
+  }
+
+  return result;
+}
 
 } // namespace rust_compiler::adt

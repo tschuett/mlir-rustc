@@ -2,6 +2,7 @@
 
 #include "ADT/Utf8String.h"
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 
@@ -32,9 +33,9 @@ public:
 
   bool operator==(const Identifier &b) const { return storage == b.storage; }
 
-  bool operator<(const Identifier &b) const {
-    return storage < b.storage;
-  }
+  bool operator<(const Identifier &b) const { return storage < b.storage; }
+
+  std::vector<uint8_t> getAsBytes() const { return storage.getAsBytes(); }
 
 private:
 };
