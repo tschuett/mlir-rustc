@@ -19,11 +19,13 @@ def Hir_Dialect : Dialect {
   }];
 
   let extraClassDeclaration = [{
+    void registerTypes();
 
     static constexpr llvm::StringRef getBaseTypeAttrName() { return "BaseType"; }
     static constexpr llvm::StringRef getFunctionNameAttrName() { return "FunctionName"; }
     static constexpr llvm::StringRef getMangledFunctionNameAttrName() { return "MangledFunctionName"; }
     static constexpr llvm::StringRef getTypeNameAttrName() { return "TypeName"; }
+
   }];
 
   //let hasConstantMaterializer = true;
@@ -35,6 +37,7 @@ def Hir_Dialect : Dialect {
                            "mlir::memref::MemRefDialect",
                            "mlir::vector::VectorDialect"
                           ];
+
 
 //   let useDefaultTypePrinterParser = true;
 //   let useDefaultAttributePrinterParser = true;

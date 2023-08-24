@@ -31,6 +31,8 @@ add_library(sema
            Properties.cpp
            Struct.cpp
            Attributes.cpp
+           NameResolutionStack.cpp
+           Rib.cpp
            )
 
 target_include_directories(sema PRIVATE  ../include)

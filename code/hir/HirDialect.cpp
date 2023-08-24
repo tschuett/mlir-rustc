@@ -5,7 +5,6 @@
 #include "Hir/HirInterfaces.h"
 #include "Hir/HirOps.h"
 #include "Hir/HirString.h"
-#include "Hir/HirStruct.h"
 #include "Hir/HirTypes.h"
 
 #include <mlir/Dialect/Arith/IR/Arith.h>
@@ -23,6 +22,8 @@
 #include <mlir/IR/Types.h>
 #include <mlir/Transforms/InliningUtils.h>
 #include <optional>
+
+#include <llvm/ADT/ArrayRef.h>
 
 using namespace mlir;
 
@@ -44,12 +45,11 @@ bool isScalarObject(mlir::Type type) {
 }
 
 void HirDialect::initialize() {
+  registerTypes();
   addOperations<
 #define GET_OP_LIST
 #include "Hir/HirOps.cpp.inc"
       >();
-  //  addInterfaces<MirInlinerInterface>();
-  addTypes<StructType, EnumType, StringType>();
 }
 
 } // namespace rust_compiler::hir

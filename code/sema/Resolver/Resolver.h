@@ -123,6 +123,8 @@ public:
 ///  https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/struct.Resolver.html
 
 /// https://doc.rust-lang.org/nightly/nightly-rustc/rustc_resolve/late/struct.Rib.html
+
+///  https://github.com/Rust-GCC/gccrs/pull/2344
 enum class RibKind {
   Dummy,
   Function,

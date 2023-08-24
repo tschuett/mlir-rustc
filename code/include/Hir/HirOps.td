@@ -356,53 +356,53 @@ def Hir_AssignOp : Hir_Op<"assign", [MemoryEffects<[MemWrite]>]> {
 // StructConstructorOp
 //===----------------------------------------------------------------------===//
 
-def StructConstructorOp : Hir_Op<"struct_constructor", [Pure]> {
-  let summary = "struct constant";
-  let description = [{
-    Constant operation turns a literal struct value into an SSA value. The data
-    is attached to the operation as input values. The struct constant is encoded
-    as an array of other constant values. For example:
+//def StructConstructorOp : Hir_Op<"struct_constructor", [Pure]> {
+//  let summary = "struct constant";
+//  let description = [{
+//    Constant operation turns a literal struct value into an SSA value. The data
+//    is attached to the operation as input values. The struct constant is encoded
+//    as an array of other constant values. For example:
+//
+//    ```mlir
+//      %0 = hir.struct_constructor [
+//        dense<[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]> : tensor<2x3xf64>
+//      ] : !hir.struct<tensor<*xf64>>
+//    ```
+//  }];
+//
+//  let arguments = (ins
+//                  Builtin_StringAttr:$path,
+//                  Variadic<AnyType>:$value
+//                  );
+//
+//  let results = (outs AnyType:$output);
+//
+////  let assemblyFormat = "$path $value attr-dict `:` type($output)";
+//}
 
-    ```mlir
-      %0 = hir.struct_constructor [
-        dense<[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]> : tensor<2x3xf64>
-      ] : !hir.struct<tensor<*xf64>>
-    ```
-  }];
 
-  let arguments = (ins
-                  Builtin_StringAttr:$path,
-                  Variadic<AnyType>:$value
-                  );
-
-  let results = (outs AnyType:$output);
-
-//  let assemblyFormat = "$path $value attr-dict `:` type($output)";
-}
-
-
-//===----------------------------------------------------------------------===//
-// ConstantOp
-//===----------------------------------------------------------------------===//
-
-def ConstantOp : Hir_Op<"constant", [ConstantLike, Pure]> {
-  let summary = "any attribute constant";
-  let description = [{
-    Constant operation turns a literal expression attribute value into an SSA value. The data
-    is attached to the operation as an attribute. For example:
-
-    ```mlir
-      %0 = hir.constant [
-        dense<[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]> : tensor<2x3xf64>
-      ] : !hir.attribute
-    ```
-  }];
-
-  let arguments = (ins AnyAttr:$value);
-  let results = (outs Hir_ConstantType:$output);
-
-  let assemblyFormat = "attr-dict `:` type($output)";
-}
+////===----------------------------------------------------------------------===//
+//// ConstantOp
+////===----------------------------------------------------------------------===//
+//
+//def ConstantOp : Hir_Op<"constant", [ConstantLike, Pure]> {
+//  let summary = "any attribute constant";
+//  let description = [{
+//    Constant operation turns a literal expression attribute value into an SSA value. The data
+//    is attached to the operation as an attribute. For example:
+//
+//    ```mlir
+//      %0 = hir.constant [
+//        dense<[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]> : tensor<2x3xf64>
+//      ] : !hir.attribute
+//    ```
+//  }];
+//
+//  let arguments = (ins AnyAttr:$value);
+//  let results = (outs Hir_ConstantType:$output);
+//
+//  let assemblyFormat = "attr-dict `:` type($output)";
+//}
 
 //===----------------------------------------------------------------------===//
 // UnitConstantOp
