@@ -13,10 +13,10 @@
 
 #include "Hir/HirTypes.h"
 
-//LLVM_ATTRIBUTE_UNUSED static mlir::OptionalParseResult
-//generatedTypeParser(mlir::AsmParser &parser, llvm::StringRef *mnemonic, mlir::Type &value);
-//LLVM_ATTRIBUTE_UNUSED static mlir::LogicalResult
-//generatedTypePrinter(mlir::Type def, mlir::AsmPrinter &printer);
+LLVM_ATTRIBUTE_UNUSED static mlir::OptionalParseResult
+generatedTypeParser(mlir::AsmParser &parser, llvm::StringRef *mnemonic, mlir::Type &value);
+LLVM_ATTRIBUTE_UNUSED static mlir::LogicalResult
+generatedTypePrinter(mlir::Type def, mlir::AsmPrinter &printer);
 
 using namespace rust_compiler::hir;
 

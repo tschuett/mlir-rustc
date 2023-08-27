@@ -93,9 +93,9 @@ def Hir_StructType : Hir_Type<"Struct", "struct",
   }];
 
   let extraClassDefinition = [{
-    void $cppClass::dropAst() {
-      getImpl()->ast = std::nullopt;
-    }
+    //void $cppClass::dropAst() {
+    //  getImpl()->ast = std::nullopt;
+    //}
   }];
 }
 

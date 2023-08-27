@@ -32,7 +32,6 @@
 - [ ] visibility
 - [ ] visibility checks in inliner
 - [x] location in Lexer
-- [ ] convert ModuleBuilder to CrateBuilder for code generation
 - [ ] unsafe checker
 - [ ] cover all tokens
 - [ ] types
@@ -46,6 +45,8 @@
 - [ ] macros
 - [ ] precedence
 - [ ] rustc prefers One-symbol tokens. Solution for Axum?
+- [ ] drops
+- [ ] copy
 
 # References
 
@@ -59,6 +60,8 @@
 * https://llvm.org/devmtg/2020-09/slides/The_Present_and_Future_of_Interprocedural_Optimization_in_LLVM.pdf
 * https://llvm.org/devmtg/2020-09/slides/A_Deep_Dive_into_Interprocedural_Optimization.pdf
 * https://mapping-high-level-constructs-to-llvm-ir.readthedocs.io/en/latest/
+* https://discourse.llvm.org/t/representing-anonymous-functions-lambdas/4962/3
+
 ## Async
 
 * https://mlir.llvm.org/docs/Dialects/AsyncDialect/
@@ -151,3 +154,15 @@ https://reviews.llvm.org/D149734
 
 * assignment mask operations
 https://reviews.llvm.org/D149754
+
+
+* A new code layout algorithm for function reordering
+https://reviews.llvm.org/D152834
+
+* [FLang] Add support for Rpass flag
+https://reviews.llvm.org/D156320
+
+
+
+[GlobalISel] Introduce global variant of regbankselect
+* https://reviews.llvm.org/D90304

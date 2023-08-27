@@ -41,7 +41,7 @@ def Hir_Dialect : Dialect {
 
 //   let useDefaultTypePrinterParser = true;
 //   let useDefaultAttributePrinterParser = true;
-   let isExtensible = 1;
+//   let isExtensible = 1;
 }
 
 #endif

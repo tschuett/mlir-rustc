@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26.1)
+cmake_minimum_required(VERSION 3.27.0)
 
 project(rust_compiler)
 
@@ -38,6 +38,8 @@ message(STATUS "Using tablegen in: ${LLVM_TABLEGEN_EXE}")
 set(MLIR_TABLEGEN_EXE "${LLVM_DIR}/../../../bin/mlir-tblgen")
 
 message(STATUS "Using tablegen in: ${MLIR_TABLEGEN_EXE}")
+
+#option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
 include(TableGen)
 include(AddLLVM)

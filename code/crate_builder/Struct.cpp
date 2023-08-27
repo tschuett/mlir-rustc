@@ -1,13 +1,20 @@
 #include "AST/AssociatedItem.h"
 #include "AST/Implementation.h"
 #include "AST/TupleStruct.h"
+#include "Basic/Ids.h"
 #include "CrateBuilder/CrateBuilder.h"
+#include "CrateBuilder/StructType.h"
+#include "Hir/HirTypes.h"
+#include "Mangler/Mangler.h"
 
+#include <llvm/ADT/SmallVector.h>
 #include <mlir/IR/BuiltinTypes.h>
 #include <mlir/IR/ExtensibleDialect.h>
+#include <mlir/IR/Types.h>
 #include <mlir/Support/LogicalResult.h>
 
 using namespace rust_compiler::ast;
+using namespace llvm;
 
 namespace rust_compiler::crate_builder {
 
@@ -27,28 +34,26 @@ void CrateBuilder::emitStruct(ast::Struct *struc) {
 void CrateBuilder::emitStructStruct(ast::StructStruct *stru) {
   assert(false);
 
-  mlir::ExtensibleDialect *hirDialect =
-      builder.getContext()->getOrLoadDialect<rust_compiler::hir::HirDialect>();
+  //  mlir::Dialect *hirDialect =
+  //      builder.getContext()->getOrLoadDialect<rust_compiler::hir::HirDialect>();
 
-  auto verifier =
-      [](llvm::function_ref<mlir::InFlightDiagnostic()> emitError,
-         llvm::ArrayRef<mlir::Attribute> args) -> mlir::LogicalResult {
-    return mlir::LogicalResult::success();
-  };
+  mangler::Mangler mangler = {crate};
+  std::string mangledName = mangler.mangleStruct(visItemStack, crate);
 
-  std::string name = stru->getIdentifier().toString();
-  std::unique_ptr<mlir::DynamicTypeDefinition> aStruct =
-      mlir::DynamicTypeDefinition::get(name, std::move(hirDialect),
-                                       std::move(verifier));
+  SmallVector<mlir::Type> members;
 
-  hirDialect->registerDynamicType(std::move(aStruct));
+  StructFields fields = stru->getFields();
 
-  mlir::MemRefType::Builder builder = {{1},
-                                       mlir::DynamicType::get(aStruct.get())};
-  mlir::MemRefType memRef = builder;
+  for (const StructField &field : fields.getFields())
+    members.push_back(getType(field.getType().get()));
 
-  StructType structType = {stru, memRef, mlir::DynamicType::get(aStruct.get()),
-                           name};
+  mlir::Type structType = rust_compiler::hir::StructType::get(
+      builder.getContext(), members, mangledName, false);
+  //  mlir::Type structType = builder.create<hir::StructType>(
+  //      getLocation(stru->getLocation()), members, mangledName, false);
+
+  mlir::MemRefType memRefType = mlir::MemRefType::Builder({1}, structType);
+  structTypes[stru->getNodeId()] = {structType, memRefType};
 }
 
 void CrateBuilder::emitTupleStruct(ast::TupleStruct *) { assert(false); }
@@ -67,23 +72,36 @@ void CrateBuilder::emitImplementation(ast::Implementation *impl) {
 }
 
 void CrateBuilder::emitInherentImpl(ast::InherentImpl *impl) {
+  std::optional<basic::NodeId> typeId =
+      tyCtx->lookupResolvedType(impl->getType()->getNodeId());
+  if (!typeId) {
+    llvm::errs() << "emitInherentImpl could not find type" << '\n';
+    exit(EXIT_FAILURE);
+  }
+
+  if (!structTypes.contains(*typeId)) {
+    llvm::errs() << "emitInherentImpl could not find struct" << '\n';
+    exit(EXIT_FAILURE);
+  }
+
   for (auto &asso : impl->getAssociatedItems())
-    emitInherentAssoItem(impl, asso);
+    emitInherentAssoItem(impl, asso, structTypes[*typeId].second);
 }
 
 void CrateBuilder::emitTraitImpl(ast::TraitImpl *) { assert(false); }
 
 void CrateBuilder::emitInherentAssoItem(InherentImpl *impl,
-                                        ast::AssociatedItem &asso) {
+                                        ast::AssociatedItem &asso,
+                                        mlir::MemRefType memRefStructType) {
   switch (asso.getKind()) {
   case AssociatedItemKind::ConstantItem: {
     break;
   }
   case AssociatedItemKind::Function: {
-    Function *fun = static_cast<Function *>(
+    ast::Function *fun = static_cast<ast::Function *>(
         static_cast<VisItem *>(asso.getFunction().get()));
     if (fun->isMethod()) {
-      emitInherentMethod(fun, impl);
+      emitInherentMethod(fun, impl, memRefStructType);
     } else {
       assert(false);
     }
@@ -99,11 +117,49 @@ void CrateBuilder::emitInherentAssoItem(InherentImpl *impl,
   assert(false);
 }
 
-void CrateBuilder::emitInherentMethod(ast::Function *, ast::InherentImpl *) {}
+void CrateBuilder::emitInherentMethod(ast::Function *f, ast::InherentImpl *,
+                                      mlir::MemRefType memRef) {
+  assert(false);
+
+  llvm::ScopedHashTableScope<basic::NodeId, mlir::Value> scope(symbolTable);
+  llvm::ScopedHashTableScope<basic::NodeId, mlir::Value> allocaScope(
+      allocaTable);
+
+  builder.setInsertionPointToEnd(theModule.getBody());
+
+  mlir::FunctionType funType = getMethodType(f, memRef);
+
+  // FIXME add mangled name
+  mlir::func::FuncOp fun = builder.create<mlir::func::FuncOp>(
+      getLocation(f->getLocation()), f->getName().toString(), funType);
+  assert(fun != nullptr);
+
+  llvm::SmallVector<basic::NodeId> parameterNames;
+  llvm::SmallVector<mlir::Type> parameterTypes;
+  llvm::SmallVector<mlir::Location> parameterLocations;
+  // FIXME xxx memref
+  for (FunctionParam &parm : f->getParams().getParams()) {
+    if (parm.getKind() == FunctionParamKind::Pattern) {
+      parameterNames.push_back(parm.getPattern().getPattern()->getNodeId());
+      parameterTypes.push_back(getType(parm.getPattern().getType().get()));
+      parameterLocations.push_back(getLocation(parm.getLocation()));
+    } else {
+      assert(false);
+    }
+  }
+
+  mlir::Block *entryBlock = builder.createBlock(
+      &fun.getBody(), {}, parameterTypes, parameterLocations);
+
+  for (const auto namedValue :
+       llvm::zip(parameterNames, entryBlock->getArguments()))
+    declare(std::get<0>(namedValue), std::get<1>(namedValue));
+}
 
 mlir::FunctionType CrateBuilder::getMethodType(ast::Function *fun,
                                                mlir::MemRefType memRef) {
 
+  // fixme memref
   llvm::SmallVector<mlir::Type> parameterType;
   parameterType.push_back(memRef);
   FunctionParameters params = fun->getParams();

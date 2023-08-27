@@ -18,4 +18,8 @@ llvm_map_components_to_libnames(llvm_libs Option Support)
 
 add_dependencies(minicargo MiniCargoOptsTableGen)
 
-target_link_libraries(minicargo toml ${llvm_libs}  )
+target_link_libraries(minicargo
+                      PRIVATE
+                      toml
+                      ${llvm_libs}
+                      )

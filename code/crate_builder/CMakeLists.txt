@@ -34,6 +34,8 @@ target_link_libraries(crate_builder
         ast
         hir
         adt
+        Mangler
+        ConstantEvaluation
         ${llvm_libs}
         MLIRMemRefDialect
         MLIRArithDialect

@@ -37,6 +37,8 @@ public:
     return values;
   }
 
+  RibKind getKind() const { return kind; }
+
 private:
   std::unordered_map<std::string, basic::NodeId> values;
 };

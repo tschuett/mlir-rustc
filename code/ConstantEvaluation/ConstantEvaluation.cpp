@@ -8,10 +8,10 @@
 #include "AST/OperatorExpression.h"
 #include "AST/PathExpression.h"
 #include "AST/VisItem.h"
-#include "llvm/Support/raw_ostream.h"
 
 #include <cstdlib>
 #include <llvm/ADT/APInt.h>
+#include <llvm/Support/raw_ostream.h>
 
 using namespace rust_compiler::ast;
 

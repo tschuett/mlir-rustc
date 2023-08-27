@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ADT/ScopedHashTable.h"
 #include "AST/ArithmeticOrLogicalExpression.h"
 #include "AST/ArrayExpression.h"
 #include "AST/AssociatedItem.h"
@@ -26,25 +25,22 @@
 #include "AST/QualifiedPathInExpression.h"
 #include "AST/ReturnExpression.h"
 #include "AST/Statement.h"
+#include "AST/Struct.h"
 #include "AST/StructExpression.h"
+#include "AST/StructStruct.h"
+#include "AST/TupleStruct.h"
 #include "AST/Types/TypeExpression.h"
 #include "AST/Types/TypeNoBounds.h"
 #include "AST/Types/TypePath.h"
-#include "AST/VariableDeclaration.h"
+#include "AST/VisItem.h"
 #include "Basic/Ids.h"
 #include "CrateBuilder/Target.h"
-#include "Hir/HirDialect.h"
+#include "Mangler/Mangler.h"
 #include "Session/Session.h"
-#include "TyCtx/TyCtx.h"
-#include "AST/Struct.h"
-#include "AST/StructStruct.h"
-#include "AST/TupleStruct.h"
-
 #include "StructType.h"
 
 #include <cstdint>
 #include <llvm/ADT/ScopedHashTable.h>
-// #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Remarks/YAMLRemarkSerializer.h>
 #include <llvm/Target/TargetMachine.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
@@ -61,6 +57,10 @@ class PathInExpression;
 class QualifiedPathInExpression;
 class IteratorLoopExpression;
 } // namespace rust_compiler::ast
+
+namespace rust_compiler::tyctx {
+class TyCtx;
+}
 
 namespace rust_compiler::crate_builder {
 
@@ -143,8 +143,10 @@ private:
   void emitImplementation(ast::Implementation *);
   void emitInherentImpl(ast::InherentImpl *);
   void emitTraitImpl(ast::TraitImpl *);
-  void emitInherentAssoItem(ast::InherentImpl*, ast::AssociatedItem&);
-  void emitInherentMethod(ast::Function *, ast::InherentImpl*);
+  void emitInherentAssoItem(ast::InherentImpl *, ast::AssociatedItem &,
+                            mlir::MemRefType memRefStructType);
+  void emitInherentMethod(ast::Function *, ast::InherentImpl *,
+                          mlir::MemRefType memRef);
   mlir::FunctionType getMethodType(ast::Function *fun, mlir::MemRefType memRef);
   std::optional<mlir::Value> emitBlockExpression(ast::BlockExpression *);
   std::optional<mlir::Value> emitStatements(ast::Statements);
@@ -283,6 +285,10 @@ private:
   std::map<basic::NodeId, mlir::Value> variables;
 
   bool isLiteralExpression(ast::Expression *) const;
+
+  std::vector<const ast::VisItem *> visItemStack;
+
+  std::map<basic::NodeId, std::pair<mlir::Type, mlir::MemRefType>> structTypes;
 };
 
 } // namespace rust_compiler::crate_builder

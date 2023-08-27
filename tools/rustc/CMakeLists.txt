@@ -20,7 +20,3 @@ target_link_libraries(rustc
         Serialization
         MLIRAsmParser
         ${llvm_libs})
-
-#target_link_libraries(rustc lexer parser  ${llvm_libs})
-
-#target_precompile_headers(rustc PRIVATE ToLLVM.h PassPipeline.h DumpLLVMIR.h)

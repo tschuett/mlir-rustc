@@ -24,7 +24,7 @@ void CrateBuilder::emitItem(Item *item) {
 }
 
 void CrateBuilder::emitVisItem(VisItem *visItem) {
-
+  visItemStack.push_back(visItem);
   switch (visItem->getKind()) {
   case VisItemKind::Module: {
     emitModule(static_cast<ast::Module *>(visItem));
@@ -70,6 +70,7 @@ void CrateBuilder::emitVisItem(VisItem *visItem) {
     break;
   }
   }
+  visItemStack.pop_back();
 }
 
 } // namespace rust_compiler::crate_builder
