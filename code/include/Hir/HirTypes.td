@@ -5,7 +5,8 @@
 include "mlir/IR/AttrTypeBase.td"
 include "mlir/Interfaces/DataLayoutInterfaces.td"
 include "HirDialect.td"
-
+include "HirPattern.td"
+include "HirOpsBase.td"
 
 class Hir_Type<string name, string typeMnemonic, list<Trait> traits = [],
                string baseCppClass = "::mlir::Type">

@@ -24,7 +24,7 @@ target_link_libraries(hir
 
 
 
-add_dependencies(hir HirOpsIncGen HirOpsIncIFaceGen)
+add_dependencies(hir HirOpsIncGen)
 
 
 target_precompile_headers(hir PRIVATE )

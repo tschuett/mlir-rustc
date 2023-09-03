@@ -1,5 +1,6 @@
 #include "ADT/CanonicalPath.h"
 #include "AST/AssociatedItem.h"
+#include "AST/BlockExpression.h"
 #include "AST/EnumItemDiscriminant.h"
 #include "AST/EnumItemStruct.h"
 #include "AST/EnumItemTuple.h"
@@ -8,6 +9,9 @@
 #include "AST/Expression.h"
 #include "AST/Implementation.h"
 #include "AST/InherentImpl.h"
+#include "AST/ItemDeclaration.h"
+#include "AST/Statement.h"
+#include "AST/Statements.h"
 #include "AST/StructStruct.h"
 #include "AST/TypeAlias.h"
 #include "AST/VisItem.h"
@@ -71,7 +75,9 @@ void Resolver::resolveVisItemNoRecurse(
     break;
   }
   case VisItemKind::ConstantItem: {
-    assert(false);
+    resolveConstantItemNoRecurse(
+        std::static_pointer_cast<ConstantItem>(visItem).get(), prefix,
+        canonicalPrefix);
     break;
   }
   case VisItemKind::StaticItem: {
@@ -102,6 +108,7 @@ void Resolver::resolveFunctionNoRecurse(
   CanonicalPath segment =
       CanonicalPath::newSegment(fun->getNodeId(), fun->getName());
   CanonicalPath path = canonicalPrefix.append(segment);
+  CanonicalPath cpath = canonicalPrefix.append(segment);
 
   /// FIXME
   getNameScope().insert(path, fun->getNodeId(), fun->getLocation(),
@@ -110,6 +117,9 @@ void Resolver::resolveFunctionNoRecurse(
   NodeId currentModule = peekCurrentModuleScope();
   tyCtx->insertModuleChildItem(currentModule, segment);
   tyCtx->insertCanonicalPath(fun->getNodeId(), path);
+
+  if (fun->hasBody())
+    resolveExpressionNoRecurse(fun->getBody().get());
 }
 
 void Resolver::resolveMacroItemNoRecurse(
@@ -136,10 +146,12 @@ void Resolver::resolveTraitNoRecurse(
     }
     case AssociatedItemKind::TypeAlias: {
       std::shared_ptr<TypeAlias> ta =
-        std::static_pointer_cast<TypeAlias>(asso.getTypeAlias());
-      CanonicalPath decl = CanonicalPath::newSegment(ta->getNodeId(), ta->getIdentifier());
+          std::static_pointer_cast<TypeAlias>(asso.getTypeAlias());
+      CanonicalPath decl =
+          CanonicalPath::newSegment(ta->getNodeId(), ta->getIdentifier());
       CanonicalPath path = prefix.append(decl);
-      getTypeScope().insert(path, ta->getNodeId(), ta->getLocation(), RibKind::Type);
+      getTypeScope().insert(path, ta->getNodeId(), ta->getLocation(),
+                            RibKind::Type);
       break;
     }
     case AssociatedItemKind::ConstantItem: {
@@ -396,6 +408,88 @@ void Resolver::resolveModuleNoRecurse(
   popModuleScope();
 
   tyCtx->insertCanonicalPath(module->getNodeId(), cpath);
+}
+
+void Resolver::resolveConstantItemNoRecurse(
+    ast::ConstantItem *ci, const adt::CanonicalPath &prefix,
+    const adt::CanonicalPath &canonicalPrefix) {
+  CanonicalPath constantItem =
+      CanonicalPath::newSegment(ci->getNodeId(), ci->getName());
+  CanonicalPath path = prefix.append(constantItem);
+  CanonicalPath cpath = canonicalPrefix.append(constantItem);
+
+  getNameScope().insert(path, ci->getNodeId(), ci->getLocation(),
+                        RibKind::Constant);
+
+  NodeId currentModule = peekCurrentModuleScope();
+  tyCtx->insertModuleChildItem(currentModule, constantItem);
+  tyCtx->insertCanonicalPath(ci->getNodeId(), cpath);
+
+  if (ci->hasInit())
+    resolveExpressionNoRecurse(ci->getInit().get());
+}
+
+void Resolver::resolveExpressionNoRecurse(ast::Expression *expr) {
+  switch (expr->getExpressionKind()) {
+  case ExpressionKind::ExpressionWithBlock: {
+    resolveExpressionWithBlockNoRecurse(
+        static_cast<ast::ExpressionWithBlock *>(expr));
+    break;
+  }
+  case ExpressionKind::ExpressionWithoutBlock: {
+    assert(false);
+    break;
+  }
+  }
+}
+
+void Resolver::resolveExpressionWithBlockNoRecurse(
+    ast::ExpressionWithBlock *withBlock) {
+  switch (withBlock->getWithBlockKind()) {
+  case ExpressionWithBlockKind::BlockExpression: {
+    resolveBlockExpressionNoRecurse(
+        static_cast<ast::BlockExpression *>(withBlock));
+    break;
+  }
+  case ExpressionWithBlockKind::UnsafeBlockExpression: {
+    assert(false);
+    break;
+  }
+  case ExpressionWithBlockKind::LoopExpression: {
+    assert(false);
+    break;
+  }
+  case ExpressionWithBlockKind::IfExpression: {
+    assert(false);
+    break;
+  }
+  case ExpressionWithBlockKind::IfLetExpression: {
+    assert(false);
+    break;
+  }
+  case ExpressionWithBlockKind::MatchExpression: {
+    assert(false);
+    break;
+  }
+  }
+}
+
+void Resolver::resolveBlockExpressionNoRecurse(
+    ast::BlockExpression *block) {
+  Statements stmts = block->getExpressions();
+
+  for (auto &stmt : stmts.getStmts()) {
+    switch (stmt->getKind()) {
+    case StatementKind::ItemDeclaration: {
+      auto item = std::static_pointer_cast<ItemDeclaration>(stmt);
+      resolveVisItemNoRecurse(item->getVisItem(), CanonicalPath::createEmpty(),
+                              CanonicalPath::createEmpty());
+      break;
+    }
+    default:
+      break;
+    }
+  }
 }
 
 } // namespace rust_compiler::sema::resolver

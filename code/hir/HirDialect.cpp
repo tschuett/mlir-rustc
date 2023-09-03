@@ -1,14 +1,11 @@
-
 #include "Hir/HirDialect.h"
 
-#include "Hir/HirEnum.h"
-#include "Hir/HirInterfaces.h"
-#include "Hir/HirOps.h"
-#include "Hir/HirString.h"
 #include "Hir/HirTypes.h"
 
+#include <llvm/ADT/ArrayRef.h>
 #include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/ControlFlow/IR/ControlFlow.h>
+#include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/Dialect/MemRef/IR/MemRef.h>
 #include <mlir/Dialect/Vector/IR/VectorOps.h>
 #include <mlir/IR/BlockAndValueMapping.h>
@@ -16,20 +13,18 @@
 #include <mlir/IR/BuiltinTypes.h>
 #include <mlir/IR/Dialect.h>
 #include <mlir/IR/DialectImplementation.h>
-#include <mlir/IR/ExtensibleDialect.h>
+// #include <mlir/IR/ExtensibleDialect.h>
 #include <mlir/IR/OpImplementation.h>
 #include <mlir/IR/Region.h>
 #include <mlir/IR/Types.h>
 #include <mlir/Transforms/InliningUtils.h>
 #include <optional>
 
-#include <llvm/ADT/ArrayRef.h>
-
 using namespace mlir;
 
 #include "Hir/HirDialect.cpp.inc"
 
-namespace rust_compiler::hir {
+using namespace rust_compiler::hir;
 
 class HirInlinerInterface
     : public DialectInterface::Base<DialectInlinerInterface> {
@@ -44,6 +39,30 @@ bool isScalarObject(mlir::Type type) {
   return false;
 }
 
+bool isPattern(mlir::Type type) {
+  return mlir::isa<rust_compiler::hir::PatternType>(type);
+}
+
+bool isRangePattern(mlir::Type type) {
+  //  return mlir::isa<rust_compiler::hir::RangePatternType>(type);
+}
+
+bool isPatternWithoutRange(mlir::Type type) {
+  return (mlir::isa<rust_compiler::hir::LiteralPatternType>(type) ||
+          mlir::isa<rust_compiler::hir::IdentifierPatternType>(type) ||
+          mlir::isa<rust_compiler::hir::WildcardPatternType>(type) ||
+          mlir::isa<rust_compiler::hir::RestPatternType>(type) ||
+          mlir::isa<rust_compiler::hir::ReferencePatternType>(type) ||
+          mlir::isa<rust_compiler::hir::TupleStructPatternType>(type) ||
+          mlir::isa<rust_compiler::hir::GroupedPatternType>(type) ||
+          mlir::isa<rust_compiler::hir::SlicePatternType>(type) ||
+          mlir::isa<rust_compiler::hir::PathPatternType>(type));
+}
+
+bool isPatternNoTopAlt(mlir::Type type) {
+  return isPatternWithoutRange(type) || isRangePattern(type);
+}
+
 void HirDialect::initialize() {
   registerTypes();
   addOperations<
@@ -51,5 +70,3 @@ void HirDialect::initialize() {
 #include "Hir/HirOps.cpp.inc"
       >();
 }
-
-} // namespace rust_compiler::hir

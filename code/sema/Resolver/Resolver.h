@@ -134,7 +134,8 @@ enum class RibKind {
   Type,
   Variable,
   Trait,
-  Module
+  Module,
+  Constant
 };
 
 class Rib {
@@ -347,6 +348,12 @@ private:
   void resolveItemDeclaration(std::shared_ptr<ast::ItemDeclaration>,
                               const adt::CanonicalPath &prefix,
                               const adt::CanonicalPath &canonicalPrefix);
+  void resolveConstantItemNoRecurse(ast::ConstantItem *,
+                                    const adt::CanonicalPath &prefix,
+                                    const adt::CanonicalPath &canonicalPrefix);
+  void resolveExpressionNoRecurse(ast::Expression *);
+  void resolveExpressionWithBlockNoRecurse(ast::ExpressionWithBlock *);
+  void resolveBlockExpressionNoRecurse(ast::BlockExpression *);
 
   // expressions
   void resolveExpressionWithBlock(std::shared_ptr<ast::ExpressionWithBlock>,

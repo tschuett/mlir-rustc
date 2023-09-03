@@ -1,10 +1,9 @@
 #pragma once
 
-// #include <mlir/Dialect/Func/IR/FuncOps.h>
-#include <mlir/IR/ExtensibleDialect.h>
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/IR/BuiltinTypes.h>
 #include <mlir/IR/Dialect.h>
+#include <mlir/IR/ExtensibleDialect.h>
 #include <mlir/IR/FunctionInterfaces.h>
 #include <mlir/IR/SymbolTable.h>
 #include <mlir/Interfaces/CallInterfaces.h>
@@ -16,6 +15,9 @@ namespace rust_compiler::hir {
 
 bool isScalarObject(mlir::Type);
 
-}
+bool isPattern(mlir::Type);
+bool isPatternNoTopAlt(mlir::Type);
+
+} // namespace rust_compiler::hir
 
 #include "HirDialect.h.inc"

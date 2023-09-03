@@ -1,12 +1,8 @@
 #ifndef HirDialect
 #define HirDialect
 
-include "mlir/IR/SymbolInterfaces.td"
-include "mlir/Interfaces/CallInterfaces.td"
-include "mlir/Interfaces/ControlFlowInterfaces.td"
-include "mlir/Interfaces/LoopLikeInterface.td"
-include "mlir/Interfaces/SideEffectInterfaces.td"
-
+include "mlir/IR/AttrTypeBase.td"
+include "mlir/IR/OpBase.td"
 
 def Hir_Dialect : Dialect {
   let name = "hir";
@@ -39,9 +35,9 @@ def Hir_Dialect : Dialect {
                           ];
 
 
-//   let useDefaultTypePrinterParser = true;
-//   let useDefaultAttributePrinterParser = true;
-//   let isExtensible = 1;
+   let useDefaultTypePrinterParser = true;
+   let useDefaultAttributePrinterParser = true;
+   let usePropertiesForAttributes = 1;
 }
 
 #endif
